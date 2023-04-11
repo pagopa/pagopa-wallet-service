@@ -1,6 +1,7 @@
 package it.gov.pagopa.microservice.controller;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,8 @@ import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @Validated
-public class HomeController {
+@Slf4j
+public class WalletController {
 
   @Value("${server.servlet.context-path}")
   String basePath;
