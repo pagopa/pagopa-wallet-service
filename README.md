@@ -18,13 +18,8 @@ See the [OpenApi 3 here.](TODO: set your url)
 
 ## Technology Stack
 
-- Java 11
+- Java 17
 - Spring Boot
-- Spring Web
-- Hibernate
-- JPA
-- ...
-- TODO
 
 ---
 
@@ -49,19 +44,12 @@ from `./docker` directory
 ### Prerequisites
 
 - git
-- maven
-- jdk-11
+- gradle
+- jdk-17
 
 ### Run the project
 
-Start the springboot application with this command:
-
-`mvn spring-boot:run -Dspring-boot.run.profiles=local`
-
-### Spring Profiles
-
-- **local**: to develop locally.
-- _default (no profile set)_: The application gets the properties from the environment (for Azure).
+TODO
 
 ### Testing 🧪
 
@@ -69,14 +57,11 @@ Start the springboot application with this command:
 
 To run the **Junit** tests:
 
-`mvn clean verify`
+TODO
 
 #### Integration testing
 
-From `./integration-test/src`
-
-1. `yarn install`
-2. `yarn test`
+TODO
 
 #### Performance testing
 
