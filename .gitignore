@@ -32,3 +32,5 @@ hs_err_pid*
 # Project files
 /target/
 **/node_modules
+build
+/.gradle
