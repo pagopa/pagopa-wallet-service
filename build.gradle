@@ -63,7 +63,7 @@ dependencies {
   testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
 }
 
-group = 'it.gov.pagopa'
+group = 'it.pagopa.wallet'
 version = '0.0.1'
 description = 'pagopa-wallet-service'
 java.sourceCompatibility = JavaVersion.VERSION_17
