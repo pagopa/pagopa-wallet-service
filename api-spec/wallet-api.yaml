@@ -1,147 +1,160 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  version: 0.0.1
-  title: Pagopa eCommerce payment transactions service
-  description: This microservice handles transaction's lifecycle and workflow.
+  title: Wallet - OpenAPI 3.0
+  description: |-
+    Wallet
+  termsOfService: http://pagopa.it/terms/
   contact:
-    name: pagoPA - Touchpoints team
-tags:
-  - name: transactions
-    description: Api's for performing a transaction
-    externalDocs:
-      url: https://pagopa.atlassian.net/wiki/spaces/I/pages/611287199/-servizio+transactions+service
-      description: Technical specifications
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
 externalDocs:
-  url: https://pagopa.atlassian.net/wiki/spaces/I/pages/492339720/pagoPA+eCommerce+Design+Review
-  description: Design review
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://wallet.pagopa.it/api/v1
+tags:
+  - name: Wallet
+    description: Intercat with wallet
 paths:
-  /wallet:
+  /wallets:
     post:
-      operationId: newWallet
       tags:
-        - wallet
-      description: Create a new walllet
-      summary: Make a new wallet
-      requestBody:
-        $ref: "#/components/requestBodies/NewWalletRequest"
-      responses:
-        '200':
-          description: New transaction successfully created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletResponse'
-        '400':
-          description: Formally invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-  /wallet/{walletId}:
-    get:
-      tags:
-        - wallet
-      operationId: getWalletInfo
-      summary: Get wallet information
-      description: Return information for the input specific wallet resource
+        - wallets
+      summary: Add a new wallet
+      description: Add a new wallet
+      operationId: addWallet
       parameters:
-        - in: path
-          name: walletId
+        - in: header
+          name: x-user-id
           schema:
             type: string
           required: true
-          description: Wallet ID
+      requestBody:
+        description: Create a new wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletPost'
+        required: true
       responses:
         '200':
-          description: Wallet data successfully retrieved
+          description: Successful operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletResponse"
+                $ref: '#/components/schemas/WalletPostResponse'
+        '405':
+          description: Invalid input
+  /wallets/{walletId}:
+    put:
+      tags:
+        - wallets
+      summary: Update an existing wallet
+      description: Update an existing wallet by Id
+      operationId: updateWallet
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletUpdateResponse'
         '400':
-          description: Invalid transaction id
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemJson"
+          description: Invalid ID supplied
         '404':
-          description: Transaction not found
+          description: wallet not found
+        '405':
+          description: Validation exception
+    get:
+      tags:
+        - wallets
+      summary: Find wallet by ID
+      description: Returns a single pet
+      operationId: getWalletById
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemJson"
+                $ref: '#/components/schemas/WalletUpdateResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Wallet not found
+    delete:
+      tags:
+        - wallets
+      summary: Deletes a wallet by ID
+      description: delete a wallet
+      operationId: deleteWallet
+      parameters:
+        - name: walletId
+          in: path
+          description: Wallet id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletDeleteResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Wallet not found
 components:
   schemas:
-    NewWalletRequest:
-      description: Request body for creating a new wallet
+    Wallet:
       type: object
       properties:
-        name:
+        paymentInstrumentId:
           type: string
-        email:
-          description: Email string format
-          type: string
-          pattern: (?:[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])
-          example : mario.rossi@gmail.it
-      required:
-        - name
-        - email
-    WalletResponse:
-      type: object
-      description: Wallet data returned when creating a new transaction
-      properties:
-        walletId:
-          description: the wallet unique identifier
-          type: string
-      required:
-        - walletId
-    ProblemJson:
-      description: Body definition for error responses containing failure details
+    WalletPost:
       type: object
       properties:
-        type:
+        paymentInstrumentType:
           type: string
-          format: uri
-          description: |-
-            An absolute URI that identifies the problem type. When dereferenced,
-            it SHOULD provide human-readable documentation for the problem type
-            (e.g., using HTML).
-          default: about:blank
-          example: https://example.com/problem/constraint-violation
-        title:
+          enum: [ cards, paypal, bancomatpay ]
+    WalletPostResponse:
+      type: object
+      properties:
+        walletItemId:
           type: string
-          description: |-
-            A short, summary of the problem type. Written in english and readable
-            for engineers (usually not suited for non technical stakeholders and
-            not localized); example: Service Unavailable
-        status:
-          $ref: "#/components/schemas/HttpStatusCode"
-        detail:
+        logoutURI:
           type: string
-          description: |-
-            A human readable explanation specific to this occurrence of the
-            problem.
-          example: There was an error processing the request
-        instance:
-          type: string
-          format: uri
-          description: |-
-            An absolute URI that identifies the specific occurrence of the problem.
-            It may or may not yield further information if dereferenced.
-    HttpStatusCode:
-      type: integer
-      format: int32
-      description: |-
-        The HTTP status code generated by the origin server for this occurrence
-        of the problem.
-      minimum: 100
-      maximum: 600
-      exclusiveMaximum: true
-      example: 200
-  requestBodies:
-    NewWalletRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/NewWalletRequest"
+    WalletUpdate:
+      type: object
+    WalletUpdateResponse:
+      type: object
+    WalletDeleteResponse:
+      type: object
