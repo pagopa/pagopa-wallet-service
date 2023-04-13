@@ -21,13 +21,7 @@ paths:
       tags:
         - wallet
       description: Create a new walllet
-      parameters:
-        - in: header
-          name: X-Client-Id
-          required: true
-          description: Transaction origin (populated by APIM policy)
-          type: string
-      summary: Make a new transaction
+      summary: Make a new wallet
       requestBody:
         $ref: "#/components/requestBodies/NewWalletRequest"
       responses:
@@ -43,11 +37,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
-  /transactions/{transactionId}:
+  /wallet/{walletId}:
     get:
       tags:
         - wallet
-      operationId: getTransactionInfo
+      operationId: getWalletInfo
       summary: Get wallet information
       description: Return information for the input specific wallet resource
       parameters:
@@ -59,11 +53,11 @@ paths:
           description: Wallet ID
       responses:
         '200':
-          description: Transaction data successfully retrieved
+          description: Wallet data successfully retrieved
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TransactionInfo"
+                $ref: "#/components/schemas/WalletResponse"
         '400':
           description: Invalid transaction id
           content:
@@ -76,39 +70,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemJson"
-    delete:
-      tags:
-        - transactions
-      operationId: requestTransactionUserCancellation
-      parameters:
-        - in: path
-          name: transactionId
-          schema:
-            type: string
-          required: true
-          description: Transaction ID
-      summary: Performs the cancellation of the transaction
-      responses:
-        '202':
-          description: Transaction cancellation request successfully accepted
-        '404':
-          description: Transaction not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '409':
-          description: Conflict on payment status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
 components:
   schemas:
     NewWalletRequest:
@@ -131,8 +92,7 @@ components:
       properties:
         walletId:
           description: the wallet unique identifier
-          schema:
-            type: string
+          type: string
       required:
         - walletId
     ProblemJson:
