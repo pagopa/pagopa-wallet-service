@@ -20,14 +20,10 @@ public class RequestFilter implements WebFilter {
     public static final String CONTEXT_KEY = "contextKey";
 
     @Override
-    public Mono<Void> filter(
-        ServerWebExchange exchange,
-        WebFilterChain chain
-    ) {
-      final HttpHeaders headers = exchange.getRequest().getHeaders();
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        final HttpHeaders headers = exchange.getRequest().getHeaders();
 
-      return chain.filter(exchange)
-          .contextWrite(Context.of(CONTEXT_KEY, UUID.randomUUID().toString()));
+        return chain.filter(exchange)
+                .contextWrite(Context.of(CONTEXT_KEY, UUID.randomUUID().toString()));
     }
-
 }

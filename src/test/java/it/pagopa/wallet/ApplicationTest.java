@@ -8,9 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class ApplicationTest {
 
-  @Test
-  void contextLoads() {
-    // check only if the context is loaded
-    assertTrue(true);
-  }
+    @Test
+    void contextLoads() {
+        // check only if the context is loaded
+        assertTrue(true);
+    }
 }
