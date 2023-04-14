@@ -226,3 +226,22 @@ jobs:
               core.setFailed('PR is too large: ' + changes + ' changes.')
             }
 
+
+  build:
+    name: Code Review
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - task: Gradle@3
+        inputs:
+          workingDirectory: ''
+          gradleWrapperFile: 'gradlew'
+          options: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '17'
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: true
+          testResultsFiles: '**/TEST-*.xml'
+          tasks: 'build'
