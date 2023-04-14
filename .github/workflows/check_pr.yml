@@ -234,14 +234,63 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      #
+      # Cache Gradle dependencies and Gradle Wrapper
+      #
+      - name: Setup Gradle Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+      #
+      # Setup Gradle
+      #
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Execute Gradle build
+        run: ./gradlew build
+
+      - task: SonarCloudPrepare@1
+        displayName: 'Prepare SonarCloud analysis configuration'
+        inputs:
+          SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
+          organization: '$(SONARCLOUD_ORG)'
+          scannerMode: Other
+          extraProperties: |
+            sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
+            sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
+            sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*,**/utils/soap/*,**/mdcutilities/*,**/WalletApplication.java
+            sonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
+            sonar.junit.reportPaths=target/surefire-reports/
+
+      - bash: |
+          docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite &
+        displayName: Run azurite to test Service - Storage integration
+
       - task: Gradle@3
         inputs:
           workingDirectory: ''
           gradleWrapperFile: 'gradlew'
-          options: '-Xmx3072m'
+          gradleOptions: '-Xmx3072m'
           javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '17'
+          jdkVersionOption: '1.8'
           jdkArchitectureOption: 'x64'
           publishJUnitResults: true
           testResultsFiles: '**/TEST-*.xml'
           tasks: 'build'
+
+      - task: SonarCloudPublish@1
+        displayName: 'Publish SonarCloud results on build summary'
+        inputs:
+          pollingTimeoutSec: '300'
+
+      - task: PublishCodeCoverageResults@1
+        inputs:
+          codeCoverageTool: 'JaCoCo'
+          summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+          reportDirectory: 'target/site/jacoco'
+        displayName: 'Publish Code Coverage on Azure Devops'
