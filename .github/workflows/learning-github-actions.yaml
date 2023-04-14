@@ -18,5 +18,6 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+      - run: gradle wrapper
       - name: Run build with Gradle Wrapper
         run: ./gradlew build
