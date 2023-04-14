@@ -2,7 +2,7 @@ name: code-review
 run-name: ${{ github.actor }} is learning GitHub Actions
 on: [push]
 jobs:
-  check-bats-version:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
