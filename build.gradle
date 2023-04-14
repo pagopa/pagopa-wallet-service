@@ -3,68 +3,68 @@
  */
 
 plugins {
-  id 'java'
-  id 'org.springframework.boot' version '3.0.5'
-  id 'io.spring.dependency-management' version '1.1.0'
-  id 'com.diffplug.spotless' version '6.18.0'
+id 'java'
+id 'org.springframework.boot' version '3.0.5'
+id 'io.spring.dependency-management' version '1.1.0'
+id 'com.diffplug.spotless' version '6.18.0'
 }
 
 apply plugin: 'java'
 
 dependencyManagement {
-  imports {
-    mavenBom "io.projectreactor:reactor-bom:Dysprosium-SR1"
-  }
+imports {
+	mavenBom "io.projectreactor:reactor-bom:Dysprosium-SR1"
+}
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
-  mavenCentral()
+	mavenLocal()
+	maven {
+		url = uri('https://repo.maven.apache.org/maven2/')
+	}
+mavenCentral()
 }
 
 dependencies {
-  implementation 'io.projectreactor:reactor-core:3.5.5'
-  implementation 'io.projectreactor.netty:reactor-netty:1.1.6'
-  implementation 'org.springframework.boot:spring-boot-starter-webflux:3.0.4'
-  implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'
-  implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.0.4'
-  implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.0.4'
-  implementation 'com.azure.spring:spring-cloud-azure-starter:5.0.0'
-  implementation 'com.azure.spring:spring-cloud-azure-starter-data-cosmos:4.6.0'
-  implementation 'org.springframework.boot:spring-boot-starter-actuator:3.0.4'
-  implementation 'org.springframework.boot:spring-boot-starter-web-services:3.0.4'
-  implementation 'com.azure:azure-storage-queue:12.15.3'
-  implementation 'wsdl4j:wsdl4j:1.6.3'
-  implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
-  implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
-  implementation 'io.swagger:swagger-annotations:1.6.8'
-  implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-  implementation 'com.google.code.findbugs:jsr305:3.0.2'
-  implementation 'org.projectlombok:lombok:1.18.26'
-  implementation 'io.springfox:springfox-swagger2:3.0.0'
-  implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
-  implementation 'commons-lang:commons-lang:2.6'
-  implementation 'io.github.resilience4j:resilience4j-spring-boot2:2.0.2'
-  implementation 'io.github.resilience4j:resilience4j-reactor:2.0.2'
-  implementation 'org.springframework.boot:spring-boot-starter-aop:3.0.4'
-  implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-  implementation 'io.netty:netty-resolver-dns-native-macos:4.1.90.Final'
-  implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.18.0'
-  implementation 'com.diffplug.spotless:spotless-lib-extra:2.38.0'
-  runtimeOnly 'org.springframework.boot:spring-boot-devtools:3.0.4'
-  runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-  runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.0.4'
-  testImplementation 'org.mockito:mockito-inline:5.2.0'
-  testImplementation 'io.projectreactor:reactor-test:3.5.4'
-  testImplementation 'org.jacoco:jacoco-maven-plugin:0.8.8'
-  testImplementation 'org.apache.maven.reporting:maven-reporting-impl:4.0.0-M6'
-  testImplementation 'org.testcontainers:testcontainers:1.17.6'
-  testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
+implementation 'io.projectreactor:reactor-core:3.5.5'
+implementation 'io.projectreactor.netty:reactor-netty:1.1.6'
+implementation 'org.springframework.boot:spring-boot-starter-webflux:3.0.4'
+implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'
+implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive:3.0.4'
+implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.0.4'
+implementation 'com.azure.spring:spring-cloud-azure-starter:5.0.0'
+implementation 'com.azure.spring:spring-cloud-azure-starter-data-cosmos:4.6.0'
+implementation 'org.springframework.boot:spring-boot-starter-actuator:3.0.4'
+implementation 'org.springframework.boot:spring-boot-starter-web-services:3.0.4'
+implementation 'com.azure:azure-storage-queue:12.15.3'
+implementation 'wsdl4j:wsdl4j:1.6.3'
+implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+implementation 'io.swagger:swagger-annotations:1.6.8'
+implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+implementation 'com.google.code.findbugs:jsr305:3.0.2'
+implementation 'org.projectlombok:lombok:1.18.26'
+implementation 'io.springfox:springfox-swagger2:3.0.0'
+implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
+implementation 'commons-lang:commons-lang:2.6'
+implementation 'io.github.resilience4j:resilience4j-spring-boot2:2.0.2'
+implementation 'io.github.resilience4j:resilience4j-reactor:2.0.2'
+implementation 'org.springframework.boot:spring-boot-starter-aop:3.0.4'
+implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+implementation 'io.netty:netty-resolver-dns-native-macos:4.1.90.Final'
+implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.18.0'
+implementation 'com.diffplug.spotless:spotless-lib-extra:2.38.0'
+runtimeOnly 'org.springframework.boot:spring-boot-devtools:3.0.4'
+runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+testImplementation 'org.springframework.boot:spring-boot-starter-test:3.0.4'
+testImplementation 'org.mockito:mockito-inline:5.2.0'
+testImplementation 'io.projectreactor:reactor-test:3.5.4'
+testImplementation 'org.jacoco:jacoco-maven-plugin:0.8.8'
+testImplementation 'org.apache.maven.reporting:maven-reporting-impl:4.0.0-M6'
+testImplementation 'org.testcontainers:testcontainers:1.17.6'
+testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
 }
 
 group = 'it.pagopa.wallet'
@@ -74,38 +74,46 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
 
 sourceSets {
-  main {
-    java {
-      srcDirs = ['src/java']
-    }
-    resources {
-      srcDirs = ['src/resources']
-    }
-  }
+main {
+	java {
+	srcDirs = ['src/java']
+	}
+	resources {
+	srcDirs = ['src/resources']
+	}
+}
 }
 
 springBoot {
-  mainClass = 'it.pagopa.wallet.WalletApplication'
+mainClass = 'it.pagopa.wallet.WalletApplication'
 }
 
 tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+	options.encoding = 'UTF-8'
 }
 
 tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
+	options.encoding = 'UTF-8'
 }
 
 spotless {
-  java {
-    target fileTree('.') {
-      include '**/*.java'
-      exclude '**/build/**', '**/build-*/**'
-    }
-    toggleOffOn()
-    palantirJavaFormat()
-    removeUnusedImports()
-    trimTrailingWhitespace()
-    endWithNewline()
-  }
+format 'misc', {
+	// define the files to apply `misc` to
+	target '*.gradle', '*.md', '.gitignore'
+	// define the steps to apply to those files
+	trimTrailingWhitespace()
+	indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+	endWithNewline()
+}
+java {
+	target fileTree('.') {
+	include '**/*.java'
+	exclude '**/build/**', '**/build-*/**'
+	}
+	eclipse().configFile('eclipse-style.xml')
+	toggleOffOn()
+	removeUnusedImports()
+	trimTrailingWhitespace()
+	endWithNewline()
+}
 }
