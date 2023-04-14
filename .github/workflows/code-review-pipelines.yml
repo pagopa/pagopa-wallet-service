@@ -1,0 +1,107 @@
+variables:
+  BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: BuildEndUnitTest
+    jobs:
+      - job: make_buildEndUnitTest
+        steps:
+          #
+          # Cache Gradle dependencies and Gradle Wrapper
+          #
+          - name: Setup Gradle Cache
+            uses: actions/cache@v3
+            with:
+              path: |
+                ~/.gradle/caches
+                ~/.gradle/wrapper
+              key: ${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+          #
+          # Setup Gradle
+          #
+          - name: Setup Gradle
+            uses: gradle/gradle-build-action@v3
+
+          - name: Execute Gradle build
+            run: ./gradlew build
+
+          - task: SonarCloudPrepare@1
+            displayName: 'Prepare SonarCloud analysis configuration'
+            inputs:
+              SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
+              organization: '$(SONARCLOUD_ORG)'
+              scannerMode: Other
+              extraProperties: |
+                sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
+                sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
+                sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*,**/utils/soap/*,**/mdcutilities/*,**/WalletApplication.java
+                sonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
+                sonar.junit.reportPaths=target/surefire-reports/
+
+          - bash: |
+              docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite &
+            displayName: Run azurite to test Service - Storage integration
+
+          - task: Gradle@3
+            inputs:
+              gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
+              #workingDirectory: # string. Alias: cwd. Working directory.
+              #options: # string. Options.
+              tasks: 'build' # string. Required. Tasks. Default: build.
+              # JUnit Test Results
+              #publishJUnitResults: true # boolean. Publish to Azure Pipelines. Default: true.
+              testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
+              #testRunTitle: # string. Optional. Use when publishJUnitResults = true. Test run title.
+              # Code Coverage
+              #codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
+              codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
+              #codeCoverageClassFilter: # string. Alias: classFilter. Optional. Use when codeCoverageTool != None. Class inclusion/exclusion filters.
+              #codeCoverageFailIfEmpty: false # boolean. Alias: failIfCoverageEmpty. Optional. Use when codeCoverageTool != None. Fail when code coverage results are missing. Default: false.
+              #codeCoverageGradle5xOrHigher: true # boolean. Alias: gradle5xOrHigher. Optional. Use when codeCoverageTool = JaCoCo. Gradle version >= 5.x. Default: true.
+              # Advanced
+              javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
+              #jdkVersionOption: 'default' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
+              #jdkDirectory: # string. Alias: jdkUserInputPath. Required when javaHomeSelection = Path. JDK path.
+              #jdkArchitectureOption: 'x64' # 'x86' | 'x64'. Alias: jdkArchitecture. Optional. Use when jdkVersion != default. JDK architecture. Default: x64.
+              #gradleOptions: '-Xmx1024m' # string. Alias: gradleOpts. Set GRADLE_OPTS. Default: -Xmx1024m.
+              # Code Analysis
+              #sonarQubeRunAnalysis: false # boolean. Alias: sqAnalysisEnabled. Run SonarQube or SonarCloud Analysis. Default: false.
+              #sqGradlePluginVersionChoice: 'specify' # 'specify' | 'build'. Required when sqAnalysisEnabled = true. SonarQube scanner for Gradle version. Default: specify.
+              #sonarQubeGradlePluginVersion: '2.6.1' # string. Alias: sqGradlePluginVersion. Required when sqAnalysisEnabled = true && sqGradlePluginVersionChoice = specify. SonarQube scanner for Gradle plugin version. Default: 2.6.1.
+              #checkStyleRunAnalysis: false # boolean. Alias: checkstyleAnalysisEnabled. Run Checkstyle. Default: false.
+              #findBugsRunAnalysis: false # boolean. Alias: findbugsAnalysisEnabled. Run FindBugs. Default: false.
+              #pmdRunAnalysis: false # boolean. Alias: pmdAnalysisEnabled. Run PMD. Default: false.
+              #spotBugsAnalysis: false # boolean. Alias: spotBugsAnalysisEnabled. Run SpotBugs. Default: false.
+              #spotBugsGradlePluginVersionChoice: 'specify' # 'specify' | 'build'. Required when spotBugsAnalysisEnabled = true. Spotbugs plugin version. Default: specify.
+              #spotbugsGradlePluginVersion: '4.7.0' # string. Required when spotBugsAnalysisEnabled = true && spotBugsGradlePluginVersionChoice = specify. Version number. Default: 4.7.0.
+
+          - task: Gradle@3
+            inputs:
+              workingDirectory: ''
+              gradleWrapperFile: 'gradlew'
+              gradleOptions: '-Xmx3072m'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.8'
+              jdkArchitectureOption: 'x64'
+              publishJUnitResults: true
+              testResultsFiles: '**/TEST-*.xml'
+              tasks: 'build'
+
+
+
+          - task: SonarCloudPublish@1
+            displayName: 'Publish SonarCloud results on build summary'
+            inputs:
+              pollingTimeoutSec: '300'
+
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: 'JaCoCo'
+              summaryFileLocation: 'target/site/jacoco/jacoco.xml'
+              reportDirectory: 'target/site/jacoco'
+            displayName: 'Publish Code Coverage on Azure Devops'
