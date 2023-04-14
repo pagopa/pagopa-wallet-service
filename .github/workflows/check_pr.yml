@@ -271,18 +271,6 @@ jobs:
           docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite &
         displayName: Run azurite to test Service - Storage integration
 
-      - task: Gradle@3
-        inputs:
-          workingDirectory: ''
-          gradleWrapperFile: 'gradlew'
-          gradleOptions: '-Xmx3072m'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.8'
-          jdkArchitectureOption: 'x64'
-          publishJUnitResults: true
-          testResultsFiles: '**/TEST-*.xml'
-          tasks: 'build'
-
       - task: SonarCloudPublish@1
         displayName: 'Publish SonarCloud results on build summary'
         inputs:
