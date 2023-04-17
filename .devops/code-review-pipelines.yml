@@ -27,7 +27,7 @@ stages:
           - task: Gradle@3
             inputs:
               gradleWrapperFile: '$(Build.SourcesDirectory)/gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              workingDirectory: '.' # string. Alias: cwd. Working directory.
+              workingDirectory: '../' # string. Alias: cwd. Working directory.
               tasks: 'build' # string. Required. Tasks. Default: build.
               publishJUnitResults: false # boolean. Publish to Azure Pipelines. Default: true.
               codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
