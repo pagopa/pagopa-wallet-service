@@ -34,14 +34,16 @@ stages:
                 sonar.junit.reportPaths=target/surefire-reports/
 
           - script: |
-              # check position
               ls -la
             displayName: Gradlew check
 
           - script: |
-              # check position
               chmod +x gradlew
             displayName: Gradlew executable
+
+          - script: |
+              ./gradlew build
+            displayName: Gradlew execution
 
           - task: Gradle@3
             inputs:
