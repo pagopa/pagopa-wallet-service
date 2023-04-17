@@ -40,7 +40,7 @@ stages:
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              #workingDirectory: # string. Alias: cwd. Working directory.
+              workingDirectory: './gradle/wrapper' # string. Alias: cwd. Working directory.
               #options: # string. Options.
               tasks: 'build' # string. Required. Tasks. Default: build.
               # JUnit Test Results
