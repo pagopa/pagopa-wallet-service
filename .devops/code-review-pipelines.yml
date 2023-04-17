@@ -26,7 +26,7 @@ stages:
 
           - task: Gradle@3
             inputs:
-              gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
+              gradleWrapperFile: '$(Build.SourcesDirectory)/gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
               workingDirectory: '.' # string. Alias: cwd. Working directory.
               tasks: 'build' # string. Required. Tasks. Default: build.
               publishJUnitResults: false # boolean. Publish to Azure Pipelines. Default: true.
