@@ -4,12 +4,13 @@ WORKDIR /workspace/app
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
+COPY settings.gradle .
 
 COPY src src
 COPY api-spec api-spec
 COPY eclipse-style.xml eclipse-style.xml
 RUN ./gradlew build
-RUN mkdir build/extracted && java -Djarmode=layertools -jar build/*.jar extract --destination target/build
+RUN mkdir build/extracted && java -Djarmode=layertools -jar build/**/*.jar extract --destination target/build
 
 FROM openjdk:17-slim
 
