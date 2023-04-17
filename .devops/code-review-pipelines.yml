@@ -20,19 +20,6 @@ stages:
               path: $(GRADLE_USER_HOME)
             displayName: Configure gradle caching
 
-          - task: SonarCloudPrepare@1
-            displayName: 'Prepare SonarCloud analysis configuration'
-            inputs:
-              SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
-              organization: '$(SONARCLOUD_ORG)'
-              scannerMode: Other
-              extraProperties: |
-                sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
-                sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
-                sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*,**/utils/soap/*,**/mdcutilities/*,**/WalletApplication.java
-                sonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
-                sonar.junit.reportPaths=target/surefire-reports/
-
           - script: |
               ls -la
             displayName: Gradlew check
@@ -59,6 +46,19 @@ stages:
               # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
               ./gradlew --stop
             displayName: Gradlew stop
+
+          - task: SonarCloudPrepare@1
+            displayName: 'Prepare SonarCloud analysis configuration'
+            inputs:
+              SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
+              organization: '$(SONARCLOUD_ORG)'
+              scannerMode: Other
+              extraProperties: |
+                sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
+                sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
+                sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*,**/utils/soap/*,**/mdcutilities/*,**/WalletApplication.java
+                sonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
+                sonar.junit.reportPaths=target/surefire-reports/
 
           - task: SonarCloudPublish@1
             displayName: 'Publish SonarCloud results on build summary'
