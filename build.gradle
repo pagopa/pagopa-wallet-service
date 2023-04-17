@@ -8,6 +8,7 @@ plugins {
   id 'org.springframework.boot' version '3.0.5'
   id 'io.spring.dependency-management' version '1.1.0'
   id 'com.diffplug.spotless' version '6.18.0'
+  id 'net.researchgate.release' version '3.0.2'
 }
 
 apply plugin: 'java'
@@ -70,7 +71,6 @@ dependencies {
 }
 
 group = 'it.pagopa.wallet'
-version = '0.0.1'
 description = 'pagopa-wallet-service'
 java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
@@ -130,5 +130,11 @@ jar {
     attributes(
         'Main-Class': 'it.pagopa.wallet.WalletApplication'
     )
+  }
+}
+
+release {
+  git {
+    requireBranch.set('')
   }
 }
