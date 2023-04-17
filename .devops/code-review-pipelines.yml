@@ -24,14 +24,6 @@ stages:
               ls -la
             displayName: Gradlew check
 
-          - script: |
-              chmod +x gradlew
-            displayName: Gradlew executable
-
-          - script: |
-              ./gradlew build
-            displayName: Gradlew execution
-
           - task: Gradle@3
             inputs:
               gradleWrapperFile: 'gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
