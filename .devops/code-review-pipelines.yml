@@ -40,8 +40,8 @@ stages:
 
           - script: |
               # check position
-              ./gradlew build
-            displayName: Gradlew check
+              chmod +x gradlew
+            displayName: Gradlew executable
 
           - task: Gradle@3
             inputs:
