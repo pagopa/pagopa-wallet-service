@@ -76,7 +76,7 @@ java.targetCompatibility = JavaVersion.VERSION_17
 sourceSets {
   main {
     java {
-      srcDirs = ['src/java']
+      srcDirs = ['src/main/java']
     }
     resources {
       srcDirs = ['src/resources']
@@ -88,11 +88,11 @@ springBoot {
   mainClass = 'it.pagopa.wallet.WalletApplication'
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
 }
 
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
 	options.encoding = 'UTF-8'
 }
 
