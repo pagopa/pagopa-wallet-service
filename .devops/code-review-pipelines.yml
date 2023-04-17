@@ -24,15 +24,12 @@ stages:
               ls -la
             displayName: Gradlew check
 
-          - task: Gradle@3
+          - task: Gradle@2
             inputs:
-              gradleWrapperFile: '$(Build.SourcesDirectory)/gradlew' # string. Alias: wrapperScript. Required. Gradle wrapper. Default: gradlew.
-              workingDirectory: '../../' # string. Alias: cwd. Working directory.
-              tasks: 'build' # string. Required. Tasks. Default: build.
-              publishJUnitResults: false # boolean. Publish to Azure Pipelines. Default: true.
-              codeCoverageClassFilesDirectories: 'build/classes/main/' # string. Alias: classFilesDirectories. Required when codeCoverageTool != None. Class files directories. Default: build/classes/main/.
-              javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
-              jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
+              gradleWrapperFile: 'gradlew'
+              tasks: 'build'
+              options: '--build-cache'
+            displayName: Build
 
           - script: |
               # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
