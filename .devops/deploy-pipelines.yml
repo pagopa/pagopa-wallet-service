@@ -38,6 +38,13 @@ parameters:
     values:
       - False
       - True
+resources:
+  repositories:
+    - repository: pagopaCommons
+      type: github
+      name: pagopa/azure-pipeline-templates
+      ref: refs/tags/v2.10.1
+      endpoint: 'io-azure-devops-github-ro'
 
 pool:
   vmImage: ubuntu-latest
