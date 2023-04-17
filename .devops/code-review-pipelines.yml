@@ -34,10 +34,14 @@ stages:
                 sonar.junit.reportPaths=target/surefire-reports/
 
           - script: |
-              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
+              # check position
               ls -la
             displayName: Gradlew check
 
+          - script: |
+              # check position
+              ./gradlew build
+            displayName: Gradlew check
 
           - task: Gradle@3
             inputs:
