@@ -10,7 +10,7 @@ COPY src src
 COPY api-spec api-spec
 COPY eclipse-style.xml eclipse-style.xml
 RUN ./gradlew build
-RUN mkdir build/extracted && java -Djarmode=layertools -jar build/**/*.jar extract --destination target/build
+RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
 FROM openjdk:17-slim
 
@@ -19,7 +19,7 @@ USER user:user
 
 WORKDIR /app/
 
-ARG EXTRACTED=/workspace/app/target/extracted
+ARG EXTRACTED=/workspace/app/build/extracted
 
 COPY --from=build --chown=user ${EXTRACTED}/dependencies/ ./
 RUN true
