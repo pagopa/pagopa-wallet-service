@@ -44,8 +44,8 @@ stages:
               #options: # string. Options.
               tasks: 'build' # string. Required. Tasks. Default: build.
               # JUnit Test Results
-              #publishJUnitResults: true # boolean. Publish to Azure Pipelines. Default: true.
-              testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
+              publishJUnitResults: false # boolean. Publish to Azure Pipelines. Default: true.
+              #testResultsFiles: '**/TEST-*.xml' # string. Required when publishJUnitResults = true. Test results files. Default: **/TEST-*.xml.
               #testRunTitle: # string. Optional. Use when publishJUnitResults = true. Test run title.
               # Code Coverage
               #codeCoverageToolOption: 'None' # 'None' | 'Cobertura' | 'JaCoCo'. Alias: codeCoverageTool. Code coverage tool. Default: None.
