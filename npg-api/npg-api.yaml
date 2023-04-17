@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: NPG API
+  version: "0.1"
+  description: |-
+    Nexi NPG
+externalDocs:
+  description: API di Nexi per la gestione dei pagamenti HPP (Hosted Payment Page)
+  url: https://developer.nexigroup.com/it/api/specifiche-di-utilizzo-del-servizio
+paths:
+  /orders:
+    post:
+      tags:
+        - hpp
+      summary: Start HPP payment
+      description: Start payment using Hosted Payment Page solution
+      operationId: createWallet
+      requestBody:
+        description: |-
+          Request body containing the information to create a new wallet.
+          A wallet is a collection of payment instruments that _may_ be associated to a user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HppRequest'
+        required: true
+      responses:
+        '200':
+          description: Wallet created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HppResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HppRequest:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderItem'
+        paymentSession:
+          $ref: '#/components/schemas/PaymentSessionItem'
+    HppResponse:
+      type: object
+      properties:
+        walletItemId:
+          type: string
+        logoutURI:
+          type: string
+    OrderItem:
+      type: object
+      properties:
+        orderId:
+          type: string
+          maxLength: 27
+          example: 'btid2384983'
+        amount:
+          type: string
+          example: '3545'
+        currency:
+          type: string
+          format: iso-4217
+          example: 'EUR'
+        customerId:
+          type: string
+          maxLength: 27
+          example: 'mcid97295873'
+        description:
+          type: string
+          maxLength: 255
+          example: 'TV 3423'
+        customField:
+          type: string
+          maxLength: 255
+          example: 'weekend promotion'
+        customerInfo:
+          $ref: '#/components/schemas/CustomerInfoItem'
+      required:
+        - orderId
+        - amount
+        - currency
+    CustomerInfoItem:
+      type: object
+      properties:
+        cardHolderName:
+          type: string
+          maxLength: 255
+          example: 'Mauro Morandi'
+        cardHolderEmail:
+          type: string
+          maxLength: 255
+          format: email
+          example: 'mauro.morandi@nexi.it'
+        billingAddress:
+          $ref: '#/components/schemas/AddressItem'
+        shippingAddress:
+          $ref: '#/components/schemas/AddressItem'
+        mobilePhoneCountryCode:
+          type: string
+          maxLength: 4
+          example: '39'
+        mobilePhone:
+          type: string
+          maxLength: 15
+          example: '3280987654'
+        homePhone:
+          type: string
+          maxLength: 19
+          example: '391231234567'
+        workPhone:
+          type: string
+          maxLength: 19
+          example: '391231234567'
+        cardHolderAcctInfo:
+          $ref: '#/components/schemas/CardHolderAcctInfoItem'
+        transactionSummary:
+          $ref: '#/components/schemas/TransactionSummaryItem'
+
+    AddressItem:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          example: 'Mario Rossi'
+        street:
+          type: string
+          maxLength: 50
+          example: 'Piazza Maggiore, 1'
+        additionalInfo:
+          type: string
+          maxLength: 50
+          example: 'Quinto Piano, Scala B'
+        city:
+          type: string
+          maxLength: 50
+          example: 'Bologna'
+        postCode:
+          type: string
+          maxLength: 16
+          example: '40124'
+        province:
+          type: string
+          maxLength: 3
+          example: 'BO'
+        country:
+          type: string
+          maxLength: 3
+          format: iso-3166
+          example: 'ITA'
+      required:
+        - orderId
+        - amount
+        - currency
+    CardHolderAcctInfoItem:
+      type: object
+      properties:
+        chAccDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        chAccAgeIndicator:
+          type: string
+          example: '01'
+        chAccChangeDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        chAccChangeIndicator:
+          type: string
+          example: '01'
+        chAccPwChangeDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        chAccPwChangeIndicator:
+          type: string
+          example: '01'
+        nbPurchaseAccount:
+          type: integer
+          example: '0'
+        destinationAddressUsageDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        destinationAddressUsageIndicator:
+          type: string
+          example: '01'
+        destinationNameIndicator:
+          type: integer
+          example: '01'
+        txnActivityDay:
+          type: integer
+          example: '0'
+        txnActivityYear:
+          type: integer
+          example: '0'
+        provisionAttemptsDay:
+          type: integer
+          example: '0'
+        suspiciousAccActivity:
+          type: string
+          example: '01'
+        paymentAccAgeDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        paymentAccIndicator:
+          type: string
+          example: '0'
+        merchantRiskIndicator:
+          $ref: '#/components/schemas/MerchantRiskIndicatorItem'
+    MerchantRiskIndicatorItem:
+      type: object
+      properties:
+        deliveryEmail:
+          type: string
+          format: email
+          example: 'john.doe@email.com'
+        deliveryTimeframe:
+          type: string
+          example: '01'
+        giftCardAmount:
+          $ref: '#/components/schemas/GiftCardAmount'
+        giftCardCount:
+          type: integer
+          example: '0'
+        preOrderDate:
+          type: string
+          format: date
+          example: '2019-02-11'
+        preOrderPurchaseIndicator:
+          type: string
+          example: '01'
+        reorderItemsIndicator:
+          type: string
+          example: '01'
+        shipIndicator:
+          type: string
+          example: '01'
+    GiftCardAmount:
+      type: object
+      properties:
+        value:
+          type: number
+          example: 100
+        currency:
+          type: string
+          format: iso-4217
+          example: 'EUR'
+    TransactionSummaryItem:
+      type: object
+      properties:
+        language:
+          type: string
+          format: iso-639-2
+          example: 'eng'
+        summaryList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummaryListItem'
+        termsAndConditionsIds:
+          type: array
+          items:
+            format: string
+    SummaryListItem:
+      type: object
+      properties:
+        label:
+          type: string
+          example: 'Number of people'
+        value:
+          type: string
+          example: '4'
+    PaymentSessionItem:
+      type: object
+      properties:
+        actionType:
+          type: string
+          enum: ['PAY','VERIFY','PREAUTH']
+        amount:
+          type: string
+          example: '3545'
+        recurrence:
+          $ref: '#/components/schemas/RecurrenceItem'
+        captureType:
+          type: string
+          enum: ['IMPLICIT','EXPLICIT']
+        exemptions:
+          type: string
+          enum: ['NO_PREFERENCE','CHALLENGE_REQUESTED']
+        language:
+          type: string
+          format: iso-639-2
+          example: 'ita'
+        paymentService:
+          type: string
+          enum: ['CARDS','PAGOINCONTO','GOOGLEPAY','APPLEPAY','MYBANK','ALIPAY','WECHATPAY','GIROPAY','IDEAL','BANCONTACT','EPS','PRZELEWY24','MULTIBANCO','SATISPAY','AMAZONPAY','PAYPAL','PAGOPA']
+        resultUrl:
+          type: string
+          format: uri
+          example: 'https://merchant-result-uri'
+        cancelUrl:
+          type: string
+          format: uri
+          example: 'https://merchant-cancel-uri'
+        notificationUrl:
+          type: string
+          format: uri
+          example: 'https://merchant-notification-uri'
+    RecurrenceItem:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: ['NO_RECURRING','SUBSEQUENT_PAYMENT','CONTRACT_CREATION','CARD_SUBSTITUTION']
+        contractId:
+          type: string
+          maxLength: 255
+          example: 'C2834987'
+        contractType:
+          type: string
+          enum: ['MIT_UNSCHEDULED','MIT_SCHEDULED','CIT']
+        contractExpiryDate:
+          type: string
+          format: date
+          example: '2023-03-16'
+        contractFrequency:
+          type: string
+          maxLength: 4
+          example: '120'
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorItem'
+    ErrorItem:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+
