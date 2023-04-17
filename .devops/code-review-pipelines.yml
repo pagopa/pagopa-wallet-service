@@ -39,10 +39,10 @@ stages:
               tasks: 'build'
               publishJUnitResults: false
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '17'
+              jdkVersionOption: '1.17'
               sonarQubeRunAnalysis: false
               spotBugsAnalysis: false
-              
+
           - script: |
               # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
               ./gradlew --stop
