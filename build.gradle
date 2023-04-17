@@ -12,6 +12,7 @@ plugins {
   id 'application'
   id 'org.springframework.boot' version '3.0.5'
   id 'io.spring.dependency-management' version '1.1.0'
+  id "org.openapi.generator" version "6.3.0"
   id 'com.diffplug.spotless' version '6.18.0'
   id 'jacoco'
   id "org.sonarqube" version "3.5.0.2730"
@@ -34,11 +35,11 @@ dependencyManagement {
 }
 
 repositories {
-mavenLocal()
-maven {
-	url = uri('https://repo.maven.apache.org/maven2/')
-}
-mavenCentral()
+  mavenLocal()
+  maven {
+    url = uri('https://repo.maven.apache.org/maven2/')
+  }
+  mavenCentral()
 }
 
 dependencies {
@@ -101,16 +102,20 @@ springBoot {
   mainClass = 'it.pagopa.wallet.WalletApplication'
 }
 
-application {
-  mainClass = 'it.pagopa.wallet.WalletApplication'
+openApiGenerate {
+  generatorName = "spring"
+  inputSpec = "$rootDir/api-spec/wallet-api.yaml"
+  outputDir = "$buildDir/generated"
+  apiPackage = "it.pagopa.wallet.api"
+  modelPackage = "it.pagopa.wallet.model"
 }
 
 tasks.withType(JavaCompile).configureEach {
-	options.encoding = 'UTF-8'
+  options.encoding = 'UTF-8'
 }
 
 tasks.withType(Javadoc).configureEach {
-	options.encoding = 'UTF-8'
+  options.encoding = 'UTF-8'
 }
 
 spotless {
