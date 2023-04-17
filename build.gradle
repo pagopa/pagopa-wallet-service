@@ -88,26 +88,69 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
 
 sourceSets {
-  main {
-    java {
-      srcDirs = ['src/main/java']
-    }
-    resources {
-      srcDirs = ['src/resources']
-    }
-  }
+main {
+	java {
+	srcDirs = ['src/main/java', "$buildDir/generated"]
+	}
+	resources {
+	srcDirs = ['src/resources']
+	}
+}
 }
 
 springBoot {
-  mainClass = 'it.pagopa.wallet.WalletApplication'
+mainClass = 'it.pagopa.wallet.WalletApplication'
 }
 
-openApiGenerate {
-  generatorName = "spring"
-  inputSpec = "$rootDir/api-spec/wallet-api.yaml"
-  outputDir = "$buildDir/generated"
-  apiPackage = "it.pagopa.wallet.api"
-  modelPackage = "it.pagopa.wallet.model"
+tasks.register('wallet', GenerateTask) {
+	generatorName = "spring"
+	inputSpec = "$rootDir/api-spec/wallet-api.yaml"
+	outputDir = "$buildDir/generated"
+	apiPackage = "it.pagopa.wallet.api"
+	modelPackage = "it.pagopa.wallet.model"
+	generateApiTests = false
+	generateApiDocumentation = false
+	generateApiTests = false
+	generateModelTests = false
+	library = "spring-boot"
+	configOptions = [
+			swaggerAnnotations: "false",
+			openApiNullable: "true",
+			interfaceOnly : "true",
+			hideGenerationTimestamp: "true",
+			skipDefaultInterface: "true",
+			useSwaggerUI: "false",
+			reactive: "true",
+			useSpringBoot3: "true",
+			oas3: "true"
+	]
+	}
+
+tasks.register('nexiNpg', GenerateTask) {
+	generatorName = "spring"
+	inputSpec = "$rootDir/npg-api/npg-api.yaml"
+	outputDir = "$buildDir/generated"
+	apiPackage = "it.pagopa.generated.npg.api"
+	modelPackage = "it.pagopa.generated.npg.model"
+	generateApiTests = false
+	generateApiDocumentation = false
+	generateApiTests = false
+	generateModelTests = false
+	library = "spring-boot"
+	configOptions = [
+			swaggerAnnotations: "false",
+			openApiNullable: "true",
+			interfaceOnly : "true",
+			hideGenerationTimestamp: "true",
+			skipDefaultInterface: "true",
+			useSwaggerUI: "false",
+			reactive: "true",
+			useSpringBoot3: "true",
+			oas3: "true"
+	]
+}
+tasks.compileJava{
+	dependsOn('wallet', 'nexiNpg')
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -118,27 +161,27 @@ tasks.withType(Javadoc).configureEach {
   options.encoding = 'UTF-8'
 }
 
-spotless {
-  format 'misc', {
-    // define the files to apply `misc` to
-    target '*.md', '.gitignore'
-    // define the steps to apply to those files
-    trimTrailingWhitespace()
-    indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
-    endWithNewline()
-  }
-  java {
-    target fileTree('.') {
-      include '**/*.java'
-      exclude '**/build/**', '**/build-*/**'
-    }
-    eclipse().configFile('eclipse-style.xml')
-    toggleOffOn()
-    removeUnusedImports()
-    trimTrailingWhitespace()
-    endWithNewline()
-  }
-}
+	spotless {
+		format 'misc', {
+			// define the files to apply `misc` to
+			target '*.md', '.gitignore'
+			// define the steps to apply to those files
+			trimTrailingWhitespace()
+			indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+			endWithNewline()
+		}
+		java {
+			target fileTree('.') {
+				include '**/*.java'
+				exclude '**/build/**', '**/build-*/**'
+			}
+			eclipse().configFile('eclipse-style.xml')
+			toggleOffOn()
+			removeUnusedImports()
+			trimTrailingWhitespace()
+			endWithNewline()
+		}
+	}
 
 jar {
   enabled = false
