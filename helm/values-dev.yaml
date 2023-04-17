@@ -1,5 +1,5 @@
 microservice-chart:
-  namespace: "your-namespace" # TODO: set your AKS namespace
+  namespace: "wallet" # TODO: set your AKS namespace
   nameOverride: ""
   fullnameOverride: ""
   image:
@@ -28,8 +28,8 @@ microservice-chart:
     port: 8080
   ingress:
     create: true
-    host: "your.host" # TODO: set the host
-    path: /your-path-here/(.*) # TODO: set your path
+    host: "weudev.wallet.internal.dev.platform.pagopa.it"
+    path: /pagopa-wallet-service/(.*)
   serviceAccount:
     create: false
     annotations: { }
@@ -42,14 +42,14 @@ microservice-chart:
     allowPrivilegeEscalation: false
   resources:
     requests:
-      memory: "512Mi"
+      memory: "128Mi"
       cpu: "0.25"
     limits:
-      memory: "512Mi"
+      memory: "128Mi"
       cpu: "0.25"
   autoscaling:
-    enable: true
-    minReplica: 3
+    enable: false
+    minReplica: 1
     maxReplica: 10
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
@@ -60,33 +60,31 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    # TODO: set your name
-    WEBSITE_SITE_NAME: 'yourProjectName' # required to show cloud role name in application insights
+    MONGO_HOST: pagopa-d-weu-wallet-cosmos-account.mongo.cosmos.azure.com
+    MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
+    MONGO_PORT: "10255"
+    MONGO_SSL_ENABLED: "true"
+    WEB_LOGGING_LEVEL: "off"
+    # TODO: Fill
+    WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
   envSecret:
-    # required
-    APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-d-connection-string'
+    #MONGO_PASSWORD: mongo-ecommerce-password TODO Fill with secret when generated
   keyvault:
-    name: "pagopa-d-afm-kv"
+    name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: { }
   tolerations: [ ]
-  affinity: { }
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node_type
+                operator: In
+                values:
+                  - user
   canaryDelivery:
-    create: true
-    ingress:
-      canary:
-        type: header
-        headerName: X-Pod-Version
-        headerValue: canary
-        weightPercent: 0
-    service:
-      create: true
     deployment:
-      create: true
       image:
-        repository: ghcr.io/pagopa/yourname # TODO
-        tag: "0.0.3"
-        pullPolicy: Always
-      envConfig: { }
-      envSecret: { }
+        tag: ""
 
