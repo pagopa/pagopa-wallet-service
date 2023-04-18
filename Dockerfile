@@ -1,4 +1,4 @@
-FROM openjdk:17-slim as build
+FROM eclipse-temurin:17-alpine as build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -12,7 +12,7 @@ COPY eclipse-style.xml eclipse-style.xml
 RUN ./gradlew build
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-alpine
 
 RUN addgroup --system user && adduser --ingroup user --system user
 USER user:user
