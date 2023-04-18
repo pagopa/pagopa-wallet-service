@@ -30,8 +30,8 @@ stages:
                 sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
                 sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
                 sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/*,**/utils/soap/*,**/mdcutilities/*,**/WalletApplication.java
-                sonar.coverage.jacoco.xmlReportPaths=./target/site/jacoco/jacoco.xml
-                sonar.junit.reportPaths=target/surefire-reports/
+                sonar.coverage.jacoco.xmlReportPaths=./build/reports/jacoco/test/jacocoTestReport.xml
+                sonar.junit.reportPaths=./build/test-results/
 
           - task: Gradle@3
             inputs:
