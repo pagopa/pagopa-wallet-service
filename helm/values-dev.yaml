@@ -3,8 +3,8 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   image:
-    repository: ghcr.io/pagopa/yourname # TODO
-    tag: "0.0.3"
+    repository: pagopadcommonacr.azurecr.io/pagopawalletservice
+    tag: "0.0.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
