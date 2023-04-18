@@ -13,7 +13,6 @@ plugins {
   id("org.openapi.generator") version "6.3.0"
   id("org.jetbrains.kotlin.jvm") version "1.8.10"
   id("org.jetbrains.kotlin.plugin.spring") version "1.8.10"
-
   jacoco
   application
 }
@@ -84,7 +83,7 @@ description = "pagopa-wallet-service"
 
 sourceSets {
   main {
-    java { srcDirs("src/main/java", "$buildDir/generated") }
+    java { srcDirs("src/main/kotlin", "$buildDir/generated") }
     resources { srcDirs("src/resources") }
   }
 }
@@ -102,6 +101,7 @@ tasks.register("wallet", GenerateTask::class.java) {
   generateApiTests.set(false)
   generateModelTests.set(false)
   library.set("spring-boot")
+  ignoreFileOverride.set(".openapi-generator-ignore")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -112,7 +112,8 @@ tasks.register("wallet", GenerateTask::class.java) {
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
-      "oas3" to "true"
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
     )
   )
 }
@@ -128,6 +129,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
   generateApiTests.set(false)
   generateModelTests.set(false)
   library.set("spring-boot")
+  ignoreFileOverride.set(".openapi-generator-ignore")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -138,12 +140,16 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
-      "oas3" to "true"
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
     )
   )
 }
 
-// tasks.compileKotlin { dependsOn("wallet", "nexiNpg") }
+tasks.withType<KotlinCompile> {
+  dependsOn("wallet", "nexiNpg")
+  kotlinOptions.jvmTarget = "17"
+}
 
 tasks.withType(JavaCompile::class.java).configureEach { options.encoding = "UTF-8" }
 
