@@ -1,5 +1,5 @@
 microservice-chart:
-  namespace: "wallet" # TODO: set your AKS namespace
+  namespace: "wallet"
   nameOverride: ""
   fullnameOverride: ""
   image:

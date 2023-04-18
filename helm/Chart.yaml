@@ -1,6 +1,6 @@
 apiVersion: v2
 name: wallet
-description: Microservice that handles crud on wallet resources
+description: Microservice that handles crud operations on wallet resources
 type: application
 version: 0.0.1
 appVersion: 0.0.1
