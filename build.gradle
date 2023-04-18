@@ -25,6 +25,7 @@ project.ext.snapshot = "false"
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.dipien.semantic-version'
+apply plugin: "jacoco"
 
 dependencyManagement {
   imports {
@@ -153,4 +154,7 @@ test {
 }
 jacocoTestReport {
   dependsOn test // tests are required to run before generating the report
+  reports {
+    xml.required = true
+  }
 }

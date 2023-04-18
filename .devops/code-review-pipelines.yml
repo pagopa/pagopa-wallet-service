@@ -57,6 +57,6 @@ stages:
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: 'JaCoCo'
-              summaryFileLocation: 'target/site/jacoco/jacoco.xml'
-              reportDirectory: 'target/site/jacoco'
+              summaryFileLocation: 'build/reports/jacoco/test/jacocoTestReport.xml'
+              reportDirectory: 'build/reports/jacoco/test/html'
             displayName: 'Publish Code Coverage on Azure Devops'
