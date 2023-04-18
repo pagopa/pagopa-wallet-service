@@ -6,7 +6,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
 id 'java'
-  id 'application'
+id 'application'
 id 'org.springframework.boot' version '3.0.5'
 id 'io.spring.dependency-management' version '1.1.0'
 id 'com.diffplug.spotless' version '6.18.0'
@@ -161,7 +161,7 @@ tasks.compileJava{
 	spotless {
 		format 'misc', {
 			// define the files to apply `misc` to
-    target '*.md', '.gitignore'
+			target '*.md', '.gitignore', 'build.gradle'
 			// define the steps to apply to those files
 			trimTrailingWhitespace()
 			indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
