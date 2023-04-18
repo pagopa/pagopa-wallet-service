@@ -44,15 +44,14 @@ stages:
               javaHomeOption: 'JDKVersion' # 'JDKVersion' | 'Path'. Alias: javaHomeSelection. Required. Set JAVA_HOME by. Default: JDKVersion.
               jdkVersionOption: '1.17' # 'default' | '1.11' | '1.10' | '1.9' | '1.8' | '1.7' | '1.6'. Alias: jdkVersion. Optional. Use when javaHomeSelection = JDKVersion. JDK version. Default: default.
 
-          - script: |
-              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
-              ./gradlew --stop
-            displayName: Gradlew stop
-
           - task: SonarCloudPublish@1
             displayName: 'Publish SonarCloud results on build summary'
             inputs:
               pollingTimeoutSec: '300'
+          - script: |
+              # stop the Gradle daemon to ensure no files are left open (impacting the save cache operation later)
+              ./gradlew --stop
+            displayName: Gradlew stop
 
           - task: PublishCodeCoverageResults@1
             inputs:
