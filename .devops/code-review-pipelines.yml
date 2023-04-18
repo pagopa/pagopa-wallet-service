@@ -13,7 +13,7 @@ stages:
         steps:
           - task: Cache@2
             inputs:
-              key: 'gradle | "$(Agent.OS)" | **/build.gradle' # Swap build.gradle.kts for build.gradle when using Groovy
+              key: 'gradle | "$(Agent.OS)" | **/build.gradle.kts' # Swap build.gradle.kts for build.gradle when using Groovy
               restoreKeys: |
                 gradle | "$(Agent.OS)"
                 gradle
