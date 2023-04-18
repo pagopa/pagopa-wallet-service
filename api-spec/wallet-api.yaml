@@ -35,41 +35,10 @@ paths:
         '405':
           description: Invalid input
   /wallets/{walletId}:
-    put:
-      tags:
-        - wallets
-      summary: Update an existing wallet
-      description: Updates an existing wallet by id
-      operationId: updateWallet
-      parameters:
-        - name: walletId
-          in: path
-          description: Id of the wallet that is about to be updated
-          required: true
-          schema:
-            $ref: "#/components/schemas/WalletId"
-      requestBody:
-        description: Update request
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateWalletRequest'
-        required: true
-      responses:
-        '200':
-          description: Wallet updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateWalletResponse'
-        '400':
-          description: Malformed wallet id supplied
-        '404':
-          description: Wallet corresponding to the supplied wallet id not found
     get:
       tags:
         - wallets
-      summary: Find wallet by id
+      summary: Get wallet by id
       description: Returns a single wallet
       operationId: getWalletById
       parameters:
@@ -85,31 +54,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Wallet'
-        '400':
-          description: Malformed wallet id supplied
-        '404':
-          description: Wallet corresponding to the supplied wallet id not found
-    delete:
-      tags:
-        - wallets
-      summary: Delete a wallet by id
-      description: Deletes a wallet by id
-      operationId: deleteWallet
-      parameters:
-        - name: walletId
-          in: path
-          description: Wallet id to delete
-          required: true
-          schema:
-            $ref: "#/components/schemas/WalletId"
-      responses:
-        '200':
-          description: Wallet deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteWalletResponse'
+                $ref: '#/components/schemas/WalletInfo'
         '400':
           description: Malformed wallet id supplied
         '404':
@@ -119,27 +64,19 @@ components:
     WalletId:
       type: string
       format: uuid
-    Wallet:
+    WalletInfo:
       type: object
       properties:
-        paymentInstrumentId:
-          type: string
+        walletId:
+          $ref: "#/components/schemas/WalletId"
+      required:
+        - walletId
     CreateWalletRequest:
       type: object
-      properties:
-        paymentInstrumentType:
-          type: string
-          enum: [ cards, paypal, bancomatpay ]
     CreateWalletResponse:
       type: object
       properties:
-        walletItemId:
-          type: string
-        logoutURI:
-          type: string
-    UpdateWalletRequest:
-      type: object
-    UpdateWalletResponse:
-      type: object
-    DeleteWalletResponse:
-      type: object
+        walletId:
+          $ref: "#/components/schemas/WalletId"
+      required:
+        - walletId
