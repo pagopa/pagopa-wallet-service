@@ -13,6 +13,7 @@ plugins {
   id("org.openapi.generator") version "6.3.0"
   id("org.jetbrains.kotlin.jvm") version "1.8.10"
   id("org.jetbrains.kotlin.plugin.spring") version "1.8.10"
+  id("org.sonarqube") version "3.5.0.2730"
   jacoco
   application
 }
