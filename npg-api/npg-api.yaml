@@ -5,20 +5,15 @@ info:
   description: |-
     Nexi NPG
 externalDocs:
-  description: API di Nexi per la gestione dei pagamenti HPP (Hosted Payment Page)
-  url: https://developer.nexigroup.com/it/api/specifiche-di-utilizzo-del-servizio
+  description: Nexi API to handle Hosted Payment Page (HPP) payments
+  url: https://developer.nexigroup.com/it/api/post-orders-hpp
 paths:
-  /orders:
+  /orders/hpp:
     post:
-      tags:
-        - hpp
       summary: Start HPP payment
       description: Start payment using Hosted Payment Page solution
-      operationId: createWallet
+      operationId: startPayment
       requestBody:
-        description: |-
-          Request body containing the information to create a new wallet.
-          A wallet is a collection of payment instruments that _may_ be associated to a user.
         content:
           application/json:
             schema:
@@ -26,7 +21,7 @@ paths:
         required: true
       responses:
         '200':
-          description: Wallet created successfully
+          description: Payment request sent successfully
           content:
             application/json:
               schema:
