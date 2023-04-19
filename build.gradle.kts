@@ -178,6 +178,11 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
+tasks.withType<Jar> {
+  enabled = false
+  manifest { attributes["Main-Class"] = "it.pagopa.wallet.WalletApplication" }
+}
+
 tasks.test {
   useJUnitPlatform()
   finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
