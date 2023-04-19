@@ -1,4 +1,4 @@
-FROM arm64v8/eclipse-temurin:17.0.6_10-jre-focal as build
+FROM eclipse-temurin:17-alpine as build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -14,7 +14,7 @@ COPY .openapi-generator-ignore .openapi-generator-ignore
 RUN ./gradlew build -x spotlessCheck
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
-FROM arm64v8/eclipse-temurin:17.0.6_10-jre-focal
+FROM eclipse-temurin:17-alpine
 
 RUN addgroup --system user && adduser --ingroup user --system user
 USER user:user
