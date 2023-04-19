@@ -35,8 +35,6 @@ dependencyManagement {
   imports { mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4") }
 }
 
-configurations.all { exclude(mapOf("group" to "ch.qos.logback")) }
-
 dependencies {
   implementation("io.projectreactor:reactor-core")
   implementation("io.projectreactor.netty:reactor-netty")
@@ -75,6 +73,14 @@ dependencies {
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
+configurations {
+  implementation.configure {
+    exclude(module = "spring-boot-starter-web")
+    exclude("org.apache.tomcat")
+    exclude("ch.qos.logback")
+  }
+}
+
 
 group = "it.pagopa.wallet"
 
@@ -89,7 +95,7 @@ sourceSets {
   }
 }
 
-springBoot { mainClass.set("it.pagopa.wallet.WalletApplication") }
+springBoot { mainClass.set("it.pagopa.wallet.WalletApplicationKt") }
 
 tasks.register("wallet", GenerateTask::class.java) {
   generatorName.set("kotlin-spring")
