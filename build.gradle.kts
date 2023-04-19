@@ -11,9 +11,9 @@ plugins {
   id("io.spring.dependency-management") version "1.1.0"
   id("com.diffplug.spotless") version "6.18.0"
   id("org.openapi.generator") version "6.3.0"
-  id("org.jetbrains.kotlin.jvm") version "1.8.10"
-  id("org.jetbrains.kotlin.plugin.spring") version "1.8.10"
   id("org.sonarqube") version "3.5.0.2730"
+  kotlin("plugin.spring") version "1.8.10"
+  kotlin("jvm") version "1.8.10"
   jacoco
   application
 }
@@ -178,10 +178,7 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
-tasks.withType<Jar> {
-  enabled = false
-  manifest { attributes["Main-Class"] = "it.pagopa.wallet.WalletApplication" }
-}
+tasks.named<Jar>("jar") { enabled = false }
 
 tasks.test {
   useJUnitPlatform()
