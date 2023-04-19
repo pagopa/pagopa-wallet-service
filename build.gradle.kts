@@ -73,6 +73,7 @@ dependencies {
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
+
 configurations {
   implementation.configure {
     exclude(module = "spring-boot-starter-web")
@@ -80,7 +81,6 @@ configurations {
     exclude("ch.qos.logback")
   }
 }
-
 
 group = "it.pagopa.wallet"
 
