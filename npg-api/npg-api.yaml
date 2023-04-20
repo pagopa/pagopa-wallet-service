@@ -13,6 +13,14 @@ paths:
       summary: Start HPP payment
       description: Start payment using Hosted Payment Page solution
       operationId: startPayment
+      parameters:
+        - in: header
+          name: Correlation-Id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Unique identifier of the the request
       requestBody:
         content:
           application/json:

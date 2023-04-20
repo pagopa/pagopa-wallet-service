@@ -1,9 +1,9 @@
 package it.pagopa.wallet.client
 
 import it.pagopa.generated.npg.api.DefaultApi
-import it.pagopa.generated.npg.model.HppRequest
-import it.pagopa.generated.npg.model.HppResponse
+import it.pagopa.generated.npg.model.*
 import it.pagopa.wallet.exception.NpgClientException
+import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -20,10 +20,11 @@ class NpgClient(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun orderHpp(hppRequest: HppRequest): Mono<HppResponse> {
+    fun orderHpp(correlationId: UUID, hppRequest: HppRequest): Mono<HppResponse> {
         val response: Mono<HppResponse> =
             try {
-                defaultApi.startPayment(hppRequest)
+                logger.info("Sending start payment request with correlationId: $correlationId")
+                defaultApi.startPayment(correlationId, hppRequest)
             } catch (e: WebClientResponseException) {
                 logger.error("Error communicating with NPG", e)
                 Mono.error(e)
