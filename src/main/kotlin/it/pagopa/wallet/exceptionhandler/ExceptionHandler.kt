@@ -3,6 +3,7 @@ package it.pagopa.wallet.exceptionhandler
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
 import jakarta.xml.bind.ValidationException
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -13,11 +14,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.bind.support.WebExchangeBindException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.server.ServerWebInputException
-import java.util.*
 
 /**
- * Exception handler used to output a custom message in case an incoming request
- * is invalid or an api encounter an error and throw an RestApiException
+ * Exception handler used to output a custom message in case an incoming request is invalid or an
+ * api encounter an error and throw an RestApiException
  */
 @RestControllerAdvice
 class ExceptionHandler {
