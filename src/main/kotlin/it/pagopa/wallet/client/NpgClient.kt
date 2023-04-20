@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 /** NPG API client service class */
 @Component
 class NpgClient(
-    @Autowired @Qualifier("npgWebClient") private val npgClient: DefaultApi,
+    @Autowired @Qualifier("npgWebClient") private val defaultApi: DefaultApi,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -23,15 +23,10 @@ class NpgClient(
     fun orderHpp(hppRequest: HppRequest): Mono<HppResponse> {
         val response: Mono<HppResponse> =
             try {
-                npgClient.startPayment(hppRequest)
+                defaultApi.startPayment(hppRequest)
             } catch (e: WebClientResponseException) {
                 logger.error("Error communicating with NPG", e)
-                Mono.error(
-                    NpgClientException(
-                        description = "Error communicating with NPG",
-                        httpStatusCode = HttpStatus.BAD_GATEWAY,
-                    )
-                )
+                Mono.error(e)
             }
         return response.onErrorMap(WebClientResponseException::class.java) {
             logger.error("Npg response error", it)
@@ -41,17 +36,23 @@ class NpgClient(
                         description = "Bad request",
                         httpStatusCode = HttpStatus.BAD_REQUEST,
                     )
+
                 HttpStatus.UNAUTHORIZED ->
                     NpgClientException(
                         description = "Misconfigured NPG api key",
                         httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                     )
+
                 HttpStatus.INTERNAL_SERVER_ERROR ->
                     NpgClientException(
                         description = "NPG internal server error",
                         httpStatusCode = HttpStatus.BAD_GATEWAY,
                     )
-                else -> it
+
+                else -> NpgClientException(
+                    description = "NPG server error: ${it.statusCode}",
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
+                )
             }
         }
     }

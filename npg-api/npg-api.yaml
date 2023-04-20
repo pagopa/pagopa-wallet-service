@@ -53,9 +53,9 @@ components:
     HppResponse:
       type: object
       properties:
-        walletItemId:
+        hostedPage:
           type: string
-        logoutURI:
+        securityToken:
           type: string
     OrderItem:
       type: object
