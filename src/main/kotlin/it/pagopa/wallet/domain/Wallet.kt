@@ -12,7 +12,7 @@ package it.pagopa.wallet.domain
  *
  * @throws IllegalArgumentException if the provided payment instrument list is empty
  */
-data class Wallet(val walletId: WalletId, val paymentInstruments: List<PaymentInstrument>) {
+data class Wallet(val id: WalletId, val paymentInstruments: List<PaymentInstrument>) {
     init {
         require(paymentInstruments.isNotEmpty()) { "Wallets cannot be empty!" }
     }

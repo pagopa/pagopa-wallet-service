@@ -12,7 +12,7 @@ class WalletTest {
         val paymentInstruments = listOf(PaymentInstrument(PaymentInstrumentId(UUID.randomUUID())))
         val wallet = Wallet(walletId, paymentInstruments)
 
-        assertEquals(walletId, wallet.walletId)
+        assertEquals(walletId, wallet.id)
     }
     @Test
     fun `wallet with empty payment instrument list is invalid`() {
