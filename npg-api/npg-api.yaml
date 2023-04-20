@@ -287,7 +287,7 @@ components:
       properties:
         actionType:
           type: string
-          enum: ['PAY','VERIFY','PREAUTH']
+          enum: [ 'PAY','VERIFY','PREAUTH' ]
         amount:
           type: string
           example: '3545'
@@ -295,17 +295,17 @@ components:
           $ref: '#/components/schemas/RecurrenceItem'
         captureType:
           type: string
-          enum: ['IMPLICIT','EXPLICIT']
+          enum: [ 'IMPLICIT','EXPLICIT' ]
         exemptions:
           type: string
-          enum: ['NO_PREFERENCE','CHALLENGE_REQUESTED']
+          enum: [ 'NO_PREFERENCE','CHALLENGE_REQUESTED' ]
         language:
           type: string
           format: iso-639-2
           example: 'ita'
         paymentService:
           type: string
-          enum: ['CARDS','PAGOINCONTO','GOOGLEPAY','APPLEPAY','MYBANK','ALIPAY','WECHATPAY','GIROPAY','IDEAL','BANCONTACT','EPS','PRZELEWY24','MULTIBANCO','SATISPAY','AMAZONPAY','PAYPAL','PAGOPA']
+          enum: [ 'CARDS','PAGOINCONTO','GOOGLEPAY','APPLEPAY','MYBANK','ALIPAY','WECHATPAY','GIROPAY','IDEAL','BANCONTACT','EPS','PRZELEWY24','MULTIBANCO','SATISPAY','AMAZONPAY','PAYPAL','PAGOPA' ]
         resultUrl:
           type: string
           format: uri
@@ -323,14 +323,14 @@ components:
       properties:
         action:
           type: string
-          enum: ['NO_RECURRING','SUBSEQUENT_PAYMENT','CONTRACT_CREATION','CARD_SUBSTITUTION']
+          enum: [ 'NO_RECURRING','SUBSEQUENT_PAYMENT','CONTRACT_CREATION','CARD_SUBSTITUTION' ]
         contractId:
           type: string
           maxLength: 255
           example: 'C2834987'
         contractType:
           type: string
-          enum: ['MIT_UNSCHEDULED','MIT_SCHEDULED','CIT']
+          enum: [ 'MIT_UNSCHEDULED','MIT_SCHEDULED','CIT' ]
         contractExpiryDate:
           type: string
           format: date
@@ -353,4 +353,10 @@ components:
           type: string
         description:
           type: string
-
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+security:
+  - ApiKeyAuth: [ ]

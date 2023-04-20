@@ -65,10 +65,14 @@ microservice-chart:
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
+    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0/psp/api/v1"
+    NPG_SERVICE_READ_TIMEOUT: "10000"
+    NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
   envSecret:
-    #MONGO_PASSWORD: mongo-ecommerce-password TODO Fill with secret when generated
+  #MONGO_PASSWORD: mongo-ecommerce-password TODO Fill with secret when generated
+  NPG_SERVICE_API_KEY: "npg-service-api-key"
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
