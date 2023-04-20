@@ -90,7 +90,8 @@ description = "pagopa-wallet-service"
 
 sourceSets {
   main {
-    java { srcDirs("src/main/kotlin", "$buildDir/generated") }
+    java { srcDirs("$buildDir/generated/src/main/java") }
+    kotlin { srcDirs("src/main/kotlin", "$buildDir/generated/src/main/kotlin") }
     resources { srcDirs("src/resources") }
   }
 }
@@ -101,32 +102,32 @@ tasks.register("wallet", GenerateTask::class.java) {
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
   outputDir.set("$buildDir/generated")
-  apiPackage.set("it.pagopa.wallet.api")
-  modelPackage.set("it.pagopa.wallet.model")
+  apiPackage.set("it.pagopa.generated.wallet.api")
+  modelPackage.set("it.pagopa.generated.wallet.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
   generateModelTests.set(false)
   library.set("spring-boot")
-  ignoreFileOverride.set(".openapi-generator-ignore")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
       "openApiNullable" to "true",
-      "interfaceOnly " to "true",
+      "interfaceOnly" to "true",
       "hideGenerationTimestamp" to "true",
       "skipDefaultInterface" to "true",
       "useSwaggerUI" to "false",
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "true",
+      "enumPropertyNaming" to "UPPERCASE"
     )
   )
 }
 
 tasks.register("nexiNpg", GenerateTask::class.java) {
-  generatorName.set("kotlin-spring")
+  generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
   outputDir.set("$buildDir/generated")
   apiPackage.set("it.pagopa.generated.npg.api")
@@ -135,13 +136,12 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
   generateModelTests.set(false)
-  library.set("spring-boot")
-  ignoreFileOverride.set(".openapi-generator-ignore")
+  library.set("webclient")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
       "openApiNullable" to "true",
-      "interfaceOnly " to "true",
+      "interfaceOnly" to "true",
       "hideGenerationTimestamp" to "true",
       "skipDefaultInterface" to "true",
       "useSwaggerUI" to "false",

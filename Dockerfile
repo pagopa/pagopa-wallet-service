@@ -10,7 +10,6 @@ COPY src src
 COPY api-spec api-spec
 COPY npg-api npg-api
 COPY eclipse-style.xml eclipse-style.xml
-COPY .openapi-generator-ignore .openapi-generator-ignore
 RUN ./gradlew build -x spotlessCheck
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
