@@ -1,24 +1,42 @@
-# Template for Java Spring Microservice project
+# PagoPA Wallet Service
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TODO-set-your-id&metric=alert_status)](https://sonarcloud.io/dashboard?id=TODO-set-your-id)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-wallet-service&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa_pagopa-wallet-service)
 
-TODO: add a description
+This microservice is responsible for keeping wallets inside the PagoPA platform.
+Wallets are collections of payment instruments with a wallet identifier, and may be used both for guest and for authenticated payments.
 
-TODO: generate a index with this tool: https://ecotrust-canada.github.io/markdown-toc/
+For authenticated payments, wallets are used to remember registered payment instruments for subsequent payments, while for
+guest (i.e. unauthenticated) payments, wallet are ephemeral and contain only the payment instrument used for the payment session.
 
-TODO: resolve all the TODOs in this template
+- [PagoPA Wallet Service](#pagopa-wallet-service)
+    * [Api Documentation 📖](#api-documentation-)
+    * [Technology Stack](#technology-stack)
+    * [Start Project Locally 🚀](#start-project-locally-)
+        + [Prerequisites](#prerequisites)
+        + [Run docker container](#run-docker-container)
+    * [Develop Locally 💻](#develop-locally-)
+        + [Prerequisites](#prerequisites-1)
+        + [Run the project](#run-the-project)
+        + [Testing 🧪](#testing-)
+            - [Unit testing](#unit-testing)
+            - [Integration testing](#integration-testing)
+            - [Performance testing](#performance-testing)
+    * [Contributors 👥](#contributors-)
+        + [Maintainers](#maintainers)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ---
 
 ## Api Documentation 📖
 
-See the [OpenApi 3 here.](TODO: set your url)
+See the [OpenAPI 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-wallet-service/main/api-spec/wallet-api.yaml)
 
 ---
 
 ## Technology Stack
 
-- Java 17
+- Kotlin
 - Spring Boot
 
 ---
@@ -29,13 +47,38 @@ See the [OpenApi 3 here.](TODO: set your url)
 
 - docker
 
+### Populate the environment
+
+The microservice needs a valid `.env` file in order to be run.
+
+If you want to start the application without too much hassle, you can just copy `.env.example` with
+
+```shell
+$ cp .env.example .env
+```
+
+to get a good default configuration.
+
+If you want to customize the application environment, reference this table:
+
+
+| Variable name                  | Description                                                       | type              | default |
+|--------------------------------|-------------------------------------------------------------------|-------------------|---------|
+| NPG_SERVICE_URI                | URL used to contact the payment gateway                           | string            |         |
+| NPG_SERVICE_READ_TIMEOUT       | Timeout for requests towards the payment gateway                  | string            |         |
+| NPG_SERVICE_CONNECTION_TIMEOUT | Timeout for estabilishing connections towards the payment gateway | string            |         |
+| NPG_SERVICE_API_KEY            | Payment gateway API key                                           | string            |         |
+| MONGO_HOST                     | Host where MongoDB instance used to persist wallet data           | hostname (string) |         |
+| MONGO_PORT                     | Port where MongoDB is bound to in MongoDB host                    | number            |         |
+| MONGO_USERNAME                 | MongoDB username used to connect to the database                  | string            |         |
+| MONGO_PASSWORD                 | MongoDB password used to connect to the database                  | string            |         |
+| MONGO_SSL_ENABLED              | Whether SSL is enabled while connecting to MongoDB                | string            |         |
+
 ### Run docker container
 
-from `./docker` directory
-
-`sh ./run_docker.sh dev`
-
-ℹ️ Note: for PagoPa ACR is required the login `az acr login -n <acr-name>`
+```shell
+$ docker compose up --build
+```
 
 ---
 
@@ -49,7 +92,9 @@ from `./docker` directory
 
 ### Run the project
 
-TODO
+```shell
+$ ./gradlew bootRun
+```
 
 ### Testing 🧪
 
@@ -57,7 +102,9 @@ TODO
 
 To run the **Junit** tests:
 
-TODO
+```shell
+$ ./gradlew test
+```
 
 #### Integration testing
 
@@ -73,8 +120,8 @@ install [k6](https://k6.io/) and then from `./performance-test/src`
 
 ## Contributors 👥
 
-Made with ❤️ by PagoPa S.p.A.
+Made with ❤️ by PagoPA S.p.A.
 
-### Mainteiners
+### Maintainers
 
 See `CODEOWNERS` file

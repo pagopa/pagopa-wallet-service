@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  pagopa-wallet:
+    container_name: pagopa-wallet
+    build:
+      dockerfile: Dockerfile
+      context: .
+    env_file:
+      - ./.env
+    ports:
+      - "8200:8080"
+    depends_on:
+      - mongo
+    networks:
+      - pagopa-wallet-net
+
+  mongo:
+    container_name: pagopa-wallet-mongo
+    image: mongo
+    env_file: ./docker/config/mongo/mongodb.env
+    networks:
+      - pagopa-wallet-net
+    healthcheck:
+      test: echo "db.stats().ok" | mongo --quiet
+      interval: 10s
+
+  mongo-express:
+    container_name: pagopa-wallet-mongo-express
+    image: mongo-express
+    env_file: ./docker/config/mongo/mongo-express.env
+    ports:
+      - "8201:8081"
+    networks:
+      - pagopa-wallet-net
+    depends_on:
+      - mongo
+
+networks:
+  pagopa-wallet-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.0.0/16
+          gateway: 10.20.0.1
+
+

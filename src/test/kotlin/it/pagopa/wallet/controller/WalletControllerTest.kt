@@ -3,6 +3,7 @@ package it.pagopa.wallet.controller
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.services.WalletService
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
-import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WalletControllerTest {
