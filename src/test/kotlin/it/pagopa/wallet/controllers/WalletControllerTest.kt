@@ -1,4 +1,4 @@
-package it.pagopa.wallet.controller
+package it.pagopa.wallet.controllers
 
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException

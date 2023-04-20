@@ -1,4 +1,4 @@
-package it.pagopa.wallet.controller
+package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.CreateWalletResponseDto
