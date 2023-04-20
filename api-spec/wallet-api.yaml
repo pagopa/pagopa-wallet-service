@@ -8,8 +8,6 @@ info:
 paths:
   /wallets:
     post:
-      tags:
-        - wallets
       summary: Create a new wallet
       description: Creates a new wallet
       operationId: createWallet
@@ -33,8 +31,6 @@ paths:
           description: Invalid input
   /wallets/{walletId}:
     get:
-      tags:
-        - wallets
       summary: Get wallet by id
       description: Returns a single wallet
       operationId: getWalletById
