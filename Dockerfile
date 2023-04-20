@@ -6,10 +6,10 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle .
 
-COPY src src
-COPY api-spec api-spec
-COPY npg-api npg-api
 COPY eclipse-style.xml eclipse-style.xml
+COPY npg-api npg-api
+COPY api-spec api-spec
+COPY src src
 RUN ./gradlew build -x spotlessCheck
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
