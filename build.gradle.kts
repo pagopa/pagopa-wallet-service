@@ -96,7 +96,10 @@ sourceSets {
   }
 }
 
-springBoot { mainClass.set("it.pagopa.wallet.WalletApplicationKt") }
+springBoot {
+  mainClass.set("it.pagopa.wallet.WalletApplicationKt")
+  buildInfo { properties { additional.set(mapOf("description" to project.description)) } }
+}
 
 tasks.register("wallet", GenerateTask::class.java) {
   generatorName.set("kotlin-spring")
@@ -109,6 +112,7 @@ tasks.register("wallet", GenerateTask::class.java) {
   generateApiTests.set(false)
   generateModelTests.set(false)
   library.set("spring-boot")
+  modelNameSuffix.set("Dto")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",

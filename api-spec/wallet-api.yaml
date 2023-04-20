@@ -28,7 +28,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreateWalletResponse'
         '405':
-          description: Invalid input
+          description: Invalid method
   /wallets/{walletId}:
     get:
       summary: Get wallet by id
@@ -71,5 +71,12 @@ components:
       properties:
         walletId:
           $ref: "#/components/schemas/WalletId"
+        redirectUrl:
+          type: string
+          format: url
+          description: |-
+            Redirection URL to a payment gateway page where the user can input a payment instrument information
+          example: "http://localhost/inputPage"
       required:
         - walletId
+        - redirectUrl

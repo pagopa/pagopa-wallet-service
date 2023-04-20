@@ -1,5 +1,7 @@
 package it.pagopa.wallet.domain
 
+import org.springframework.data.mongodb.core.mapping.Document
+
 /**
  * A wallet.
  *
@@ -12,6 +14,7 @@ package it.pagopa.wallet.domain
  *
  * @throws IllegalArgumentException if the provided payment instrument list is empty
  */
+@Document("wallets")
 data class Wallet(val id: WalletId, val paymentInstruments: List<PaymentInstrument>) {
     init {
         require(paymentInstruments.isNotEmpty()) { "Wallets cannot be empty!" }

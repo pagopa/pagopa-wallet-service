@@ -1,9 +1,25 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
+import it.pagopa.wallet.domain.PaymentInstrument
+import it.pagopa.wallet.domain.PaymentInstrumentId
+import it.pagopa.wallet.domain.Wallet
+import it.pagopa.wallet.domain.WalletId
 import java.net.URI
+import java.util.*
 
 object WalletTestUtils {
+    val GATEWAY_SECURITY_TOKEN = "securityToken"
+
+    val VALID_WALLET =
+        Wallet(
+            WalletId(UUID.randomUUID()),
+            listOf(
+                PaymentInstrument(PaymentInstrumentId(UUID.randomUUID()), GATEWAY_SECURITY_TOKEN)
+            )
+        )
+
+    val GATEWAY_REDIRECT_URL = URI.create("http://localhost/hpp")
 
     fun hppRequest() =
         HppRequest()
@@ -28,5 +44,7 @@ object WalletTestUtils {
             )
 
     fun hppResponse() =
-        HppResponse().hostedPage("http://localhost/hostedPage").securityToken("securityToken")
+        HppResponse()
+            .hostedPage(GATEWAY_REDIRECT_URL.toString())
+            .securityToken(GATEWAY_SECURITY_TOKEN)
 }
