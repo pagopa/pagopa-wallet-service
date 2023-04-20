@@ -28,8 +28,5 @@ object WalletTestUtils {
             )
 
     fun hppResponse() =
-        HppResponse()
-            .hostedPage("http://localhost/hostedPage")
-            .securityToken("securityToken")
-
+        HppResponse().hostedPage("http://localhost/hostedPage").securityToken("securityToken")
 }

@@ -3,6 +3,7 @@ package it.pagopa.wallet.client
 import it.pagopa.generated.npg.api.DefaultApi
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.NpgClientException
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.given
@@ -12,7 +13,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.nio.charset.StandardCharsets
 
 class NpgClientTest {
 
@@ -24,28 +24,29 @@ class NpgClientTest {
     fun `Should communicate with NPG successfully`() {
         val hppRequest = WalletTestUtils.hppRequest()
         val hppResponse = WalletTestUtils.hppResponse()
-        //prerequisite
+        // prerequisite
         given(defaultApi.startPayment(hppRequest)).willReturn(mono { hppResponse })
-        //test and assertions
-        StepVerifier
-            .create(npgClient.orderHpp(hppRequest))
-            .expectNext(hppResponse)
-            .verifyComplete()
+        // test and assertions
+        StepVerifier.create(npgClient.orderHpp(hppRequest)).expectNext(hppResponse).verifyComplete()
     }
 
     @Test
     fun `Should map NPG error response to NpgClientException with BAD_GATEWAY error for exception during communication`() {
         val hppRequest = WalletTestUtils.hppRequest()
 
-        //prerequisite
-        given(defaultApi.startPayment(hppRequest)).willThrow(
-            WebClientResponseException.create(
-                500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
+        // prerequisite
+        given(defaultApi.startPayment(hppRequest))
+            .willThrow(
+                WebClientResponseException.create(
+                    500,
+                    "statusText",
+                    HttpHeaders.EMPTY,
+                    ByteArray(0),
+                    StandardCharsets.UTF_8
+                )
             )
-        )
-        //test and assertions
-        StepVerifier
-            .create(npgClient.orderHpp(hppRequest))
+        // test and assertions
+        StepVerifier.create(npgClient.orderHpp(hppRequest))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -57,17 +58,21 @@ class NpgClientTest {
     fun `Should map NPG error response to NpgClientException with BAD_REQUEST error for NPG 400 response code`() {
         val hppRequest = WalletTestUtils.hppRequest()
 
-        //prerequisite
-        given(defaultApi.startPayment(hppRequest)).willReturn(
-            Mono.error(
-                WebClientResponseException.create(
-                    400, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
+        // prerequisite
+        given(defaultApi.startPayment(hppRequest))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        400,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
-        )
-        //test and assertions
-        StepVerifier
-            .create(npgClient.orderHpp(hppRequest))
+        // test and assertions
+        StepVerifier.create(npgClient.orderHpp(hppRequest))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_REQUEST
@@ -79,17 +84,21 @@ class NpgClientTest {
     fun `Should map NPG error response to NpgClientException with UNAUTHORIZED error for NPG 401 response code`() {
         val hppRequest = WalletTestUtils.hppRequest()
 
-        //prerequisite
-        given(defaultApi.startPayment(hppRequest)).willReturn(
-            Mono.error(
-                WebClientResponseException.create(
-                    401, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
+        // prerequisite
+        given(defaultApi.startPayment(hppRequest))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        401,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
-        )
-        //test and assertions
-        StepVerifier
-            .create(npgClient.orderHpp(hppRequest))
+        // test and assertions
+        StepVerifier.create(npgClient.orderHpp(hppRequest))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
@@ -101,21 +110,25 @@ class NpgClientTest {
     fun `Should map NPG error response to NpgClientException with BAD_GATEWAY for other error codes`() {
         val hppRequest = WalletTestUtils.hppRequest()
 
-        //prerequisite
-        given(defaultApi.startPayment(hppRequest)).willReturn(
-            Mono.error(
-                WebClientResponseException.create(
-                    503, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
+        // prerequisite
+        given(defaultApi.startPayment(hppRequest))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        503,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
-        )
-        //test and assertions
-        StepVerifier
-            .create(npgClient.orderHpp(hppRequest))
+        // test and assertions
+        StepVerifier.create(npgClient.orderHpp(hppRequest))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY &&
-                        it.toRestException().description.contains("503")
+                    it.toRestException().description.contains("503")
             }
             .verify()
     }

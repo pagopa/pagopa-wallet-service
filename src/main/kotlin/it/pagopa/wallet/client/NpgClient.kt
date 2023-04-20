@@ -36,23 +36,21 @@ class NpgClient(
                         description = "Bad request",
                         httpStatusCode = HttpStatus.BAD_REQUEST,
                     )
-
                 HttpStatus.UNAUTHORIZED ->
                     NpgClientException(
                         description = "Misconfigured NPG api key",
                         httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                     )
-
                 HttpStatus.INTERNAL_SERVER_ERROR ->
                     NpgClientException(
                         description = "NPG internal server error",
                         httpStatusCode = HttpStatus.BAD_GATEWAY,
                     )
-
-                else -> NpgClientException(
-                    description = "NPG server error: ${it.statusCode}",
-                    httpStatusCode = HttpStatus.BAD_GATEWAY,
-                )
+                else ->
+                    NpgClientException(
+                        description = "NPG server error: ${it.statusCode}",
+                        httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    )
             }
         }
     }
