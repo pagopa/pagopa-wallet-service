@@ -43,6 +43,12 @@ class WalletService(
                                 }
                             paymentSession =
                                 PaymentSessionItem().apply {
+                                    amount = 0.toString()
+                                    language = "ita"
+                                    resultUrl = URI.create("http://localhost")
+                                    cancelUrl = URI.create("http://localhost")
+                                    notificationUrl = URI.create("http://localhost")
+                                    paymentService = PaymentSessionItem.PaymentServiceEnum.CARDS
                                     actionType = PaymentSessionItem.ActionTypeEnum.VERIFY
                                     recurrence =
                                         RecurrenceItem().apply {

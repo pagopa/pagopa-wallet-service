@@ -1,3 +1,4 @@
+
 openapi: 3.0.3
 info:
   title: NPG API
@@ -97,6 +98,7 @@ components:
         - orderId
         - amount
         - currency
+        - customerId
     CustomerInfoItem:
       type: object
       properties:
@@ -326,6 +328,15 @@ components:
           type: string
           format: uri
           example: 'https://merchant-notification-uri'
+      required:
+        - actionType
+        - amount
+        - recurrence
+        - language
+        - paymentService
+        - resultUrl
+        - cancelUrl
+        - notificationUrl
     RecurrenceItem:
       type: object
       properties:
