@@ -71,7 +71,7 @@ microservice-chart:
     # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
   envSecret:
-  #MONGO_PASSWORD: mongo-ecommerce-password TODO Fill with secret when generated
+  MONGO_PASSWORD: mongo-wallet-password TODO Fill with secret when generated
   NPG_SERVICE_API_KEY: "npg-service-api-key"
   keyvault:
     name: "pagopa-d-wallet-kv"
