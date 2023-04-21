@@ -26,11 +26,10 @@ class NpgClient(
                 logger.info("Sending start payment request with correlationId: $correlationId")
                 defaultApi.startPayment(correlationId, hppRequest)
             } catch (e: WebClientResponseException) {
-                logger.error("Error communicating with NPG: response: ${e.responseBodyAsString}", e)
                 Mono.error(e)
             }
         return response.onErrorMap(WebClientResponseException::class.java) {
-            logger.error("Npg response error", it)
+            logger.error("Error communicating with NPG: response: ${it.responseBodyAsString}", it)
             when (it.statusCode) {
                 HttpStatus.BAD_REQUEST ->
                     NpgClientException(
