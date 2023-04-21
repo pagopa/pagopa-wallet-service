@@ -56,4 +56,28 @@ class WalletServiceTest {
         /* assertions */
         assertThrows<BadGatewayException> { walletService.createWallet() }
     }
+
+    @Test
+    fun `createWallet throws BadGatewayException if it doesn't receive redirectUrl from NPG`() =
+        runTest {
+            /* preconditions */
+            given(walletRepository.save(any())).willReturn(Mono.empty())
+            given(npgClient.orderHpp(any(), any()))
+                .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { hostedPage = null }))
+
+            /* assertions */
+            assertThrows<BadGatewayException> { walletService.createWallet() }
+        }
+
+    @Test
+    fun `createWallet throws BadGatewayException if it doesn't receive securityToken from NPG`() =
+        runTest {
+            /* preconditions */
+            given(walletRepository.save(any())).willReturn(Mono.empty())
+            given(npgClient.orderHpp(any(), any()))
+                .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { securityToken = null }))
+
+            /* assertions */
+            assertThrows<BadGatewayException> { walletService.createWallet() }
+        }
 }
