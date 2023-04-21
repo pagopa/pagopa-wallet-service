@@ -47,7 +47,7 @@ class WalletService(
                                     recurrence =
                                         RecurrenceItem().apply {
                                             action = RecurrenceItem.ActionEnum.CONTRACT_CREATION
-                                            contractId = paymentInstrumentId.value.toString()
+                                            contractId = generateRandomString(18)
                                             contractType = RecurrenceItem.ContractTypeEnum.CIT
                                         }
                                 }
