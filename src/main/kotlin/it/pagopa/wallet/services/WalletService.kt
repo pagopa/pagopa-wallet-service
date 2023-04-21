@@ -36,9 +36,10 @@ class WalletService(
                         HppRequest().apply {
                             order =
                                 OrderItem().apply {
-                                    orderId = UUID.randomUUID().toString()
+                                    orderId = generateRandomString(27)
                                     amount = 0.toString()
                                     currency = "EUR"
+                                    customerId = generateRandomString(27)
                                 }
                             paymentSession =
                                 PaymentSessionItem().apply {
@@ -75,5 +76,10 @@ class WalletService(
                 ?: throw BadGatewayException("Payment gateway didn't provide redirect URL")
 
         return Pair(savedWallet, URI.create(redirectUrl))
+    }
+
+    private fun generateRandomString(length: Int): String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length).map { allowedChars.random() }.joinToString("")
     }
 }
