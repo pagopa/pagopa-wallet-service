@@ -84,6 +84,8 @@ configurations {
     exclude("ch.qos.logback")
   }
 }
+// Dependency locking - lock all dependencies
+dependencyLocking { lockAllConfigurations() }
 
 sourceSets {
   main {
