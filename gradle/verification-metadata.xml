@@ -5,6 +5,13 @@
     <configuration>
         <verify-metadata>true</verify-metadata>
         <verify-signatures>false</verify-signatures>
+        <trusted-artifacts>
+            <!-- all these are work-around for https://youtrack.jetbrains.com/issue/IDEA-258328
+            skip checks for javadoc and sources jars-->
+            <trust file=".*-javadoc[.]jar" regex="true"/>
+            <trust file=".*-sources[.]jar" regex="true"/>
+            <!-- end work-around for https://youtrack.jetbrains.com/issue/IDEA-258328 -->
+        </trusted-artifacts>
     </configuration>
     <components>
         <component group="ch.qos.logback" name="logback-classic" version="1.4.6">
