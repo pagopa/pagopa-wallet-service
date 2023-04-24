@@ -25,10 +25,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
 
-repositories {
-  mavenLocal()
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencyManagement {
   imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.0.5") }
