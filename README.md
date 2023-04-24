@@ -159,7 +159,7 @@ The following command can be used to recalculate dependency checksum:
 ./gradlew --write-verification-metadata sha256 clean spotlessApply build 
 ```
 
-In the above command the `clean`, `spotlessApply` `build` tasks where choosen to be run
+In the above command the `clean`, `spotlessApply` `build` tasks where chosen to be run
 in order to discover all transitive dependencies used during build and also the ones used during
 spotless apply task used to format source code.
 
@@ -181,14 +181,51 @@ To detect and remove old dependencies make the following steps:
 3. Compare the verification-metadata file and the verification-metadata.dryrun one checking for differences and removing
    old unused dependencies
 
-The spep 1-2 can be performed with the following commands
+The 1-2 steps can be performed with the following commands
 
 ```Shell
 rm -f ./gradle/verification-metadata.dryrun.xml 
 ./gradlew --write-verification-metadata sha256 clean spotlessApply build --dry-run
 ```
 
----
+The resulting `verification-metadata.xml` modifications must be reviewed carefully checking the generated
+dependencies checksum against official websites or other secure sources.
+
+If a dependency is not discovered during the above command execution it will lead to build errors.
+
+You can add those dependencies manually by modifying the `verification-metadata.xml`
+file adding the following component:
+
+```xml
+
+<verification-metadata>
+    <!-- other configurations... -->
+    <components>
+        <!-- other components -->
+        <component group="GROUP_ID" name="ARTIFACT_ID" version="VERSION">
+            <artifact name="artifact-full-name.jar">
+                <sha256 value="sha value"
+                        origin="Description of the source of the checksum value"/>
+            </artifact>
+            <artifact name="artifact-pom-file.pom">
+                <sha256 value="sha value"
+                        origin="Description of the source of the checksum value"/>
+            </artifact>
+        </component>
+    </components>
+</verification-metadata>
+```
+
+Add those components at the end of the components list and then run the
+
+```shell
+./gradlew --write-verification-metadata sha256 clean spotlessApply build 
+```
+
+that will reorder the file with the added dependencies checksum in the expected order.
+
+For more information read the
+following [article](https://docs.gradle.org/8.1/userguide/dependency_verification.html#sec:checksum-verification)
 
 ## Contributors 👥
 
