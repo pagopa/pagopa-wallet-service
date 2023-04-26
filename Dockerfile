@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-alpine as build
+FROM amazoncorretto:17-alpine as build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -13,7 +13,7 @@ COPY src src
 RUN ./gradlew build -x spotlessCheck
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
-FROM eclipse-temurin:17-alpine
+FROM amazoncorretto:17-alpine
 
 RUN addgroup --system user && adduser --ingroup user --system user
 USER user:user
