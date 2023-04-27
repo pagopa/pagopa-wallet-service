@@ -1,10 +1,15 @@
 openapi: 3.0.3
 info:
   title: pagoPA Wallet API
-  version: "0.1"
-  description: |-
-    Wallet
+  version: 0.0.1
+  description: Wallet
   termsOfService: https://pagopa.it/terms/
+tags:
+  - name: wallets
+    description: Api's for handle a wallet
+    externalDocs:
+      url: https://pagopa.atlassian.net/wiki/spaces/WA/overview?homepageId=622658099
+      description: Documentation
 paths:
   /wallets:
     post:
@@ -86,9 +91,9 @@ components:
       description: Wallet identifier
       type: string
       format: uuid
-    PaymentInstrumentType:
+    Type:
       type: string
-      description: Payment instrument type enumeration
+      description: Wallet type enumeration
       enum:
         - CARDS
     Service:
@@ -103,13 +108,13 @@ components:
         - INITIALIZED
         - CREATED
         - ERROR
-    CardPaymentInstrumentDetails:
+    WalletCardDetails:
       type: object
       description: Card payment instrument details
       properties:
-        paymentInstrumentType:
+        type:
           type: string
-          description: Payment instrument details discriminator field
+          description: Wallet details discriminator field.
         bin:
           description: Card BIN (first 6 PAN digits)
           type: string
@@ -119,23 +124,38 @@ components:
         maskedPan:
           description: Card masked pan (first 6 digit and last 4 digit clear, other digit obfuscated)
           type: string
-          example: '123456******9876'
+          example: 123456******9876
         expiryDate:
           type: string
           description: Credit card expiry date. The date format is `YYYYMM`
-          pattern: '^\d{6}$'
+          pattern: ^\d{6}$
           example: '203012'
+        contractNumber:
+          description: User contract identifier to be used with payment instrument to make a new payment
+          type: string
+        holder:
+          description: Holder of the card payment instrument
+          type: string
+        brand:
+          description: Payment instrument brand
+          type: string
+          enum:
+            - MASTERCARD
+            - VISA
       required:
-        - paymentInstrumentType
+        - type
         - bin
         - maskedPan
         - expiryDate
+        - contractNumber
+        - holder
+        - brand
     WalletCreateRequest:
       type: object
       description: Wallet creation request
       properties:
-        paymentInstrumentType:
-          $ref: '#/components/schemas/PaymentInstrumentType'
+        type:
+          $ref: '#/components/schemas/Type'
         services:
           type: array
           description: List of services for which wallet is enabled
@@ -143,7 +163,7 @@ components:
           items:
             $ref: '#/components/schemas/Service'
       required:
-        - paymentInstrumentType
+        - type
         - services
     WalletCreateResponse:
       type: object
@@ -154,9 +174,8 @@ components:
         redirectUrl:
           type: string
           format: url
-          description: |-
-            Redirection URL to a payment gateway page where the user can input a payment instrument information
-          example: "http://localhost/inputPage"
+          description: Redirection URL to a payment gateway page where the user can input a payment instrument information
+          example: http://localhost/inputPage
       required:
         - walletId
         - redirectUrl
@@ -179,38 +198,29 @@ components:
           description: Wallet update date
           type: string
           format: date-time
-        paymentInstrumentType:
-          $ref: '#/components/schemas/PaymentInstrumentType'
         paymentInstrumentId:
           description: Payment instrument identifier
-          type: string
-        contractNumber:
-          description: User contract identifier to be used with payment instrument to make a new payment
-          type: string
-        gatewaySecurityToken:
-          description: Security token used to perform security checks for further interactions with external parties
           type: string
         services:
           description: list of services for which this wallet is created for
           type: array
           items:
             $ref: '#/components/schemas/Service'
-        paymentInstrumentDetail:
-          description: details for the specific payment instrument. This field is disciminated by the paymentInstrumentType field
+        details:
+          description: details for the specific payment instrument. This field is disciminated by the type field
           oneOf:
-            - $ref: "#/components/schemas/CardPaymentInstrumentDetails"
+            - $ref: '#/components/schemas/WalletCardDetails'
           discriminator:
-            propertyName: paymentInstrumentType
+            propertyName: type
             mapping:
-              CARDS: "#/components/schemas/CardPaymentInstrumentDetails"
+              CARDS: '#/components/schemas/WalletCardDetails'
       required:
         - walletId
         - userId
         - status
         - creationDate
         - updateDate
-        - paymentInstrumentType
-        - contractNumber
+        - type
         - services
     ProblemJson:
       description: Body definition for error responses containing failure details
@@ -232,7 +242,7 @@ components:
             for engineers (usually not suited for non technical stakeholders and
             not localized); example: Service Unavailable
         status:
-          $ref: "#/components/schemas/HttpStatusCode"
+          $ref: '#/components/schemas/HttpStatusCode'
         detail:
           type: string
           description: |-
