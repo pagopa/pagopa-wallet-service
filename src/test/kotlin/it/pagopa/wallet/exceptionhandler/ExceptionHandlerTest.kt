@@ -1,5 +1,6 @@
 package it.pagopa.wallet.exceptionhandler
 
+import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.exception.RestApiException
 import jakarta.xml.bind.ValidationException
@@ -21,7 +22,14 @@ class ExceptionHandlerTest {
                     description = "description"
                 )
             )
-        assertEquals("Error processing request: title - description", response.body)
+        assertEquals(
+            WalletTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.UNAUTHORIZED,
+                title = "title",
+                description = "description"
+            ),
+            response.body
+        )
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
     }
 
@@ -34,7 +42,11 @@ class ExceptionHandlerTest {
             )
         val response = exceptionHandler.handleException(exception)
         assertEquals(
-            "Error processing request: ${exception.toRestException().title} - ${exception.toRestException().description}",
+            WalletTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.UNAUTHORIZED,
+                title = "Npg Invocation exception",
+                description = "description"
+            ),
             response.body
         )
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
@@ -44,7 +56,14 @@ class ExceptionHandlerTest {
     fun `Should handle ValidationExceptions`() {
         val exception = ValidationException("Invalid request")
         val response = exceptionHandler.handleRequestValidationException(exception)
-        assertEquals("Error processing request: ${exception.localizedMessage}", response.body)
+        assertEquals(
+            WalletTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.BAD_REQUEST,
+                title = "Bad request",
+                description = "Invalid request"
+            ),
+            response.body
+        )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
 }
