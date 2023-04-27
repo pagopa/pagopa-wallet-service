@@ -103,6 +103,10 @@ tasks.create("applySemanticVersionPlugin") {
   apply(plugin = "com.dipien.semantic-version")
 }
 
+/*
+Used java generator for wallet classes because of the following issue with kotlin generator
+https://github.com/OpenAPITools/openapi-generator/issues/14949
+*/
 tasks.register("wallet", GenerateTask::class.java) {
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
