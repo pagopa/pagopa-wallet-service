@@ -3,16 +3,16 @@ package it.pagopa.wallet.services
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.exception.BadGatewayException
+import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.repositories.WalletRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WalletServiceTest {
@@ -21,6 +21,7 @@ class WalletServiceTest {
     private val npgClient: NpgClient = mock()
 
     private val walletService: WalletService = WalletService(walletRepository, npgClient)
+
     @Test
     fun `createWallet creates wallet successfully`() = runTest {
         /* preconditions */
@@ -30,20 +31,20 @@ class WalletServiceTest {
         given(npgClient.orderHpp(any(), any())).willReturn(Mono.just(WalletTestUtils.hppResponse()))
 
         /* test */
-        val actual = walletService.createWallet()
-
-        /* assertions */
-        assertEquals(expected, actual)
+        StepVerifier.create(walletService.createWallet())
+            .expectNextMatches { it == expected }
+            .verifyComplete()
     }
 
     @Test
-    fun `createWallet throws BadGatewayException if it can't save wallet`() = runTest {
+    fun `createWallet throws InternalServerErrorException if it can't save wallet`() = runTest {
         /* preconditions */
-        given(walletRepository.save(any())).willReturn(Mono.empty())
+        given(walletRepository.save(any()))
+            .willReturn(Mono.error(RuntimeException("Error saving wallet")))
         given(npgClient.orderHpp(any(), any())).willReturn(Mono.just(WalletTestUtils.hppResponse()))
-
-        /* assertions */
-        assertThrows<BadGatewayException> { walletService.createWallet() }
+        StepVerifier.create(walletService.createWallet())
+            .expectError(InternalServerErrorException::class.java)
+            .verify()
     }
 
     @Test
@@ -53,8 +54,9 @@ class WalletServiceTest {
         given(npgClient.orderHpp(any(), any()))
             .willReturn(Mono.error(RuntimeException("NPG Error")))
 
-        /* assertions */
-        assertThrows<BadGatewayException> { walletService.createWallet() }
+        StepVerifier.create(walletService.createWallet())
+            .expectError(BadGatewayException::class.java)
+            .verify()
     }
 
     @Test
@@ -65,8 +67,9 @@ class WalletServiceTest {
             given(npgClient.orderHpp(any(), any()))
                 .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { hostedPage = null }))
 
-            /* assertions */
-            assertThrows<BadGatewayException> { walletService.createWallet() }
+            StepVerifier.create(walletService.createWallet())
+                .expectError(BadGatewayException::class.java)
+                .verify()
         }
 
     @Test
@@ -77,7 +80,8 @@ class WalletServiceTest {
             given(npgClient.orderHpp(any(), any()))
                 .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { securityToken = null }))
 
-            /* assertions */
-            assertThrows<BadGatewayException> { walletService.createWallet() }
+            StepVerifier.create(walletService.createWallet())
+                .expectError(BadGatewayException::class.java)
+                .verify()
         }
 }
