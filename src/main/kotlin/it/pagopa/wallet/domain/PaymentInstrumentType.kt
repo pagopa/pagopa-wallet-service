@@ -1,10 +1,10 @@
 package it.pagopa.wallet.domain
 
 /**
- * Payment Instrument Type enum.
+ * A Payment Instrument (e.g. credit card, bank account, PayPal account, ...).
  *
- * This enum class define a PaymentInstrument type from the following allowed values:
- * - CARDS
+ * This class holds a remote identifier to a payment instrument stored inside the payment gateway
+ * and an access token associated to the specific payment instrument.
  */
 enum class PaymentInstrumentType(val value: String) {
     CARDS("CARDS")
