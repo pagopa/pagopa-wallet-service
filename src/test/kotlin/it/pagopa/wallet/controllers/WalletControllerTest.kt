@@ -1,5 +1,6 @@
 package it.pagopa.wallet.controllers
 
+import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletCreateResponseDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
@@ -8,6 +9,7 @@ import it.pagopa.wallet.services.WalletService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.given
@@ -76,6 +78,11 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
+            .expectBody(ProblemJsonDto::class.java)
+            .value {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
+                assertEquals("Bad request", it.title)
+            }
     }
 
     @Test
@@ -96,12 +103,18 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
+            .expectBody(ProblemJsonDto::class.java)
+            .value {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
+                assertEquals("Bad request", it.title)
+            }
     }
 
     @Test
     fun `return 502 if service raises BadGatewayException`() = runTest {
         /* preconditions */
-        given(walletService.createWallet()).willReturn(Mono.error(BadGatewayException("")))
+        given(walletService.createWallet())
+            .willReturn(Mono.error(BadGatewayException("Bad gateway error message")))
 
         /* test */
         webClient
@@ -113,12 +126,21 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.BAD_GATEWAY)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.BAD_GATEWAY,
+                    "Bad Gateway",
+                    "Bad gateway error message"
+                )
+            )
     }
 
     @Test
     fun `return 500 if service raises InternalServerErrorException`() = runTest {
         /* preconditions */
-        given(walletService.createWallet()).willReturn(Mono.error(InternalServerErrorException("")))
+        given(walletService.createWallet())
+            .willReturn(Mono.error(InternalServerErrorException("Internal server error message")))
 
         /* test */
         webClient
@@ -130,5 +152,13 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Internal server error",
+                    "Internal server error message"
+                )
+            )
     }
 }
