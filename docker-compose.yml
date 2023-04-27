@@ -19,6 +19,8 @@ services:
     container_name: pagopa-wallet-mongo
     image: mongo
     env_file: ./docker/config/mongo/mongodb.env
+    ports:
+      - "28017:27017"
     networks:
       - pagopa-wallet-net
     healthcheck:

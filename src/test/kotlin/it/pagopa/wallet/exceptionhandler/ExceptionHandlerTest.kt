@@ -66,4 +66,19 @@ class ExceptionHandlerTest {
         )
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
+
+    @Test
+    fun `Should handle generic exception`() {
+        val exception = NullPointerException("Nullpointer exception")
+        val response = exceptionHandler.handleGenericException(exception)
+        assertEquals(
+            WalletTestUtils.buildProblemJson(
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+                title = "Error processing the request",
+                description = "Nullpointer exception"
+            ),
+            response.body
+        )
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
+    }
 }

@@ -2,6 +2,7 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletCreateResponseDto
+import it.pagopa.generated.wallet.model.WalletInfoDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
@@ -38,6 +39,7 @@ class WalletControllerTest {
     @Test
     fun `wallet is created successfully`() = runTest {
         /* preconditions */
+
         given(
                 walletService.createWallet(
                     WalletTestUtils.CREATE_WALLET_REQUEST,
@@ -185,5 +187,24 @@ class WalletControllerTest {
                     "Internal server error message"
                 )
             )
+    }
+
+    @Test
+    fun `GET wallet return wallet successfully`() = runTest {
+        /* preconditions */
+        val wallet = WalletTestUtils.VALID_WALLET
+        val walletId = wallet.id
+        val walletInfo = WalletTestUtils.toWalletInfo(wallet)
+        given(walletService.getWallet(walletId.value)).willReturn(Mono.just(walletInfo))
+
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.OK)
+            .expectBody(WalletInfoDto::class.java)
+            .isEqualTo(walletInfo)
     }
 }

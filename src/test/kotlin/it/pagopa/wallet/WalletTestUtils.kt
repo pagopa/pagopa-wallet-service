@@ -2,6 +2,8 @@ package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.domain.PaymentInstrumentDetail
+import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import java.net.URI
@@ -17,17 +19,37 @@ object WalletTestUtils {
 
     val VALID_WALLET =
         Wallet(
-            WalletId(UUID.randomUUID()),
-            USER_ID,
-            WalletStatusDto.INITIALIZED,
-            now,
-            now,
-            TypeDto.CARDS,
-            null,
-            null,
-            GATEWAY_SECURITY_TOKEN,
-            listOf(ServiceDto.PAGOPA),
-            null
+            id = WalletId(UUID.randomUUID()),
+            userId = "xUserId",
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = OffsetDateTime.now().toString(),
+            updateDate = OffsetDateTime.now().toString(),
+            paymentInstrumentType = TypeDto.CARDS,
+            contractNumber = "contractNumber",
+            gatewaySecurityToken = "securityToken",
+            services = listOf(ServiceDto.PAGOPA),
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            paymentInstrumentDetail =
+                PaymentInstrumentDetail(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012"
+                )
+        )
+
+    val VALID_WALLET_WITHOUT_INSTRUMENT_DETAILS =
+        Wallet(
+            id = WalletId(UUID.randomUUID()),
+            userId = "xUserId",
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = OffsetDateTime.now().toString(),
+            updateDate = OffsetDateTime.now().toString(),
+            paymentInstrumentType = TypeDto.CARDS,
+            contractNumber = "contractNumber",
+            gatewaySecurityToken = "securityToken",
+            services = listOf(ServiceDto.PAGOPA),
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            paymentInstrumentDetail = null
         )
 
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
@@ -62,6 +84,33 @@ object WalletTestUtils {
             .hostedPage(GATEWAY_REDIRECT_URL.toString())
             .securityToken(GATEWAY_SECURITY_TOKEN)
 
-    fun buildProblemJson(httpStatus: HttpStatus, title: String, description: String) =
-        ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
+    fun buildProblemJson(
+        httpStatus: HttpStatus,
+        title: String,
+        description: String
+    ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
+
+    fun toWalletInfo(wallet: Wallet): WalletInfoDto =
+        WalletInfoDto()
+            .walletId(wallet.id.value)
+            .userId(wallet.userId)
+            .status(wallet.status)
+            .creationDate(OffsetDateTime.parse(wallet.creationDate))
+            .updateDate(OffsetDateTime.parse(wallet.updateDate))
+            .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+            .services(wallet.services)
+            .details(
+                if (wallet.paymentInstrumentDetail != null) {
+                    WalletCardDetailsDto()
+                        .type(TypeDto.CARDS.toString())
+                        .bin(wallet.paymentInstrumentDetail!!.bin)
+                        .maskedPan(wallet.paymentInstrumentDetail!!.maskedPan)
+                        .expiryDate(wallet.paymentInstrumentDetail!!.expiryDate)
+                        .contractNumber("contractNumber")
+                        .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                        .holder("holder name")
+                } else {
+                    null
+                }
+            )
 }

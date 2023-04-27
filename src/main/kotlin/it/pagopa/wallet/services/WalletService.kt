@@ -4,14 +4,14 @@ import it.pagopa.generated.npg.model.HppRequest
 import it.pagopa.generated.npg.model.OrderItem
 import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
-import it.pagopa.generated.wallet.model.WalletCreateRequestDto
-import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 @Slf4j
@@ -107,6 +108,36 @@ class WalletService(
                     }
             }
     }
+
+    fun getWallet(walletId: UUID): Mono<WalletInfoDto> =
+        walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .map {
+                // TODO rivedere questi dati
+                WalletInfoDto()
+                    .walletId(it.id.value)
+                    .userId(it.userId)
+                    .status(it.status)
+                    .creationDate(OffsetDateTime.parse(it.creationDate))
+                    .updateDate(OffsetDateTime.parse(it.updateDate))
+                    .paymentInstrumentId(it.paymentInstrumentId?.value.toString())
+                    .services(it.services)
+                    .details(
+                        if (it.paymentInstrumentDetail != null) {
+                            WalletCardDetailsDto()
+                                .type(TypeDto.CARDS.toString())
+                                .bin(it.paymentInstrumentDetail.bin)
+                                .maskedPan(it.paymentInstrumentDetail.maskedPan)
+                                .expiryDate(it.paymentInstrumentDetail.expiryDate)
+                                .contractNumber("contractNumber")
+                                .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                                .holder("holder name")
+                        } else {
+                            null
+                        }
+                    )
+            }
 
     private fun generateRandomString(length: Int): String {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')

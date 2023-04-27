@@ -62,4 +62,17 @@ class ExceptionHandler {
                     .detail(e.localizedMessage)
             )
     }
+
+    /** Handler for generic exception */
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(e: Exception): ResponseEntity<ProblemJsonDto> {
+        logger.error("Exception processing the request", e)
+        return ResponseEntity.internalServerError()
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .title("Error processing the request")
+                    .detail(e.message)
+            )
+    }
 }

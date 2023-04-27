@@ -39,7 +39,6 @@ class WalletController(
     override fun getWalletById(
         walletId: UUID,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<WalletInfoDto>> {
-        TODO("Not yet implemented")
-    }
+    ): Mono<ResponseEntity<WalletInfoDto>> =
+        walletService.getWallet(walletId).map { ResponseEntity.ok(it) }
 }

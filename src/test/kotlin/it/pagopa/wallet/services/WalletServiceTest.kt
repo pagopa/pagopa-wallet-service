@@ -1,11 +1,17 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.wallet.model.TypeDto
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.generated.wallet.model.WalletInfoDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
+import java.time.OffsetDateTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -109,4 +115,76 @@ class WalletServiceTest {
                 .expectError(BadGatewayException::class.java)
                 .verify()
         }
+
+    @Test
+    fun `getWallet return wallet successfully`() = runTest {
+        /* precondition */
+
+        val wallet = WalletTestUtils.VALID_WALLET
+        val walletId = wallet.id
+        val expectedWalletInfo =
+            WalletInfoDto()
+                .walletId(wallet.id.value)
+                .userId(wallet.userId)
+                .status(wallet.status)
+                .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                .updateDate(OffsetDateTime.parse(wallet.updateDate))
+                .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+                .services(wallet.services)
+                .details(
+                    WalletCardDetailsDto()
+                        .type(TypeDto.CARDS.toString())
+                        .bin(wallet.paymentInstrumentDetail?.bin)
+                        .maskedPan(wallet.paymentInstrumentDetail?.maskedPan)
+                        .expiryDate(wallet.paymentInstrumentDetail?.expiryDate)
+                        .contractNumber("contractNumber")
+                        .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                        .holder("holder name")
+                )
+        given(walletRepository.findById(walletId.value.toString())).willReturn(mono { wallet })
+
+        /* Test */
+        StepVerifier.create(walletService.getWallet(walletId.value))
+            .expectNext(expectedWalletInfo)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `getWallet return wallet successfully without payment instrument details`() = runTest {
+        /* precondition */
+
+        val wallet = WalletTestUtils.VALID_WALLET_WITHOUT_INSTRUMENT_DETAILS
+        val walletId = wallet.id
+        val expectedWalletInfo =
+            WalletInfoDto()
+                .walletId(wallet.id.value)
+                .userId(wallet.userId)
+                .status(wallet.status)
+                .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                .updateDate(OffsetDateTime.parse(wallet.updateDate))
+                .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+                .services(wallet.services)
+
+        given(walletRepository.findById(walletId.value.toString())).willReturn(mono { wallet })
+
+        /* Test */
+        StepVerifier.create(walletService.getWallet(walletId.value))
+            .expectNext(expectedWalletInfo)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `getWallet throw WalletNotFoundException for missing wallet into DB`() = runTest {
+        /* precondition */
+
+        val wallet = WalletTestUtils.VALID_WALLET
+        val walletId = wallet.id
+
+        given(walletRepository.findById(walletId.value.toString())).willReturn(Mono.empty())
+
+        /* Test */
+        StepVerifier.create(walletService.getWallet(walletId.value))
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
 }
