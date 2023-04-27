@@ -5,12 +5,13 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle .
+COPY gradle.lockfile .
 
 COPY eclipse-style.xml eclipse-style.xml
 COPY npg-api npg-api
 COPY api-spec api-spec
 COPY src src
-RUN ./gradlew build -x spotlessCheck
+RUN ./gradlew build -x test
 RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar extract --destination build/extracted
 
 FROM amazoncorretto:17-alpine

@@ -25,10 +25,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
 
-repositories {
-  mavenLocal()
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencyManagement {
   imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.0.5") }
@@ -84,6 +81,8 @@ configurations {
     exclude("ch.qos.logback")
   }
 }
+// Dependency locking - lock all dependencies
+dependencyLocking { lockAllConfigurations() }
 
 sourceSets {
   main {
@@ -103,8 +102,12 @@ tasks.create("applySemanticVersionPlugin") {
   apply(plugin = "com.dipien.semantic-version")
 }
 
+/*
+Used java generator for wallet classes because of the following issue with kotlin generator
+https://github.com/OpenAPITools/openapi-generator/issues/14949
+*/
 tasks.register("wallet", GenerateTask::class.java) {
-  generatorName.set("kotlin-spring")
+  generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
   outputDir.set("$buildDir/generated")
   apiPackage.set("it.pagopa.generated.wallet.api")

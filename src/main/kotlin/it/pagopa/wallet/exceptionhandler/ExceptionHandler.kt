@@ -1,11 +1,13 @@
 package it.pagopa.wallet.exceptionhandler
 
+import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
 import jakarta.xml.bind.ValidationException
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -26,15 +28,17 @@ class ExceptionHandler {
 
     /** RestApiException exception handler */
     @ExceptionHandler(RestApiException::class)
-    fun handleException(e: RestApiException): ResponseEntity<String> {
+    fun handleException(e: RestApiException): ResponseEntity<ProblemJsonDto> {
         logger.error("Exception processing request", e)
         return ResponseEntity.status(e.httpStatus)
-            .body("Error processing request: ${e.title} - ${e.description}")
+            .body(
+                ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description)
+            )
     }
 
     /** ApiError exception handler */
     @ExceptionHandler(ApiError::class)
-    fun handleException(e: ApiError): ResponseEntity<String> {
+    fun handleException(e: ApiError): ResponseEntity<ProblemJsonDto> {
         return handleException(e.toRestException())
     }
 
@@ -47,9 +51,15 @@ class ExceptionHandler {
         HttpMessageNotReadableException::class,
         WebExchangeBindException::class
     )
-    fun handleRequestValidationException(e: Exception): ResponseEntity<String> {
+    fun handleRequestValidationException(e: Exception): ResponseEntity<ProblemJsonDto> {
 
         logger.error("Input request is not valid", e)
-        return ResponseEntity.badRequest().body("Error processing request: ${e.localizedMessage}")
+        return ResponseEntity.badRequest()
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("Bad request")
+                    .detail(e.localizedMessage)
+            )
     }
 }
