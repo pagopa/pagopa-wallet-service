@@ -26,7 +26,7 @@ object WalletTestUtils {
 
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
 
-    val CREATE_WALLET_REQUEST =
+    val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
         WalletCreateRequestDto()
             .services(listOf(ServiceDto.PAGOPA))
             .paymentInstrumentType(PaymentInstrumentTypeDto.CARDS)

@@ -9,12 +9,14 @@ import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 @RestController
 @Slf4j
+@Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
 ) : WalletsApi {
@@ -24,12 +26,14 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletCreateResponseDto>> =
-        walletService.createWallet().map { (wallet, redirectUrl) ->
-            ResponseEntity.ok(
-                WalletCreateResponseDto()
-                    .walletId(wallet.id.value)
-                    .redirectUrl(redirectUrl.toString())
-            )
+        walletCreateRequestDto.flatMap {
+            walletService.createWallet().map { (wallet, redirectUrl) ->
+                ResponseEntity.ok(
+                    WalletCreateResponseDto()
+                        .walletId(wallet.id.value)
+                        .redirectUrl(redirectUrl.toString())
+                )
+            }
         }
 
     override fun getWalletById(

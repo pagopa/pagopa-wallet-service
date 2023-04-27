@@ -1,18 +1,10 @@
 openapi: 3.0.3
 info:
-  version: 0.0.1
-  title: Wallet - OpenAPI
-  description: Wallet
-  contact:
-    name: pagoPA - Touchpoints team
-tags:
-  - name: Wallet
-    description: Intercat with wallet
-externalDocs:
-  description: Design review
-  url: http://swagger.io
-servers:
-  - url: https://${hostname}
+  title: pagoPA Wallet API
+  version: "0.1"
+  description: |-
+    Wallet
+  termsOfService: https://pagopa.it/terms/
 paths:
   /wallets:
     post:
@@ -151,6 +143,7 @@ components:
         services:
           type: array
           description: List of services for which wallet is enabled
+          minItems: 1
           items:
             $ref: '#/components/schemas/Service'
       required:
