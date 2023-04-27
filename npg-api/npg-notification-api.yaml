@@ -1,0 +1,81 @@
+
+openapi: 3.0.3
+info:
+  title: pagoPA Wallet Notification API
+  version: "0.1"
+  description: |-
+    Notification API to implement callback providing order status updates after wallet creation on Nexi's NPG
+externalDocs:
+  description: Nexi API to handle Hosted Payment Page (HPP) payments
+  url: https://developer.nexigroup.com/it/api/post-orders-hpp
+paths:
+  /notify:
+    post:
+      summary: Update Wallet on NPG payment instrument creation
+      description: Update Wallet on NPG payment instrument creation
+      operationId: notifyWallet
+      parameters:
+        - in: header
+          name: Correlation-Id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Unique identifier of the request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+        required: true
+      responses:
+        '204':
+          description: Payment request sent successfully
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    NotificationRequest:
+      properties:
+        contractId:
+          type: string
+          maxLength: 255
+          example: "C2834987"
+        status:
+          type: string
+          description: Status of the payment order
+          enum:
+            - OK
+            - KO
+          example: "OK"
+        securityToken:
+          type: string
+          description: Payment gateway security token used to validate the request
+          example: "2f0ea5059b41414ca3744fe672327d85"
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorItem'
+    ErrorItem:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
