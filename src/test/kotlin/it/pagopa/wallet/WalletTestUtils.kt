@@ -1,9 +1,9 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
-import it.pagopa.generated.wallet.model.PaymentInstrumentTypeDto
 import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.ServiceDto
+import it.pagopa.generated.wallet.model.TypeDto
 import it.pagopa.generated.wallet.model.WalletCreateRequestDto
 import it.pagopa.wallet.domain.PaymentInstrument
 import it.pagopa.wallet.domain.PaymentInstrumentId
@@ -29,9 +29,7 @@ object WalletTestUtils {
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
-        WalletCreateRequestDto()
-            .services(listOf(ServiceDto.PAGOPA))
-            .paymentInstrumentType(PaymentInstrumentTypeDto.CARDS)
+        WalletCreateRequestDto().services(listOf(ServiceDto.PAGOPA)).type(TypeDto.CARDS)
 
     fun hppRequest(): HppRequest =
         HppRequest()
