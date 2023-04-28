@@ -15,6 +15,8 @@ class PaymentInstrumentDetailTest {
             PaymentInstrumentDetail(VALID_BIN, VALID_MASKED_PAN, VALID_EXPIRY_DATE)
 
         assertEquals(VALID_BIN, paymentInstrumentDetail.bin)
+        assertEquals(VALID_MASKED_PAN, paymentInstrumentDetail.maskedPan)
+        assertEquals(VALID_EXPIRY_DATE, paymentInstrumentDetail.expiryDate)
     }
 
     @Test
