@@ -92,8 +92,7 @@ class WalletService(
                         null,
                         securityToken,
                         walletCreateRequestDto.services
-                            .map { service -> WalletServiceEnum.valueOf(service.value) }
-                            .onErrorMap { InternalServerErrorException("Error - unkown service") },
+                            .map { service -> WalletServiceEnum.valueOf(service.value) },
                         null
                     )
 
