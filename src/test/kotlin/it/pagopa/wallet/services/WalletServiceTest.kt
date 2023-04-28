@@ -1,16 +1,19 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.wallet.model.TypeDto
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
-import it.pagopa.generated.wallet.model.WalletInfoDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.domain.PaymentInstrumentId
+import it.pagopa.wallet.domain.Wallet
+import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
+import it.pagopa.wallet.domain.details.WalletDetails
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
 import java.time.OffsetDateTime
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -191,6 +194,34 @@ class WalletServiceTest {
         /* Test */
         StepVerifier.create(walletService.getWallet(walletId.value))
             .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `getWallet throw InternalServerError for unhandled wallet details`() = runTest {
+        /* precondition */
+
+        val walletId = WalletId(UUID.randomUUID())
+        val mockWalletDetail: WalletDetails = mock()
+        val walletWithMockDetails =
+            Wallet(
+                id = walletId,
+                userId = "userId",
+                status = WalletStatusDto.INITIALIZED,
+                creationDate = OffsetDateTime.now().toString(),
+                updateDate = OffsetDateTime.now().toString(),
+                paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+                paymentInstrumentType = TypeDto.CARDS,
+                gatewaySecurityToken = "",
+                services = listOf(ServiceDto.PAGOPA),
+                details = mockWalletDetail
+            )
+        given(walletRepository.findById(walletId.value.toString()))
+            .willReturn(mono { walletWithMockDetails })
+
+        /* Test */
+        StepVerifier.create(walletService.getWallet(walletId.value))
+            .expectError(InternalServerErrorException::class.java)
             .verify()
     }
 }
