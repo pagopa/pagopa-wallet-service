@@ -23,7 +23,10 @@ class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val npgClient: NpgClient
 ) {
-    fun createWallet(walletCreateRequestDto: WalletCreateRequestDto, userId: String): Mono<Pair<Wallet, URI>> {
+    fun createWallet(
+        walletCreateRequestDto: WalletCreateRequestDto,
+        userId: String
+    ): Mono<Pair<Wallet, URI>> {
         val paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID())
         return npgClient
             .orderHpp(
@@ -75,24 +78,24 @@ class WalletService(
                 val now = Date(System.currentTimeMillis())
 
                 // TODO: update null values
-                val wallet = Wallet(
-                  WalletId(UUID.randomUUID()),
-                  userId,
-                  WalletStatus.INITIALIZED,
-                  now,
-                  now,
-                  PaymentInstrumentType.valueOf(walletCreateRequestDto.paymentInstrumentType.value),
-                  null,
-                  null,
-                  securityToken,
-                  walletCreateRequestDto.services.map { service -> WalletServiceEnum.valueOf(service.value) }
-                    .onErrorMap {
-                      InternalServerErrorException(
-                            "Error - unkown service"
-                        )
-                    },
-                  null
-                  )
+                val wallet =
+                    Wallet(
+                        WalletId(UUID.randomUUID()),
+                        userId,
+                        WalletStatus.INITIALIZED,
+                        now,
+                        now,
+                        PaymentInstrumentType.valueOf(
+                            walletCreateRequestDto.paymentInstrumentType.value
+                        ),
+                        null,
+                        null,
+                        securityToken,
+                        walletCreateRequestDto.services
+                            .map { service -> WalletServiceEnum.valueOf(service.value) }
+                            .onErrorMap { InternalServerErrorException("Error - unkown service") },
+                        null
+                    )
 
                 walletRepository
                     .save(wallet)
