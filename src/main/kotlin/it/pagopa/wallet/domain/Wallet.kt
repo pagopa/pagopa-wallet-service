@@ -24,6 +24,6 @@ data class Wallet(
     val paymentInstrumentDetail: PaymentInstrumentDetail?
 ) {
     init {
-        require(services.isNotEmpty()) { "Wallets cannot be empty!" }
+        require(services.isNotEmpty()) { "Wallet services cannot be empty!" }
     }
 }
