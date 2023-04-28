@@ -1,6 +1,5 @@
 package it.pagopa.wallet.domain.details
 
-import it.pagopa.generated.wallet.model.TypeDto
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 
 /** Data class that maps WalletDetails for CARD instrument type */
@@ -20,5 +19,4 @@ data class CardDetails(
         require(Regex("^\\d{6}$").matchEntire(expiryDate) != null) { "Invalid expiry date format" }
     }
 
-    override fun type(): TypeDto = TypeDto.CARDS
 }

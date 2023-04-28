@@ -22,7 +22,6 @@ data class Wallet(
     var updateDate: String,
     val paymentInstrumentType: TypeDto,
     val paymentInstrumentId: PaymentInstrumentId?,
-    val contractNumber: String?,
     val gatewaySecurityToken: String,
     val services: List<ServiceDto>,
     val details: WalletDetails?

@@ -3,11 +3,11 @@ package it.pagopa.wallet.domain
 import it.pagopa.generated.wallet.model.ServiceDto
 import it.pagopa.generated.wallet.model.TypeDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
-import java.time.OffsetDateTime
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.OffsetDateTime
+import java.util.*
 
 class WalletTest {
     @Test
@@ -25,7 +25,6 @@ class WalletTest {
                 now,
                 now,
                 TypeDto.CARDS,
-                null,
                 null,
                 securityToken,
                 listOf(ServiceDto.PAGOPA),
@@ -51,7 +50,6 @@ class WalletTest {
                 now,
                 now,
                 TypeDto.CARDS,
-                null,
                 null,
                 securityToken,
                 services,

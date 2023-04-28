@@ -15,13 +15,13 @@ import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
-import java.net.URI
-import java.time.OffsetDateTime
-import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.net.URI
+import java.time.OffsetDateTime
+import java.util.*
 
 @Service
 @Slf4j
@@ -65,8 +65,8 @@ class WalletService(
             )
             .onErrorMap {
                 BadGatewayException(
-                        "Could not send order to payment gateway. Reason: ${it.message}"
-                    )
+                    "Could not send order to payment gateway. Reason: ${it.message}"
+                )
                     .initCause(it)
             }
             .map {
@@ -93,10 +93,16 @@ class WalletService(
                         now,
                         walletCreateRequestDto.type,
                         null,
-                        null,
                         securityToken,
                         walletCreateRequestDto.services,
-                        null
+                        details = CardDetails(
+                            bin = "123456",
+                            maskedPan = "123456******9876",
+                            expiryDate = "203012",
+                            contractNumber = "contractNumber",
+                            brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                            holderName = "holder name"
+                        )
                     )
 
                 walletRepository
@@ -128,22 +134,20 @@ class WalletService(
 
     private fun buildWalletInfoDetails(walletDetails: WalletDetails?): WalletInfoDetailsDto? =
         if (walletDetails != null) {
-            when (walletDetails.type()) {
-                TypeDto.CARDS ->
-                    if (walletDetails !is CardDetails) {
-                        throw InternalServerErrorException(
-                            "Invalid wallet details data for type: ${walletDetails.type()}. Expected ${CardDetails::class.java}, but was: ${walletDetails.javaClass}"
-                        )
-                    } else {
-                        WalletCardDetailsDto()
-                            .type(walletDetails.type().toString())
-                            .bin(walletDetails.bin)
-                            .maskedPan(walletDetails.maskedPan)
-                            .expiryDate(walletDetails.expiryDate)
-                            .contractNumber(walletDetails.contractNumber)
-                            .brand(walletDetails.brand)
-                            .holder(walletDetails.holderName)
-                    }
+            when (walletDetails) {
+                is CardDetails ->
+                    WalletCardDetailsDto()
+                        .type(TypeDto.CARDS.toString())
+                        .bin(walletDetails.bin)
+                        .maskedPan(walletDetails.maskedPan)
+                        .expiryDate(walletDetails.expiryDate)
+                        .contractNumber(walletDetails.contractNumber)
+                        .brand(walletDetails.brand)
+                        .holder(walletDetails.holderName)
+
+                else -> {
+                    throw InternalServerErrorException("Unhandled fetched wallet details of type ${walletDetails.javaClass}")
+                }
             }
         } else {
             null
