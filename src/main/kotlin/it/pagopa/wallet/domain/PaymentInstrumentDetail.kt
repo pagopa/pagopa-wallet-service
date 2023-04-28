@@ -12,7 +12,7 @@ import java.util.*
  */
 data class PaymentInstrumentDetail(val bin: String, val maskedPan: String, val expiryDate: String) {
     init {
-        require(Regex("[0-9]{6}").matchEntire(maskedPan) != null) { "Invalid bin format" }
+        require(Regex("[0-9]{6}").matchEntire(bin) != null) { "Invalid bin format" }
         require(Regex("[0-9]{6}[*]{6}[0-9]{4}").matchEntire(maskedPan) != null) {
             "Invalid masked pan format"
         }
