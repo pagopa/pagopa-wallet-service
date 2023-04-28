@@ -91,8 +91,9 @@ class WalletService(
                         null,
                         null,
                         securityToken,
-                        walletCreateRequestDto.services
-                            .map { service -> WalletServiceEnum.valueOf(service.value) },
+                        walletCreateRequestDto.services.map { service ->
+                            WalletServiceEnum.valueOf(service.value)
+                        },
                         null
                     )
 
