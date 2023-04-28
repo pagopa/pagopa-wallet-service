@@ -6,10 +6,10 @@ import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
-import org.springframework.http.HttpStatus
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
+import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
     const val GATEWAY_SECURITY_TOKEN = "securityToken"
@@ -29,14 +29,14 @@ object WalletTestUtils {
             gatewaySecurityToken = "securityToken",
             services = listOf(ServiceDto.PAGOPA),
             details =
-            CardDetails(
-                bin = "123456",
-                maskedPan = "123456******9876",
-                expiryDate = "203012",
-                contractNumber = "contractNumber",
-                brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
-                holderName = "holder name"
-            )
+                CardDetails(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012",
+                    contractNumber = "contractNumber",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
+                )
         )
 
     val VALID_WALLET_WITHOUT_INSTRUMENT_DETAILS =

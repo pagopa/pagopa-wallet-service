@@ -18,5 +18,4 @@ data class CardDetails(
         }
         require(Regex("^\\d{6}$").matchEntire(expiryDate) != null) { "Invalid expiry date format" }
     }
-
 }
