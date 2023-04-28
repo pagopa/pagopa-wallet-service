@@ -1,6 +1,5 @@
 package it.pagopa.wallet.domain
 
-import java.util.Date
 import org.springframework.data.mongodb.core.mapping.Document
 
 /**
@@ -15,8 +14,8 @@ data class Wallet(
     val id: WalletId,
     val userId: String,
     var status: WalletStatus,
-    val creationDate: Date,
-    var updateDate: Date,
+    val creationDate: String,
+    var updateDate: String,
     val paymentInstrumentType: PaymentInstrumentType,
     val paymentInstrumentId: PaymentInstrumentId?,
     val contractNumber: String?,
