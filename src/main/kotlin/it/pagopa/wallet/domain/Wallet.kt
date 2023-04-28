@@ -15,9 +15,9 @@ import java.util.Date
 data class Wallet(val id: WalletId, val userId: String, var status: WalletStatus,
                   val creationDate: Date, var updateDate: Date,
                   val paymentInstrumentType: PaymentInstrumentType,
-                  val paymentInstrumentId: PaymentInstrumentId,
-                  val contractNumber: String, val gatewaySecurityToken: String,
-                  val services: List<WalletService>, val paymentInstrumentDetail: PaymentInstrumentDetail) {
+                  val paymentInstrumentId: PaymentInstrumentId?,
+                  val contractNumber: String?, val gatewaySecurityToken: String,
+                  val services: List<WalletServiceEnum>, val paymentInstrumentDetail: PaymentInstrumentDetail?) {
     init {
         require(services.isNotEmpty()) { "Wallets cannot be empty!" }
     }

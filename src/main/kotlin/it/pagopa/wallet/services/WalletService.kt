@@ -11,7 +11,6 @@ import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
-import java.time.OffsetDateTime
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,10 +23,7 @@ class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val npgClient: NpgClient
 ) {
-    fun createWallet(
-        walletCreateRequestDto: WalletCreateRequestDto,
-        userId: String
-    ): Mono<Pair<Wallet, URI>> {
+    fun createWallet(walletCreateRequestDto: WalletCreateRequestDto, userId: String): Mono<Pair<Wallet, URI>> {
         val paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID())
         return npgClient
             .orderHpp(
@@ -76,25 +72,27 @@ class WalletService(
                 Pair(securityToken, redirectUrl)
             }
             .flatMap { (securityToken, redirectUrl) ->
-                val now = OffsetDateTime.now().toString()
+                val now = Date(System.currentTimeMillis())
 
                 // TODO: update null values
-                val wallet =
-                    Wallet(
-                        WalletId(UUID.randomUUID()),
-                        userId,
-                        WalletStatus.INITIALIZED,
-                        now,
-                        now,
-                        PaymentInstrumentType.valueOf(walletCreateRequestDto.type.value),
-                        null,
-                        null,
-                        securityToken,
-                        walletCreateRequestDto.services.map { service ->
-                            WalletServiceEnum.valueOf(service.value)
-                        },
-                        null
-                    )
+                val wallet = Wallet(
+                  WalletId(UUID.randomUUID()),
+                  userId,
+                  WalletStatus.INITIALIZED,
+                  now,
+                  now,
+                  PaymentInstrumentType.valueOf(walletCreateRequestDto.paymentInstrumentType.value),
+                  null,
+                  null,
+                  securityToken,
+                  walletCreateRequestDto.services.map { service -> WalletServiceEnum.valueOf(service.value) }
+                    .onErrorMap {
+                      InternalServerErrorException(
+                            "Error - unkown service"
+                        )
+                    },
+                  null
+                  )
 
                 walletRepository
                     .save(wallet)
