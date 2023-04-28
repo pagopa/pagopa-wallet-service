@@ -188,7 +188,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
 }
 
 tasks.withType<KotlinCompile> {
-  dependsOn("wallet", "nexiNpg")
+  dependsOn("wallet", "nexiNpg", "nexiNpgNotification")
   kotlinOptions.jvmTarget = "17"
 }
 

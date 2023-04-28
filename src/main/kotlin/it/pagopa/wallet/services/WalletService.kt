@@ -1,9 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.npg.model.HppRequest
-import it.pagopa.generated.npg.model.OrderItem
-import it.pagopa.generated.npg.model.PaymentSessionItem
-import it.pagopa.generated.npg.model.RecurrenceItem
+import it.pagopa.generated.npg.model.*
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.PaymentInstrument
 import it.pagopa.wallet.domain.PaymentInstrumentId
@@ -18,6 +15,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 @Slf4j
@@ -87,5 +85,16 @@ class WalletService(
     private fun generateRandomString(length: Int): String {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length).map { allowedChars.random() }.joinToString("")
+    }
+
+    suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
+         return walletRepository.findById(correlationId)
+               .map { w -> Pair(w,w.paymentInstruments.filter { paymentInstrument -> paymentInstrument.securityToken == notification.securityToken }) }
+               .filter { p -> p.second.isNotEmpty()}
+               .switchIfEmpty { throw BadGatewayException("Security token match failed") }
+               .map { pair ->
+                   pair.first //TODO Update
+               }
+               .awaitSingle()
     }
 }
