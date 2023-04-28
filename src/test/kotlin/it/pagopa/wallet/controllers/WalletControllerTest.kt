@@ -38,7 +38,12 @@ class WalletControllerTest {
     @Test
     fun `wallet is created successfully`() = runTest {
         /* preconditions */
-        given(walletService.createWallet())
+        given(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .willReturn(
                 mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
             )
@@ -64,7 +69,12 @@ class WalletControllerTest {
     @Test
     fun `return 400 bad request for missing x-user-id header`() = runTest {
         /* preconditions */
-        given(walletService.createWallet())
+        given(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .willReturn(
                 mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
             )
@@ -88,7 +98,12 @@ class WalletControllerTest {
     @Test
     fun `return 400 bad request for invalid request`() = runTest {
         /* preconditions */
-        given(walletService.createWallet())
+        given(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .willReturn(
                 mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
             )
@@ -113,7 +128,12 @@ class WalletControllerTest {
     @Test
     fun `return 502 if service raises BadGatewayException`() = runTest {
         /* preconditions */
-        given(walletService.createWallet())
+        given(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .willReturn(Mono.error(BadGatewayException("Bad gateway error message")))
 
         /* test */
@@ -139,7 +159,12 @@ class WalletControllerTest {
     @Test
     fun `return 500 if service raises InternalServerErrorException`() = runTest {
         /* preconditions */
-        given(walletService.createWallet())
+        given(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .willReturn(Mono.error(InternalServerErrorException("Internal server error message")))
 
         /* test */

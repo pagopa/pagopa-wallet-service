@@ -31,7 +31,12 @@ class WalletServiceTest {
         given(npgClient.orderHpp(any(), any())).willReturn(Mono.just(WalletTestUtils.hppResponse()))
 
         /* test */
-        StepVerifier.create(walletService.createWallet())
+        StepVerifier.create(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .expectNextMatches { it == expected }
             .verifyComplete()
     }
@@ -42,7 +47,12 @@ class WalletServiceTest {
         given(walletRepository.save(any()))
             .willReturn(Mono.error(RuntimeException("Error saving wallet")))
         given(npgClient.orderHpp(any(), any())).willReturn(Mono.just(WalletTestUtils.hppResponse()))
-        StepVerifier.create(walletService.createWallet())
+        StepVerifier.create(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .expectError(InternalServerErrorException::class.java)
             .verify()
     }
@@ -54,7 +64,12 @@ class WalletServiceTest {
         given(npgClient.orderHpp(any(), any()))
             .willReturn(Mono.error(RuntimeException("NPG Error")))
 
-        StepVerifier.create(walletService.createWallet())
+        StepVerifier.create(
+                walletService.createWallet(
+                    WalletTestUtils.CREATE_WALLET_REQUEST,
+                    WalletTestUtils.USER_ID
+                )
+            )
             .expectError(BadGatewayException::class.java)
             .verify()
     }
@@ -67,7 +82,12 @@ class WalletServiceTest {
             given(npgClient.orderHpp(any(), any()))
                 .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { hostedPage = null }))
 
-            StepVerifier.create(walletService.createWallet())
+            StepVerifier.create(
+                    walletService.createWallet(
+                        WalletTestUtils.CREATE_WALLET_REQUEST,
+                        WalletTestUtils.USER_ID
+                    )
+                )
                 .expectError(BadGatewayException::class.java)
                 .verify()
         }
@@ -80,7 +100,12 @@ class WalletServiceTest {
             given(npgClient.orderHpp(any(), any()))
                 .willReturn(Mono.just(WalletTestUtils.hppResponse().apply { securityToken = null }))
 
-            StepVerifier.create(walletService.createWallet())
+            StepVerifier.create(
+                    walletService.createWallet(
+                        WalletTestUtils.CREATE_WALLET_REQUEST,
+                        WalletTestUtils.USER_ID
+                    )
+                )
                 .expectError(BadGatewayException::class.java)
                 .verify()
         }

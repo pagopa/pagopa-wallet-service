@@ -5,11 +5,13 @@ import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.ServiceDto
 import it.pagopa.generated.wallet.model.TypeDto
 import it.pagopa.generated.wallet.model.WalletCreateRequestDto
-import it.pagopa.wallet.domain.PaymentInstrument
-import it.pagopa.wallet.domain.PaymentInstrumentId
+import it.pagopa.wallet.domain.PaymentInstrumentType
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.WalletServiceEnum
+import it.pagopa.wallet.domain.WalletStatus
 import java.net.URI
+import java.time.OffsetDateTime
 import java.util.*
 import org.springframework.http.HttpStatus
 
@@ -17,13 +19,21 @@ object WalletTestUtils {
     const val GATEWAY_SECURITY_TOKEN = "securityToken"
 
     const val USER_ID = "user-id"
+    val now = OffsetDateTime.now().toString()
 
     val VALID_WALLET =
         Wallet(
             WalletId(UUID.randomUUID()),
-            listOf(
-                PaymentInstrument(PaymentInstrumentId(UUID.randomUUID()), GATEWAY_SECURITY_TOKEN)
-            )
+            USER_ID,
+            WalletStatus.INITIALIZED,
+            now,
+            now,
+            PaymentInstrumentType.CARDS,
+            null,
+            null,
+            GATEWAY_SECURITY_TOKEN,
+            listOf(WalletServiceEnum.PAGOPA),
+            null
         )
 
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
