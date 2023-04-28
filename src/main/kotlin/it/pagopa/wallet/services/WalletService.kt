@@ -5,8 +5,11 @@ import it.pagopa.generated.npg.model.OrderItem
 import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
 import it.pagopa.generated.wallet.model.WalletCreateRequestDto
+import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.domain.*
+import it.pagopa.wallet.domain.PaymentInstrumentId
+import it.pagopa.wallet.domain.Wallet
+import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.repositories.WalletRepository
@@ -83,16 +86,14 @@ class WalletService(
                     Wallet(
                         WalletId(UUID.randomUUID()),
                         userId,
-                        WalletStatus.INITIALIZED,
+                        WalletStatusDto.INITIALIZED,
                         now,
                         now,
-                        PaymentInstrumentType.valueOf(walletCreateRequestDto.type.value),
+                        walletCreateRequestDto.type,
                         null,
                         null,
                         securityToken,
-                        walletCreateRequestDto.services.map { service ->
-                            WalletServiceEnum.valueOf(service.value)
-                        },
+                        walletCreateRequestDto.services,
                         null
                     )
 

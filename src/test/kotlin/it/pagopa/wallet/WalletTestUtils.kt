@@ -1,15 +1,9 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
-import it.pagopa.generated.wallet.model.ProblemJsonDto
-import it.pagopa.generated.wallet.model.ServiceDto
-import it.pagopa.generated.wallet.model.TypeDto
-import it.pagopa.generated.wallet.model.WalletCreateRequestDto
-import it.pagopa.wallet.domain.PaymentInstrumentType
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
-import it.pagopa.wallet.domain.WalletServiceEnum
-import it.pagopa.wallet.domain.WalletStatus
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
@@ -25,14 +19,14 @@ object WalletTestUtils {
         Wallet(
             WalletId(UUID.randomUUID()),
             USER_ID,
-            WalletStatus.INITIALIZED,
+            WalletStatusDto.INITIALIZED,
             now,
             now,
-            PaymentInstrumentType.CARDS,
+            TypeDto.CARDS,
             null,
             null,
             GATEWAY_SECURITY_TOKEN,
-            listOf(WalletServiceEnum.PAGOPA),
+            listOf(ServiceDto.PAGOPA),
             null
         )
 

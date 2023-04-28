@@ -1,5 +1,8 @@
 package it.pagopa.wallet.domain
 
+import it.pagopa.generated.wallet.model.ServiceDto
+import it.pagopa.generated.wallet.model.TypeDto
+import it.pagopa.generated.wallet.model.WalletStatusDto
 import org.springframework.data.mongodb.core.mapping.Document
 
 /**
@@ -13,14 +16,14 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class Wallet(
     val id: WalletId,
     val userId: String,
-    var status: WalletStatus,
+    var status: WalletStatusDto,
     val creationDate: String,
     var updateDate: String,
-    val paymentInstrumentType: PaymentInstrumentType,
+    val paymentInstrumentType: TypeDto,
     val paymentInstrumentId: PaymentInstrumentId?,
     val contractNumber: String?,
     val gatewaySecurityToken: String,
-    val services: List<WalletServiceEnum>,
+    val services: List<ServiceDto>,
     val paymentInstrumentDetail: PaymentInstrumentDetail?
 ) {
     init {
