@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 @Slf4j
@@ -112,7 +111,7 @@ class WalletService(
     fun getWallet(walletId: UUID): Mono<WalletInfoDto> =
         walletRepository
             .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .switchIfEmpty(Mono.error(WalletNotFoundException(WalletId(walletId))))
             .map {
                 // TODO rivedere questi dati
                 WalletInfoDto()
@@ -130,9 +129,9 @@ class WalletService(
                                 .bin(it.paymentInstrumentDetail.bin)
                                 .maskedPan(it.paymentInstrumentDetail.maskedPan)
                                 .expiryDate(it.paymentInstrumentDetail.expiryDate)
-                                .contractNumber("contractNumber")
-                                .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
-                                .holder("holder name")
+                                .contractNumber(it.paymentInstrumentDetail.contractNumber)
+                                .brand(it.paymentInstrumentDetail.brand)
+                                .holder(it.paymentInstrumentDetail.holderName)
                         } else {
                             null
                         }

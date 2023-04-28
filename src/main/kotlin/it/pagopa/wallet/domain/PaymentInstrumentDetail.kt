@@ -1,16 +1,27 @@
 package it.pagopa.wallet.domain
 
-import java.util.*
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 
 /**
  * A Payment Instrument Detail data.
  *
- * This class holds information about the payment instrument. bin: first 6 chars of the card number
- * maskedPan: first 6 chars + last 4 chars of the card number expiryDate: expiry date of the card
+ * This class holds information about the payment instrument:
+ * * bin: first 6 chars of the card number
+ * * maskedPan: first 6 chars + last 4 chars of the card number
+ * * expiryDate: expiry date of the card in yyyyMM format
+ * * contractNumber: gateway contract number
+ * * card brand
  *
  * @throws IllegalArgumentException when bin/maskedPan are not well formatted
  */
-data class PaymentInstrumentDetail(val bin: String, val maskedPan: String, val expiryDate: String) {
+data class PaymentInstrumentDetail(
+    val bin: String,
+    val maskedPan: String,
+    val expiryDate: String,
+    val contractNumber: String,
+    val brand: BrandEnum,
+    val holderName: String
+) {
     init {
         require(Regex("[0-9]{6}").matchEntire(bin) != null) { "Invalid bin format" }
         require(Regex("[0-9]{6}[*]{6}[0-9]{4}").matchEntire(maskedPan) != null) {

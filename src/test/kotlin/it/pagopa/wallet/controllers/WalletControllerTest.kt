@@ -1,11 +1,14 @@
 package it.pagopa.wallet.controllers
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletCreateResponseDto
-import it.pagopa.generated.wallet.model.WalletInfoDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.services.WalletService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
@@ -196,6 +199,11 @@ class WalletControllerTest {
         val walletId = wallet.id
         val walletInfo = WalletTestUtils.toWalletInfo(wallet)
         given(walletService.getWallet(walletId.value)).willReturn(Mono.just(walletInfo))
+        // workaround for timestamp comparison in received response (timezone and so on)
+        val objectMapper =
+            ObjectMapper()
+                .registerModule(JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
         /* test */
         webClient
@@ -204,7 +212,32 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.OK)
-            .expectBody(WalletInfoDto::class.java)
-            .isEqualTo(walletInfo)
+            .expectBody()
+            .json(objectMapper.writeValueAsString(walletInfo))
+    }
+
+    @Test
+    fun `GET wallet return 404 for wallet not found`() = runTest {
+        /* preconditions */
+        val wallet = WalletTestUtils.VALID_WALLET
+        val walletId = wallet.id
+        given(walletService.getWallet(walletId.value))
+            .willReturn(Mono.error(WalletNotFoundException(walletId)))
+
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.NOT_FOUND)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.NOT_FOUND,
+                    "Wallet not found",
+                    "Cannot find wallet with id $walletId"
+                )
+            )
     }
 }

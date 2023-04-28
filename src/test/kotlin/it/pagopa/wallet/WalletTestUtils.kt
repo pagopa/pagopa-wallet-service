@@ -20,10 +20,10 @@ object WalletTestUtils {
     val VALID_WALLET =
         Wallet(
             id = WalletId(UUID.randomUUID()),
-            userId = "xUserId",
+            userId = USER_ID,
             status = WalletStatusDto.INITIALIZED,
-            creationDate = OffsetDateTime.now().toString(),
-            updateDate = OffsetDateTime.now().toString(),
+            creationDate = now,
+            updateDate = now,
             paymentInstrumentType = TypeDto.CARDS,
             contractNumber = "contractNumber",
             gatewaySecurityToken = "securityToken",
@@ -33,17 +33,20 @@ object WalletTestUtils {
                 PaymentInstrumentDetail(
                     bin = "123456",
                     maskedPan = "123456******9876",
-                    expiryDate = "203012"
+                    expiryDate = "203012",
+                    contractNumber = "contractNumber",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
                 )
         )
 
     val VALID_WALLET_WITHOUT_INSTRUMENT_DETAILS =
         Wallet(
             id = WalletId(UUID.randomUUID()),
-            userId = "xUserId",
+            userId = USER_ID,
             status = WalletStatusDto.INITIALIZED,
-            creationDate = OffsetDateTime.now().toString(),
-            updateDate = OffsetDateTime.now().toString(),
+            creationDate = now,
+            updateDate = now,
             paymentInstrumentType = TypeDto.CARDS,
             contractNumber = "contractNumber",
             gatewaySecurityToken = "securityToken",
