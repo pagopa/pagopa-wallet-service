@@ -27,7 +27,7 @@ class WalletController(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletCreateResponseDto>> =
         walletCreateRequestDto.flatMap {
-            walletService.createWallet().map { (wallet, redirectUrl) ->
+            walletService.createWallet(it, xUserId).map { (wallet, redirectUrl) ->
                 ResponseEntity.ok(
                     WalletCreateResponseDto()
                         .walletId(wallet.id.value)

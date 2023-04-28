@@ -12,10 +12,11 @@ import java.util.*
  * 
  * @throws IllegalArgumentException when bin/maskedPan are not well formatted
  */
-data class PaymentInstrumentDetail(val bin: String, val maskedPan: String, val expiryDate: Date) {
+data class PaymentInstrumentDetail(val bin: String, val maskedPan: String, val expiryDate: String) {
     init {
         require( Regex("[0-9]{6}").matchEntire(maskedPan) != null) { "Invalid bin format" }
         require( Regex("[0-9]{6}[*]{6}[0-9]{4}").matchEntire(maskedPan) != null ) { "Invalid masked pan format" }
+        require( Regex("^Y\\d{6}$").matchEntire(expiryDate) != null ) { "Invalid expiry date format"}
     }
 }
 

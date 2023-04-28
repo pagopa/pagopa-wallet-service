@@ -4,11 +4,9 @@ import it.pagopa.generated.npg.model.HppRequest
 import it.pagopa.generated.npg.model.OrderItem
 import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
+import it.pagopa.generated.wallet.model.WalletCreateRequestDto
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.domain.PaymentInstrument
-import it.pagopa.wallet.domain.PaymentInstrumentId
-import it.pagopa.wallet.domain.Wallet
-import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.*
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.repositories.WalletRepository
@@ -25,7 +23,7 @@ class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val npgClient: NpgClient
 ) {
-    fun createWallet(): Mono<Pair<Wallet, URI>> {
+    fun createWallet(walletCreateRequestDto: WalletCreateRequestDto, userId: String): Mono<Pair<Wallet, URI>> {
         val paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID())
         return npgClient
             .orderHpp(
@@ -74,8 +72,28 @@ class WalletService(
                 Pair(securityToken, redirectUrl)
             }
             .flatMap { (securityToken, redirectUrl) ->
-                val paymentInstrument = PaymentInstrument(paymentInstrumentId, securityToken)
-                val wallet = Wallet(WalletId(UUID.randomUUID()), listOf(paymentInstrument))
+                val now = Date(System.currentTimeMillis())
+
+                // TODO: update null values
+                val wallet = Wallet(
+                  WalletId(UUID.randomUUID()),
+                  userId,
+                  WalletStatus.INITIALIZED,
+                  now,
+                  now,
+                  PaymentInstrumentType.valueOf(walletCreateRequestDto.paymentInstrumentType.value),
+                  null,
+                  null,
+                  securityToken,
+                  walletCreateRequestDto.services.map { service -> WalletServiceEnum.valueOf(service.value) }
+                    .onErrorMap {
+                      InternalServerErrorException(
+                            "Error - unkown service"
+                        )
+                    },
+                  null
+                  )
+
                 walletRepository
                     .save(wallet)
                     .map { savedWallet -> Pair(savedWallet, URI.create(redirectUrl)) }
