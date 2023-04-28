@@ -1,11 +1,12 @@
 package it.pagopa.wallet.domain
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
+import it.pagopa.wallet.domain.details.CardDetails
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class PaymentInstrumentDetailTest {
+class cardDetailsTest {
     private val validBin = "424242"
     val validMaskedPan = "424242******5555"
     val validExpiryDate = "203012"
@@ -17,10 +18,10 @@ class PaymentInstrumentDetailTest {
     val contractNumber = "contractNumber"
 
     @Test
-    fun `can instantiate a PaymentInstrumentDetail from valid bin, maskedPan and expiryDate`() {
+    fun `can instantiate a CardDetails from valid bin, maskedPan and expiryDate`() {
 
-        val paymentInstrumentDetail =
-            PaymentInstrumentDetail(
+        val cardDetails =
+            CardDetails(
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,
@@ -29,16 +30,16 @@ class PaymentInstrumentDetailTest {
                 holderName = holderName
             )
 
-        assertEquals(validBin, paymentInstrumentDetail.bin)
-        assertEquals(validMaskedPan, paymentInstrumentDetail.maskedPan)
-        assertEquals(validExpiryDate, paymentInstrumentDetail.expiryDate)
+        assertEquals(validBin, cardDetails.bin)
+        assertEquals(validMaskedPan, cardDetails.maskedPan)
+        assertEquals(validExpiryDate, cardDetails.expiryDate)
     }
 
     @Test
-    fun `can't instantiate a PaymentInstrumentDetail from valid bin, maskedPan and invalid expiryDate`() {
+    fun `can't instantiate a cardDetails from valid bin, maskedPan and invalid expiryDate`() {
 
         assertThrows<IllegalArgumentException> {
-            PaymentInstrumentDetail(
+            CardDetails(
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = invalidExpiryDate,
@@ -50,10 +51,10 @@ class PaymentInstrumentDetailTest {
     }
 
     @Test
-    fun `can't instantiate a PaymentInstrumentDetail from valid bin, expiryDate and invalid maskedPan`() {
+    fun `can't instantiate a cardDetails from valid bin, expiryDate and invalid maskedPan`() {
 
         assertThrows<IllegalArgumentException> {
-            PaymentInstrumentDetail(
+            CardDetails(
                 bin = validBin,
                 maskedPan = invalidMaskedPan,
                 expiryDate = validExpiryDate,
@@ -65,10 +66,10 @@ class PaymentInstrumentDetailTest {
     }
 
     @Test
-    fun `can't instantiate a PaymentInstrumentDetail from valid maskedPan, expiryDate and invalid bin`() {
+    fun `can't instantiate a cardDetails from valid maskedPan, expiryDate and invalid bin`() {
 
         assertThrows<IllegalArgumentException> {
-            PaymentInstrumentDetail(
+            CardDetails(
                 bin = invalidBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,

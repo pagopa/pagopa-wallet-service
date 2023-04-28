@@ -3,13 +3,13 @@ package it.pagopa.wallet.controllers
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import it.pagopa.generated.wallet.model.ProblemJsonDto
-import it.pagopa.generated.wallet.model.WalletCreateResponseDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.services.WalletService
+import java.time.OffsetDateTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -50,7 +50,12 @@ class WalletControllerTest {
                 )
             )
             .willReturn(
-                mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
+                mono {
+                    Pair(
+                        WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS,
+                        WalletTestUtils.GATEWAY_REDIRECT_URL
+                    )
+                }
             )
 
         /* test */
@@ -66,7 +71,7 @@ class WalletControllerTest {
             .expectBody(WalletCreateResponseDto::class.java)
             .isEqualTo(
                 WalletCreateResponseDto()
-                    .walletId(WalletTestUtils.VALID_WALLET.id.value)
+                    .walletId(WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS.id.value)
                     .redirectUrl(WalletTestUtils.GATEWAY_REDIRECT_URL.toString())
             )
     }
@@ -81,7 +86,12 @@ class WalletControllerTest {
                 )
             )
             .willReturn(
-                mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
+                mono {
+                    Pair(
+                        WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS,
+                        WalletTestUtils.GATEWAY_REDIRECT_URL
+                    )
+                }
             )
 
         /* test */
@@ -110,7 +120,12 @@ class WalletControllerTest {
                 )
             )
             .willReturn(
-                mono { Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL) }
+                mono {
+                    Pair(
+                        WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS,
+                        WalletTestUtils.GATEWAY_REDIRECT_URL
+                    )
+                }
             )
 
         /* test */
@@ -195,9 +210,18 @@ class WalletControllerTest {
     @Test
     fun `GET wallet return wallet successfully`() = runTest {
         /* preconditions */
-        val wallet = WalletTestUtils.VALID_WALLET
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS
         val walletId = wallet.id
-        val walletInfo = WalletTestUtils.toWalletInfo(wallet)
+        val walletInfo =
+            WalletInfoDto()
+                .walletId(wallet.id.value)
+                .userId(wallet.userId)
+                .status(wallet.status)
+                .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                .updateDate(OffsetDateTime.parse(wallet.updateDate))
+                .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+                .services(wallet.services)
+
         given(walletService.getWallet(walletId.value)).willReturn(Mono.just(walletInfo))
         // workaround for timestamp comparison in received response (timezone and so on)
         val objectMapper =
@@ -219,7 +243,7 @@ class WalletControllerTest {
     @Test
     fun `GET wallet return 404 for wallet not found`() = runTest {
         /* preconditions */
-        val wallet = WalletTestUtils.VALID_WALLET
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS
         val walletId = wallet.id
         given(walletService.getWallet(walletId.value))
             .willReturn(Mono.error(WalletNotFoundException(walletId)))

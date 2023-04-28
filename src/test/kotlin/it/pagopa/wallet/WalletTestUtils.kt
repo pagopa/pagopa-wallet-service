@@ -2,10 +2,10 @@ package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.domain.PaymentInstrumentDetail
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.details.CardDetails
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
@@ -17,7 +17,7 @@ object WalletTestUtils {
     const val USER_ID = "user-id"
     val now = OffsetDateTime.now().toString()
 
-    val VALID_WALLET =
+    val VALID_WALLET_WITH_CARD_DETAILS =
         Wallet(
             id = WalletId(UUID.randomUUID()),
             userId = USER_ID,
@@ -29,8 +29,8 @@ object WalletTestUtils {
             gatewaySecurityToken = "securityToken",
             services = listOf(ServiceDto.PAGOPA),
             paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
-            paymentInstrumentDetail =
-                PaymentInstrumentDetail(
+            details =
+                CardDetails(
                     bin = "123456",
                     maskedPan = "123456******9876",
                     expiryDate = "203012",
@@ -52,7 +52,7 @@ object WalletTestUtils {
             gatewaySecurityToken = "securityToken",
             services = listOf(ServiceDto.PAGOPA),
             paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
-            paymentInstrumentDetail = null
+            details = null
         )
 
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
@@ -92,28 +92,4 @@ object WalletTestUtils {
         title: String,
         description: String
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
-
-    fun toWalletInfo(wallet: Wallet): WalletInfoDto =
-        WalletInfoDto()
-            .walletId(wallet.id.value)
-            .userId(wallet.userId)
-            .status(wallet.status)
-            .creationDate(OffsetDateTime.parse(wallet.creationDate))
-            .updateDate(OffsetDateTime.parse(wallet.updateDate))
-            .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
-            .services(wallet.services)
-            .details(
-                if (wallet.paymentInstrumentDetail != null) {
-                    WalletCardDetailsDto()
-                        .type(TypeDto.CARDS.toString())
-                        .bin(wallet.paymentInstrumentDetail!!.bin)
-                        .maskedPan(wallet.paymentInstrumentDetail!!.maskedPan)
-                        .expiryDate(wallet.paymentInstrumentDetail!!.expiryDate)
-                        .contractNumber("contractNumber")
-                        .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
-                        .holder("holder name")
-                } else {
-                    null
-                }
-            )
 }

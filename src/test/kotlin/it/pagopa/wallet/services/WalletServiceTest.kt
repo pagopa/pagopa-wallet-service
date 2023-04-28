@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.generated.wallet.model.WalletInfoDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
@@ -31,7 +32,11 @@ class WalletServiceTest {
     @Test
     fun `createWallet creates wallet successfully`() = runTest {
         /* preconditions */
-        val expected = Pair(WalletTestUtils.VALID_WALLET, WalletTestUtils.GATEWAY_REDIRECT_URL)
+        val expected =
+            Pair(
+                WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS,
+                WalletTestUtils.GATEWAY_REDIRECT_URL
+            )
 
         given(walletRepository.save(any())).willReturn(Mono.just(expected.first))
         given(npgClient.orderHpp(any(), any())).willReturn(Mono.just(WalletTestUtils.hppResponse()))
@@ -66,7 +71,8 @@ class WalletServiceTest {
     @Test
     fun `createWallet throws BadGatewayException if it can't contact NPG`() = runTest {
         /* preconditions */
-        given(walletRepository.save(any())).willReturn(Mono.just(WalletTestUtils.VALID_WALLET))
+        given(walletRepository.save(any()))
+            .willReturn(Mono.just(WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS))
         given(npgClient.orderHpp(any(), any()))
             .willReturn(Mono.error(RuntimeException("NPG Error")))
 
@@ -120,7 +126,7 @@ class WalletServiceTest {
     fun `getWallet return wallet successfully`() = runTest {
         /* precondition */
 
-        val wallet = WalletTestUtils.VALID_WALLET
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS
         val walletId = wallet.id
         val expectedWalletInfo =
             WalletInfoDto()
@@ -134,12 +140,12 @@ class WalletServiceTest {
                 .details(
                     WalletCardDetailsDto()
                         .type(TypeDto.CARDS.toString())
-                        .bin(wallet.paymentInstrumentDetail?.bin)
-                        .maskedPan(wallet.paymentInstrumentDetail?.maskedPan)
-                        .expiryDate(wallet.paymentInstrumentDetail?.expiryDate)
-                        .contractNumber("contractNumber")
-                        .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
-                        .holder("holder name")
+                        .bin((wallet.details as CardDetails).bin)
+                        .maskedPan((wallet.details as CardDetails).maskedPan)
+                        .expiryDate((wallet.details as CardDetails).expiryDate)
+                        .contractNumber((wallet.details as CardDetails).contractNumber)
+                        .brand((wallet.details as CardDetails).brand)
+                        .holder((wallet.details as CardDetails).holderName)
                 )
         given(walletRepository.findById(walletId.value.toString())).willReturn(mono { wallet })
 
@@ -177,7 +183,7 @@ class WalletServiceTest {
     fun `getWallet throw WalletNotFoundException for missing wallet into DB`() = runTest {
         /* precondition */
 
-        val wallet = WalletTestUtils.VALID_WALLET
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CARD_DETAILS
         val walletId = wallet.id
 
         given(walletRepository.findById(walletId.value.toString())).willReturn(Mono.empty())

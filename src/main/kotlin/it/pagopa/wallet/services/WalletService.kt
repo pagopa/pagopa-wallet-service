@@ -9,6 +9,8 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.details.CardDetails
+import it.pagopa.wallet.domain.details.WalletDetails
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
@@ -113,7 +115,6 @@ class WalletService(
             .findById(walletId.toString())
             .switchIfEmpty(Mono.error(WalletNotFoundException(WalletId(walletId))))
             .map {
-                // TODO rivedere questi dati
                 WalletInfoDto()
                     .walletId(it.id.value)
                     .userId(it.userId)
@@ -122,21 +123,31 @@ class WalletService(
                     .updateDate(OffsetDateTime.parse(it.updateDate))
                     .paymentInstrumentId(it.paymentInstrumentId?.value.toString())
                     .services(it.services)
-                    .details(
-                        if (it.paymentInstrumentDetail != null) {
-                            WalletCardDetailsDto()
-                                .type(TypeDto.CARDS.toString())
-                                .bin(it.paymentInstrumentDetail.bin)
-                                .maskedPan(it.paymentInstrumentDetail.maskedPan)
-                                .expiryDate(it.paymentInstrumentDetail.expiryDate)
-                                .contractNumber(it.paymentInstrumentDetail.contractNumber)
-                                .brand(it.paymentInstrumentDetail.brand)
-                                .holder(it.paymentInstrumentDetail.holderName)
-                        } else {
-                            null
-                        }
-                    )
+                    .details(buildWalletInfoDetails(it.details))
             }
+
+    private fun buildWalletInfoDetails(walletDetails: WalletDetails?): WalletInfoDetailsDto? =
+        if (walletDetails != null) {
+            when (walletDetails.type()) {
+                TypeDto.CARDS ->
+                    if (walletDetails !is CardDetails) {
+                        throw InternalServerErrorException(
+                            "Invalid wallet details data for type: ${walletDetails.type()}. Expected ${CardDetails::class.java}, but was: ${walletDetails.javaClass}"
+                        )
+                    } else {
+                        WalletCardDetailsDto()
+                            .type(walletDetails.type().toString())
+                            .bin(walletDetails.bin)
+                            .maskedPan(walletDetails.maskedPan)
+                            .expiryDate(walletDetails.expiryDate)
+                            .contractNumber(walletDetails.contractNumber)
+                            .brand(walletDetails.brand)
+                            .holder(walletDetails.holderName)
+                    }
+            }
+        } else {
+            null
+        }
 
     private fun generateRandomString(length: Int): String {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
