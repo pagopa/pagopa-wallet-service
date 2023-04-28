@@ -6,7 +6,6 @@ import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
@@ -33,7 +32,6 @@ class WalletService(
         walletCreateRequestDto: WalletCreateRequestDto,
         userId: String
     ): Mono<Pair<Wallet, URI>> {
-        val paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID())
         return npgClient
             .orderHpp(
                 UUID.randomUUID(),
@@ -95,15 +93,7 @@ class WalletService(
                         null,
                         securityToken,
                         walletCreateRequestDto.services,
-                        details =
-                            CardDetails(
-                                bin = "123456",
-                                maskedPan = "123456******9876",
-                                expiryDate = "203012",
-                                contractNumber = "contractNumber",
-                                brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
-                                holderName = "holder name"
-                            )
+                        null
                     )
 
                 walletRepository
