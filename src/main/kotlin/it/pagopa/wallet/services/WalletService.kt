@@ -11,6 +11,7 @@ import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
+import java.time.OffsetDateTime
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -75,7 +76,7 @@ class WalletService(
                 Pair(securityToken, redirectUrl)
             }
             .flatMap { (securityToken, redirectUrl) ->
-                val now = Date(System.currentTimeMillis())
+                val now = OffsetDateTime.now().toString()
 
                 // TODO: update null values
                 val wallet =
@@ -85,9 +86,7 @@ class WalletService(
                         WalletStatus.INITIALIZED,
                         now,
                         now,
-                        PaymentInstrumentType.valueOf(
-                            walletCreateRequestDto.paymentInstrumentType.value
-                        ),
+                        PaymentInstrumentType.valueOf(walletCreateRequestDto.type.value),
                         null,
                         null,
                         securityToken,
