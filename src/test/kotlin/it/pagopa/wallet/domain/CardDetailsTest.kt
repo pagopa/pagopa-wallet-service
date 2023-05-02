@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class cardDetailsTest {
+class CardDetailsTest {
     private val validBin = "424242"
     val validMaskedPan = "424242******5555"
     val validExpiryDate = "203012"
