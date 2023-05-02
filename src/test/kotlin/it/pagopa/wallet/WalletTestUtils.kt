@@ -2,8 +2,10 @@ package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.details.CardDetails
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
@@ -15,19 +17,40 @@ object WalletTestUtils {
     const val USER_ID = "user-id"
     val now = OffsetDateTime.now().toString()
 
-    val VALID_WALLET =
+    val VALID_WALLET_WITH_CARD_DETAILS =
         Wallet(
-            WalletId(UUID.randomUUID()),
-            USER_ID,
-            WalletStatusDto.INITIALIZED,
-            now,
-            now,
-            TypeDto.CARDS,
-            null,
-            null,
-            GATEWAY_SECURITY_TOKEN,
-            listOf(ServiceDto.PAGOPA),
-            null
+            id = WalletId(UUID.randomUUID()),
+            userId = USER_ID,
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = now,
+            updateDate = now,
+            paymentInstrumentType = TypeDto.CARDS,
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            gatewaySecurityToken = "securityToken",
+            services = listOf(ServiceDto.PAGOPA),
+            details =
+                CardDetails(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012",
+                    contractNumber = "contractNumber",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
+                )
+        )
+
+    val VALID_WALLET_WITHOUT_INSTRUMENT_DETAILS =
+        Wallet(
+            id = WalletId(UUID.randomUUID()),
+            userId = USER_ID,
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = now,
+            updateDate = now,
+            paymentInstrumentType = TypeDto.CARDS,
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            gatewaySecurityToken = "securityToken",
+            services = listOf(ServiceDto.PAGOPA),
+            details = null
         )
 
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
@@ -62,6 +85,9 @@ object WalletTestUtils {
             .hostedPage(GATEWAY_REDIRECT_URL.toString())
             .securityToken(GATEWAY_SECURITY_TOKEN)
 
-    fun buildProblemJson(httpStatus: HttpStatus, title: String, description: String) =
-        ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
+    fun buildProblemJson(
+        httpStatus: HttpStatus,
+        title: String,
+        description: String
+    ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 }

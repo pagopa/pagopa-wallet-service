@@ -4,14 +4,15 @@ import it.pagopa.generated.npg.model.HppRequest
 import it.pagopa.generated.npg.model.OrderItem
 import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
-import it.pagopa.generated.wallet.model.WalletCreateRequestDto
-import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.details.CardDetails
+import it.pagopa.wallet.domain.details.WalletDetails
 import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.InternalServerErrorException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
@@ -31,7 +32,6 @@ class WalletService(
         walletCreateRequestDto: WalletCreateRequestDto,
         userId: String
     ): Mono<Pair<Wallet, URI>> {
-        val paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID())
         return npgClient
             .orderHpp(
                 UUID.randomUUID(),
@@ -91,7 +91,6 @@ class WalletService(
                         now,
                         walletCreateRequestDto.type,
                         null,
-                        null,
                         securityToken,
                         walletCreateRequestDto.services,
                         null
@@ -107,6 +106,44 @@ class WalletService(
                     }
             }
     }
+
+    fun getWallet(walletId: UUID): Mono<WalletInfoDto> =
+        walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty(Mono.error(WalletNotFoundException(WalletId(walletId))))
+            .map {
+                WalletInfoDto()
+                    .walletId(it.id.value)
+                    .userId(it.userId)
+                    .status(it.status)
+                    .creationDate(OffsetDateTime.parse(it.creationDate))
+                    .updateDate(OffsetDateTime.parse(it.updateDate))
+                    .paymentInstrumentId(it.paymentInstrumentId?.value.toString())
+                    .services(it.services)
+                    .details(buildWalletInfoDetails(it.details))
+            }
+
+    private fun buildWalletInfoDetails(walletDetails: WalletDetails?): WalletInfoDetailsDto? =
+        if (walletDetails != null) {
+            when (walletDetails) {
+                is CardDetails ->
+                    WalletCardDetailsDto()
+                        .type(TypeDto.CARDS.toString())
+                        .bin(walletDetails.bin)
+                        .maskedPan(walletDetails.maskedPan)
+                        .expiryDate(walletDetails.expiryDate)
+                        .contractNumber(walletDetails.contractNumber)
+                        .brand(walletDetails.brand)
+                        .holder(walletDetails.holderName)
+                else -> {
+                    throw InternalServerErrorException(
+                        "Unhandled fetched wallet details of type ${walletDetails.javaClass}"
+                    )
+                }
+            }
+        } else {
+            null
+        }
 
     private fun generateRandomString(length: Int): String {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')

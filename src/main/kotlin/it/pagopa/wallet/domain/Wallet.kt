@@ -3,6 +3,7 @@ package it.pagopa.wallet.domain
 import it.pagopa.generated.wallet.model.ServiceDto
 import it.pagopa.generated.wallet.model.TypeDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.domain.details.WalletDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 /**
@@ -21,10 +22,9 @@ data class Wallet(
     var updateDate: String,
     val paymentInstrumentType: TypeDto,
     val paymentInstrumentId: PaymentInstrumentId?,
-    val contractNumber: String?,
     val gatewaySecurityToken: String,
     val services: List<ServiceDto>,
-    val paymentInstrumentDetail: PaymentInstrumentDetail?
+    val details: WalletDetails?
 ) {
     init {
         require(services.isNotEmpty()) { "Wallet services cannot be empty!" }

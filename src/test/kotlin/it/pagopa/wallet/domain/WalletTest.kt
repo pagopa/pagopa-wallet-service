@@ -26,7 +26,6 @@ class WalletTest {
                 now,
                 TypeDto.CARDS,
                 null,
-                null,
                 securityToken,
                 listOf(ServiceDto.PAGOPA),
                 null
@@ -51,7 +50,6 @@ class WalletTest {
                 now,
                 now,
                 TypeDto.CARDS,
-                null,
                 null,
                 securityToken,
                 services,
