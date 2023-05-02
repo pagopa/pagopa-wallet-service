@@ -1,5 +1,9 @@
 package it.pagopa.wallet.domain
 
+import it.pagopa.generated.wallet.model.ServiceDto
+import it.pagopa.generated.wallet.model.TypeDto
+import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.domain.details.WalletDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 /**
@@ -7,16 +11,22 @@ import org.springframework.data.mongodb.core.mapping.Document
  *
  * A wallet is a collection of payment instruments identified by a single wallet id.
  *
- * The following assumptions should always hold:
- * - Wallets are non-empty
- * - No two wallets share a payment instrument with the same id (i.e. the relation `wallet <->
- *   paymentInstrument` is 1:n)
- *
  * @throws IllegalArgumentException if the provided payment instrument list is empty
  */
 @Document("wallets")
-data class Wallet(val id: WalletId, val paymentInstruments: List<PaymentInstrument>) {
+data class Wallet(
+    val id: WalletId,
+    val userId: String,
+    var status: WalletStatusDto,
+    val creationDate: String,
+    var updateDate: String,
+    val paymentInstrumentType: TypeDto,
+    val paymentInstrumentId: PaymentInstrumentId?,
+    val gatewaySecurityToken: String,
+    val services: List<ServiceDto>,
+    val details: WalletDetails?
+) {
     init {
-        require(paymentInstruments.isNotEmpty()) { "Wallets cannot be empty!" }
+        require(services.isNotEmpty()) { "Wallet services cannot be empty!" }
     }
 }
