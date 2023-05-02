@@ -30,7 +30,7 @@ paths:
         required: true
       responses:
         '204':
-          description: Payment request sent successfully
+          description: Notification handled successfully
         '400':
           description: Invalid input
           content:
