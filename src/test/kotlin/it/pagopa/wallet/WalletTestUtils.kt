@@ -29,12 +29,12 @@ object WalletTestUtils {
             paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
             gatewaySecurityToken = "securityToken",
             services = listOf(ServiceDto.PAGOPA),
+            contractNumber = UUID.randomUUID().toString().replace("-", ""),
             details =
                 CardDetails(
                     bin = "123456",
                     maskedPan = "123456******9876",
                     expiryDate = "203012",
-                    contractNumber = "contractNumber",
                     brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
                     holderName = "holder name"
                 )
@@ -51,6 +51,7 @@ object WalletTestUtils {
             paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
             gatewaySecurityToken = "securityToken",
             services = listOf(ServiceDto.PAGOPA),
+            contractNumber = UUID.randomUUID().toString().replace("-", ""),
             details = null
         )
 

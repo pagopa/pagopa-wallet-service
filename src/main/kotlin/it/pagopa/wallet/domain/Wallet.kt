@@ -24,6 +24,7 @@ data class Wallet(
     val paymentInstrumentId: PaymentInstrumentId?,
     val gatewaySecurityToken: String,
     val services: List<ServiceDto>,
+    val contractNumber: String,
     val details: WalletDetails?
 ) {
     init {

@@ -16,6 +16,7 @@ class WalletTest {
         val securityToken = UUID.randomUUID().toString()
         val now = OffsetDateTime.now().toString()
         val userId = UUID.randomUUID().toString()
+        val contractNumber = UUID.randomUUID().toString().replace("-", "")
 
         val wallet =
             Wallet(
@@ -28,6 +29,7 @@ class WalletTest {
                 null,
                 securityToken,
                 listOf(ServiceDto.PAGOPA),
+                contractNumber,
                 null
             )
 
@@ -41,6 +43,7 @@ class WalletTest {
         val walletId = WalletId(UUID.randomUUID())
         val securityToken = UUID.randomUUID().toString()
         val now = OffsetDateTime.now().toString()
+        val contractNumber = UUID.randomUUID().toString().replace("-", "")
 
         assertThrows<IllegalArgumentException> {
             Wallet(
@@ -53,6 +56,7 @@ class WalletTest {
                 null,
                 securityToken,
                 services,
+                contractNumber,
                 null
             )
         }

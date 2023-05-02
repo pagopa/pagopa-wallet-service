@@ -16,8 +16,7 @@ class WalletNotifyController(@Autowired private val walletService: WalletService
         correlationUuid: UUID,
         notificationRequestDto: NotificationRequestDto
     ): ResponseEntity<Unit> {
-        val (wallet, redirectUrl) = walletService.notify(correlationUuid, notificationRequestDto)
-
+        val wallet = walletService.notify(correlationUuid, notificationRequestDto)
         return ResponseEntity.ok(Unit)
     }
 }

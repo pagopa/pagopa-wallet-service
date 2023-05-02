@@ -7,7 +7,6 @@ data class CardDetails(
     val bin: String,
     val maskedPan: String,
     val expiryDate: String,
-    val contractNumber: String,
     val brand: WalletCardDetailsDto.BrandEnum,
     val holderName: String
 ) : WalletDetails {

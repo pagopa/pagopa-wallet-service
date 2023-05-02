@@ -30,6 +30,7 @@ class WalletService(
         walletCreateRequestDto: WalletCreateRequestDto,
         userId: String
     ): Mono<Pair<Wallet, URI>> {
+        val contractNumber = generateRandomString(18)
         return npgClient
             .orderHpp(
                 UUID.randomUUID(),
@@ -53,7 +54,7 @@ class WalletService(
                             recurrence =
                                 RecurrenceItem().apply {
                                     action = RecurrenceItem.ActionEnum.CONTRACT_CREATION
-                                    contractId = generateRandomString(18)
+                                    contractId = contractNumber
                                     contractType = RecurrenceItem.ContractTypeEnum.CIT
                                 }
                         }
@@ -91,6 +92,7 @@ class WalletService(
                         null,
                         securityToken,
                         walletCreateRequestDto.services,
+                        contractNumber,
                         null
                     )
 
@@ -118,6 +120,7 @@ class WalletService(
                     .updateDate(OffsetDateTime.parse(it.updateDate))
                     .paymentInstrumentId(it.paymentInstrumentId?.value.toString())
                     .services(it.services)
+                    .contractNumber(it.contractNumber)
                     .details(buildWalletInfoDetails(it.details))
             }
 
@@ -130,7 +133,6 @@ class WalletService(
                         .bin(walletDetails.bin)
                         .maskedPan(walletDetails.maskedPan)
                         .expiryDate(walletDetails.expiryDate)
-                        .contractNumber(walletDetails.contractNumber)
                         .brand(walletDetails.brand)
                         .holder(walletDetails.holderName)
                 else -> {
@@ -150,8 +152,10 @@ class WalletService(
 
     suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
         return walletRepository
-            .findById(correlationId.toString())
+            .findByContractNumber(notification.contractId!!)
+            .switchIfEmpty(Mono.error(WalletNotFoundException(WalletId(correlationId))))
             .filter { w -> w.gatewaySecurityToken == notification.securityToken }
+            .switchIfEmpty(throw BadGatewayException("Security token match failed"))
             .map { wallet -> wallet.apply { wallet.status = getWalletStatus(notification.status) } }
             .awaitSingle()
     }

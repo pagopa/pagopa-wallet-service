@@ -140,13 +140,13 @@ class WalletServiceTest {
                 .updateDate(OffsetDateTime.parse(wallet.updateDate))
                 .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
                 .services(wallet.services)
+                .contractNumber(wallet.contractNumber)
                 .details(
                     WalletCardDetailsDto()
                         .type(TypeDto.CARDS.toString())
                         .bin((wallet.details as CardDetails).bin)
                         .maskedPan((wallet.details as CardDetails).maskedPan)
                         .expiryDate((wallet.details as CardDetails).expiryDate)
-                        .contractNumber((wallet.details as CardDetails).contractNumber)
                         .brand((wallet.details as CardDetails).brand)
                         .holder((wallet.details as CardDetails).holderName)
                 )
@@ -172,6 +172,7 @@ class WalletServiceTest {
                 .creationDate(OffsetDateTime.parse(wallet.creationDate))
                 .updateDate(OffsetDateTime.parse(wallet.updateDate))
                 .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+                .contractNumber(wallet.contractNumber)
                 .services(wallet.services)
 
         given(walletRepository.findById(walletId.value.toString())).willReturn(mono { wallet })
@@ -202,6 +203,7 @@ class WalletServiceTest {
         /* precondition */
 
         val walletId = WalletId(UUID.randomUUID())
+        val contractNumber = "CAB123DEF"
         val mockWalletDetail: WalletDetails = mock()
         val walletWithMockDetails =
             Wallet(
@@ -214,6 +216,7 @@ class WalletServiceTest {
                 paymentInstrumentType = TypeDto.CARDS,
                 gatewaySecurityToken = "",
                 services = listOf(ServiceDto.PAGOPA),
+                contractNumber = contractNumber,
                 details = mockWalletDetail
             )
         given(walletRepository.findById(walletId.value.toString()))
