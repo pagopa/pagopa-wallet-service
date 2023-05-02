@@ -2,6 +2,7 @@ package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId

@@ -1,9 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.npg.model.HppRequest
-import it.pagopa.generated.npg.model.OrderItem
-import it.pagopa.generated.npg.model.PaymentSessionItem
-import it.pagopa.generated.npg.model.RecurrenceItem
+import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.Wallet
@@ -17,10 +14,10 @@ import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
+import kotlinx.coroutines.reactor.awaitSingle
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.core.publisher.Mono
 
 @Service
@@ -152,13 +149,17 @@ class WalletService(
     }
 
     suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
-         return walletRepository.findById(correlationId)
-               .map { w -> Pair(w,w.paymentInstruments.filter { paymentInstrument -> paymentInstrument.securityToken == notification.securityToken }) }
-               .filter { p -> p.second.isNotEmpty()}
-               .switchIfEmpty { throw BadGatewayException("Security token match failed") }
-               .map { pair ->
-                   pair.first //TODO Update
-               }
-               .awaitSingle()
+        return walletRepository
+            .findById(correlationId.toString())
+            .filter { w -> w.gatewaySecurityToken == notification.securityToken }
+            .map { wallet -> wallet.apply { wallet.status = getWalletStatus(notification.status) } }
+            .awaitSingle()
+    }
+
+    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto {
+        if (status == NotificationRequestDto.Status.OK) {
+            return WalletStatusDto.CREATED
+        }
+        return WalletStatusDto.ERROR
     }
 }
