@@ -163,11 +163,11 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
 }
 
 tasks.register("nexiNpgNotification", GenerateTask::class.java) {
-  generatorName.set("kotlin-spring")
+  generatorName.set("spring")
   inputSpec.set("$rootDir/npg-api/npg-notification-api.yaml")
   outputDir.set("$buildDir/generated")
-  apiPackage.set("it.pagopa.generated.npg.api")
-  modelPackage.set("it.pagopa.generated.npg.model")
+  apiPackage.set("it.pagopa.generated.npgnotification.api")
+  modelPackage.set("it.pagopa.generated.npgnotification.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)

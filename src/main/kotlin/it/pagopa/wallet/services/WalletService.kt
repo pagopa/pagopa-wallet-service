@@ -1,6 +1,7 @@
 package it.pagopa.wallet.services
 
 import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.Wallet
@@ -14,7 +15,6 @@ import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
-import kotlinx.coroutines.reactor.awaitSingle
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -150,18 +150,18 @@ class WalletService(
         return (1..length).map { allowedChars.random() }.joinToString("")
     }
 
-    suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
+    fun notify(correlationId: UUID, notification: NotificationRequestDto): Mono<Wallet> {
         return walletRepository
             .findByContractNumber(notification.contractId!!)
-            .switchIfEmpty(Mono.error(WalletNotFoundException(WalletId(correlationId))))
+            .mapNotNull { w -> w }
+            .switchIfEmpty(Mono.error(BadGatewayException("Contract number not found")))
             .filter { w -> w.gatewaySecurityToken == notification.securityToken }
-            .switchIfEmpty(throw BadGatewayException("Security token match failed"))
+            .switchIfEmpty(Mono.error(BadGatewayException("Security token match failed")))
             .map { wallet -> wallet.apply { wallet.status = getWalletStatus(notification.status) } }
-            .awaitSingle()
     }
 
-    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto {
-        if (status == NotificationRequestDto.Status.OK) {
+    private fun getWalletStatus(status: NotificationRequestDto.StatusEnum?): WalletStatusDto {
+        if (status == NotificationRequestDto.StatusEnum.OK) {
             return WalletStatusDto.CREATED
         }
         return WalletStatusDto.ERROR

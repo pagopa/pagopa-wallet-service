@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono
 
 interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
 
-    suspend fun findByContractNumber(contractNumber: String): Mono<Wallet>
+    fun findByContractNumber(contractNumber: String): Mono<Wallet>
 }

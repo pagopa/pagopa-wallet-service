@@ -1,6 +1,7 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.wallet.domain.PaymentInstrumentId
@@ -55,10 +56,88 @@ object WalletTestUtils {
             details = null
         )
 
+    const val WELL_KNOWN_CONTRACT_NUMBER = "123ABC456DEF"
+    const val SECURITY_TOKEN = "789GHI012JKL"
+
+    val VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED =
+        Wallet(
+            id = WalletId(UUID.randomUUID()),
+            userId = USER_ID,
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = now,
+            updateDate = now,
+            paymentInstrumentType = TypeDto.CARDS,
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            gatewaySecurityToken = SECURITY_TOKEN,
+            services = listOf(ServiceDto.PAGOPA),
+            contractNumber = WELL_KNOWN_CONTRACT_NUMBER,
+            details =  CardDetails(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
+            )
+        )
+
+    val VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED =
+        Wallet(
+            VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED.id,
+            userId = USER_ID,
+            status = WalletStatusDto.CREATED,
+            creationDate = now,
+            updateDate = now,
+            paymentInstrumentType = TypeDto.CARDS,
+            paymentInstrumentId = VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED.paymentInstrumentId,
+            gatewaySecurityToken = SECURITY_TOKEN,
+            services = listOf(ServiceDto.PAGOPA),
+            contractNumber = WELL_KNOWN_CONTRACT_NUMBER,
+            details =  CardDetails(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
+            )
+        )
+
+    val VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR =
+            Wallet(
+                    VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED.id,
+                    userId = USER_ID,
+                    status = WalletStatusDto.ERROR,
+                    creationDate = now,
+                    updateDate = now,
+                    paymentInstrumentType = TypeDto.CARDS,
+                    paymentInstrumentId = VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED.paymentInstrumentId,
+                    gatewaySecurityToken = SECURITY_TOKEN,
+                    services = listOf(ServiceDto.PAGOPA),
+                    contractNumber = WELL_KNOWN_CONTRACT_NUMBER,
+                    details =  CardDetails(
+                            bin = "123456",
+                            maskedPan = "123456******9876",
+                            expiryDate = "203012",
+                            brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                            holderName = "holder name"
+                    )
+            )
+
     val GATEWAY_REDIRECT_URL: URI = URI.create("http://localhost/hpp")
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
         WalletCreateRequestDto().services(listOf(ServiceDto.PAGOPA)).type(TypeDto.CARDS)
+
+    val NOTIFY_WALLET_REQUEST_OK: NotificationRequestDto =
+        NotificationRequestDto()
+            .contractId(WELL_KNOWN_CONTRACT_NUMBER)
+            .status(NotificationRequestDto.StatusEnum.OK)
+            .securityToken(SECURITY_TOKEN)
+
+    val NOTIFY_WALLET_REQUEST_KO: NotificationRequestDto =
+            NotificationRequestDto()
+                    .contractId(WELL_KNOWN_CONTRACT_NUMBER)
+                    .status(NotificationRequestDto.StatusEnum.KO)
+                    .securityToken(SECURITY_TOKEN)
 
     fun hppRequest(): HppRequest =
         HppRequest()
