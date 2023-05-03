@@ -1,5 +1,6 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED
@@ -236,9 +237,15 @@ class WalletServiceTest {
         /* precondition */
 
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
-        val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
+        // val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
+        val notificationRequestDto: NotificationRequestDto =
+            NotificationRequestDto()
+                .contractId(WELL_KNOWN_CONTRACT_NUMBER)
+                .status(NotificationRequestDto.StatusEnum.OK)
+                .securityToken(WalletTestUtils.GATEWAY_SECURITY_TOKEN)
 
-        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER)).willReturn(mono { wallet })
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
 
         /* Test */
         StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
@@ -254,12 +261,13 @@ class WalletServiceTest {
         val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
         notificationRequestDto.securityToken(UUID.randomUUID().toString())
 
-        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER)).willReturn(mono { wallet })
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
 
         /* Test */
         StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-                .expectError(BadGatewayException::class.java)
-                .verify()
+            .expectError(BadGatewayException::class.java)
+            .verify()
     }
 
     @Test
@@ -269,12 +277,13 @@ class WalletServiceTest {
         val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
         notificationRequestDto.securityToken(UUID.randomUUID().toString())
 
-        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER)).willReturn(Mono.empty())
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(Mono.empty())
 
         /* Test */
         StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-                .expectError(BadGatewayException::class.java)
-                .verify()
+            .expectError(BadGatewayException::class.java)
+            .verify()
     }
 
     @Test
@@ -283,11 +292,12 @@ class WalletServiceTest {
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
         val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
 
-        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER)).willReturn(mono { wallet })
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
 
         /* Test */
         StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-                .expectNext(VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
-                .verifyComplete()
+            .expectNext(VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
+            .verifyComplete()
     }
 }
