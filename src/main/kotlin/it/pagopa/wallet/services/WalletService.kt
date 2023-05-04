@@ -170,10 +170,10 @@ class WalletService(
             .awaitSingle()
     }
 
-    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto {
+    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto =
         if (status == NotificationRequestDto.Status.OK) {
-            return WalletStatusDto.CREATED
+            WalletStatusDto.CREATED
+        } else {
+            WalletStatusDto.ERROR
         }
-        return WalletStatusDto.ERROR
-    }
 }
