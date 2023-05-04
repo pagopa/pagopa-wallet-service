@@ -62,7 +62,7 @@ class WalletNotifyControllerTest {
 
         val correlationId = UUID.randomUUID()
 
-        given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
+        given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_KO))
                 .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
 
         /* test */
@@ -71,7 +71,7 @@ class WalletNotifyControllerTest {
                 .uri("/notify")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Correlation-Id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_KO)
                 .exchange()
                 .expectStatus()
                 .isNoContent
