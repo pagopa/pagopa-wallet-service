@@ -14,6 +14,7 @@ import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
 import it.pagopa.wallet.exception.BadGatewayException
+import it.pagopa.wallet.exception.ContractIdNotFoundException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
@@ -235,7 +236,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `notify return created wallet`() = runTest {
+    fun `notify return saved wallet`() = runTest {
         /* precondition */
 
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
@@ -244,6 +245,8 @@ class WalletServiceTest {
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
 
         /* Test */
         assertEquals(
@@ -266,6 +269,8 @@ class WalletServiceTest {
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
 
         /* Test */
         StepVerifier.create(
@@ -292,7 +297,7 @@ class WalletServiceTest {
         StepVerifier.create(
                 mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
             )
-            .expectError(InternalServerErrorException::class.java)
+            .expectError(ContractIdNotFoundException::class.java)
             .verify()
     }
 
@@ -304,6 +309,8 @@ class WalletServiceTest {
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
 
         /* Test */
         assertEquals(

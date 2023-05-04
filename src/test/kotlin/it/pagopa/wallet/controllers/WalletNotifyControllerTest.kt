@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.BadGatewayException
+import it.pagopa.wallet.exception.ContractIdNotFoundException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.services.WalletService
 import java.util.*
@@ -34,7 +35,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `wallet notify ok return no content`() = runTest {
+    fun `notify ok return no content`() = runTest {
         /* preconditions */
 
         val correlationId = UUID.randomUUID()
@@ -55,7 +56,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `wallet notify ko return no content`() = runTest {
+    fun `notify ko return no content`() = runTest {
         /* preconditions */
 
         val correlationId = UUID.randomUUID()
@@ -76,7 +77,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `return 400 bad request for missing Correlation-Id header`() = runTest {
+    fun `notify return 400 bad request for missing Correlation-Id header`() = runTest {
         /* preconditions */
         val correlationId = UUID.randomUUID()
 
@@ -100,7 +101,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `return 400 bad request for invalid request`() = runTest {
+    fun `notify return 400 bad request for invalid request`() = runTest {
         /* preconditions */
         val correlationId = UUID.randomUUID()
 
@@ -125,7 +126,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `return 502 if service raises BadGatewayException`() = runTest {
+    fun `notify return 502 if service raises BadGatewayException`() = runTest {
         /* preconditions */
         val correlationId = UUID.randomUUID()
 
@@ -153,7 +154,7 @@ class WalletNotifyControllerTest {
     }
 
     @Test
-    fun `return 500 if service raises InternalServerErrorException`() = runTest {
+    fun `notify return 500 if service raises InternalServerErrorException`() = runTest {
         /* preconditions */
         val correlationId = UUID.randomUUID()
 
@@ -176,6 +177,34 @@ class WalletNotifyControllerTest {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Internal server error",
                     "Internal server error message"
+                )
+            )
+    }
+
+    @Test
+    fun `notify return 404 if service raises InternalServerErrorException`() = runTest {
+        /* preconditions */
+        val correlationId = UUID.randomUUID()
+
+        given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
+            .willThrow(ContractIdNotFoundException("contract-id-test"))
+
+        /* test */
+        webClient
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.NOT_FOUND)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.NOT_FOUND,
+                    "Wallet not found",
+                    "Cannot find wallet with contract id contract-id-test"
                 )
             )
     }

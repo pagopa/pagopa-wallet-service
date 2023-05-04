@@ -12,6 +12,7 @@ import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
 import it.pagopa.wallet.exception.BadGatewayException
+import it.pagopa.wallet.exception.ContractIdNotFoundException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
@@ -154,14 +155,18 @@ class WalletService(
         return (1..length).map { allowedChars.random() }.joinToString("")
     }
 
+    // TODO Do we need to check if wallet status is initialized?
     suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
         return walletRepository
             .findByContractNumber(notification.contractId!!)
-            .mapNotNull { w -> w }
-            .switchIfEmpty(Mono.error(InternalServerErrorException("Contract number not found")))
+            .switchIfEmpty(Mono.error(ContractIdNotFoundException(notification.contractId)))
             .filter { w -> w.gatewaySecurityToken == notification.securityToken }
             .switchIfEmpty(Mono.error(InternalServerErrorException("Security token match failed")))
-            .map { wallet -> wallet.apply { wallet.status = getWalletStatus(notification.status) } }
+            .flatMap { wallet ->
+                walletRepository.save(
+                    wallet.apply { wallet.status = getWalletStatus(notification.status) }
+                )
+            }
             .awaitSingle()
     }
 
