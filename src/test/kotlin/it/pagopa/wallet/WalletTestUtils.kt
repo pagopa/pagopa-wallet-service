@@ -3,7 +3,6 @@ package it.pagopa.wallet
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
@@ -132,16 +131,18 @@ object WalletTestUtils {
         WalletCreateRequestDto().services(listOf(ServiceDto.PAGOPA)).type(TypeDto.CARDS)
 
     val NOTIFY_WALLET_REQUEST_OK: NotificationRequestDto =
-        NotificationRequestDto()
-            .contractId(WELL_KNOWN_CONTRACT_NUMBER)
-            .status(NotificationRequestDto.StatusEnum.OK)
-            .securityToken(GATEWAY_SECURITY_TOKEN)
+        NotificationRequestDto(
+            WELL_KNOWN_CONTRACT_NUMBER,
+            NotificationRequestDto.Status.OK,
+            GATEWAY_SECURITY_TOKEN
+        )
 
     val NOTIFY_WALLET_REQUEST_KO: NotificationRequestDto =
-        NotificationRequestDto()
-            .contractId(WELL_KNOWN_CONTRACT_NUMBER)
-            .status(NotificationRequestDto.StatusEnum.KO)
-            .securityToken(GATEWAY_SECURITY_TOKEN)
+        NotificationRequestDto(
+            WELL_KNOWN_CONTRACT_NUMBER,
+            NotificationRequestDto.Status.KO,
+            GATEWAY_SECURITY_TOKEN
+        )
 
     fun hppRequest(): HppRequest =
         HppRequest()

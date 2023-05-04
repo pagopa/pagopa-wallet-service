@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
 import it.pagopa.wallet.WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED
 import it.pagopa.wallet.WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR
 import it.pagopa.wallet.WalletTestUtils.WELL_KNOWN_CONTRACT_NUMBER
@@ -21,6 +22,7 @@ import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
@@ -238,19 +240,16 @@ class WalletServiceTest {
 
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
         // val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
-        val notificationRequestDto: NotificationRequestDto =
-            NotificationRequestDto()
-                .contractId(WELL_KNOWN_CONTRACT_NUMBER)
-                .status(NotificationRequestDto.StatusEnum.OK)
-                .securityToken(WalletTestUtils.GATEWAY_SECURITY_TOKEN)
+        val notificationRequestDto: NotificationRequestDto = NOTIFY_WALLET_REQUEST_OK
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
 
         /* Test */
-        StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-            .expectNext(VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
-            .verifyComplete()
+        assertEquals(
+            VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED,
+            walletService.notify(UUID.randomUUID(), notificationRequestDto)
+        )
     }
 
     @Test
@@ -258,15 +257,21 @@ class WalletServiceTest {
         /* precondition */
 
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
-        val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
-        notificationRequestDto.securityToken(UUID.randomUUID().toString())
+        val notificationRequestDto =
+            NotificationRequestDto(
+                WELL_KNOWN_CONTRACT_NUMBER,
+                NotificationRequestDto.Status.OK,
+                UUID.randomUUID().toString()
+            )
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
 
         /* Test */
-        StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-            .expectError(BadGatewayException::class.java)
+        StepVerifier.create(
+                mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
+            )
+            .expectError(InternalServerErrorException::class.java)
             .verify()
     }
 
@@ -274,15 +279,20 @@ class WalletServiceTest {
     fun `notify fail to find wallet`() = runTest {
         /* precondition */
 
-        val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
-        notificationRequestDto.securityToken(UUID.randomUUID().toString())
+        val notificationRequestDto =
+            NotificationRequestDto(
+                WELL_KNOWN_CONTRACT_NUMBER,
+                NotificationRequestDto.Status.OK,
+                UUID.randomUUID().toString()
+            )
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(Mono.empty())
 
-        /* Test */
-        StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-            .expectError(BadGatewayException::class.java)
+        StepVerifier.create(
+                mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
+            )
+            .expectError(InternalServerErrorException::class.java)
             .verify()
     }
 
@@ -296,8 +306,9 @@ class WalletServiceTest {
             .willReturn(mono { wallet })
 
         /* Test */
-        StepVerifier.create(walletService.notify(UUID.randomUUID(), notificationRequestDto))
-            .expectNext(VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
-            .verifyComplete()
+        assertEquals(
+            VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR,
+            walletService.notify(UUID.randomUUID(), notificationRequestDto)
+        )
     }
 }

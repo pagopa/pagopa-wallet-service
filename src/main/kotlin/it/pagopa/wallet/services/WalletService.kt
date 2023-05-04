@@ -1,6 +1,9 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.npg.model.HppRequest
+import it.pagopa.generated.npg.model.OrderItem
+import it.pagopa.generated.npg.model.PaymentSessionItem
+import it.pagopa.generated.npg.model.RecurrenceItem
 import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
@@ -15,6 +18,7 @@ import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
+import kotlinx.coroutines.reactor.awaitSingle
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -150,18 +154,19 @@ class WalletService(
         return (1..length).map { allowedChars.random() }.joinToString("")
     }
 
-    fun notify(correlationId: UUID, notification: NotificationRequestDto): Mono<Wallet> {
+    suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
         return walletRepository
             .findByContractNumber(notification.contractId!!)
             .mapNotNull { w -> w }
-            .switchIfEmpty(Mono.error(BadGatewayException("Contract number not found")))
+            .switchIfEmpty(Mono.error(InternalServerErrorException("Contract number not found")))
             .filter { w -> w.gatewaySecurityToken == notification.securityToken }
-            .switchIfEmpty(Mono.error(BadGatewayException("Security token match failed")))
+            .switchIfEmpty(Mono.error(InternalServerErrorException("Security token match failed")))
             .map { wallet -> wallet.apply { wallet.status = getWalletStatus(notification.status) } }
+            .awaitSingle()
     }
 
-    private fun getWalletStatus(status: NotificationRequestDto.StatusEnum?): WalletStatusDto {
-        if (status == NotificationRequestDto.StatusEnum.OK) {
+    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto {
+        if (status == NotificationRequestDto.Status.OK) {
             return WalletStatusDto.CREATED
         }
         return WalletStatusDto.ERROR
