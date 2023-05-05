@@ -4,8 +4,6 @@ import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
-import it.pagopa.wallet.WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED
-import it.pagopa.wallet.WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR
 import it.pagopa.wallet.WalletTestUtils.WELL_KNOWN_CONTRACT_NUMBER
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.PaymentInstrumentId
@@ -21,6 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
@@ -237,19 +236,23 @@ class WalletServiceTest {
         /* precondition */
 
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
-        // val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
+        val oldUpdateDate = wallet.updateDate
         val notificationRequestDto: NotificationRequestDto = NOTIFY_WALLET_REQUEST_OK
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
             .willReturn(mono { wallet })
 
         given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
-
         /* Test */
-        assertEquals(
-            VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED,
-            walletService.notify(UUID.randomUUID(), notificationRequestDto)
-        )
+
+        val walletNotify = walletService.notify(UUID.randomUUID(), notificationRequestDto)
+
+        assertEquals(wallet.id, walletNotify.id)
+        assertEquals(WalletStatusDto.CREATED, walletNotify.status)
+        assertEquals(wallet.creationDate, walletNotify.creationDate)
+        assertEquals(wallet.gatewaySecurityToken, walletNotify.gatewaySecurityToken)
+        assertEquals(wallet.contractNumber, walletNotify.contractNumber)
+        assertNotEquals(oldUpdateDate, walletNotify.updateDate)
     }
 
     @Test
@@ -302,6 +305,7 @@ class WalletServiceTest {
     fun `notify update wallet in error status`() = runTest {
         /*precondition*/
         val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
+        val oldUpdateDate = wallet.updateDate
         val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
 
         given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
@@ -310,9 +314,13 @@ class WalletServiceTest {
         given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
 
         /* Test */
-        assertEquals(
-            VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR,
-            walletService.notify(UUID.randomUUID(), notificationRequestDto)
-        )
+        val walletNotify = walletService.notify(UUID.randomUUID(), notificationRequestDto)
+
+        assertEquals(wallet.id, walletNotify.id)
+        assertEquals(WalletStatusDto.ERROR, walletNotify.status)
+        assertEquals(wallet.creationDate, walletNotify.creationDate)
+        assertEquals(wallet.gatewaySecurityToken, walletNotify.gatewaySecurityToken)
+        assertEquals(wallet.contractNumber, walletNotify.contractNumber)
+        assertNotEquals(oldUpdateDate, walletNotify.updateDate)
     }
 }

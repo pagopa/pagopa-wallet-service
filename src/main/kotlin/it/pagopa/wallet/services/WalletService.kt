@@ -164,7 +164,10 @@ class WalletService(
             .switchIfEmpty(Mono.error(SecurityTokenMatchException()))
             .flatMap { wallet ->
                 walletRepository.save(
-                    wallet.apply { wallet.status = getWalletStatus(notification.status) }
+                    wallet.apply {
+                        wallet.status = getWalletStatus(notification.status)
+                        wallet.updateDate = OffsetDateTime.now().toString()
+                    }
                 )
             }
             .awaitSingle()

@@ -17,7 +17,6 @@ object WalletTestUtils {
 
     const val USER_ID = "user-id"
     val now = OffsetDateTime.now().toString()
-
     val VALID_WALLET_WITH_CARD_DETAILS =
         Wallet(
             id = WalletId(UUID.randomUUID()),
