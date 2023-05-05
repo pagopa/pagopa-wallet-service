@@ -6,6 +6,7 @@ import it.pagopa.wallet.exception.BadGatewayException
 import it.pagopa.wallet.exception.ContractIdNotFoundException
 import it.pagopa.wallet.exception.InternalServerErrorException
 import it.pagopa.wallet.services.WalletService
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,18 +19,15 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
-import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletNotifyController::class)
 class WalletNotifyControllerTest {
-    @MockBean
-    private lateinit var walletService: WalletService
+    @MockBean private lateinit var walletService: WalletService
 
     private lateinit var walletNotifyController: WalletNotifyController
 
-    @Autowired
-    private lateinit var webClient: WebTestClient
+    @Autowired private lateinit var webClient: WebTestClient
 
     @BeforeEach
     fun beforeTest() {
@@ -43,18 +41,18 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
+            .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-Id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
-                .exchange()
-                .expectStatus()
-                .isNoContent
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-Id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isNoContent
     }
 
     @Test
@@ -64,18 +62,18 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_KO))
-                .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
+            .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_ERROR)
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-Id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_KO)
-                .exchange()
-                .expectStatus()
-                .isNoContent
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-Id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_KO)
+            .exchange()
+            .expectStatus()
+            .isNoContent
     }
 
     @Test
@@ -84,22 +82,22 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
+            .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
-                .exchange()
-                .expectStatus()
-                .isBadRequest
-                .expectBody(ProblemJsonDto::class.java)
-                .value {
-                    assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
-                    assertEquals("Bad request", it.title)
-                }
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+            .expectBody(ProblemJsonDto::class.java)
+            .value {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
+                assertEquals("Bad request", it.title)
+            }
     }
 
     @Test
@@ -108,23 +106,23 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
+            .willReturn(WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_CREATED)
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-id", correlationId.toString())
-                .bodyValue("{'test':'not-a-field'}")
-                .exchange()
-                .expectStatus()
-                .isBadRequest
-                .expectBody(ProblemJsonDto::class.java)
-                .value {
-                    assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
-                    assertEquals("Bad request", it.title)
-                }
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-id", correlationId.toString())
+            .bodyValue("{'test':'not-a-field'}")
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+            .expectBody(ProblemJsonDto::class.java)
+            .value {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), it.status)
+                assertEquals("Bad request", it.title)
+            }
     }
 
     @Test
@@ -133,26 +131,26 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willThrow(BadGatewayException("Bad gateway error message"))
+            .willThrow(BadGatewayException("Bad gateway error message"))
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.BAD_GATEWAY)
-                .expectBody(ProblemJsonDto::class.java)
-                .isEqualTo(
-                        WalletTestUtils.buildProblemJson(
-                                HttpStatus.BAD_GATEWAY,
-                                "Bad Gateway",
-                                "Bad gateway error message"
-                        )
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.BAD_GATEWAY)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.BAD_GATEWAY,
+                    "Bad Gateway",
+                    "Bad gateway error message"
                 )
+            )
     }
 
     @Test
@@ -161,26 +159,26 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willThrow(InternalServerErrorException("Internal server error message"))
+            .willThrow(InternalServerErrorException("Internal server error message"))
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-                .expectBody(ProblemJsonDto::class.java)
-                .isEqualTo(
-                        WalletTestUtils.buildProblemJson(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Internal server error",
-                                "Internal server error message"
-                        )
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Internal server error",
+                    "Internal server error message"
                 )
+            )
     }
 
     @Test
@@ -189,25 +187,25 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-                .willThrow(ContractIdNotFoundException())
+            .willThrow(ContractIdNotFoundException())
 
         /* test */
         webClient
-                .post()
-                .uri("/notify")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Correlation-id", correlationId.toString())
-                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.NOT_FOUND)
-                .expectBody(ProblemJsonDto::class.java)
-                .isEqualTo(
-                        WalletTestUtils.buildProblemJson(
-                                HttpStatus.NOT_FOUND,
-                                "Wallet not found",
-                                "Cannot find wallet with specified contract id"
-                        )
+            .post()
+            .uri("/notify")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Correlation-id", correlationId.toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.NOT_FOUND)
+            .expectBody(ProblemJsonDto::class.java)
+            .isEqualTo(
+                WalletTestUtils.buildProblemJson(
+                    HttpStatus.NOT_FOUND,
+                    "Wallet not found",
+                    "Cannot find wallet with specified contract id"
                 )
+            )
     }
 }
