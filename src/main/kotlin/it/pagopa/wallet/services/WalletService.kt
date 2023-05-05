@@ -11,10 +11,7 @@ import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
-import it.pagopa.wallet.exception.BadGatewayException
-import it.pagopa.wallet.exception.ContractIdNotFoundException
-import it.pagopa.wallet.exception.InternalServerErrorException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
@@ -53,7 +50,10 @@ class WalletService(
                             language = "ita"
                             resultUrl = URI.create("http://localhost")
                             cancelUrl = URI.create("http://localhost")
-                            notificationUrl = URI.create("http://localhost")
+                            notificationUrl =
+                                URI.create(
+                                    "https://api.dev.platform.pagopa.it/wallet-service/v1/notify"
+                                )
                             paymentService = PaymentSessionItem.PaymentServiceEnum.CARDS
                             actionType = PaymentSessionItem.ActionTypeEnum.VERIFY
                             recurrence =
@@ -159,9 +159,9 @@ class WalletService(
     suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
         return walletRepository
             .findByContractNumber(notification.contractId!!)
-            .switchIfEmpty(Mono.error(ContractIdNotFoundException(notification.contractId)))
+            .switchIfEmpty(Mono.error(ContractIdNotFoundException()))
             .filter { w -> w.gatewaySecurityToken == notification.securityToken }
-            .switchIfEmpty(Mono.error(InternalServerErrorException("Security token match failed")))
+            .switchIfEmpty(Mono.error(SecurityTokenMatchException()))
             .flatMap { wallet ->
                 walletRepository.save(
                     wallet.apply { wallet.status = getWalletStatus(notification.status) }

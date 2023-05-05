@@ -187,7 +187,7 @@ class WalletNotifyControllerTest {
         val correlationId = UUID.randomUUID()
 
         given(walletService.notify(correlationId, WalletTestUtils.NOTIFY_WALLET_REQUEST_OK))
-            .willThrow(ContractIdNotFoundException("contract-id-test"))
+            .willThrow(ContractIdNotFoundException())
 
         /* test */
         webClient
@@ -204,7 +204,7 @@ class WalletNotifyControllerTest {
                 WalletTestUtils.buildProblemJson(
                     HttpStatus.NOT_FOUND,
                     "Wallet not found",
-                    "Cannot find wallet with contract id contract-id-test"
+                    "Cannot find wallet with specified contract id"
                 )
             )
     }

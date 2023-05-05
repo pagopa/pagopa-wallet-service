@@ -13,10 +13,7 @@ import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
-import it.pagopa.wallet.exception.BadGatewayException
-import it.pagopa.wallet.exception.ContractIdNotFoundException
-import it.pagopa.wallet.exception.InternalServerErrorException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.WalletRepository
 import java.time.OffsetDateTime
 import java.util.*
@@ -276,7 +273,7 @@ class WalletServiceTest {
         StepVerifier.create(
                 mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
             )
-            .expectError(InternalServerErrorException::class.java)
+            .expectError(SecurityTokenMatchException::class.java)
             .verify()
     }
 
