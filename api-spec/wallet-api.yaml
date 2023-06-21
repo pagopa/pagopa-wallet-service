@@ -130,9 +130,6 @@ components:
           description: Credit card expiry date. The date format is `YYYYMM`
           pattern: ^\d{6}$
           example: '203012'
-        contractNumber:
-          description: User contract identifier to be used with payment instrument to make a new payment
-          type: string
         holder:
           description: Holder of the card payment instrument
           type: string
@@ -147,7 +144,6 @@ components:
         - bin
         - maskedPan
         - expiryDate
-        - contractNumber
         - holder
         - brand
     WalletCreateRequest:
@@ -201,6 +197,9 @@ components:
         paymentInstrumentId:
           description: Payment instrument identifier
           type: string
+        contractNumber:
+          description: User contract identifier to be used with payment instrument to make a new payment
+          type: string
         services:
           description: list of services for which this wallet is created for
           type: array
@@ -220,6 +219,7 @@ components:
         - status
         - creationDate
         - updateDate
+        - contractNumber
         - type
         - services
     ProblemJson:
