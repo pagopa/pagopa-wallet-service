@@ -67,8 +67,8 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-    // ECS logback encoder
-    implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
+  // ECS logback encoder
+  implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
 
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -83,7 +83,7 @@ configurations {
   implementation.configure {
     exclude(module = "spring-boot-starter-web")
     exclude("org.apache.tomcat")
-        exclude(group = "org.slf4j", module = "slf4j-simple")
+    exclude(group = "org.slf4j", module = "slf4j-simple")
   }
 }
 // Dependency locking - lock all dependencies
