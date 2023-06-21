@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "0.0.1"
+version = "0.2.0"
 
 description = "pagopa-wallet-service"
 
@@ -248,3 +248,9 @@ tasks.jacocoTestReport {
 
   reports { xml.required.set(true) }
 }
+
+/**
+ * Task used to expand application properties with build specific properties such as artifact name
+ * and version
+ */
+tasks.processResources { filesMatching("application.properties") { expand(project.properties) } }
