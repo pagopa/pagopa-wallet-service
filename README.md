@@ -224,6 +224,12 @@ Add those components at the end of the components list and then run the
 
 that will reorder the file with the added dependencies checksum in the expected order.
 
+Finally, you can add new dependencies both to gradle.lockfile writing verification metadata running
+
+```shell
+ ./gradlew dependencies --write-locks --write-verification-metadata sha256
+```
+
 For more information read the
 following [article](https://docs.gradle.org/8.1/userguide/dependency_verification.html#sec:checksum-verification)
 
