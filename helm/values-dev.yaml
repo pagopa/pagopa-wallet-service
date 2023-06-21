@@ -68,6 +68,8 @@ microservice-chart:
     NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0/psp/api/v1"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
+    ECS_SERVICE_NAME: "pagopa-wallet-service"
+    ECS_SERVICE_ENVIRONMENT: "dev"
     # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
   envSecret:
