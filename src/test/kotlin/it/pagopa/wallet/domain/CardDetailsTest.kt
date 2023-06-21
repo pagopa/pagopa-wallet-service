@@ -25,7 +25,6 @@ class CardDetailsTest {
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,
-                contractNumber = contractNumber,
                 brand = brand,
                 holderName = holderName
             )
@@ -43,7 +42,6 @@ class CardDetailsTest {
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = invalidExpiryDate,
-                contractNumber = contractNumber,
                 brand = brand,
                 holderName = holderName
             )
@@ -58,7 +56,6 @@ class CardDetailsTest {
                 bin = validBin,
                 maskedPan = invalidMaskedPan,
                 expiryDate = validExpiryDate,
-                contractNumber = contractNumber,
                 brand = brand,
                 holderName = holderName
             )
@@ -73,7 +70,6 @@ class CardDetailsTest {
                 bin = invalidBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,
-                contractNumber = contractNumber,
                 brand = brand,
                 holderName = holderName
             )

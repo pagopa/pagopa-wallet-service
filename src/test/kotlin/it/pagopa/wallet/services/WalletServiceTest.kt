@@ -1,22 +1,25 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK
+import it.pagopa.wallet.WalletTestUtils.WELL_KNOWN_CONTRACT_NUMBER
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
-import it.pagopa.wallet.exception.BadGatewayException
-import it.pagopa.wallet.exception.InternalServerErrorException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.WalletRepository
 import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
@@ -140,13 +143,13 @@ class WalletServiceTest {
                 .updateDate(OffsetDateTime.parse(wallet.updateDate))
                 .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
                 .services(wallet.services)
+                .contractNumber(wallet.contractNumber)
                 .details(
                     WalletCardDetailsDto()
                         .type(TypeDto.CARDS.toString())
                         .bin((wallet.details as CardDetails).bin)
                         .maskedPan((wallet.details as CardDetails).maskedPan)
                         .expiryDate((wallet.details as CardDetails).expiryDate)
-                        .contractNumber((wallet.details as CardDetails).contractNumber)
                         .brand((wallet.details as CardDetails).brand)
                         .holder((wallet.details as CardDetails).holderName)
                 )
@@ -172,6 +175,7 @@ class WalletServiceTest {
                 .creationDate(OffsetDateTime.parse(wallet.creationDate))
                 .updateDate(OffsetDateTime.parse(wallet.updateDate))
                 .paymentInstrumentId(wallet.paymentInstrumentId?.value.toString())
+                .contractNumber(wallet.contractNumber)
                 .services(wallet.services)
 
         given(walletRepository.findById(walletId.value.toString())).willReturn(mono { wallet })
@@ -202,6 +206,7 @@ class WalletServiceTest {
         /* precondition */
 
         val walletId = WalletId(UUID.randomUUID())
+        val contractNumber = "CAB123DEF"
         val mockWalletDetail: WalletDetails = mock()
         val walletWithMockDetails =
             Wallet(
@@ -214,6 +219,7 @@ class WalletServiceTest {
                 paymentInstrumentType = TypeDto.CARDS,
                 gatewaySecurityToken = "",
                 services = listOf(ServiceDto.PAGOPA),
+                contractNumber = contractNumber,
                 details = mockWalletDetail
             )
         given(walletRepository.findById(walletId.value.toString()))
@@ -223,5 +229,98 @@ class WalletServiceTest {
         StepVerifier.create(walletService.getWallet(walletId.value))
             .expectError(InternalServerErrorException::class.java)
             .verify()
+    }
+
+    @Test
+    fun `notify return saved wallet`() = runTest {
+        /* precondition */
+
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
+        val oldUpdateDate = wallet.updateDate
+        val notificationRequestDto: NotificationRequestDto = NOTIFY_WALLET_REQUEST_OK
+
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
+        /* Test */
+
+        val walletNotify = walletService.notify(UUID.randomUUID(), notificationRequestDto)
+
+        assertEquals(wallet.id, walletNotify.id)
+        assertEquals(WalletStatusDto.CREATED, walletNotify.status)
+        assertEquals(wallet.creationDate, walletNotify.creationDate)
+        assertEquals(wallet.gatewaySecurityToken, walletNotify.gatewaySecurityToken)
+        assertEquals(wallet.contractNumber, walletNotify.contractNumber)
+        assertNotEquals(oldUpdateDate, walletNotify.updateDate)
+    }
+
+    @Test
+    fun `notify fail to match security token`() = runTest {
+        /* precondition */
+
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
+        val notificationRequestDto =
+            NotificationRequestDto(
+                WELL_KNOWN_CONTRACT_NUMBER,
+                NotificationRequestDto.Status.OK,
+                UUID.randomUUID().toString()
+            )
+
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
+
+        /* Test */
+        StepVerifier.create(
+                mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
+            )
+            .expectError(SecurityTokenMatchException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify fail to find wallet`() = runTest {
+        /* precondition */
+
+        val notificationRequestDto =
+            NotificationRequestDto(
+                WELL_KNOWN_CONTRACT_NUMBER,
+                NotificationRequestDto.Status.OK,
+                UUID.randomUUID().toString()
+            )
+
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(Mono.empty())
+
+        StepVerifier.create(
+                mono { walletService.notify(UUID.randomUUID(), notificationRequestDto) }
+            )
+            .expectError(ContractIdNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify update wallet in error status`() = runTest {
+        /*precondition*/
+        val wallet = WalletTestUtils.VALID_WALLET_WITH_CONTRACT_NUMBER_WELL_KNOWN_INITIALIZED
+        val oldUpdateDate = wallet.updateDate
+        val notificationRequestDto = WalletTestUtils.NOTIFY_WALLET_REQUEST_KO
+
+        given(walletRepository.findByContractNumber(WELL_KNOWN_CONTRACT_NUMBER))
+            .willReturn(mono { wallet })
+
+        given(walletRepository.save(any())).willAnswer { mono { it.arguments[0] } }
+
+        /* Test */
+        val walletNotify = walletService.notify(UUID.randomUUID(), notificationRequestDto)
+
+        assertEquals(wallet.id, walletNotify.id)
+        assertEquals(WalletStatusDto.ERROR, walletNotify.status)
+        assertEquals(wallet.creationDate, walletNotify.creationDate)
+        assertEquals(wallet.gatewaySecurityToken, walletNotify.gatewaySecurityToken)
+        assertEquals(wallet.contractNumber, walletNotify.contractNumber)
+        assertNotEquals(oldUpdateDate, walletNotify.updateDate)
     }
 }

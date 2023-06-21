@@ -172,8 +172,8 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/npg-api/npg-notification-api.yaml")
   outputDir.set("$buildDir/generated")
-  apiPackage.set("it.pagopa.generated.npg.api")
-  modelPackage.set("it.pagopa.generated.npg.model")
+  apiPackage.set("it.pagopa.generated.npgnotification.api")
+  modelPackage.set("it.pagopa.generated.npgnotification.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -198,7 +198,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
 }
 
 tasks.withType<KotlinCompile> {
-  dependsOn("wallet", "nexiNpg")
+  dependsOn("wallet", "nexiNpg", "nexiNpgNotification")
   kotlinOptions.jvmTarget = "17"
 }
 

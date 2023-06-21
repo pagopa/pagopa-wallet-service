@@ -4,19 +4,19 @@ import it.pagopa.generated.npg.model.HppRequest
 import it.pagopa.generated.npg.model.OrderItem
 import it.pagopa.generated.npg.model.PaymentSessionItem
 import it.pagopa.generated.npg.model.RecurrenceItem
+import it.pagopa.generated.npgnotification.model.NotificationRequestDto
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.details.WalletDetails
-import it.pagopa.wallet.exception.BadGatewayException
-import it.pagopa.wallet.exception.InternalServerErrorException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
+import kotlinx.coroutines.reactor.awaitSingle
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -32,6 +32,7 @@ class WalletService(
         walletCreateRequestDto: WalletCreateRequestDto,
         userId: String
     ): Mono<Pair<Wallet, URI>> {
+        val contractNumber = generateRandomString(18)
         return npgClient
             .orderHpp(
                 UUID.randomUUID(),
@@ -49,13 +50,16 @@ class WalletService(
                             language = "ita"
                             resultUrl = URI.create("http://localhost")
                             cancelUrl = URI.create("http://localhost")
-                            notificationUrl = URI.create("http://localhost")
+                            notificationUrl =
+                                URI.create(
+                                    "https://api.dev.platform.pagopa.it/wallet-notifications-service/v1/notify"
+                                )
                             paymentService = PaymentSessionItem.PaymentServiceEnum.CARDS
                             actionType = PaymentSessionItem.ActionTypeEnum.VERIFY
                             recurrence =
                                 RecurrenceItem().apply {
                                     action = RecurrenceItem.ActionEnum.CONTRACT_CREATION
-                                    contractId = generateRandomString(18)
+                                    contractId = contractNumber
                                     contractType = RecurrenceItem.ContractTypeEnum.CIT
                                 }
                         }
@@ -93,6 +97,7 @@ class WalletService(
                         null,
                         securityToken,
                         walletCreateRequestDto.services,
+                        contractNumber,
                         null
                     )
 
@@ -120,6 +125,7 @@ class WalletService(
                     .updateDate(OffsetDateTime.parse(it.updateDate))
                     .paymentInstrumentId(it.paymentInstrumentId?.value.toString())
                     .services(it.services)
+                    .contractNumber(it.contractNumber)
                     .details(buildWalletInfoDetails(it.details))
             }
 
@@ -132,7 +138,6 @@ class WalletService(
                         .bin(walletDetails.bin)
                         .maskedPan(walletDetails.maskedPan)
                         .expiryDate(walletDetails.expiryDate)
-                        .contractNumber(walletDetails.contractNumber)
                         .brand(walletDetails.brand)
                         .holder(walletDetails.holderName)
                 else -> {
@@ -149,4 +154,29 @@ class WalletService(
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length).map { allowedChars.random() }.joinToString("")
     }
+
+    // TODO Do we need to check if wallet status is initialized?
+    suspend fun notify(correlationId: UUID, notification: NotificationRequestDto): Wallet {
+        return walletRepository
+            .findByContractNumber(notification.contractId!!)
+            .switchIfEmpty(Mono.error(ContractIdNotFoundException()))
+            .filter { w -> w.gatewaySecurityToken == notification.securityToken }
+            .switchIfEmpty(Mono.error(SecurityTokenMatchException()))
+            .flatMap { wallet ->
+                walletRepository.save(
+                    wallet.apply {
+                        wallet.status = getWalletStatus(notification.status)
+                        wallet.updateDate = OffsetDateTime.now().toString()
+                    }
+                )
+            }
+            .awaitSingle()
+    }
+
+    private fun getWalletStatus(status: NotificationRequestDto.Status?): WalletStatusDto =
+        if (status == NotificationRequestDto.Status.OK) {
+            WalletStatusDto.CREATED
+        } else {
+            WalletStatusDto.ERROR
+        }
 }
