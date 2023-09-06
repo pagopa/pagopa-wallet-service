@@ -27,7 +27,7 @@ parameters:
   # Basically, this variable is used to enforce the fact that we use the very same branch in different steps
   - name: 'release_branch'
     type: string
-    default: master
+    default: main
 
   # Github parameters
   - name: 'gitUsername'
@@ -47,29 +47,30 @@ steps:
   - script: |
       git checkout ${{ parameters.release_branch }}
     displayName: 'Checkout release branch'
-
+  - task: JavaToolInstaller@0
+    displayName: 'Installing JDK'
+    inputs:
+      versionSpec: "17"
+      jdkArchitectureOption: x64
+      jdkSourceOption: 'PreInstalled'
   # bump version
   - ${{ if ne(parameters['semver'], 'none') }}:
       - task: Gradle@3
         displayName: 'Bump version'
         name: bump_version
         inputs:
-          goals: 'incrementVersion'
-          ${{ if eq(parameters.semver, 'patch') }}:
-            options: '--versionIncrementType=PATCH'
-          ${{ if eq(parameters.semver, 'minor') }}:
-            options: '--versionIncrementType=MINOR'
-          ${{ if eq(parameters.semver, 'major') }}:
-            options: '--versionIncrementType=MAJOR'
+          tasks: 'help'
+          options: 'incrementVersion --versionIncrementType=${{ parameters.semver }}'
+          jdkVersionOption: '1.17'
       - task: Bash@3
         name: next_version_app
         displayName: 'Set release variables'
         inputs:
           targetType: "inline"
           script: |
-            version=$(./gradlew printVersion -q | head -n1 | cut -d' ' -f2)
+            version=$(./gradlew printVersion -Psnapshot=false  -q | head -n1 | cut -d' ' -f2)
             echo "##vso[task.setvariable variable=value;isOutput=true]$version"
-            git add pom.xml
+            git add build.gradle.kts
           failOnStderr: true
       - task: Bash@3
         displayName: Update Version Values Helm
