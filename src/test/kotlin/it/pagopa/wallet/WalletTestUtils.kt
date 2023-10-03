@@ -7,6 +7,8 @@ import it.pagopa.wallet.domain.PaymentInstrumentId
 import it.pagopa.wallet.domain.Wallet
 import it.pagopa.wallet.domain.WalletId
 import it.pagopa.wallet.domain.details.CardDetails
+import it.pagopa.wallet.domain.services.ServiceId
+import it.pagopa.wallet.domain.services.ServiceName
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
@@ -16,6 +18,7 @@ object WalletTestUtils {
     const val GATEWAY_SECURITY_TOKEN = "securityToken"
 
     const val USER_ID = "user-id"
+
     val now = OffsetDateTime.now().toString()
     val VALID_WALLET_WITH_CARD_DETAILS =
         Wallet(
@@ -142,6 +145,10 @@ object WalletTestUtils {
             NotificationRequestDto.Status.KO,
             GATEWAY_SECURITY_TOKEN
         )
+
+    val SERVICE_ID = ServiceId(UUID.randomUUID())
+
+    val SERVICE_NAME = ServiceName("TEST_SERVICE_NAME")
 
     fun hppRequest(): HppRequest =
         HppRequest()
