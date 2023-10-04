@@ -1,10 +1,7 @@
 package it.pagopa.wallet.repositories
 
-import it.pagopa.wallet.domain.Wallet
+import it.pagopa.wallet.documents.Wallet
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
-import reactor.core.publisher.Mono
+import org.springframework.stereotype.Repository
 
-interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
-
-    fun findByContractNumber(contractNumber: String): Mono<Wallet>
-}
+@Repository interface WalletRepository : ReactiveCrudRepository<Wallet, String>

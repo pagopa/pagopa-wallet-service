@@ -1,6 +1,6 @@
-package it.pagopa.wallet.domain
+package it.pagopa.wallet.domain.wallets
 
-import java.util.UUID
+import java.util.*
 
 /**
  * A payment instrument identifier.

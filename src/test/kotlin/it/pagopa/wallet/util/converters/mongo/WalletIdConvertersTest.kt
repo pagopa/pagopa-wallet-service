@@ -1,6 +1,6 @@
 package it.pagopa.wallet.util.converters.mongo
 
-import it.pagopa.wallet.domain.WalletId
+import it.pagopa.wallet.domain.wallets.WalletId
 import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

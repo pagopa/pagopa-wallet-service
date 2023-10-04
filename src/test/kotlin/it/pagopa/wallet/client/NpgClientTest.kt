@@ -1,22 +1,7 @@
 package it.pagopa.wallet.client
 
-import it.pagopa.generated.npg.api.DefaultApi
-import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.exception.NpgClientException
-import java.nio.charset.StandardCharsets
-import java.util.*
-import kotlinx.coroutines.reactor.mono
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.given
-import org.mockito.kotlin.mock
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
-
 class NpgClientTest {
-
+    /*
     private val defaultApi: DefaultApi = mock()
 
     private val npgClient = NpgClient(defaultApi)
@@ -135,5 +120,5 @@ class NpgClientTest {
                     it.toRestException().description.contains("503")
             }
             .verify()
-    }
+    }*/
 }

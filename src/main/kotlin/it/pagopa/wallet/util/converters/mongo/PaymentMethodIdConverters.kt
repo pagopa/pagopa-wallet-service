@@ -1,6 +1,6 @@
 package it.pagopa.wallet.util.converters.mongo
 
-import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import java.util.*
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.convert.ReadingConverter
@@ -17,8 +17,8 @@ import org.springframework.data.convert.WritingConverter
  */
 @SuppressWarnings("kotlin:S6516")
 @WritingConverter
-object WalletIdWriter : Converter<WalletId, String> {
-    override fun convert(source: WalletId): String {
+object PaymentMethodIdWriter : Converter<PaymentMethodId, String> {
+    override fun convert(source: PaymentMethodId): String {
         return source.value.toString()
     }
 }
@@ -34,8 +34,8 @@ object WalletIdWriter : Converter<WalletId, String> {
  */
 @SuppressWarnings("kotlin:S6516")
 @ReadingConverter
-object WalletIdReader : Converter<String, WalletId> {
-    override fun convert(source: String): WalletId {
-        return WalletId(UUID.fromString(source))
+object PaymentMethodIdReader : Converter<String, PaymentMethodId> {
+    override fun convert(source: String): PaymentMethodId {
+        return PaymentMethodId(UUID.fromString(source))
     }
 }

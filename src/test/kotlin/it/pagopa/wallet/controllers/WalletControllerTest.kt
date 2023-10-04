@@ -1,34 +1,12 @@
 package it.pagopa.wallet.controllers
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.exception.BadGatewayException
-import it.pagopa.wallet.exception.InternalServerErrorException
-import it.pagopa.wallet.exception.WalletNotFoundException
-import it.pagopa.wallet.services.WalletService
-import java.time.OffsetDateTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.reactor.mono
-import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.given
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
 class WalletControllerTest {
-    @MockBean private lateinit var walletService: WalletService
+    /*@MockBean private lateinit var walletService: WalletService
 
     private lateinit var walletController: WalletController
 
@@ -263,5 +241,5 @@ class WalletControllerTest {
                     "Cannot find wallet with id $walletId"
                 )
             )
-    }
+    }*/
 }

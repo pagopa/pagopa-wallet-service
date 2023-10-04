@@ -15,18 +15,19 @@ class CardDetailsTest {
     val invalidExpiryDate = "12-10"
     val brand = BrandEnum.MASTERCARD
     val holderName = "holderName"
-    val contractNumber = "contractNumber"
+    val validtype = "CARDS"
 
     @Test
     fun `can instantiate a CardDetails from valid bin, maskedPan and expiryDate`() {
 
         val cardDetails =
             CardDetails(
+                type = validtype,
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,
                 brand = brand,
-                holderName = holderName
+                holder = holderName
             )
 
         assertEquals(validBin, cardDetails.bin)
@@ -39,11 +40,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
+                type = validtype,
                 bin = validBin,
                 maskedPan = validMaskedPan,
                 expiryDate = invalidExpiryDate,
                 brand = brand,
-                holderName = holderName
+                holder = holderName
             )
         }
     }
@@ -53,11 +55,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
+                type = validtype,
                 bin = validBin,
                 maskedPan = invalidMaskedPan,
                 expiryDate = validExpiryDate,
                 brand = brand,
-                holderName = holderName
+                holder = holderName
             )
         }
     }
@@ -67,11 +70,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
+                type = validtype,
                 bin = invalidBin,
                 maskedPan = validMaskedPan,
                 expiryDate = validExpiryDate,
                 brand = brand,
-                holderName = holderName
+                holder = holderName
             )
         }
     }
