@@ -1,6 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.wallet.documents.Wallet
+import it.pagopa.wallet.documents.wallet.Wallet
 import it.pagopa.wallet.repositories.WalletRepository
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired

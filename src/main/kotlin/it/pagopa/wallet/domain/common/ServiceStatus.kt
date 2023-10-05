@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.services
+package it.pagopa.wallet.domain.common
 
 enum class ServiceStatus {
     ENABLED,

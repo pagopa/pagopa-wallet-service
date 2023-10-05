@@ -1,5 +1,6 @@
-package it.pagopa.wallet.documents
+package it.pagopa.wallet.documents.wallet
 
+import it.pagopa.wallet.documents.wallet.details.WalletDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("wallets")
@@ -9,6 +10,6 @@ data class Wallet(
     val paymentMethodId: String,
     val paymentInstrumentId: String,
     val contractId: String,
-    val services: List<ServiceWallet>,
+    val services: List<WalletService>,
     val details: WalletDetails?
 )

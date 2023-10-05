@@ -2,6 +2,7 @@ package it.pagopa.wallet.domain.services
 
 import it.pagopa.wallet.WalletTestUtils.SERVICE_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
+import it.pagopa.wallet.domain.common.ServiceStatus
 import java.time.Instant
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow

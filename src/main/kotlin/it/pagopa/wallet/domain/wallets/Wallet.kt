@@ -18,7 +18,7 @@ data class Wallet(
     var updateDate: Instant,
     val paymentMethodId: PaymentMethodId,
     val paymentInstrumentId: PaymentInstrumentId?,
-    val services: List<ServiceWallet>,
+    val services: List<WalletService>,
     val contractId: String,
     val details: WalletDetails?
 ) {}

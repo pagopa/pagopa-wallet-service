@@ -1,21 +1,34 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.wallet.model.ProblemJsonDto
-import it.pagopa.wallet.domain.services.ServiceId
-import it.pagopa.wallet.domain.services.ServiceName
-import java.util.*
+import it.pagopa.wallet.domain.common.ServiceId
+import it.pagopa.wallet.domain.common.ServiceName
+import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
+import it.pagopa.wallet.domain.wallets.PaymentMethodId
+import it.pagopa.wallet.domain.wallets.WalletId
 import org.springframework.http.HttpStatus
+import java.util.*
 
 object WalletTestUtils {
 
+    val USER_ID = "UserIDTest"
+
+    val WALLET_UUID = WalletId(UUID.randomUUID())
+
     val SERVICE_ID = ServiceId(UUID.randomUUID())
+
+    val PAYMENT_METHOD_ID = PaymentMethodId(UUID.randomUUID())
+
+    val PAYMENT_INSTRUMENT_ID = PaymentInstrumentId(UUID.randomUUID())
 
     val SERVICE_NAME = ServiceName("TEST_SERVICE_NAME")
 
+    const val CONTRACT_ID = "TestContractId"
+
     fun buildProblemJson(
-        httpStatus: HttpStatus,
-        title: String,
-        description: String
+            httpStatus: HttpStatus,
+            title: String,
+            description: String
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 
     /*const val GATEWAY_SECURITY_TOKEN = "securityToken"
