@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.wallet.details
+package it.pagopa.wallet.domain.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.wallet.domain.details.CardDetails

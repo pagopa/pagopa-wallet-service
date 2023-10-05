@@ -1,12 +1,9 @@
-package it.pagopa.wallet.domain.wallet
+package it.pagopa.wallet.domain.wallets
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.common.ServiceStatus
 import it.pagopa.wallet.domain.details.CardDetails
-import it.pagopa.wallet.domain.wallets.Wallet
-import it.pagopa.wallet.domain.wallets.WalletService
 import java.time.Instant
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -59,13 +56,6 @@ class WalletTest {
     @Test
     fun `can construct wallet with services and card details`() {
 
-        val bin = "424242"
-        val maskedPan = "424242******5555"
-        val expiryDate = "203012"
-        val brand = WalletCardDetailsDto.BrandEnum.MASTERCARD
-        val holderName = "holderName"
-        val validType = "CARDS"
-
         assertDoesNotThrow {
             Wallet(
                 WalletTestUtils.WALLET_UUID,
@@ -84,7 +74,14 @@ class WalletTest {
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,
-                CardDetails(validType, bin, maskedPan, expiryDate, brand, holderName)
+                CardDetails(
+                    WalletTestUtils.TYPE,
+                    WalletTestUtils.BIN,
+                    WalletTestUtils.MASKED_APN,
+                    WalletTestUtils.EXP_DATE,
+                    WalletTestUtils.BRAND,
+                    WalletTestUtils.HOLDER_NAME
+                )
             )
         }
     }

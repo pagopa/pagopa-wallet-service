@@ -1,6 +1,6 @@
-package it.pagopa.wallet.documents.wallet
+package it.pagopa.wallet.documents.wallets
 
-import it.pagopa.wallet.documents.wallet.details.WalletDetails
+import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("wallets")

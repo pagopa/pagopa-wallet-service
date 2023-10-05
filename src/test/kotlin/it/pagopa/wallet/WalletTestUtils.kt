@@ -1,11 +1,17 @@
 package it.pagopa.wallet
 
 import it.pagopa.generated.wallet.model.ProblemJsonDto
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.documents.wallets.WalletService as WalletServiceDocument
+import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.common.ServiceId
 import it.pagopa.wallet.domain.common.ServiceName
+import it.pagopa.wallet.domain.common.ServiceStatus
 import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.WalletId
+import java.time.Instant
 import java.util.*
 import org.springframework.http.HttpStatus
 
@@ -24,6 +30,60 @@ object WalletTestUtils {
     val SERVICE_NAME = ServiceName("TEST_SERVICE_NAME")
 
     const val CONTRACT_ID = "TestContractId"
+
+    val BIN = "424242"
+    val MASKED_APN = "424242******5555"
+    val EXP_DATE = "203012"
+    val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
+    val HOLDER_NAME = "holderName"
+    val TYPE = "CARDS"
+
+    fun walletDocumentEmptyServiceNullDetails(): Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID,
+            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            CONTRACT_ID,
+            listOf(),
+            null
+        )
+
+    fun walletDocumentNullDetails(): Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID,
+            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            CONTRACT_ID,
+            listOf(
+                WalletServiceDocument(
+                    SERVICE_ID.id.toString(),
+                    SERVICE_NAME.name,
+                    ServiceStatus.DISABLED.toString(),
+                    Instant.now().toString()
+                )
+            ),
+            null
+        )
+
+    fun walletDocument(): Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID,
+            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            CONTRACT_ID,
+            listOf(
+                WalletServiceDocument(
+                    SERVICE_ID.id.toString(),
+                    SERVICE_NAME.name,
+                    ServiceStatus.DISABLED.toString(),
+                    Instant.now().toString()
+                )
+            ),
+            CardDetails(TYPE, BIN, MASKED_APN, EXP_DATE, BRAND.toString(), HOLDER_NAME)
+        )
 
     fun buildProblemJson(
         httpStatus: HttpStatus,
