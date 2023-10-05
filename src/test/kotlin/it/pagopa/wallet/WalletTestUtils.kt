@@ -6,8 +6,8 @@ import it.pagopa.wallet.domain.common.ServiceName
 import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.WalletId
-import org.springframework.http.HttpStatus
 import java.util.*
+import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
 
@@ -26,9 +26,9 @@ object WalletTestUtils {
     const val CONTRACT_ID = "TestContractId"
 
     fun buildProblemJson(
-            httpStatus: HttpStatus,
-            title: String,
-            description: String
+        httpStatus: HttpStatus,
+        title: String,
+        description: String
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 
     /*const val GATEWAY_SECURITY_TOKEN = "securityToken"

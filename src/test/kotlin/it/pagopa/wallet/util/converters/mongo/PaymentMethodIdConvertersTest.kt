@@ -1,10 +1,10 @@
 package it.pagopa.wallet.util.converters.mongo
 
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.util.*
 
 class PaymentMethodIdConvertersTest {
     @Test

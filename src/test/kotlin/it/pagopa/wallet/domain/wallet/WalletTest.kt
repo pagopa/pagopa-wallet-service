@@ -7,9 +7,9 @@ import it.pagopa.wallet.domain.common.ServiceStatus
 import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletService
+import java.time.Instant
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import java.time.Instant
 
 class WalletTest {
 
@@ -17,16 +17,16 @@ class WalletTest {
     fun `can construct wallet with empty services and null details`() {
         assertDoesNotThrow {
             Wallet(
-                    WalletTestUtils.WALLET_UUID,
-                    WalletTestUtils.USER_ID,
-                    WalletStatusDto.CREATED,
-                    Instant.now(),
-                    Instant.now(),
-                    WalletTestUtils.PAYMENT_METHOD_ID,
-                    WalletTestUtils.PAYMENT_INSTRUMENT_ID,
-                    listOf(),
-                    WalletTestUtils.CONTRACT_ID,
-                    null
+                WalletTestUtils.WALLET_UUID,
+                WalletTestUtils.USER_ID,
+                WalletStatusDto.CREATED,
+                Instant.now(),
+                Instant.now(),
+                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_INSTRUMENT_ID,
+                listOf(),
+                WalletTestUtils.CONTRACT_ID,
+                null
             )
         }
     }
@@ -35,16 +35,23 @@ class WalletTest {
     fun `can construct wallet with services and null details`() {
         assertDoesNotThrow {
             Wallet(
-                    WalletTestUtils.WALLET_UUID,
-                    WalletTestUtils.USER_ID,
-                    WalletStatusDto.CREATED,
-                    Instant.now(),
-                    Instant.now(),
-                    WalletTestUtils.PAYMENT_METHOD_ID,
-                    WalletTestUtils.PAYMENT_INSTRUMENT_ID,
-                    listOf(WalletService(WalletTestUtils.SERVICE_ID, WalletTestUtils.SERVICE_NAME, ServiceStatus.DISABLED, Instant.now())),
-                    WalletTestUtils.CONTRACT_ID,
-                    null
+                WalletTestUtils.WALLET_UUID,
+                WalletTestUtils.USER_ID,
+                WalletStatusDto.CREATED,
+                Instant.now(),
+                Instant.now(),
+                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_INSTRUMENT_ID,
+                listOf(
+                    WalletService(
+                        WalletTestUtils.SERVICE_ID,
+                        WalletTestUtils.SERVICE_NAME,
+                        ServiceStatus.DISABLED,
+                        Instant.now()
+                    )
+                ),
+                WalletTestUtils.CONTRACT_ID,
+                null
             )
         }
     }
@@ -61,16 +68,23 @@ class WalletTest {
 
         assertDoesNotThrow {
             Wallet(
-                    WalletTestUtils.WALLET_UUID,
-                    WalletTestUtils.USER_ID,
-                    WalletStatusDto.CREATED,
-                    Instant.now(),
-                    Instant.now(),
-                    WalletTestUtils.PAYMENT_METHOD_ID,
-                    WalletTestUtils.PAYMENT_INSTRUMENT_ID,
-                    listOf(WalletService(WalletTestUtils.SERVICE_ID, WalletTestUtils.SERVICE_NAME, ServiceStatus.DISABLED, Instant.now())),
-                    WalletTestUtils.CONTRACT_ID,
-                    CardDetails(validType, bin, maskedPan, expiryDate, brand, holderName)
+                WalletTestUtils.WALLET_UUID,
+                WalletTestUtils.USER_ID,
+                WalletStatusDto.CREATED,
+                Instant.now(),
+                Instant.now(),
+                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_INSTRUMENT_ID,
+                listOf(
+                    WalletService(
+                        WalletTestUtils.SERVICE_ID,
+                        WalletTestUtils.SERVICE_NAME,
+                        ServiceStatus.DISABLED,
+                        Instant.now()
+                    )
+                ),
+                WalletTestUtils.CONTRACT_ID,
+                CardDetails(validType, bin, maskedPan, expiryDate, brand, holderName)
             )
         }
     }

@@ -21,14 +21,14 @@ class CardDetailsTest {
     fun `can instantiate a CardDetails from valid bin, maskedPan and expiryDate`() {
 
         val cardDetails =
-                CardDetails(
-                        type = validtype,
-                        bin = validBin,
-                        maskedPan = validMaskedPan,
-                        expiryDate = validExpiryDate,
-                        brand = brand,
-                        holder = holderName
-                )
+            CardDetails(
+                type = validtype,
+                bin = validBin,
+                maskedPan = validMaskedPan,
+                expiryDate = validExpiryDate,
+                brand = brand,
+                holder = holderName
+            )
 
         assertEquals(validBin, cardDetails.bin)
         assertEquals(validMaskedPan, cardDetails.maskedPan)
@@ -40,12 +40,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                    type = validtype,
-                    bin = validBin,
-                    maskedPan = validMaskedPan,
-                    expiryDate = invalidExpiryDate,
-                    brand = brand,
-                    holder = holderName
+                type = validtype,
+                bin = validBin,
+                maskedPan = validMaskedPan,
+                expiryDate = invalidExpiryDate,
+                brand = brand,
+                holder = holderName
             )
         }
     }
@@ -55,12 +55,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                    type = validtype,
-                    bin = validBin,
-                    maskedPan = invalidMaskedPan,
-                    expiryDate = validExpiryDate,
-                    brand = brand,
-                    holder = holderName
+                type = validtype,
+                bin = validBin,
+                maskedPan = invalidMaskedPan,
+                expiryDate = validExpiryDate,
+                brand = brand,
+                holder = holderName
             )
         }
     }
@@ -70,12 +70,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                    type = validtype,
-                    bin = invalidBin,
-                    maskedPan = validMaskedPan,
-                    expiryDate = validExpiryDate,
-                    brand = brand,
-                    holder = holderName
+                type = validtype,
+                bin = invalidBin,
+                maskedPan = validMaskedPan,
+                expiryDate = validExpiryDate,
+                brand = brand,
+                holder = holderName
             )
         }
     }
