@@ -12,12 +12,36 @@ import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.WalletId
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.util.*
 import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
 
-    val USER_ID = "UserIDTest"
+    const val USER_ID = "user-id"
+
+    val now = OffsetDateTime.now().toString()
+    val VALID_WALLET_WITH_CARD_DETAILS =
+        Wallet(
+            id = WalletId(UUID.randomUUID()),
+            userId = USER_ID,
+            status = WalletStatusDto.INITIALIZED,
+            creationDate = now,
+            updateDate = now,
+            paymentInstrumentType = TypeDto.CARDS,
+            paymentInstrumentId = PaymentInstrumentId(UUID.randomUUID()),
+            gatewaySecurityToken = "securityToken",
+            services = listOf(ServiceDto.PAGOPA),
+            contractNumber = UUID.randomUUID().toString().replace("-", ""),
+            details =
+                CardDetails(
+                    bin = "123456",
+                    maskedPan = "123456******9876",
+                    expiryDate = "203012",
+                    brand = WalletCardDetailsDto.BrandEnum.MASTERCARD,
+                    holderName = "holder name"
+                )
+        )
 
     val WALLET_UUID = WalletId(UUID.randomUUID())
 
