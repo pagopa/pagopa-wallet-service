@@ -4,6 +4,7 @@ import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.services.WalletService
 import java.util.*
+import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -23,27 +24,27 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-        TODO("Not yet implemented")
+        return mono { ResponseEntity.ok().build() }
     }
 
     override fun deleteWalletById(
         walletId: UUID?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
-        TODO("Not yet implemented")
+        return mono { ResponseEntity.noContent().build() }
     }
 
     override fun getWalletById(
         walletId: UUID?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletInfoDto>> {
-        TODO("Not yet implemented")
+        return mono { ResponseEntity.ok().build() }
     }
 
     override fun getWalletsByIdUser(
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletsDto>> {
-        TODO("Not yet implemented")
+        return mono { ResponseEntity.ok().build() }
     }
 
     override fun patchWalletById(
@@ -51,6 +52,6 @@ class WalletController(
         patchServiceDto: Flux<PatchServiceDto>?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
-        TODO("Not yet implemented")
+        return mono { ResponseEntity.noContent().build() }
     }
 }
