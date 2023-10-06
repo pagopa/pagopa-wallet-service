@@ -31,6 +31,7 @@ class CardDetailsTest {
         assertEquals(validBin, cardDetails.bin.bin)
         assertEquals(validMaskedPan, cardDetails.maskedPan.maskedPan)
         assertEquals(validExpiryDate, cardDetails.expiryDate.expDate)
+        assertEquals(cardDetails.type, WalletDetailsType.CARDS)
     }
 
     @Test
