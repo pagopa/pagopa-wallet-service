@@ -8,6 +8,7 @@ import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.common.ServiceId
 import it.pagopa.wallet.domain.common.ServiceName
 import it.pagopa.wallet.domain.common.ServiceStatus
+import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -31,12 +32,12 @@ object WalletTestUtils {
 
     const val CONTRACT_ID = "TestContractId"
 
-    val BIN = "424242"
-    val MASKED_APN = "424242******5555"
-    val EXP_DATE = "203012"
+    val BIN = Bin("424242")
+    val MASKED_APN = MaskedPan("424242******5555")
+    val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
-    val HOLDER_NAME = "holderName"
-    val TYPE = "CARDS"
+    val HOLDER_NAME = CardHolderName("holderName")
+    val TYPE = WalletDetailsType.CARDS
 
     fun walletDocumentEmptyServiceNullDetails(): Wallet =
         Wallet(
@@ -82,7 +83,14 @@ object WalletTestUtils {
                     Instant.now().toString()
                 )
             ),
-            CardDetails(TYPE, BIN, MASKED_APN, EXP_DATE, BRAND.toString(), HOLDER_NAME)
+            CardDetails(
+                TYPE.toString(),
+                BIN.bin,
+                MASKED_APN.maskedPan,
+                EXP_DATE.expDate,
+                BRAND.toString(),
+                HOLDER_NAME.holderName
+            )
         )
 
     fun serviceDocument(): Service =

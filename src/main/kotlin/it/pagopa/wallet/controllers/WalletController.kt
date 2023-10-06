@@ -41,9 +41,7 @@ class WalletController(
         return mono { ResponseEntity.ok().build() }
     }
 
-    override fun getWalletsByIdUser(
-        exchange: ServerWebExchange
-    ): Mono<ResponseEntity<WalletsDto>> {
+    override fun getWalletsByIdUser(exchange: ServerWebExchange): Mono<ResponseEntity<WalletsDto>> {
         return mono { ResponseEntity.ok().build() }
     }
 

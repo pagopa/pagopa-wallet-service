@@ -1,7 +1,7 @@
 package it.pagopa.wallet.domain.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
-import it.pagopa.wallet.domain.details.CardDetails
+import it.pagopa.wallet.domain.details.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -22,17 +22,17 @@ class CardDetailsTest {
 
         val cardDetails =
             CardDetails(
-                type = validtype,
-                bin = validBin,
-                maskedPan = validMaskedPan,
-                expiryDate = validExpiryDate,
+                type = WalletDetailsType.valueOf(validtype),
+                bin = Bin(validBin),
+                maskedPan = MaskedPan(validMaskedPan),
+                expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = holderName
+                holder = CardHolderName(holderName)
             )
 
-        assertEquals(validBin, cardDetails.bin)
-        assertEquals(validMaskedPan, cardDetails.maskedPan)
-        assertEquals(validExpiryDate, cardDetails.expiryDate)
+        assertEquals(validBin, cardDetails.bin.bin)
+        assertEquals(validMaskedPan, cardDetails.maskedPan.maskedPan)
+        assertEquals(validExpiryDate, cardDetails.expiryDate.expDate)
     }
 
     @Test
@@ -40,12 +40,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = validtype,
-                bin = validBin,
-                maskedPan = validMaskedPan,
-                expiryDate = invalidExpiryDate,
+                type = WalletDetailsType.valueOf(validtype),
+                bin = Bin(validBin),
+                maskedPan = MaskedPan(validMaskedPan),
+                expiryDate = ExpiryDate(invalidExpiryDate),
                 brand = brand,
-                holder = holderName
+                holder = CardHolderName(holderName)
             )
         }
     }
@@ -55,12 +55,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = validtype,
-                bin = validBin,
-                maskedPan = invalidMaskedPan,
-                expiryDate = validExpiryDate,
+                type = WalletDetailsType.valueOf(validtype),
+                bin = Bin(validBin),
+                maskedPan = MaskedPan(invalidMaskedPan),
+                expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = holderName
+                holder = CardHolderName(holderName)
             )
         }
     }
@@ -70,12 +70,12 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = validtype,
-                bin = invalidBin,
-                maskedPan = validMaskedPan,
-                expiryDate = validExpiryDate,
+                type = WalletDetailsType.valueOf(validtype),
+                bin = Bin(invalidBin),
+                maskedPan = MaskedPan(validMaskedPan),
+                expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = holderName
+                holder = CardHolderName(holderName)
             )
         }
     }
