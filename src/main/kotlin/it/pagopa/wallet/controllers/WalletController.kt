@@ -28,7 +28,7 @@ class WalletController(
     }
 
     override fun deleteWalletById(
-        walletId: UUID?,
+        walletId: UUID,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
         return mono { ResponseEntity.noContent().build() }
