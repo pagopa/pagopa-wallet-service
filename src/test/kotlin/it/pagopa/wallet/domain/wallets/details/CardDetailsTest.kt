@@ -12,7 +12,6 @@ class CardDetailsTest {
     val validExpiryDate = "203012"
     val brand = BrandEnum.MASTERCARD
     val holderName = "holderName"
-    val validtype = "CARDS"
     val invalidBin = "42424"
     val invalidMaskedPan = "4242425555"
     val invalidExpiryDate = "12-10"
@@ -22,7 +21,6 @@ class CardDetailsTest {
 
         val cardDetails =
             CardDetails(
-                type = WalletDetailsType.valueOf(validtype),
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
@@ -40,7 +38,6 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = WalletDetailsType.valueOf(validtype),
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(invalidExpiryDate),
@@ -55,7 +52,6 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = WalletDetailsType.valueOf(validtype),
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(invalidMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
@@ -70,7 +66,6 @@ class CardDetailsTest {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
-                type = WalletDetailsType.valueOf(validtype),
                 bin = Bin(invalidBin),
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
