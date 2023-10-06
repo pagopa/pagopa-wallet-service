@@ -9,16 +9,14 @@ import it.pagopa.wallet.domain.common.ServiceId
 import it.pagopa.wallet.domain.common.ServiceName
 import it.pagopa.wallet.domain.common.ServiceStatus
 import it.pagopa.wallet.domain.details.*
-import it.pagopa.wallet.domain.wallets.PaymentInstrumentId
-import it.pagopa.wallet.domain.wallets.PaymentMethodId
-import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.*
 import java.time.Instant
 import java.util.*
 import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
 
-    const val USER_ID = "user-id"
+    val USER_ID = UserId("user-id")
 
     val WALLET_UUID = WalletId(UUID.randomUUID())
 
@@ -30,22 +28,22 @@ object WalletTestUtils {
 
     val SERVICE_NAME = ServiceName("TEST_SERVICE_NAME")
 
-    const val CONTRACT_ID = "TestContractId"
+    val CONTRACT_ID = ContractId("TestContractId")
 
     val BIN = Bin("424242")
     val MASKED_APN = MaskedPan("424242******5555")
     val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
-    val TYPE = WalletDetailsType.CARDS
+    private val TYPE = WalletDetailsType.CARDS
 
     fun walletDocumentEmptyServiceNullDetails(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID,
+            USER_ID.userId,
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID,
+            CONTRACT_ID.contractId,
             listOf(),
             null
         )
@@ -53,10 +51,10 @@ object WalletTestUtils {
     fun walletDocumentNullDetails(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID,
+            USER_ID.userId,
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID,
+            CONTRACT_ID.contractId,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),
@@ -71,10 +69,10 @@ object WalletTestUtils {
     fun walletDocument(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID,
+            USER_ID.userId,
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID,
+            CONTRACT_ID.contractId,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),

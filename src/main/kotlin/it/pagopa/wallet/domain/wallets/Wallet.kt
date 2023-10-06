@@ -12,13 +12,13 @@ import java.time.Instant
  */
 data class Wallet(
     val id: WalletId,
-    val userId: String,
+    val userId: UserId,
     var status: WalletStatusDto,
     val creationDate: Instant,
     var updateDate: Instant,
     val paymentMethodId: PaymentMethodId,
     val paymentInstrumentId: PaymentInstrumentId?,
     val services: List<WalletService>,
-    val contractId: String,
+    val contractId: ContractId,
     val details: WalletDetails?
 ) {}
