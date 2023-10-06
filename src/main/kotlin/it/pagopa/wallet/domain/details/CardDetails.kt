@@ -4,7 +4,7 @@ import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 
 /** Data class that maps WalletDetails for CARD instrument type */
 data class CardDetails(
-    val type: WalletDetailsType,
+    override val type: WalletDetailsType,
     val bin: Bin,
     val maskedPan: MaskedPan,
     val expiryDate: ExpiryDate,
