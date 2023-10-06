@@ -35,21 +35,21 @@ class WalletController(
     }
 
     override fun getWalletById(
-        walletId: UUID?,
-        exchange: ServerWebExchange?
+        walletId: UUID,
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
         return mono { ResponseEntity.ok().build() }
     }
 
     override fun getWalletsByIdUser(
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletsDto>> {
         return mono { ResponseEntity.ok().build() }
     }
 
     override fun patchWalletById(
-        walletId: UUID?,
-        patchServiceDto: Flux<PatchServiceDto>?,
+        walletId: UUID,
+        patchServiceDto: Flux<PatchServiceDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
         return mono { ResponseEntity.noContent().build() }
