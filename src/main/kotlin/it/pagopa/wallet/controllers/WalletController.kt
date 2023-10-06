@@ -21,8 +21,8 @@ class WalletController(
     @Autowired private val walletService: WalletService,
 ) : WalletsApi {
     override fun createWallet(
-        walletCreateRequestDto: Mono<WalletCreateRequestDto>?,
-        exchange: ServerWebExchange?
+        walletCreateRequestDto: Mono<WalletCreateRequestDto>,
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
         return mono { ResponseEntity.ok().build() }
     }
