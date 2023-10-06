@@ -2,7 +2,10 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.domain.services.ServiceName
+import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import java.net.URI
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
@@ -19,12 +22,29 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
+    @Autowired private val loggingEventRepository: LoggingEventRepository
 ) : WalletsApi {
     override fun createWallet(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-        return mono { ResponseEntity.ok().build() }
+
+        return walletCreateRequestDto
+            .flatMap {
+                walletService.createWallet(
+                    it.services.map { s -> ServiceName(s.name) },
+                    userId = UUID.randomUUID(),
+                    paymentMethodId = UUID.randomUUID(),
+                    contractId = UUID.randomUUID().toString()
+                )
+            }
+            .flatMap { it.saveEvents(loggingEventRepository) }
+            .map {
+                WalletCreateResponseDto()
+                    .walletId(it.id.value)
+                    .redirectUrl("http://checkout-return-url")
+            }
+            .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
 
     override fun deleteWalletById(

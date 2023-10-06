@@ -5,10 +5,10 @@ import it.pagopa.wallet.documents.service.Service
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.WalletService as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails
-import it.pagopa.wallet.domain.common.ServiceId
-import it.pagopa.wallet.domain.common.ServiceName
-import it.pagopa.wallet.domain.common.ServiceStatus
 import it.pagopa.wallet.domain.details.*
+import it.pagopa.wallet.domain.services.ServiceId
+import it.pagopa.wallet.domain.services.ServiceName
+import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
 import java.time.Instant
 import java.util.*
@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
 
-    val USER_ID = UserId("user-id")
+    val USER_ID = UserId(UUID.randomUUID())
 
     val WALLET_UUID = WalletId(UUID.randomUUID())
 
@@ -40,7 +40,7 @@ object WalletTestUtils {
     fun walletDocumentEmptyServiceNullDetails(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID.userId,
+            USER_ID.id.toString(),
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
@@ -51,7 +51,7 @@ object WalletTestUtils {
     fun walletDocumentNullDetails(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID.userId,
+            USER_ID.id.toString(),
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
@@ -69,7 +69,7 @@ object WalletTestUtils {
     fun walletDocument(): Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
-            USER_ID.userId,
+            USER_ID.id.toString(),
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
@@ -89,6 +89,20 @@ object WalletTestUtils {
                 BRAND.toString(),
                 HOLDER_NAME.holderName
             )
+        )
+
+    val WALLET_DOMAIN =
+        it.pagopa.wallet.domain.wallets.Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.CREATED,
+            Instant.now(),
+            Instant.now(),
+            PAYMENT_METHOD_ID,
+            PAYMENT_INSTRUMENT_ID,
+            listOf(),
+            CONTRACT_ID,
+            null
         )
 
     fun serviceDocument(): Service =

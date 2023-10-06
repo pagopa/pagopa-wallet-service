@@ -1,3 +1,5 @@
 package it.pagopa.wallet.domain.wallets
 
-data class UserId(val userId: String)
+import java.util.*
+
+data class UserId(val id: UUID)
