@@ -185,6 +185,49 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
+  /services:
+    post:
+      tags:
+        - services
+      summary: Create a new service
+      description: Creates a new service
+      operationId: createService
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        description: Create a new service
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCreateRequest'
+        required: true
+      responses:
+        '201':
+          description: Service created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCreateResponse'
+        '400':
+          description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '502':
+          description: Gateway error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '504':
+          description: Timeout serving request
 components:
   schemas:
     WalletId:
@@ -207,6 +250,10 @@ components:
           description: Service last update date
           type: string
           format: date-time
+    ServiceId:
+      description: Service identifier
+      type: string
+      format: uuid
     PatchService:
       type: object
       properties:
@@ -403,6 +450,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletInfo'
+    ServiceCreateRequest:
+      type: object
+      description: Service creation request
+      properties:
+        name:
+          type: string
+          description: Service name
+        status:
+          $ref: "#/components/schemas/ServiceStatus"
+      required:
+        - name
+    ServiceCreateResponse:
+      type: object
+      description: Service creation response
+      properties:
+        serviceId:
+          $ref: '#/components/schemas/ServiceId'
+      required:
+        - serviceId
     ProblemJson:
       description: Body definition for error responses containing failure details
       type: object

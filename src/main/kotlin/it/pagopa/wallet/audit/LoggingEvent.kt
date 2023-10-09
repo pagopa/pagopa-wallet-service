@@ -12,3 +12,5 @@ sealed class LoggingEvent(val id: UUID, val createdAt: Instant) {
 data class WalletAddedEvent(val walletId: String) : LoggingEvent()
 
 data class WalletPatchEvent(val walletId: String) : LoggingEvent()
+
+data class ServiceCreatedEvent(val serviceId: UUID, val serviceName: String) : LoggingEvent()
