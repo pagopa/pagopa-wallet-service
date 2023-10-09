@@ -77,6 +77,7 @@ dependencies {
   // Kotlin dependencies
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+  testImplementation("io.mockk:mockk:1.13.8")
 }
 
 configurations {

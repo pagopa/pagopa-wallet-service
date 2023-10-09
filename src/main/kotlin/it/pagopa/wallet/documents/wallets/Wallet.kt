@@ -8,7 +8,7 @@ data class Wallet(
     val id: String,
     val userId: String,
     val paymentMethodId: String,
-    val paymentInstrumentId: String,
+    val paymentInstrumentId: String?,
     val contractId: String,
     val services: List<WalletService>,
     val details: WalletDetails?

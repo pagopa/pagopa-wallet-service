@@ -76,7 +76,7 @@ class WalletTest {
                 WalletTestUtils.CONTRACT_ID,
                 CardDetails(
                     WalletTestUtils.BIN,
-                    WalletTestUtils.MASKED_APN,
+                    WalletTestUtils.MASKED_PAN,
                     WalletTestUtils.EXP_DATE,
                     WalletTestUtils.BRAND,
                     WalletTestUtils.HOLDER_NAME

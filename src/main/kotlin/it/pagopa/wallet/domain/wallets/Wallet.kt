@@ -1,6 +1,7 @@
 package it.pagopa.wallet.domain.wallets
 
 import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.details.WalletDetails
 import java.time.Instant
 
@@ -21,4 +22,22 @@ data class Wallet(
     val services: List<WalletService>,
     val contractId: ContractId,
     val details: WalletDetails?
-) {}
+) {
+    fun toDocument(): Wallet =
+        Wallet(
+            this.id.value.toString(),
+            this.userId.id.toString(),
+            this.paymentMethodId.value.toString(),
+            this.paymentInstrumentId?.value.toString(),
+            this.contractId.contractId,
+            this.services.map { ls ->
+                it.pagopa.wallet.documents.wallets.WalletService(
+                    ls.id.id.toString(),
+                    ls.name.name,
+                    ls.status.name,
+                    ls.lastUpdate.toString()
+                )
+            },
+            this.details?.toDocument()
+        )
+}

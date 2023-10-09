@@ -1,6 +1,7 @@
 package it.pagopa.wallet.domain.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.wallet.documents.wallets.details.CardDetails
 
 /** Data class that maps WalletDetails for CARD instrument type */
 data class CardDetails(
@@ -12,4 +13,14 @@ data class CardDetails(
 ) : WalletDetails {
     override val type: WalletDetailsType
         get() = WalletDetailsType.CARDS
+
+    override fun toDocument(): CardDetails =
+        CardDetails(
+            this.type.name,
+            this.bin.bin,
+            this.maskedPan.maskedPan,
+            this.expiryDate.expDate,
+            this.brand.name,
+            this.holder.holderName
+        )
 }

@@ -31,13 +31,25 @@ object WalletTestUtils {
     val CONTRACT_ID = ContractId("TestContractId")
 
     val BIN = Bin("424242")
-    val MASKED_APN = MaskedPan("424242******5555")
+    val MASKED_PAN = MaskedPan("424242******5555")
     val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
     private val TYPE = WalletDetailsType.CARDS
+    private val TIMESTAMP = Instant.now()
 
-    fun walletDocumentEmptyServiceNullDetails(): Wallet =
+    val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT: Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            PAYMENT_METHOD_ID.value.toString(),
+            null,
+            CONTRACT_ID.contractId,
+            listOf(),
+            null
+        )
+
+    val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS: Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
@@ -48,7 +60,7 @@ object WalletTestUtils {
             null
         )
 
-    fun walletDocumentNullDetails(): Wallet =
+    val WALLET_DOCUMENT_NULL_DETAILS: Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
@@ -60,13 +72,13 @@ object WalletTestUtils {
                     SERVICE_ID.id.toString(),
                     SERVICE_NAME.name,
                     ServiceStatus.DISABLED.toString(),
-                    Instant.now().toString()
+                    TIMESTAMP.toString()
                 )
             ),
             null
         )
 
-    fun walletDocument(): Wallet =
+    val WALLET_DOCUMENT: Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
@@ -78,13 +90,13 @@ object WalletTestUtils {
                     SERVICE_ID.id.toString(),
                     SERVICE_NAME.name,
                     ServiceStatus.DISABLED.toString(),
-                    Instant.now().toString()
+                    TIMESTAMP.toString()
                 )
             ),
             CardDetails(
                 TYPE.toString(),
                 BIN.bin,
-                MASKED_APN.maskedPan,
+                MASKED_PAN.maskedPan,
                 EXP_DATE.expDate,
                 BRAND.toString(),
                 HOLDER_NAME.holderName
@@ -92,7 +104,7 @@ object WalletTestUtils {
         )
 
     val WALLET_DOMAIN =
-        it.pagopa.wallet.domain.wallets.Wallet(
+        Wallet(
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
@@ -100,17 +112,59 @@ object WalletTestUtils {
             Instant.now(),
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
+            listOf(WalletService(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
+            CONTRACT_ID,
+            CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
+        )
+
+    val WALLET_DOMAIN_NULL_DETAILS =
+        Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.CREATED,
+            Instant.now(),
+            Instant.now(),
+            PAYMENT_METHOD_ID,
+            PAYMENT_INSTRUMENT_ID,
+            listOf(WalletService(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
+            CONTRACT_ID,
+            null
+        )
+
+    val WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS =
+        Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.CREATED,
+            TIMESTAMP,
+            TIMESTAMP,
+            PAYMENT_METHOD_ID,
+            PAYMENT_INSTRUMENT_ID,
             listOf(),
             CONTRACT_ID,
             null
         )
 
-    fun serviceDocument(): Service =
+    val WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT =
+        Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.CREATED,
+            TIMESTAMP,
+            TIMESTAMP,
+            PAYMENT_METHOD_ID,
+            null,
+            listOf(),
+            CONTRACT_ID,
+            null
+        )
+
+    val SERVICE_DOCUMENT: Service =
         Service(
             SERVICE_ID.id.toString(),
             SERVICE_NAME.name,
             ServiceStatus.DISABLED.name,
-            Instant.now().toString()
+            TIMESTAMP.toString()
         )
 
     fun buildProblemJson(

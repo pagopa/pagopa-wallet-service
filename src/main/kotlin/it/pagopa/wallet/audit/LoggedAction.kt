@@ -3,7 +3,7 @@ package it.pagopa.wallet.audit
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import reactor.core.publisher.Mono
 
-data class LoggedAction<T : Any>(private val data: T, private val events: List<LoggingEvent>) {
+data class LoggedAction<T : Any>(val data: T, val events: List<LoggingEvent>) {
     companion object {
         fun <T : Any> swap(loggedAction: LoggedAction<Mono<T>>): Mono<LoggedAction<T>> {
             return loggedAction.data.map { LoggedAction(it, loggedAction.events) }
