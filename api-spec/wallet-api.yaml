@@ -283,7 +283,7 @@ components:
           type: string
           description: Wallet details discriminator field.
         abi:
-          description: bank idetifier
+          description: bank identifier
           type: string
           minLength: 1
           maxLength: 5

@@ -5,6 +5,7 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
@@ -78,7 +79,7 @@ class WalletControllerTest {
     @Test
     fun testGetWalletByIdUser() = runTest {
         /* preconditions */
-        val userId = UUID.randomUUID()
+        // val userId = UUID.randomUUID()
         /* test */
         webClient.get().uri("/wallets").exchange().expectStatus().isOk
     }
@@ -100,6 +101,16 @@ class WalletControllerTest {
     fun testPatchWalletById() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+
+        given { walletService.patchWallet(any(), any()) }
+            .willReturn(
+                mono {
+                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+
         /* test */
         webClient
             .patch()

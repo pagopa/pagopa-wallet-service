@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
+import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
@@ -51,6 +52,7 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
+        // TODO To be implemented
         return mono { ResponseEntity.noContent().build() }
     }
 
@@ -58,10 +60,12 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
+        // TODO To be implemented
         return mono { ResponseEntity.ok().build() }
     }
 
     override fun getWalletsByIdUser(exchange: ServerWebExchange): Mono<ResponseEntity<WalletsDto>> {
+        // TODO To be implemented
         return mono { ResponseEntity.ok().build() }
     }
 
@@ -70,6 +74,16 @@ class WalletController(
         patchServiceDto: Flux<PatchServiceDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> {
-        return mono { ResponseEntity.noContent().build() }
+
+        return patchServiceDto
+            .flatMap {
+                walletService.patchWallet(
+                    walletId,
+                    Pair(ServiceName(it.name.name), ServiceStatus.valueOf(it.status.value))
+                )
+            }
+            .flatMap { it.saveEvents(loggingEventRepository) }
+            .collectList()
+            .map { ResponseEntity.noContent().build() }
     }
 }
