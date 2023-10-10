@@ -27,6 +27,9 @@ data class Wallet(
         Wallet(
             this.id.value.toString(),
             this.userId.id.toString(),
+            this.status.name,
+            this.creationDate.toString(),
+            this.updateDate.toString(),
             this.paymentMethodId.value.toString(),
             this.paymentInstrumentId?.value.toString(),
             this.contractId.contractId,

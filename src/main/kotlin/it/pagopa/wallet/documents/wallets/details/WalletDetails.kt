@@ -1,3 +1,7 @@
 package it.pagopa.wallet.documents.wallets.details
 
-interface WalletDetails {}
+import it.pagopa.wallet.domain.details.WalletDetails
+
+interface WalletDetails {
+    fun toDomain(): WalletDetails
+}
