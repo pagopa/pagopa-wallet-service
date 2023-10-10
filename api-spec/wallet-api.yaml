@@ -228,6 +228,45 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
+  /services/{serviceId}:
+    patch:
+      tags:
+        - services
+      summary: Set service status
+      description: Set service status
+      operationId: setServiceStatus
+      requestBody:
+        description: Set service satus
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePatchRequest'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ID of service to return
+          required: true
+          schema:
+            $ref: '#/components/schemas/ServiceId'
+      responses:
+        '204':
+          description: Service updated successfully
+        '400':
+          description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Service not found
+        '504':
+          description: Timeout serving request
 components:
   schemas:
     WalletId:
@@ -469,6 +508,14 @@ components:
           $ref: '#/components/schemas/ServiceId'
       required:
         - serviceId
+    ServicePatchRequest:
+      type: object
+      description: Service updating request
+      properties:
+        status:
+          $ref: "#/components/schemas/ServiceStatus"
+      required:
+        - status
     ProblemJson:
       description: Body definition for error responses containing failure details
       type: object

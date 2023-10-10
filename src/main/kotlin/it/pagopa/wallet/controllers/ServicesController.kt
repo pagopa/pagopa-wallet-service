@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.ServicesApi
 import it.pagopa.generated.wallet.model.ServiceCreateRequestDto
 import it.pagopa.generated.wallet.model.ServiceCreateResponseDto
+import it.pagopa.generated.wallet.model.ServicePatchRequestDto
 import it.pagopa.generated.wallet.model.ServiceStatusDto
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
@@ -36,5 +37,21 @@ class ServicesController(
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map { ServiceCreateResponseDto().apply { serviceId = it.id.id } }
             .map { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+    }
+
+    override fun setServiceStatus(
+        serviceId: UUID,
+        servicePatchRequestDto: Mono<ServicePatchRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<Void>> {
+        return servicePatchRequestDto
+            .flatMap {
+                servicesService.setServiceStatus(
+                    serviceId,
+                    ServiceStatus.valueOf(it.status.toString())
+                )
+            }
+            .flatMap { it.saveEvents(loggingEventRepository) }
+            .map { ResponseEntity.noContent().build() }
     }
 }

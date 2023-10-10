@@ -5,8 +5,12 @@ import it.pagopa.wallet.ServiceTestUtils.Companion.DOMAIN_SERVICE
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.ServiceCreatedEvent
+import it.pagopa.wallet.audit.ServiceStatusChangedEvent
+import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.exception.ServiceNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.ServicesService
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -20,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(ServicesController::class)
@@ -63,5 +68,56 @@ class ServicesControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
+    }
+
+    @Test
+    fun `setServiceStatus updates status on existing service`() = runTest {
+        /* preconditions */
+
+        given { servicesService.setServiceStatus(any(), any()) }
+            .willReturn(
+                mono {
+                    LoggedAction(
+                        DOMAIN_SERVICE,
+                        ServiceStatusChangedEvent(
+                            DOMAIN_SERVICE.id.id,
+                            DOMAIN_SERVICE.name.name,
+                            DOMAIN_SERVICE.status,
+                            ServiceStatus.INCOMING
+                        )
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+
+        /* test */
+        webClient
+            .patch()
+            .uri("/services/${DOMAIN_SERVICE.id.id}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(ServiceTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isNoContent
+    }
+
+    @Test
+    fun `setServiceStatus returns 404 on non existing service`() = runTest {
+        /* preconditions */
+        val invalidId = UUID.randomUUID()
+
+        given { servicesService.setServiceStatus(any(), any()) }
+            .willReturn(Mono.error(ServiceNotFoundException(invalidId)))
+
+        /* test */
+        webClient
+            .patch()
+            .uri("/services/${invalidId}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(ServiceTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isNotFound
     }
 }
