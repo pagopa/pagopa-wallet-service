@@ -44,7 +44,7 @@ data class Wallet(
             Instant.parse(creationDate),
             Instant.parse(updateDate),
             PaymentMethodId(UUID.fromString(paymentMethodId)),
-            PaymentInstrumentId(UUID.fromString(paymentInstrumentId)),
+            paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
             services.map { s -> s.toDomain() },
             ContractId(contractId),
             details?.toDomain()
