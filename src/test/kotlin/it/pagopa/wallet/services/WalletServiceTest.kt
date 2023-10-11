@@ -79,7 +79,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should patch wallet document adding services`() {
+    fun `should patch wallet document when adding services`() {
         /* preconditions */
 
         val first_mocked_uuid = UUID.randomUUID()
