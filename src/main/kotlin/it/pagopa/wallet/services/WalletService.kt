@@ -41,10 +41,4 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
             LoggedAction(wallet, WalletAddedEvent(it.id))
         }
     }
-    /*
-        fun updateWallet(): Mono<Unit> {}
-        fun createService(): Mono<Unit> {}
-        fun updateService(): Mono<Unit> {}
-    */
-
 }
