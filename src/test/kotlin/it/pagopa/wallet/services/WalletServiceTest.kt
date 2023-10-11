@@ -24,6 +24,7 @@ import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
@@ -102,7 +103,9 @@ class WalletServiceTest {
             .willReturn(mono { WALLET_DOCUMENT })
 
         /* test */
-        assertTrue(WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT.services.isEmpty())
+        assertTrue(
+            WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT.services.isEmpty()
+        )
 
         StepVerifier.create(
                 walletService.patchWallet(

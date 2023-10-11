@@ -19,11 +19,11 @@ data class Wallet(
     val paymentInstrumentId: String?,
     val contractId: String,
     val services: List<WalletService>,
-    val details: WalletDetails?
+    val details: WalletDetails<*>?
 ) {
 
     fun setServices(services: List<WalletService>): it.pagopa.wallet.documents.wallets.Wallet =
-        it.pagopa.wallet.documents.wallets.Wallet(
+        Wallet(
             this.id,
             this.userId,
             this.status,

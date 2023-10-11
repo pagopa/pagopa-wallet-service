@@ -1,8 +1,8 @@
 package it.pagopa.wallet.domain.details
 
 /** Extensible interface to handle multiple wallet details typologies, such as CARDS */
-sealed interface WalletDetails<T : it.pagopa.wallet.documents.wallets.details.WalletDetails> {
+sealed interface WalletDetails<T> {
     val type: WalletDetailsType
 
-    fun toDocument(): T
+    fun toDocument(): it.pagopa.wallet.documents.wallets.details.WalletDetails<T>
 }
