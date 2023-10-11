@@ -102,7 +102,7 @@ class WalletServiceTest {
             .willReturn(mono { WALLET_DOCUMENT })
 
         /* test */
-        assert(WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT.services.isEmpty())
+        assertTrue(WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT.services.isEmpty())
 
         StepVerifier.create(
                 walletService.patchWallet(
