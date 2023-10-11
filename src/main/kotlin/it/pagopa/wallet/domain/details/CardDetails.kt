@@ -10,7 +10,7 @@ data class CardDetails(
     val expiryDate: ExpiryDate,
     val brand: WalletCardDetailsDto.BrandEnum,
     val holder: CardHolderName
-) : WalletDetails {
+) : WalletDetails<CardDetails> {
     override val type: WalletDetailsType
         get() = WalletDetailsType.CARDS
 
