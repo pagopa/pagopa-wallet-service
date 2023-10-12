@@ -12,35 +12,35 @@ import java.time.Instant
  * wallet id.
  */
 data class Wallet(
-    val id: WalletId,
-    val userId: UserId,
-    var status: WalletStatusDto,
-    val creationDate: Instant,
-    var updateDate: Instant,
-    val paymentMethodId: PaymentMethodId,
-    val paymentInstrumentId: PaymentInstrumentId?,
-    val services: List<WalletService>,
-    val contractId: ContractId,
-    val details: WalletDetails<*>?
+        val id: WalletId,
+        val userId: UserId,
+        var status: WalletStatusDto,
+        val creationDate: Instant,
+        var updateDate: Instant,
+        val paymentMethodId: PaymentMethodId,
+        val paymentInstrumentId: PaymentInstrumentId?,
+        val services: List<WalletService>,
+        val contractId: ContractId,
+        val details: WalletDetails<*>?
 ) {
     fun toDocument(): Wallet =
-        Wallet(
-            this.id.value.toString(),
-            this.userId.id.toString(),
-            this.status.name,
-            this.creationDate.toString(),
-            this.updateDate.toString(),
-            this.paymentMethodId.value.toString(),
-            this.paymentInstrumentId?.value.toString(),
-            this.contractId.contractId,
-            this.services.map { ls ->
-                it.pagopa.wallet.documents.wallets.WalletService(
-                    ls.id.id.toString(),
-                    ls.name.name,
-                    ls.status.name,
-                    ls.lastUpdate.toString()
-                )
-            },
-            this.details?.toDocument()
-        )
+            Wallet(
+                    this.id.value.toString(),
+                    this.userId.id.toString(),
+                    this.status.name,
+                    this.creationDate.toString(),
+                    this.updateDate.toString(),
+                    this.paymentMethodId.value.toString(),
+                    this.paymentInstrumentId?.value?.toString(),
+                    this.contractId.contractId,
+                    this.services.map { ls ->
+                        it.pagopa.wallet.documents.wallets.WalletService(
+                                ls.id.id.toString(),
+                                ls.name.name,
+                                ls.status.name,
+                                ls.lastUpdate.toString()
+                        )
+                    },
+                    this.details?.toDocument()
+            )
 }
