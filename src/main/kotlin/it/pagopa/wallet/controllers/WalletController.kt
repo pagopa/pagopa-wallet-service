@@ -48,9 +48,20 @@ class WalletController(
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun deleteWalletById(
         walletId: UUID,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
         // TODO To be implemented
         return mono { ResponseEntity.noContent().build() }
@@ -69,10 +80,21 @@ class WalletController(
         return mono { ResponseEntity.ok().build() }
     }
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun patchWalletById(
         walletId: UUID,
         patchServiceDto: Flux<PatchServiceDto>,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
 
         return patchServiceDto
