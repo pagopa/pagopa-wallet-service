@@ -167,7 +167,6 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             Instant.now(),
             Instant.now(),
-
             PAYMENT_METHOD_ID,
             null,
             listOf(),

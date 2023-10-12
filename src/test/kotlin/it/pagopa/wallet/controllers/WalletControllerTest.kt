@@ -6,7 +6,6 @@ import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
-
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService

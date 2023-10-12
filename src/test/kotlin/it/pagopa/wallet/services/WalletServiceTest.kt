@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-
 import it.pagopa.wallet.WalletTestUtils.CONTRACT_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
@@ -176,7 +175,6 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-
                 walletService.patchWallet(
                     WALLET_UUID.value,
                     Pair(SERVICE_NAME, ServiceStatus.ENABLED)

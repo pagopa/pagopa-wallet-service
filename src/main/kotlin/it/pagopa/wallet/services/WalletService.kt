@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 
-
 @Service
 @Slf4j
 class WalletService(@Autowired private val walletRepository: WalletRepository) {
