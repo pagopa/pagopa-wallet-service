@@ -6,8 +6,8 @@ import java.util.*
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("wallet-log-events")
-sealed class LoggingEvent(val id: UUID, val createdAt: Instant) {
-    constructor() : this(UUID.randomUUID(), Instant.now())
+sealed class LoggingEvent(val id: String, val createdAt: Instant) {
+    constructor() : this(UUID.randomUUID().toString(), Instant.now())
 }
 
 data class WalletAddedEvent(val walletId: String) : LoggingEvent()
