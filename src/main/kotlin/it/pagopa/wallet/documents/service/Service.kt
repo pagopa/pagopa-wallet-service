@@ -1,5 +1,8 @@
 package it.pagopa.wallet.documents.service
 
+import org.springframework.data.mongodb.core.mapping.Document
+
+@Document("services")
 data class Service(val id: String, val name: String, val status: String, val lastUpdated: String) {
     companion object {
         fun fromDomain(service: it.pagopa.wallet.domain.services.Service): Service =

@@ -1,7 +1,6 @@
 package it.pagopa.wallet
 
 import it.pagopa.wallet.repositories.LoggingEventRepository
-import it.pagopa.wallet.repositories.ServiceRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -11,8 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 class ApplicationTest {
 
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
-
-    @MockBean private lateinit var servicesRepository: ServiceRepository
 
     @Test
     fun contextLoads() {
