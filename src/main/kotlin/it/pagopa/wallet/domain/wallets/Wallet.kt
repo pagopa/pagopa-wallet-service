@@ -21,7 +21,7 @@ data class Wallet(
     val paymentInstrumentId: PaymentInstrumentId?,
     val services: List<WalletService>,
     val contractId: ContractId,
-    val details: WalletDetails?
+    val details: WalletDetails<*>?
 ) {
     fun toDocument(): Wallet =
         Wallet(

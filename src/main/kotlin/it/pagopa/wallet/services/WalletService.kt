@@ -54,9 +54,11 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { updateServiceList(it, service) }
-            .flatMap { walletRepository.save(it) }
-            .map { LoggedAction(it.toDomain(), WalletPatchEvent(it.id)) }
+            .map { it.toDomain() to updateServiceList(it, service) }
+            .flatMap { (oldService, updatedService) ->
+                walletRepository.save(updatedService).thenReturn(oldService)
+            }
+            .map { LoggedAction(it, WalletPatchEvent(it.id.value.toString())) }
     }
 
     private fun updateServiceList(

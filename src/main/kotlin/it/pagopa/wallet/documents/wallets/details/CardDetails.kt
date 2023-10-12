@@ -2,7 +2,6 @@ package it.pagopa.wallet.documents.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.domain.details.*
-import it.pagopa.wallet.domain.details.CardDetails
 
 data class CardDetails(
     val type: String,
@@ -11,7 +10,7 @@ data class CardDetails(
     val expiryDate: String,
     val brand: String,
     val holder: String
-) : WalletDetails {
+) : WalletDetails<CardDetails> {
     override fun toDomain() =
         CardDetails(
             Bin(bin),
