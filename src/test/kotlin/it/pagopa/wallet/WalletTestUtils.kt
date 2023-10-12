@@ -38,19 +38,21 @@ object WalletTestUtils {
     private val TYPE = WalletDetailsType.CARDS
     private val TIMESTAMP = Instant.now()
 
-    val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT: Wallet =
-        Wallet(
+    fun walletDocumentEmptyServicesNullDetailsNoPaymentInstrument(): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
+            creationDate,
+            creationDate,
             PAYMENT_METHOD_ID.value.toString(),
             null,
             CONTRACT_ID.contractId,
             listOf(),
             null
         )
+    }
 
     val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS: Wallet =
         Wallet(
@@ -157,19 +159,21 @@ object WalletTestUtils {
             null
         )
 
-    val WALLET_DOMAIN_EMPTY_SERVICES_NULL_DETAILS_NO_PAYMENT_INSTRUMENT =
-        Wallet(
+    fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
+        it.pagopa.wallet.domain.wallets.Wallet {
+        return Wallet(
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
+            Instant.now(),
+            Instant.now(),
             PAYMENT_METHOD_ID,
             null,
             listOf(),
             CONTRACT_ID,
             null
         )
+    }
 
     val SERVICE_DOCUMENT: Service =
         Service(
