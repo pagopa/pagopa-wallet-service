@@ -63,16 +63,16 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
 
     private fun updateServiceList(
         wallet: it.pagopa.wallet.documents.wallets.Wallet,
-        service: Pair<ServiceName, ServiceStatus>
+        dataService: Pair<ServiceName, ServiceStatus>
     ): it.pagopa.wallet.documents.wallets.Wallet {
         val updatedServiceList = wallet.services.toMutableList()
-        when (val index = wallet.services.indexOfFirst { s -> s.name == service.first.name }) {
+        when (val index = wallet.services.indexOfFirst { s -> s.name == dataService.first.name }) {
             -1 ->
                 updatedServiceList.add(
                     it.pagopa.wallet.documents.wallets.WalletService(
                         UUID.randomUUID().toString(),
-                        service.first.name,
-                        service.second.name,
+                        dataService.first.name,
+                        dataService.second.name,
                         Instant.now().toString()
                     )
                 )
@@ -82,7 +82,7 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
                     it.pagopa.wallet.documents.wallets.WalletService(
                         oldWalletService.id,
                         oldWalletService.name,
-                        service.second.name,
+                        dataService.second.name,
                         Instant.now().toString()
                     )
             }
