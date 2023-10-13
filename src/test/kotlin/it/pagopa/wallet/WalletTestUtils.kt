@@ -2,8 +2,8 @@ package it.pagopa.wallet
 
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.documents.service.Service
+import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
-import it.pagopa.wallet.documents.wallets.WalletService as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.services.ServiceId
@@ -126,7 +126,7 @@ object WalletTestUtils {
             TIMESTAMP,
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
-            listOf(WalletService(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
+            listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
         )
@@ -140,7 +140,7 @@ object WalletTestUtils {
             TIMESTAMP,
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
-            listOf(WalletService(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
+            listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
             null
         )

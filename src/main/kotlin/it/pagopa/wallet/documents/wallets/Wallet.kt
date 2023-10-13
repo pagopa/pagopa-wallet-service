@@ -18,13 +18,12 @@ data class Wallet(
     val paymentMethodId: String,
     val paymentInstrumentId: String?,
     val contractId: String,
-    val services: List<WalletService>,
+    val services: List<Application>,
     val details: WalletDetails<*>?
 ) {
 
-    fun setServices(
-        walletServices: List<WalletService>
-    ): it.pagopa.wallet.documents.wallets.Wallet = this.copy(services = walletServices)
+    fun setServices(applications: List<Application>): it.pagopa.wallet.documents.wallets.Wallet =
+        this.copy(services = applications)
 
     fun toDomain() =
         Wallet(

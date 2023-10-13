@@ -27,7 +27,7 @@ import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
-class WalletServiceTest {
+class ApplicationTest {
     private val walletRepository: WalletRepository = mock()
 
     private val walletService: WalletService = WalletService(walletRepository)

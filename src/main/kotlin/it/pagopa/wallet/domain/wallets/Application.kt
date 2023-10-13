@@ -5,7 +5,7 @@ import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import java.time.Instant
 
-data class WalletService(
+data class Application(
     val id: ServiceId,
     val name: ServiceName,
     val status: ServiceStatus,

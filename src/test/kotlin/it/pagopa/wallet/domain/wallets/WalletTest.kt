@@ -40,7 +40,7 @@ class WalletTest {
                 WalletTestUtils.PAYMENT_METHOD_ID,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
-                    WalletService(
+                    Application(
                         WalletTestUtils.SERVICE_ID,
                         WalletTestUtils.SERVICE_NAME,
                         ServiceStatus.DISABLED,
@@ -66,7 +66,7 @@ class WalletTest {
                 WalletTestUtils.PAYMENT_METHOD_ID,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
-                    WalletService(
+                    Application(
                         WalletTestUtils.SERVICE_ID,
                         WalletTestUtils.SERVICE_NAME,
                         ServiceStatus.DISABLED,
