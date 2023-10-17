@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.wallet.annotations.ValueObject
 import java.util.*
 
 /**
@@ -14,4 +15,4 @@ import java.util.*
  * This class reifies what is described in
  * [Nexi's NPG](https://developer.nexigroup.com/it/api/post-orders-hpp) as a `contractId`.
  */
-data class PaymentInstrumentId(val value: UUID)
+@ValueObject data class PaymentInstrumentId(val value: UUID)

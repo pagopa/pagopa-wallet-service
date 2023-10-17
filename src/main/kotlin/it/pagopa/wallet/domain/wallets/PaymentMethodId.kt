@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.wallet.annotations.ValueObject
 import java.util.*
 
 /**
@@ -11,4 +12,4 @@ import java.util.*
  * The Wallet is aware only of this stable identifier which is used to communicate with the
  * payment-method-service.
  */
-data class PaymentMethodId(val value: UUID)
+@ValueObject data class PaymentMethodId(val value: UUID)
