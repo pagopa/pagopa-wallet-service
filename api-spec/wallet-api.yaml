@@ -29,6 +29,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
       requestBody:
         description: Create a new wallet
         content:

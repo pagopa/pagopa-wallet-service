@@ -26,7 +26,7 @@ class WalletController(
     @Autowired private val loggingEventRepository: LoggingEventRepository
 ) : WalletsApi {
     override fun createWallet(
-        xUserId: String,
+        xUserId: UUID,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
@@ -35,7 +35,7 @@ class WalletController(
             .flatMap {
                 walletService.createWallet(
                     it.services.map { s -> ServiceName(s.name) },
-                    userId = UUID.randomUUID(),
+                    userId = xUserId,
                     paymentMethodId = UUID.randomUUID(),
                     contractId = UUID.randomUUID().toString()
                 )
