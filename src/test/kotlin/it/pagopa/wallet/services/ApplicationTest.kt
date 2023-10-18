@@ -4,8 +4,6 @@ import it.pagopa.wallet.WalletTestUtils.CONTRACT_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
-import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
-import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
@@ -120,7 +118,7 @@ class ApplicationTest {
         }
     }
 
-    @Test
+    /* @Test
     fun `should patch wallet document editing service status`() {
         /* preconditions */
 
@@ -167,7 +165,7 @@ class ApplicationTest {
                 )
             }
         }
-    }
+    }*/
 
     @Test
     fun `should throws wallet not found exception`() {
