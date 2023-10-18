@@ -1,12 +1,12 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.wallet.WalletTestUtils.CONTRACT_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
+import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.LoggedAction
@@ -51,7 +51,7 @@ class ApplicationTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        walletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
+                        initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
@@ -60,11 +60,10 @@ class ApplicationTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWallet(
+                        walletService.initializeWallet(
                             listOf(SERVICE_NAME),
                             USER_ID.id,
-                            PAYMENT_METHOD_ID.value,
-                            CONTRACT_ID.contractId
+                            PAYMENT_METHOD_ID.value
                         )
                     )
                     .expectNext(expectedLoggedAction)

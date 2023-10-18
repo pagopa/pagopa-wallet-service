@@ -9,6 +9,7 @@ import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import java.net.URI
 import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
@@ -37,14 +38,19 @@ class WalletControllerTest {
 
     @BeforeEach
     fun beforeTest() {
-        walletController = WalletController(walletService, loggingEventRepository)
+        walletController =
+            WalletController(
+                walletService,
+                loggingEventRepository,
+                URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+            )
     }
 
     @Test
     fun testCreateWallet() = runTest {
         /* preconditions */
 
-        given { walletService.createWallet(any(), any(), any(), any()) }
+        given { walletService.initializeWallet(any(), any(), any()) }
             .willReturn(
                 mono {
                     LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))

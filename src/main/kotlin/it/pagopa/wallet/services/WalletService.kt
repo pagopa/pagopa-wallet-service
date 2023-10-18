@@ -21,24 +21,23 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 @Slf4j
 class WalletService(@Autowired private val walletRepository: WalletRepository) {
 
-    fun createWallet(
+    fun initializeWallet(
         serviceList: List<it.pagopa.wallet.domain.services.ServiceName>,
         userId: UUID,
-        paymentMethodId: UUID,
-        contractId: String
+        paymentMethodId: UUID
     ): Mono<LoggedAction<Wallet>> {
         val creationTime = Instant.now()
         val wallet =
             Wallet(
                 WalletId(UUID.randomUUID()),
                 UserId(userId),
-                WalletStatusDto.CREATED,
+                WalletStatusDto.INITIALIZED,
                 creationTime,
                 creationTime,
                 PaymentMethodId(paymentMethodId),
                 paymentInstrumentId = null,
                 listOf(), // TODO Find all services by serviceName
-                ContractId(contractId),
+                contractId = null,
                 details = null
             )
 

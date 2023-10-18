@@ -149,7 +149,7 @@ object WalletTestUtils {
         Wallet(
             WALLET_UUID,
             USER_ID,
-            WalletStatusDto.CREATED,
+            WalletStatusDto.INITIALIZED,
             TIMESTAMP,
             TIMESTAMP,
             PAYMENT_METHOD_ID,
@@ -158,6 +158,22 @@ object WalletTestUtils {
             CONTRACT_ID,
             null
         )
+
+    fun initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument():
+        it.pagopa.wallet.domain.wallets.Wallet {
+        return Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.INITIALIZED,
+            Instant.now(),
+            Instant.now(),
+            PAYMENT_METHOD_ID,
+            null,
+            listOf(),
+            null,
+            null
+        )
+    }
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
