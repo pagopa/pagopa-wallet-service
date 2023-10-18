@@ -23,8 +23,12 @@ paths:
       summary: Create a new wallet
       description: Creates a new wallet
       operationId: createWallet
-      security:
-        - bearerAuth: [ ]
+      parameters:
+        - in: header
+          name: x-user-id
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Create a new wallet
         content:
@@ -65,8 +69,6 @@ paths:
       summary: Get wallet by user identifier
       description: Returns a of wallets related to user
       operationId: getWalletsByIdUser
-      security:
-        - bearerAuth: [ ]
       responses:
         '200':
           description: Wallet retrieved successfully
@@ -91,8 +93,6 @@ paths:
       summary: Get wallet by id
       description: Returns a single wallet
       operationId: getWalletById
-      security:
-        - bearerAuth: [ ]
       parameters:
         - name: walletId
           in: path
@@ -123,8 +123,6 @@ paths:
       summary: Delete wallet by id
       description: Returns a single wallet
       operationId: deleteWalletById
-      security:
-        - bearerAuth: [ ]
       parameters:
         - name: walletId
           in: path
@@ -151,8 +149,6 @@ paths:
       summary: Partial wallet update
       description: Update wallet partially
       operationId: patchWalletById
-      security:
-        - bearerAuth: [ ]
       requestBody:
         description: Create a new wallet
         content:
@@ -192,8 +188,6 @@ paths:
       summary: Create a new service
       description: Creates a new service
       operationId: createService
-      security:
-        - bearerAuth: [ ]
       requestBody:
         description: Create a new service
         content:
@@ -404,9 +398,13 @@ components:
             $ref: '#/components/schemas/ServiceName'
         useDiagnosticTracing:
           type: boolean
+        paymentMethodId:
+          type: string
+          format: uuid
       required:
         - services
         - useDiagnosticTracing
+        - paymentMethodId
     WalletCreateResponse:
       type: object
       description: Wallet creation response
@@ -564,8 +562,3 @@ components:
       maximum: 600
       exclusiveMaximum: true
       example: 502
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      description: wallet token

@@ -57,6 +57,7 @@ class WalletControllerTest {
             .post()
             .uri("/wallets")
             .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
             .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
             .exchange()
             .expectStatus()

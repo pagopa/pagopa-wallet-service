@@ -190,7 +190,10 @@ object WalletTestUtils {
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
-        WalletCreateRequestDto().services(listOf(ServiceNameDto.PAGOPA)).useDiagnosticTracing(false)
+        WalletCreateRequestDto()
+            .services(listOf(ServiceNameDto.PAGOPA))
+            .useDiagnosticTracing(false)
+            .paymentMethodId(UUID.randomUUID())
 
     val PATCH_SERVICE_1: PatchServiceDto =
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.DISABLED)

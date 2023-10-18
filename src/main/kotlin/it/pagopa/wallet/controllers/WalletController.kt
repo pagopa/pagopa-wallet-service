@@ -26,6 +26,7 @@ class WalletController(
     @Autowired private val loggingEventRepository: LoggingEventRepository
 ) : WalletsApi {
     override fun createWallet(
+        xUserId: String,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
