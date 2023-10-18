@@ -11,6 +11,7 @@ import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
@@ -23,7 +24,8 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository
+    @Autowired private val loggingEventRepository: LoggingEventRepository,
+    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
 ) : WalletsApi {
     override fun createWallet(
         xUserId: UUID,
@@ -33,18 +35,17 @@ class WalletController(
 
         return walletCreateRequestDto
             .flatMap {
-                walletService.createWallet(
+                walletService.initializeWallet(
                     it.services.map { s -> ServiceName(s.name) },
                     userId = xUserId,
-                    paymentMethodId = UUID.randomUUID(),
-                    contractId = UUID.randomUUID().toString()
+                    paymentMethodId = it.paymentMethodId
                 )
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map {
                 WalletCreateResponseDto()
                     .walletId(it.id.value)
-                    .redirectUrl("http://checkout-return-url")
+                    .redirectUrl(webviewPaymentWalletUrl.toURL().toString())
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }

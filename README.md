@@ -100,6 +100,7 @@ $ docker compose up --build
 ### Run the project
 
 ```shell
+$ export $(grep -v '^#' .env.example | xargs)
 $ ./gradlew bootRun
 ```
 
