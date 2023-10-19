@@ -50,8 +50,7 @@ class EcommercePaymentMethodsClient(
                                 "EcommercePaymentMethods - Misconfigured EcommercePaymentMethods api key",
                             httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                         )
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    HttpStatus.BAD_REQUEST ->
+                    HttpStatus.INTERNAL_SERVER_ERROR ->
                         EcommercePaymentMethodException(
                             description = "EcommercePaymentMethods - internal server error",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,

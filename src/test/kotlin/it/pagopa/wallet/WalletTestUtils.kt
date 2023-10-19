@@ -71,18 +71,18 @@ object WalletTestUtils {
         )
 
     val WALLET_DOCUMENT_EMPTY_CONCTRACT_ID: Wallet =
-            Wallet(
-                    WALLET_UUID.value.toString(),
-                    USER_ID.id.toString(),
-                    WalletStatusDto.CREATED.name,
-                    TIMESTAMP.toString(),
-                    TIMESTAMP.toString(),
-                    PAYMENT_METHOD_ID.value.toString(),
-                    PAYMENT_INSTRUMENT_ID.value.toString(),
-                    null,
-                    listOf(),
-                    null
-            )
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.CREATED.name,
+            TIMESTAMP.toString(),
+            TIMESTAMP.toString(),
+            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            null,
+            listOf(),
+            null
+        )
 
     val WALLET_DOCUMENT_NULL_DETAILS: Wallet =
         Wallet(
@@ -241,5 +241,21 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("CARDS")
+    }
+
+    fun getDisabledCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.DISABLED)
+            .name("CARDS")
+    }
+
+    fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.DISABLED)
+            .name("INVALID")
     }
 }
