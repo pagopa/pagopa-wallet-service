@@ -149,7 +149,7 @@ object WalletTestUtils {
         Wallet(
             WALLET_UUID,
             USER_ID,
-            WalletStatusDto.INITIALIZED,
+            WalletStatusDto.CREATED,
             TIMESTAMP,
             TIMESTAMP,
             PAYMENT_METHOD_ID,
@@ -164,7 +164,7 @@ object WalletTestUtils {
         return Wallet(
             WALLET_UUID,
             USER_ID,
-            WalletStatusDto.INITIALIZED,
+            WalletStatusDto.CREATED,
             Instant.now(),
             Instant.now(),
             PAYMENT_METHOD_ID,

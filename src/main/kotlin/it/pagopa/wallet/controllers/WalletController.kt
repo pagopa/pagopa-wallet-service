@@ -35,7 +35,7 @@ class WalletController(
 
         return walletCreateRequestDto
             .flatMap {
-                walletService.initializeWallet(
+                walletService.createWallet(
                     it.services.map { s -> ServiceName(s.name) },
                     userId = xUserId,
                     paymentMethodId = it.paymentMethodId
