@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.wallet.annotations.ValueObject
 import java.util.*
 
-data class WalletId(val value: UUID)
+@ValueObject data class WalletId(val value: UUID)
