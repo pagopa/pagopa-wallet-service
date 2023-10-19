@@ -50,7 +50,7 @@ class WalletControllerTest {
     fun testCreateWallet() = runTest {
         /* preconditions */
 
-        given { walletService.initializeWallet(any(), any(), any()) }
+        given { walletService.createWallet(any(), any(), any()) }
             .willReturn(
                 mono {
                     LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))

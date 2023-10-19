@@ -1,5 +1,7 @@
 package it.pagopa.wallet
 
+import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.documents.service.Service
 import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
@@ -209,7 +211,7 @@ object WalletTestUtils {
         WalletCreateRequestDto()
             .services(listOf(ServiceNameDto.PAGOPA))
             .useDiagnosticTracing(false)
-            .paymentMethodId(UUID.randomUUID())
+            .paymentMethodId(PAYMENT_METHOD_ID.value)
 
     val PATCH_SERVICE_1: PatchServiceDto =
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.DISABLED)
@@ -218,4 +220,12 @@ object WalletTestUtils {
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.ENABLED)
 
     val FLUX_PATCH_SERVICES: List<PatchServiceDto> = listOf(PATCH_SERVICE_1, PATCH_SERVICE_2)
+
+    fun getValidCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.ENABLED)
+            .name("CARDS")
+    }
 }
