@@ -68,25 +68,26 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { wallet ->
-                WalletInfoDto()
-                    .walletId(UUID.fromString(wallet.id))
-                    .status(WalletStatusDto.valueOf(wallet.status))
-                    .paymentMethodId(wallet.paymentMethodId)
-                    .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
-                    .userId(wallet.userId)
-                    .updateDate(OffsetDateTime.parse(wallet.updateDate))
-                    .creationDate(OffsetDateTime.parse(wallet.creationDate))
-                    .services(
-                        wallet.applications.map { application ->
-                            ServiceDto()
-                                .name(ServiceNameDto.valueOf(application.name))
-                                .status(ServiceStatusDto.valueOf(application.status))
-                        }
-                    )
-                    .details(toWalletInfoDetailsDto(wallet.details))
-            }
+            .map { wallet -> toWalletInfoDto(wallet) }
     }
+
+    private fun toWalletInfoDto(wallet: it.pagopa.wallet.documents.wallets.Wallet): WalletInfoDto? =
+        WalletInfoDto()
+            .walletId(UUID.fromString(wallet.id))
+            .status(WalletStatusDto.valueOf(wallet.status))
+            .paymentMethodId(wallet.paymentMethodId)
+            .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
+            .userId(wallet.userId)
+            .updateDate(OffsetDateTime.parse(wallet.updateDate))
+            .creationDate(OffsetDateTime.parse(wallet.creationDate))
+            .services(
+                wallet.applications.map { application ->
+                    ServiceDto()
+                        .name(ServiceNameDto.valueOf(application.name))
+                        .status(ServiceStatusDto.valueOf(application.status))
+                }
+            )
+            .details(toWalletInfoDetailsDto(wallet.details))
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {

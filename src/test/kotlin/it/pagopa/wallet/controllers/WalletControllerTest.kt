@@ -9,6 +9,7 @@ import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -22,21 +23,17 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
-import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
 class WalletControllerTest {
-    @MockBean
-    private lateinit var walletService: WalletService
+    @MockBean private lateinit var walletService: WalletService
 
-    @MockBean
-    private lateinit var loggingEventRepository: LoggingEventRepository
+    @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
 
     private lateinit var walletController: WalletController
 
-    @Autowired
-    private lateinit var webClient: WebTestClient
+    @Autowired private lateinit var webClient: WebTestClient
 
     @BeforeEach
     fun beforeTest() {
@@ -48,22 +45,22 @@ class WalletControllerTest {
         /* preconditions */
 
         given { walletService.createWallet(any(), any(), any(), any()) }
-                .willReturn(
-                        mono {
-                            LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
-                        }
-                )
+            .willReturn(
+                mono {
+                    LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
+                }
+            )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-                .willReturn(Flux.empty())
+            .willReturn(Flux.empty())
         /* test */
         webClient
-                .post()
-                .uri("/wallets")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
-                .exchange()
-                .expectStatus()
-                .isCreated
+            .post()
+            .uri("/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isCreated
     }
 
     @Test
@@ -72,11 +69,11 @@ class WalletControllerTest {
         val walletId = WalletId(UUID.randomUUID())
         /* test */
         webClient
-                .delete()
-                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-                .exchange()
-                .expectStatus()
-                .isNoContent
+            .delete()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isNoContent
     }
 
     @Test
@@ -93,18 +90,14 @@ class WalletControllerTest {
         val walletId = WalletId(UUID.randomUUID())
 
         given { walletService.findWallet(any()) }
-                .willReturn(
-                        mono {
-                            WalletTestUtils.walletInfoDto()
-                        }
-                )
+            .willReturn(mono { WalletTestUtils.walletInfoDto() })
         /* test */
         webClient
-                .get()
-                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-                .exchange()
-                .expectStatus()
-                .isOk
+            .get()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isOk
     }
 
     @Test
@@ -113,21 +106,21 @@ class WalletControllerTest {
         val walletId = WalletId(UUID.randomUUID())
 
         given { walletService.patchWallet(any(), any()) }
-                .willReturn(
-                        mono {
-                            LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
-                        }
-                )
+            .willReturn(
+                mono {
+                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
+                }
+            )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-                .willReturn(Flux.empty())
+            .willReturn(Flux.empty())
 
         /* test */
         webClient
-                .patch()
-                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-                .bodyValue(WalletTestUtils.FLUX_PATCH_SERVICES)
-                .exchange()
-                .expectStatus()
-                .isNoContent
+            .patch()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .bodyValue(WalletTestUtils.FLUX_PATCH_SERVICES)
+            .exchange()
+            .expectStatus()
+            .isNoContent
     }
 }
