@@ -42,7 +42,7 @@ class WalletController(
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map {
                 WalletCreateResponseDto()
-                    .walletId(it.id.value)
+                    .walletId(it.walletId.value)
                     .redirectUrl("http://checkout-return-url")
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }

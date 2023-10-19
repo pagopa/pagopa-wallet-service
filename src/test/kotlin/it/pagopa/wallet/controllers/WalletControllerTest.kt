@@ -27,6 +27,7 @@ import reactor.core.publisher.Flux
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
 class WalletControllerTest {
+
     @MockBean private lateinit var walletService: WalletService
 
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
@@ -47,7 +48,10 @@ class WalletControllerTest {
         given { walletService.createWallet(any(), any(), any(), any()) }
             .willReturn(
                 mono {
-                    LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
+                    LoggedAction(
+                        WALLET_DOMAIN,
+                        WalletAddedEvent(WALLET_DOMAIN.walletId.value.toString())
+                    )
                 }
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
@@ -105,7 +109,10 @@ class WalletControllerTest {
         given { walletService.patchWallet(any(), any()) }
             .willReturn(
                 mono {
-                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
+                    LoggedAction(
+                        WALLET_DOMAIN,
+                        WalletPatchEvent(WALLET_DOMAIN.walletId.value.toString())
+                    )
                 }
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }

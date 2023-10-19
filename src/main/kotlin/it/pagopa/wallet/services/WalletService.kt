@@ -27,14 +27,11 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
         paymentMethodId: UUID,
         contractId: String
     ): Mono<LoggedAction<Wallet>> {
-        val creationTime = Instant.now()
         val wallet =
             Wallet(
                 WalletId(UUID.randomUUID()),
                 UserId(userId),
                 WalletStatusDto.CREATED,
-                creationTime,
-                creationTime,
                 PaymentMethodId(paymentMethodId),
                 paymentInstrumentId = null,
                 listOf(), // TODO Find all services by serviceName
@@ -43,7 +40,7 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
             )
 
         return walletRepository.save(wallet.toDocument()).map {
-            LoggedAction(wallet, WalletAddedEvent(it.id))
+            LoggedAction(wallet, WalletAddedEvent(it.walletId))
         }
     }
 
@@ -52,13 +49,13 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
         service: Pair<ServiceName, ServiceStatus>
     ): Mono<LoggedAction<Wallet>> {
         return walletRepository
-            .findById(walletId.toString())
+            .findByWalletId(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { it.toDomain() to updateServiceList(it, service) }
             .flatMap { (oldService, updatedService) ->
                 walletRepository.save(updatedService).thenReturn(oldService)
             }
-            .map { LoggedAction(it, WalletPatchEvent(it.id.value.toString())) }
+            .map { LoggedAction(it, WalletPatchEvent(it.walletId.value.toString())) }
     }
 
     private fun updateServiceList(

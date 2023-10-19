@@ -5,7 +5,6 @@ import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.details.WalletDetails
-import java.time.Instant
 
 /**
  * A wallet.
@@ -37,33 +36,31 @@ import java.time.Instant
  */
 @AggregateRoot
 data class Wallet(
-        @AggregateRootId val id: WalletId
-        val userId: UserId,
-        var status: WalletStatusDto,
-        val creationDate: Instant,
-        var updateDate: Instant,
-        val paymentMethodId: PaymentMethodId,
-        val paymentInstrumentId: PaymentInstrumentId?,
-        val applications: List<Application>,
-        val contractId: ContractId,
-        val details: WalletDetails<*>?
+    @AggregateRootId val walletId: WalletId,
+    val userId: UserId,
+    var status: WalletStatusDto,
+    val paymentMethodId: PaymentMethodId,
+    val paymentInstrumentId: PaymentInstrumentId?,
+    val applications: List<Application>,
+    val contractId: ContractId,
+    val details: WalletDetails<*>?
 ) {
     fun toDocument(): Wallet =
-            Wallet(
-                    this.id.value.toString(),
-                    this.userId.id.toString(),
-                    this.status.name,
-                    this.paymentMethodId.value.toString(),
-                    this.paymentInstrumentId?.value?.toString(),
-                    this.contractId.contractId,
-                    this.applications.map { app ->
-                        it.pagopa.wallet.documents.wallets.Application(
-                                app.id.id.toString(),
-                                app.name.name,
-                                app.status.name,
-                                app.lastUpdate.toString()
-                        )
-                    },
-                    this.details?.toDocument(),
-            )
+        Wallet(
+            this.walletId.value.toString(),
+            this.userId.id.toString(),
+            this.status.name,
+            this.paymentMethodId.value.toString(),
+            this.paymentInstrumentId?.value?.toString(),
+            this.contractId.contractId,
+            this.applications.map { app ->
+                it.pagopa.wallet.documents.wallets.Application(
+                    app.id.id.toString(),
+                    app.name.name,
+                    app.status.name,
+                    app.lastUpdate.toString()
+                )
+            },
+            this.details?.toDocument(),
+        )
 }

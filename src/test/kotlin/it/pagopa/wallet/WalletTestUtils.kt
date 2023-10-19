@@ -26,7 +26,7 @@ object WalletTestUtils {
 
     val PAYMENT_INSTRUMENT_ID = PaymentInstrumentId(UUID.randomUUID())
 
-    val SERVICE_NAME = ServiceName("TEST_SERVICE_NAME")
+    val SERVICE_NAME = ServiceName("PAGOPA")
 
     val CONTRACT_ID = ContractId("TestContractId")
 
@@ -114,8 +114,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -128,8 +126,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -142,8 +138,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID,
             PAYMENT_INSTRUMENT_ID,
             listOf(),
@@ -157,8 +151,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            Instant.now(),
-            Instant.now(),
             PAYMENT_METHOD_ID,
             null,
             listOf(),
