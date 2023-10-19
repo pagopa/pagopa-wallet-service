@@ -125,6 +125,29 @@ class EcommercePaymentMethodClientTest {
     }
 
     @Test
+    fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 400 from ecommerce-payment-methods`() {
+        val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID.toString()
+        // prerequisite
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+                .willThrow(
+                        WebClientResponseException.create(
+                                400,
+                                "statusText",
+                                HttpHeaders.EMPTY,
+                                ByteArray(0),
+                                StandardCharsets.UTF_8
+                        )
+                )
+        // test and assertions
+        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+                .expectErrorMatches {
+                    it as EcommercePaymentMethodException
+                    it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
+                }
+                .verify()
+    }
+
+    @Test
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_REQUEST error for disabled payment method`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID.toString()
         val paymentMethod = WalletTestUtils.getDisabledCardsPaymentMethod()
