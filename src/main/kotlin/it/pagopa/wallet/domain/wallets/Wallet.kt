@@ -1,6 +1,8 @@
 package it.pagopa.wallet.domain.wallets
 
 import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.annotations.AggregateRoot
+import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.details.WalletDetails
 import java.time.Instant
@@ -8,11 +10,34 @@ import java.time.Instant
 /**
  * A wallet.
  *
+ * <p>
  * A wallet is a triple of payment instrument, userId and service, that is identified by a single
- * wallet id.
+ * wallet id. </p>
+ *
+ *  <pre>
+ *     {@code
+ *
+ *          INITIALIZED
+ *              │
+ *              │
+ *              │
+ *              ▼
+ *       VERIFY_REQUESTED
+ *              │
+ *              ├────────► EXPIRED ────────────────────────────────┐
+ *              │                                                  │
+ *              ▼                                                  │
+ *       VERIFY_COMPLETED                                          │
+ *              │                                                  │
+ *              │                                                  │
+ *              ├──────────► EXPIRED ──────────────────────────────┚
+ *
+ *         }
+ *  </pre>
  */
+@AggregateRoot
 data class Wallet(
-    val id: WalletId,
+    @AggregateRootId val id: WalletId,
     val userId: UserId,
     var status: WalletStatusDto,
     val creationDate: Instant,
