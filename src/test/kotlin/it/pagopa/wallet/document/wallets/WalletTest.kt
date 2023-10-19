@@ -11,5 +11,6 @@ class WalletTest {
         assertNotNull(WalletTestUtils.WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS)
         assertNotNull(WalletTestUtils.WALLET_DOCUMENT_NULL_DETAILS)
         assertNotNull(WalletTestUtils.WALLET_DOCUMENT)
+        assertNotNull(WalletTestUtils.WALLET_DOCUMENT_EMPTY_CONCTRACT_ID)
     }
 }

@@ -70,6 +70,20 @@ object WalletTestUtils {
             null
         )
 
+    val WALLET_DOCUMENT_EMPTY_CONCTRACT_ID: Wallet =
+            Wallet(
+                    WALLET_UUID.value.toString(),
+                    USER_ID.id.toString(),
+                    WalletStatusDto.CREATED.name,
+                    TIMESTAMP.toString(),
+                    TIMESTAMP.toString(),
+                    PAYMENT_METHOD_ID.value.toString(),
+                    PAYMENT_INSTRUMENT_ID.value.toString(),
+                    null,
+                    listOf(),
+                    null
+            )
+
     val WALLET_DOCUMENT_NULL_DETAILS: Wallet =
         Wallet(
             WALLET_UUID.value.toString(),
