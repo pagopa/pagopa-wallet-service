@@ -410,17 +410,14 @@ components:
       type: object
       description: Wallet creation response
       properties:
-        walletId:
-          $ref: '#/components/schemas/WalletId'
         redirectUrl:
           type: string
           format: url
           description: >-
             Redirection URL to a payment gateway page where the user can input a
-            payment instrument information
-          example: http://localhost/inputPage
+            payment instrument information with walletId and useDiagnosticTracing as query param
+          example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
       required:
-        - walletId
         - redirectUrl
     WalletInfo:
       type: object

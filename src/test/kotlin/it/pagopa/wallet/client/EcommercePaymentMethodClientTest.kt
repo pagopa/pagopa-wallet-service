@@ -129,22 +129,22 @@ class EcommercePaymentMethodClientTest {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID.toString()
         // prerequisite
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
-                .willThrow(
-                        WebClientResponseException.create(
-                                400,
-                                "statusText",
-                                HttpHeaders.EMPTY,
-                                ByteArray(0),
-                                StandardCharsets.UTF_8
-                        )
+            .willThrow(
+                WebClientResponseException.create(
+                    400,
+                    "statusText",
+                    HttpHeaders.EMPTY,
+                    ByteArray(0),
+                    StandardCharsets.UTF_8
                 )
+            )
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
-                .expectErrorMatches {
-                    it as EcommercePaymentMethodException
-                    it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
-                }
-                .verify()
+            .expectErrorMatches {
+                it as EcommercePaymentMethodException
+                it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
+            }
+            .verify()
     }
 
     @Test

@@ -16,8 +16,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
+import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.util.function.Tuples
 
 @RestController
 @Slf4j
@@ -34,18 +36,25 @@ class WalletController(
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
 
         return walletCreateRequestDto
-            .flatMap {
-                walletService.createWallet(
-                    it.services.map { s -> ServiceName(s.name) },
-                    userId = xUserId,
-                    paymentMethodId = it.paymentMethodId
-                )
+            .flatMap { request ->
+                walletService
+                    .createWallet(
+                        request.services.map { s -> ServiceName(s.name) },
+                        userId = xUserId,
+                        paymentMethodId = request.paymentMethodId
+                    )
+                    .flatMap { it.saveEvents(loggingEventRepository) }
+                    .map { Tuples.of(it.id.value, request.useDiagnosticTracing) }
             }
-            .flatMap { it.saveEvents(loggingEventRepository) }
             .map {
                 WalletCreateResponseDto()
-                    .walletId(it.id.value)
-                    .redirectUrl(webviewPaymentWalletUrl.toURL().toString())
+                    .redirectUrl(
+                        UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
+                            .queryParam("walletId", it.t1)
+                            .queryParam("useDiagnosticTracing", it.t2)
+                            .build()
+                            .toUriString()
+                    )
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
