@@ -255,7 +255,7 @@ object WalletTestUtils {
         return PaymentMethodResponse()
             .id(PAYMENT_METHOD_ID.value.toString())
             .paymentTypeCode("CP")
-            .status(PaymentMethodStatus.DISABLED)
+            .status(PaymentMethodStatus.ENABLED)
             .name("INVALID")
     }
 }
