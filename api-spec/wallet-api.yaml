@@ -438,11 +438,6 @@ components:
         paymentMethodId:
           description: Payment method identifier
           type: string
-        contractId:
-          description: >-
-            User contract identifier to be used with payment instrument to make
-            a new payment
-          type: string
         status:
           $ref: '#/components/schemas/WalletStatus'
         creationDate:
@@ -461,7 +456,7 @@ components:
         details:
           description: >-
             details for the specific payment instrument. This field is
-            disciminated by the type field
+            discriminated by the type field
           type: object
           oneOf:
             - $ref: '#/components/schemas/WalletCardDetails'
@@ -477,7 +472,6 @@ components:
         - userId
         - status
         - creationDate
-        - contractId
         - updateDate
         - type
         - services

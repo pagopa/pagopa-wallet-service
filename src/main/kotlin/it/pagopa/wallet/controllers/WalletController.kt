@@ -71,8 +71,7 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
-        // TODO To be implemented
-        return mono { ResponseEntity.ok().build() }
+        return walletService.findWallet(walletId).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletsByIdUser(exchange: ServerWebExchange): Mono<ResponseEntity<WalletsDto>> {
