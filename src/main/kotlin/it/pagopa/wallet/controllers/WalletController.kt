@@ -19,7 +19,6 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.util.function.Tuples
 
 @RestController
 @Slf4j
@@ -44,14 +43,14 @@ class WalletController(
                         paymentMethodId = request.paymentMethodId
                     )
                     .flatMap { it.saveEvents(loggingEventRepository) }
-                    .map { Tuples.of(it.id.value, request.useDiagnosticTracing) }
+                    .map { it.id.value to request.useDiagnosticTracing }
             }
             .map {
                 WalletCreateResponseDto()
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
-                            .queryParam("walletId", it.t1)
-                            .queryParam("useDiagnosticTracing", it.t2)
+                            .queryParam("walletId", it.first)
+                            .queryParam("useDiagnosticTracing", it.second)
                             .build()
                             .toUriString()
                     )
