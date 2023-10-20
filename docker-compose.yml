@@ -52,6 +52,39 @@ services:
       - "8089:3000"
     networks:
       - pagopa-wallet-net
+
+  redis:
+    container_name: wallet-redis
+    image: redis
+    command: [ "sh", "-c", 'exec redis-server --requirepass "$$REDIS_PASSWORD"' ]
+    ports:
+      - "6379:6379"
+    networks:
+      - pagopa-wallet-net
+
+  redis-insight:
+    container_name: wallet-redis-insight
+    image: redislabs/redisinsight
+    ports:
+      - "8001:8001"
+    networks:
+      - pagopa-wallet-net
+
+  pagopa-npg-mock:
+    build:
+      context: .
+      dockerfile: ./docker/config/npg-mock/Dockerfile.npg-mock
+    container_name: pagopa-npg-mock
+    volumes:
+      - type: bind
+        source: ./docker/config/npg-mock
+        target: /config
+        read_only: true
+    ports:
+      - "3000:3000"
+    networks:
+      - pagopa-wallet-net
+
 networks:
   pagopa-wallet-net:
     driver: bridge

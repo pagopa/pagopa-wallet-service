@@ -3,7 +3,7 @@ package it.pagopa.wallet.config
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
-import it.pagopa.generated.npg.api.DefaultApi
+import it.pagopa.generated.npg.api.PaymentServicesApi
 import java.util.concurrent.TimeUnit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -21,7 +21,7 @@ class WebClientConfig {
         @Value("\${npgService.readTimeout}") readTimeout: Int,
         @Value("\${npgService.connectionTimeout}") connectionTimeout: Int,
         @Value("\${npgService.apiKey}") npgApiKey: String
-    ): it.pagopa.generated.npg.api.DefaultApi {
+    ): PaymentServicesApi {
         val httpClient =
             HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
@@ -37,7 +37,7 @@ class WebClientConfig {
                 .build()
         val apiClient = it.pagopa.generated.npg.ApiClient(webClient).setBasePath(baseUrl)
         apiClient.setApiKey(npgApiKey)
-        return DefaultApi(apiClient)
+        return PaymentServicesApi(apiClient)
     }
 
     @Bean(name = ["ecommercePaymentMethodsWebClient"])

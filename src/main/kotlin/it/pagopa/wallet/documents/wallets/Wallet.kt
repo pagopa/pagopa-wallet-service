@@ -30,7 +30,7 @@ data class Wallet(
         Wallet(
             WalletId(UUID.fromString(id)),
             UserId(UUID.fromString(userId)),
-            WalletStatusDto.CREATED,
+            WalletStatusDto.valueOf(status),
             Instant.parse(creationDate),
             Instant.parse(updateDate),
             PaymentMethodId(UUID.fromString(paymentMethodId)),
