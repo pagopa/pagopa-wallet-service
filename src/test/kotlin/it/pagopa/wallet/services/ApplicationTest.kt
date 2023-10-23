@@ -14,6 +14,8 @@ import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.WalletRepository
+import java.time.Instant
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -22,8 +24,6 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.time.Instant
-import java.util.*
 
 class ApplicationTest {
     private val walletRepository: WalletRepository = mock()
@@ -43,10 +43,10 @@ class ApplicationTest {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
             val expectedLoggedAction =
-                    LoggedAction(
-                            walletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
-                            WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                LoggedAction(
+                    walletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
+                    WalletAddedEvent(WALLET_UUID.value.toString())
+                )
 
             given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
 
@@ -54,15 +54,14 @@ class ApplicationTest {
 
             StepVerifier.create(
                     walletService.createWallet(
-                            listOf(SERVICE_NAME),
-                            USER_ID.id,
-                            PAYMENT_METHOD_ID.value,
-                            CONTRACT_ID.contractId
+                        listOf(SERVICE_NAME),
+                        USER_ID.id,
+                        PAYMENT_METHOD_ID.value,
+                        CONTRACT_ID.contractId
                     )
-            )
-                    .expectNext(expectedLoggedAction)
-                    .verifyComplete()
-
+                )
+                .expectNext(expectedLoggedAction)
+                .verifyComplete()
         }
     }
 
@@ -77,36 +76,33 @@ class ApplicationTest {
 
             val wallet = walletDomainEmptyServicesNullDetailsNoPaymentInstrument()
             val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
-                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
+                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
             val expectedLoggedAction =
-                    LoggedAction(wallet, WalletPatchEvent(WALLET_UUID.value.toString()))
+                LoggedAction(wallet, WalletPatchEvent(WALLET_UUID.value.toString()))
 
             val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
             given { walletRepository.findByWalletId(any()) }
-                    .willReturn(
-                            Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
-                    )
+                .willReturn(Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument))
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
+                .willAnswer { Mono.just(it.arguments[0]) }
 
             /* test */
             assertTrue(wallet.applications.isEmpty())
 
             StepVerifier.create(
                     walletService.patchWallet(
-                            WALLET_UUID.value,
-                            Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                        WALLET_UUID.value,
+                        Pair(SERVICE_NAME, ServiceStatus.ENABLED)
                     )
-            )
-                    .expectNext(expectedLoggedAction)
-                    .verifyComplete()
+                )
+                .expectNext(expectedLoggedAction)
+                .verifyComplete()
 
             val walletDocumentToSave = walletArgumentCaptor.firstValue
             assertEquals(walletDocumentToSave.applications.size, 1)
-
         }
     }
 
@@ -120,11 +116,11 @@ class ApplicationTest {
 
         StepVerifier.create(
                 walletService.patchWallet(
-                        WALLET_UUID.value,
-                        Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                    WALLET_UUID.value,
+                    Pair(SERVICE_NAME, ServiceStatus.ENABLED)
                 )
-        )
-                .expectError(WalletNotFoundException::class.java)
-                .verify()
+            )
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
     }
 }
