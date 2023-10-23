@@ -40,7 +40,7 @@ class NpgClient(
                 HttpStatus.BAD_REQUEST ->
                     NpgClientException(
                         description = "Bad request",
-                        httpStatusCode = HttpStatus.BAD_REQUEST,
+                        httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                     )
                 HttpStatus.UNAUTHORIZED ->
                     NpgClientException(

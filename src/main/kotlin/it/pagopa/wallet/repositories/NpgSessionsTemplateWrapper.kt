@@ -1,7 +1,7 @@
 package it.pagopa.wallet.repositories
 
 import java.time.Duration
- import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.RedisTemplate
 
 class NpgSessionsTemplateWrapper
 /**

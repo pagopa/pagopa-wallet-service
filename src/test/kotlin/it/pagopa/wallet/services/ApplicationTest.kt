@@ -14,9 +14,11 @@ import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
+import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import java.time.Instant
 import java.util.*
@@ -32,9 +34,16 @@ import reactor.test.StepVerifier
 class ApplicationTest {
     private val walletRepository: WalletRepository = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
+    private val npgClient: NpgClient = mock()
+    private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
 
     private val walletService: WalletService =
-        WalletService(walletRepository, ecommercePaymentMethodsClient)
+        WalletService(
+            walletRepository,
+            ecommercePaymentMethodsClient,
+            npgClient,
+            npgSessionRedisTemplate
+        )
 
     private val mockedUUID = UUID.randomUUID()
     private val mockedInstant = Instant.now()
