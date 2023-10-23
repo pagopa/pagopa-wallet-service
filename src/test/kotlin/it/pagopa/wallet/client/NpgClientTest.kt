@@ -30,7 +30,7 @@ class NpgClientTest {
 
     @Test
     fun `Should create payment order build successfully`() {
-        val fields = Fields()
+        val fields = Fields().sessionId(UUID.randomUUID().toString())
         fields.fields.addAll(
             listOf(
                 Field()

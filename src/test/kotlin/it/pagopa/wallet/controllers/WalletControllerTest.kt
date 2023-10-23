@@ -73,13 +73,28 @@ class WalletControllerTest {
     fun testCreateSessionWallet() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
-        val fields = Fields()
+        val fields = Fields().sessionId(UUID.randomUUID().toString())
         fields.fields.addAll(
-            listOf(
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("holder"),
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("pan"),
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("cvv")
-            )
+                listOf(
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/h")
+                                .propertyClass("holder")
+                                .propertyClass("h")
+                                .type("type"),
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/p")
+                                .propertyClass("pan")
+                                .propertyClass("p")
+                                .type("type"),
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/c")
+                                .propertyClass("cvv")
+                                .propertyClass("c")
+                                .type("type")
+                )
         )
         given { walletService.createSessionWallet(walletId) }
             .willReturn(
