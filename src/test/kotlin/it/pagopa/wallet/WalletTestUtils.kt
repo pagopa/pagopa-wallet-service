@@ -37,8 +37,25 @@ object WalletTestUtils {
     val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
+
     private val TYPE = WalletDetailsType.CARDS
     private val TIMESTAMP = Instant.now()
+
+    fun walletDocumentWithSessionWallet(): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.INITIALIZED.name,
+            creationDate,
+            creationDate,
+            PAYMENT_METHOD_ID.value.toString(),
+            null,
+            CONTRACT_ID.contractId,
+            listOf(),
+            null
+        )
+    }
 
     fun walletDocumentEmptyServicesNullDetailsNoPaymentInstrument(): Wallet {
         val creationDate = Instant.now().toString()

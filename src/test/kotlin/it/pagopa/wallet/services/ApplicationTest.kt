@@ -1,5 +1,9 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.npg.model.CreateHostedOrderRequest
+import it.pagopa.generated.npg.model.Field
+import it.pagopa.generated.npg.model.Fields
+import it.pagopa.generated.npg.model.Order
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -9,8 +13,10 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.LoggedAction
+import it.pagopa.wallet.audit.SessionWalletAddedEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
@@ -18,10 +24,12 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import java.time.Instant
 import java.util.*
+import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -82,6 +90,86 @@ class ApplicationTest {
                         )
                     )
                     .expectNext(expectedLoggedAction)
+                    .verifyComplete()
+            }
+        }
+    }
+
+    @Test
+    fun `should create wallet session`() {
+        /* preconditions */
+
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val sessionId = UUID.randomUUID().toString()
+                val npgCorrelationId = mockedUUID
+                val orderId = UUID.randomUUID().toString()
+                val npgCreateHostedOrderRequest =
+                    CreateHostedOrderRequest()
+                        .version("2")
+                        .merchantUrl("https://test")
+                        .order(Order())
+                val nggFields = Fields().sessionId(sessionId)
+                nggFields.fields.addAll(
+                    listOf(
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/h")
+                            .propertyClass("holder")
+                            .propertyClass("h"),
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/p")
+                            .propertyClass("pan")
+                            .propertyClass("p"),
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/c")
+                            .propertyClass("cvv")
+                            .propertyClass("c")
+                    )
+                )
+
+                val npgSession =
+                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+                val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
+                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
+
+                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                val expectedLoggedAction =
+                    LoggedAction(
+                        walletDocumentWithSessionWallet.toDomain(),
+                        SessionWalletAddedEvent(WALLET_UUID.value.toString())
+                    )
+
+                given {
+                        npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    }
+                    .willAnswer { mono { nggFields } }
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(
+                        Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
+                    )
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willAnswer { Mono.just(it.arguments[0]) }
+                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+
+                /* test */
+
+                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                    .expectNext(Pair(nggFields, expectedLoggedAction))
                     .verifyComplete()
             }
         }
