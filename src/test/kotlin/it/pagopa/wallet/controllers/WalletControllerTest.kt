@@ -75,30 +75,33 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val fields = Fields()
         fields.fields.addAll(
-                listOf(
-                        Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("holder"),
-                        Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("pan"),
-                        Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("cvv")
-                )
+            listOf(
+                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("holder"),
+                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("pan"),
+                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("cvv")
+            )
         )
         given { walletService.createSessionWallet(walletId) }
-                .willReturn(
-                        mono {
-                            Pair(fields, LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString())))
-                        }
-                )
+            .willReturn(
+                mono {
+                    Pair(
+                        fields,
+                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
+                    )
+                }
+            )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-                .willReturn(Flux.empty())
+            .willReturn(Flux.empty())
         /* test */
         webClient
-                .post()
-                .uri("/wallets/${walletId}/sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("x-user-id", UUID.randomUUID().toString())
-                .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
-                .exchange()
-                .expectStatus()
-                .isOk
+            .post()
+            .uri("/wallets/${walletId}/sessions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isOk
     }
 
     @Test
