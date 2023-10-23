@@ -33,9 +33,9 @@ class NpgClientTest {
         val fields = Fields()
         fields.fields.addAll(
             listOf(
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("holder"),
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("pan"),
-                Field().id(UUID.randomUUID().toString()).src("://src").propertyClass("cvv")
+                Field().id(UUID.randomUUID().toString()).src("https://test.it/h").propertyClass("holder").propertyClass("h"),
+                Field().id(UUID.randomUUID().toString()).src("https://test.it/p").propertyClass("pan").propertyClass("p"),
+                Field().id(UUID.randomUUID().toString()).src("https://test.it/c").propertyClass("cvv").propertyClass("c")
             )
         )
 
