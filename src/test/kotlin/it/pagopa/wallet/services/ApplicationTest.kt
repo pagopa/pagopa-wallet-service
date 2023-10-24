@@ -53,6 +53,7 @@ class ApplicationTest {
             npgSessionRedisTemplate
         )
 
+
     private val mockedUUID = UUID.randomUUID()
     private val mockedInstant = Instant.now()
 

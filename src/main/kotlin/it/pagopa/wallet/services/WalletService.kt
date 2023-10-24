@@ -119,6 +119,7 @@ class WalletService(
                 hostedOrderResponse to
                     LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
             }
+
     }
 
     fun patchWallet(
