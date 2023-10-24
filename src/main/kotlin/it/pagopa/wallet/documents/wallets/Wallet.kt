@@ -20,7 +20,7 @@ data class Wallet(
     val status: String,
     val paymentMethodId: String,
     val paymentInstrumentId: String?,
-    val contractId: String,
+    val contractId: String?,
     val applications: List<Application>,
     val details: WalletDetails<*>?,
     @CreatedDate val creationDate: Instant? = null,
@@ -36,11 +36,13 @@ data class Wallet(
         WalletDomain(
             WalletId(UUID.fromString(walletId)),
             UserId(UUID.fromString(userId)),
-            WalletStatusDto.CREATED,
+            WalletStatusDto.valueOf(status),
+            Instant.parse(creationDate),
+            Instant.parse(updateDate),
             PaymentMethodId(UUID.fromString(paymentMethodId)),
             paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
             applications.map { application -> application.toDomain() },
-            ContractId(contractId),
+            contractId?.let { ContractId(it) },
             details?.toDomain()
         )
 }

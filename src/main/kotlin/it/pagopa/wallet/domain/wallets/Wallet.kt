@@ -42,7 +42,7 @@ data class Wallet(
     val paymentMethodId: PaymentMethodId,
     val paymentInstrumentId: PaymentInstrumentId?,
     val applications: List<Application>,
-    val contractId: ContractId,
+    val contractId: ContractId?,
     val details: WalletDetails<*>?
 ) {
     fun toDocument(): Wallet =
@@ -52,7 +52,7 @@ data class Wallet(
             this.status.name,
             this.paymentMethodId.value.toString(),
             this.paymentInstrumentId?.value?.toString(),
-            this.contractId.contractId,
+            this.contractId?.contractId,
             this.applications.map { app ->
                 it.pagopa.wallet.documents.wallets.Application(
                     app.id.id.toString(),
