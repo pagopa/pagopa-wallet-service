@@ -77,7 +77,7 @@ class ApplicationTest {
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
-            /* test */
+                /* test */
 
                 StepVerifier.create(
                         walletService.createWallet(
@@ -86,118 +86,144 @@ class ApplicationTest {
                             PAYMENT_METHOD_ID.value
                         )
                     )
-                )
-                .expectNext(expectedLoggedAction)
-                .verifyComplete()
+                    .expectNext(expectedLoggedAction)
+                    .verifyComplete()
+            }
         }
-    }
 
-    @Test
-    fun `should create wallet session`() {
-        /* preconditions */
+        @Test
+        fun `should create wallet session`() {
+            /* preconditions */
 
-        val mockedUUID = WALLET_UUID.value
-        val mockedInstant = Instant.now()
+            val mockedUUID = WALLET_UUID.value
+            val mockedInstant = Instant.now()
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+            mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+                mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                    it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID().toString()
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version("2")
-                        .merchantUrl("https://test")
-                        .order(Order())
-                val nggFields = Fields().sessionId(sessionId)
-                nggFields.fields.addAll(
-                    listOf(
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/h")
-                            .propertyClass("holder")
-                            .propertyClass("h"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/p")
-                            .propertyClass("pan")
-                            .propertyClass("p"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/c")
-                            .propertyClass("cvv")
-                            .propertyClass("c")
+                    val sessionId = UUID.randomUUID().toString()
+                    val npgCorrelationId = mockedUUID
+                    val orderId = UUID.randomUUID().toString()
+                    val npgCreateHostedOrderRequest =
+                        CreateHostedOrderRequest()
+                            .version("2")
+                            .merchantUrl("https://test")
+                            .order(Order())
+                    val nggFields = Fields().sessionId(sessionId)
+                    nggFields.fields.addAll(
+                        listOf(
+                            Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/h")
+                                .propertyClass("holder")
+                                .propertyClass("h"),
+                            Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/p")
+                                .propertyClass("pan")
+                                .propertyClass("p"),
+                            Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/c")
+                                .propertyClass("cvv")
+                                .propertyClass("c")
+                        )
                     )
-                )
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+                    val npgSession =
+                        NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+                    val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
+                        walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
+
+                    val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                    val expectedLoggedAction =
+                        LoggedAction(
+                            walletDocumentWithSessionWallet.toDomain(),
+                            SessionWalletAddedEvent(WALLET_UUID.value.toString())
+                        )
+
+                    given {
+                            npgClient.createNpgOrderBuild(
+                                npgCorrelationId,
+                                npgCreateHostedOrderRequest
+                            )
+                        }
+                        .willAnswer { mono { nggFields } }
+
+                    val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                    given { walletRepository.findById(any<String>()) }
+                        .willReturn(
+                            Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
+                        )
+
+                    given { walletRepository.save(walletArgumentCaptor.capture()) }
+                        .willAnswer { Mono.just(it.arguments[0]) }
+                    given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+
+                    /* test */
+
+                    StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                        .expectNext(Pair(nggFields, expectedLoggedAction))
+                        .verifyComplete()
+                }
+            }
+        }
+
+        @Test
+        fun `should patch wallet document when adding services`() {
+            /* preconditions */
+
+            mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+                print("Mocked instant: ${Instant.now()} $mockedInstant")
+
+                val wallet = walletDomainEmptyServicesNullDetailsNoPaymentInstrument()
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
-                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-
                 val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentWithSessionWallet.toDomain(),
-                        SessionWalletAddedEvent(WALLET_UUID.value.toString())
-                    )
-
-                given {
-                        npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
-                    }
-                    .willAnswer { mono { nggFields } }
+                    LoggedAction(wallet, WalletPatchEvent(WALLET_UUID.value.toString()))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByWalletId(any()) }
                     .willReturn(
                         Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
                     )
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
 
                 /* test */
+                assertTrue(wallet.applications.isEmpty())
 
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
-                    .expectNext(Pair(nggFields, expectedLoggedAction))
+                StepVerifier.create(
+                        walletService.patchWallet(
+                            WALLET_UUID.value,
+                            Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                        )
+                    )
+                    .expectNext(expectedLoggedAction)
                     .verifyComplete()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(walletDocumentToSave.applications.size, 1)
             }
         }
-    }
 
-    @Test
-    fun `should patch wallet document when adding services`() {
-        /* preconditions */
+        @Test
+        fun `should throws wallet not found exception`() {
+            /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            print("Mocked instant: ${Instant.now()} $mockedInstant")
-
-            val wallet = walletDomainEmptyServicesNullDetailsNoPaymentInstrument()
-            val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
-                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
-
-            val expectedLoggedAction =
-                LoggedAction(wallet, WalletPatchEvent(WALLET_UUID.value.toString()))
-
-            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
-
-            given { walletRepository.findByWalletId(any()) }
-                .willReturn(Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument))
-
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
+            given { walletRepository.findByWalletId(any()) }.willReturn(Mono.empty())
 
             /* test */
-            assertTrue(wallet.applications.isEmpty())
 
             StepVerifier.create(
                     walletService.patchWallet(
@@ -205,29 +231,8 @@ class ApplicationTest {
                         Pair(SERVICE_NAME, ServiceStatus.ENABLED)
                     )
                 )
-                .expectNext(expectedLoggedAction)
-                .verifyComplete()
-
-            val walletDocumentToSave = walletArgumentCaptor.firstValue
-            assertEquals(walletDocumentToSave.applications.size, 1)
+                .expectError(WalletNotFoundException::class.java)
+                .verify()
         }
-    }
-
-    @Test
-    fun `should throws wallet not found exception`() {
-        /* preconditions */
-
-        given { walletRepository.findByWalletId(any()) }.willReturn(Mono.empty())
-
-        /* test */
-
-        StepVerifier.create(
-                walletService.patchWallet(
-                    WALLET_UUID.value,
-                    Pair(SERVICE_NAME, ServiceStatus.ENABLED)
-                )
-            )
-            .expectError(WalletNotFoundException::class.java)
-            .verify()
     }
 }

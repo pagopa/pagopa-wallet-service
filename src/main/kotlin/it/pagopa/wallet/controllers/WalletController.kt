@@ -44,11 +44,10 @@ class WalletController(
                         paymentMethodId = request.paymentMethodId
                     )
                     .flatMap { it.saveEvents(loggingEventRepository) }
-                    .map { it.id.value to request.useDiagnosticTracing }
+                    .map { it.walletId.value to request.useDiagnosticTracing }
             }
             .map {
                 WalletCreateResponseDto()
-                    .walletId(it.walletId.value)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
                             .queryParam("walletId", it.first)

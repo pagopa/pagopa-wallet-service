@@ -37,8 +37,6 @@ data class Wallet(
             WalletId(UUID.fromString(walletId)),
             UserId(UUID.fromString(userId)),
             WalletStatusDto.valueOf(status),
-            Instant.parse(creationDate),
-            Instant.parse(updateDate),
             PaymentMethodId(UUID.fromString(paymentMethodId)),
             paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
             applications.map { application -> application.toDomain() },

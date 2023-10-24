@@ -44,7 +44,7 @@ class WalletService(
         return ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId.toString())
             .map {
-                  Wallet(
+                Wallet(
                     WalletId(UUID.randomUUID()),
                     UserId(userId),
                     WalletStatusDto.CREATED,
@@ -57,7 +57,7 @@ class WalletService(
             }
             .flatMap { wallet ->
                 walletRepository.save(wallet.toDocument()).map {
-                    LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, WalletAddedEvent(wallet.walletId.value.toString()))
                 }
             }
     }
@@ -83,11 +83,9 @@ class WalletService(
             .map { (hostedOrderResponse, wallet) ->
                 hostedOrderResponse to
                     Wallet(
-                        wallet.id,
+                        wallet.walletId,
                         wallet.userId,
                         WalletStatusDto.INITIALIZED,
-                        wallet.creationDate,
-                        wallet.updateDate, // TODO update with auto increment with CHK-2028
                         wallet.paymentMethodId,
                         wallet.paymentInstrumentId,
                         wallet.applications,
@@ -105,7 +103,7 @@ class WalletService(
                             hostedOrderResponse.sessionId,
                             hostedOrderResponse.sessionId,
                             hostedOrderResponse.securityToken.toString(),
-                            wallet.id.value.toString()
+                            wallet.walletId.value.toString()
                         )
                     )
                     .toMono()
@@ -113,7 +111,7 @@ class WalletService(
             }
             .map { (hostedOrderResponse, wallet) ->
                 hostedOrderResponse to
-                    LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, SessionWalletAddedEvent(wallet.walletId.value.toString()))
             }
     }
 
