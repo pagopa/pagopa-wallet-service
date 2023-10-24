@@ -4,6 +4,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
+import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.services.ServiceName
@@ -22,32 +23,39 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 @Slf4j
-class WalletService(@Autowired private val walletRepository: WalletRepository) {
+class WalletService(
+    @Autowired private val walletRepository: WalletRepository,
+    @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient
+) {
 
     fun createWallet(
         serviceList: List<it.pagopa.wallet.domain.services.ServiceName>,
         userId: UUID,
-        paymentMethodId: UUID,
-        contractId: String
+        paymentMethodId: UUID
     ): Mono<LoggedAction<Wallet>> {
-        val creationTime = Instant.now()
-        val wallet =
-            Wallet(
-                WalletId(UUID.randomUUID()),
-                UserId(userId),
-                WalletStatusDto.CREATED,
-                creationTime,
-                creationTime,
-                PaymentMethodId(paymentMethodId),
-                paymentInstrumentId = null,
-                listOf(), // TODO Find all services by serviceName
-                ContractId(contractId),
-                details = null
-            )
 
-        return walletRepository.save(wallet.toDocument()).map {
-            LoggedAction(wallet, WalletAddedEvent(it.id))
-        }
+        return ecommercePaymentMethodsClient
+            .getPaymentMethodById(paymentMethodId.toString())
+            .map {
+                val creationTime = Instant.now()
+                return@map Wallet(
+                    WalletId(UUID.randomUUID()),
+                    UserId(userId),
+                    WalletStatusDto.CREATED,
+                    creationTime,
+                    creationTime,
+                    PaymentMethodId(UUID.fromString(it.id)),
+                    paymentInstrumentId = null,
+                    listOf(), // TODO Find all services by serviceName
+                    contractId = null,
+                    details = null
+                )
+            }
+            .flatMap { wallet ->
+                walletRepository.save(wallet.toDocument()).map {
+                    LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString()))
+                }
+            }
     }
 
     fun patchWallet(

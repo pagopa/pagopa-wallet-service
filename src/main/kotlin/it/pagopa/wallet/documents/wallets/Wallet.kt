@@ -17,7 +17,7 @@ data class Wallet(
     val updateDate: String,
     val paymentMethodId: String,
     val paymentInstrumentId: String?,
-    val contractId: String,
+    val contractId: String?,
     val applications: List<Application>,
     val details: WalletDetails<*>?
 ) {
@@ -36,7 +36,7 @@ data class Wallet(
             PaymentMethodId(UUID.fromString(paymentMethodId)),
             paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
             applications.map { application -> application.toDomain() },
-            ContractId(contractId),
+            contractId?.let { ContractId(it) },
             details?.toDomain()
         )
 }

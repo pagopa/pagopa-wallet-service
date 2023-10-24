@@ -1,5 +1,7 @@
 package it.pagopa.wallet
 
+import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.documents.service.Service
 import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
@@ -66,6 +68,20 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            listOf(),
+            null
+        )
+
+    val WALLET_DOCUMENT_EMPTY_CONCTRACT_ID: Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.CREATED.name,
+            TIMESTAMP.toString(),
+            TIMESTAMP.toString(),
+            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            null,
             listOf(),
             null
         )
@@ -161,6 +177,22 @@ object WalletTestUtils {
             null
         )
 
+    fun initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument():
+        it.pagopa.wallet.domain.wallets.Wallet {
+        return Wallet(
+            WALLET_UUID,
+            USER_ID,
+            WalletStatusDto.CREATED,
+            Instant.now(),
+            Instant.now(),
+            PAYMENT_METHOD_ID,
+            null,
+            listOf(),
+            null,
+            null
+        )
+    }
+
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
         return Wallet(
@@ -210,7 +242,10 @@ object WalletTestUtils {
     ): ProblemJsonDto = ProblemJsonDto().status(httpStatus.value()).detail(description).title(title)
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
-        WalletCreateRequestDto().services(listOf(ServiceNameDto.PAGOPA)).useDiagnosticTracing(false)
+        WalletCreateRequestDto()
+            .services(listOf(ServiceNameDto.PAGOPA))
+            .useDiagnosticTracing(false)
+            .paymentMethodId(PAYMENT_METHOD_ID.value)
 
     val PATCH_SERVICE_1: PatchServiceDto =
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.DISABLED)
@@ -219,4 +254,28 @@ object WalletTestUtils {
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.ENABLED)
 
     val FLUX_PATCH_SERVICES: List<PatchServiceDto> = listOf(PATCH_SERVICE_1, PATCH_SERVICE_2)
+
+    fun getValidCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.ENABLED)
+            .name("CARDS")
+    }
+
+    fun getDisabledCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.DISABLED)
+            .name("CARDS")
+    }
+
+    fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID.value.toString())
+            .paymentTypeCode("CP")
+            .status(PaymentMethodStatus.ENABLED)
+            .name("INVALID")
+    }
 }

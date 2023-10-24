@@ -72,6 +72,7 @@ microservice-chart:
     ECS_SERVICE_ENVIRONMENT: "dev"
     # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
+    WEBVIEW_PAYMENT_WALLET_URL: https://dev.payment-wallet.pagopa.it/onboarding
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key

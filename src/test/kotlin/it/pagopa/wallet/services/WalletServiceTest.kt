@@ -1,18 +1,20 @@
 package it.pagopa.wallet.services
 
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.WalletTestUtils.CONTRACT_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
+import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
+import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
+import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
@@ -33,8 +35,10 @@ import reactor.test.StepVerifier
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
+    private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
 
-    private val walletService: WalletService = WalletService(walletRepository)
+    private val walletService: WalletService =
+        WalletService(walletRepository, ecommercePaymentMethodsClient)
 
     private val mockedUUID = UUID.randomUUID()
     private val mockedInstant = Instant.now()
@@ -55,11 +59,13 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        walletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
+                        initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
                 given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
 
@@ -67,8 +73,7 @@ class WalletServiceTest {
                         walletService.createWallet(
                             listOf(SERVICE_NAME),
                             USER_ID.id,
-                            PAYMENT_METHOD_ID.value,
-                            CONTRACT_ID.contractId
+                            PAYMENT_METHOD_ID.value
                         )
                     )
                     .expectNext(expectedLoggedAction)

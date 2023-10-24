@@ -38,6 +38,20 @@ services:
     depends_on:
       - mongo
 
+  ecommerce-payment-methods:
+    build:
+      context: .
+      dockerfile: ./docker/config/ecommerce-payment-methods/Dockerfile.ecommerce-payment-methods
+    container_name: ecommerce-payment-methods
+    volumes:
+      - type: bind
+        source: ./docker/config/ecommerce-payment-methods
+        target: /config
+        read_only: true
+    ports:
+      - "8089:3000"
+    networks:
+      - pagopa-wallet-net
 networks:
   pagopa-wallet-net:
     driver: bridge

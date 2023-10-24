@@ -1,0 +1,9 @@
+FROM node:14.17-alpine
+
+WORKDIR /usr/src/app
+
+RUN yarn global add json-server
+
+EXPOSE 8085
+
+CMD ["json-server", "/config/payment-method-server.json", "--routes", "/config/routes.json",< "--host", "0.0.0.0"]

@@ -11,10 +11,12 @@ import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
+import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -23,27 +25,35 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository
+    @Autowired private val loggingEventRepository: LoggingEventRepository,
+    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
 ) : WalletsApi {
     override fun createWallet(
+        xUserId: UUID,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
 
         return walletCreateRequestDto
-            .flatMap {
-                walletService.createWallet(
-                    it.services.map { s -> ServiceName(s.name) },
-                    userId = UUID.randomUUID(),
-                    paymentMethodId = UUID.randomUUID(),
-                    contractId = UUID.randomUUID().toString()
-                )
+            .flatMap { request ->
+                walletService
+                    .createWallet(
+                        request.services.map { s -> ServiceName(s.name) },
+                        userId = xUserId,
+                        paymentMethodId = request.paymentMethodId
+                    )
+                    .flatMap { it.saveEvents(loggingEventRepository) }
+                    .map { it.id.value to request.useDiagnosticTracing }
             }
-            .flatMap { it.saveEvents(loggingEventRepository) }
             .map {
                 WalletCreateResponseDto()
-                    .walletId(it.id.value)
-                    .redirectUrl("http://checkout-return-url")
+                    .redirectUrl(
+                        UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
+                            .queryParam("walletId", it.first)
+                            .queryParam("useDiagnosticTracing", it.second)
+                            .build()
+                            .toUriString()
+                    )
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
