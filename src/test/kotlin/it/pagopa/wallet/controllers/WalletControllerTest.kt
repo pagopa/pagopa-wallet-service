@@ -1,5 +1,9 @@
 package it.pagopa.wallet.controllers
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import it.pagopa.generated.wallet.model.WalletsDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.audit.LoggedAction
@@ -34,6 +38,12 @@ class WalletControllerTest {
     private lateinit var walletController: WalletController
 
     @Autowired private lateinit var webClient: WebTestClient
+
+    private val objectMapper =
+        JsonMapper.builder()
+            .addModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build()
 
     @BeforeEach
     fun beforeTest() {
@@ -79,18 +89,29 @@ class WalletControllerTest {
     @Test
     fun testGetWalletByIdUser() = runTest {
         /* preconditions */
-        // val userId = UUID.randomUUID()
+        val userId = UUID.randomUUID()
+        val walletsDto = WalletsDto().addWalletsItem(WalletTestUtils.walletInfoDto())
+        val stringTest = objectMapper.writeValueAsString(walletsDto)
+        given { walletService.findWalletByUserId(userId) }.willReturn(mono { walletsDto })
         /* test */
-        webClient.get().uri("/wallets").exchange().expectStatus().isOk
+        webClient
+            .get()
+            .uri("/wallets")
+            .header("x-user-id", userId.toString())
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(stringTest)
     }
 
     @Test
     fun testGetWalletById() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
-
-        given { walletService.findWallet(any()) }
-            .willReturn(mono { WalletTestUtils.walletInfoDto() })
+        val walletInfo = WalletTestUtils.walletInfoDto()
+        val jsonToTest = objectMapper.writeValueAsString(walletInfo)
+        given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
         /* test */
         webClient
             .get()
@@ -98,6 +119,8 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isOk
+            .expectBody()
+            .json(jsonToTest)
     }
 
     @Test

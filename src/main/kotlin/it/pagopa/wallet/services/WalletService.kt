@@ -71,6 +71,13 @@ class WalletService(@Autowired private val walletRepository: WalletRepository) {
             .map { wallet -> toWalletInfoDto(wallet) }
     }
 
+    fun findWalletByUserId(userId: UUID): Mono<WalletsDto> {
+        return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
+    }
+
+    private fun toWallets(walletList: List<it.pagopa.wallet.documents.wallets.Wallet>): WalletsDto =
+        WalletsDto().wallets(walletList.map { toWalletInfoDto(it) })
+
     private fun toWalletInfoDto(wallet: it.pagopa.wallet.documents.wallets.Wallet): WalletInfoDto? =
         WalletInfoDto()
             .walletId(UUID.fromString(wallet.id))

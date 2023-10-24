@@ -63,10 +63,17 @@ paths:
       tags:
         - wallets
       summary: Get wallet by user identifier
-      description: Returns a of wallets related to user
+      description: Returns a list of wallets related to user
       operationId: getWalletsByIdUser
       security:
         - bearerAuth: [ ]
+      parameters:
+        - in: header
+          name: x-user-id
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Wallet retrieved successfully
