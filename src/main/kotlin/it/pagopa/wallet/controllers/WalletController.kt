@@ -28,6 +28,7 @@ class WalletController(
     @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
 ) : WalletsApi {
+
     override fun createWallet(
         xUserId: UUID,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
@@ -56,6 +57,36 @@ class WalletController(
                     )
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
+    }
+
+    override fun createSessionWallet(
+        walletId: UUID,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<SessionWalletCreateResponseDto>> {
+        return walletService
+            .createSessionWallet(walletId)
+            .flatMap { (fields, walletEvent) ->
+                walletEvent.saveEvents(loggingEventRepository).map { fields }
+            }
+            .map {
+                ResponseEntity.ok()
+                    .body(
+                        SessionWalletCreateResponseDto()
+                            .orderId(it.sessionId)
+                            .cardFormFields(
+                                it.fields
+                                    .stream()
+                                    .map { f ->
+                                        FieldDto()
+                                            .id(f.id)
+                                            .src(URI.create(f.src))
+                                            .type(f.type)
+                                            .propertyClass(f.propertyClass)
+                                    }
+                                    .toList()
+                            )
+                    )
+            }
     }
 
     /*

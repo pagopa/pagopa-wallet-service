@@ -3,13 +3,12 @@ package it.pagopa.wallet.controllers
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import it.pagopa.generated.npg.model.Field
+import it.pagopa.generated.npg.model.Fields
 import it.pagopa.generated.wallet.model.WalletsDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
-import it.pagopa.wallet.audit.LoggedAction
-import it.pagopa.wallet.audit.LoggingEvent
-import it.pagopa.wallet.audit.WalletAddedEvent
-import it.pagopa.wallet.audit.WalletPatchEvent
+import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
@@ -78,6 +77,56 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
+    }
+
+    @Test
+    fun testCreateSessionWallet() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val fields = Fields().sessionId(UUID.randomUUID().toString())
+        fields.fields.addAll(
+            listOf(
+                Field()
+                    .id(UUID.randomUUID().toString())
+                    .src("https://test.it/h")
+                    .propertyClass("holder")
+                    .propertyClass("h")
+                    .type("type"),
+                Field()
+                    .id(UUID.randomUUID().toString())
+                    .src("https://test.it/p")
+                    .propertyClass("pan")
+                    .propertyClass("p")
+                    .type("type"),
+                Field()
+                    .id(UUID.randomUUID().toString())
+                    .src("https://test.it/c")
+                    .propertyClass("cvv")
+                    .propertyClass("c")
+                    .type("type")
+            )
+        )
+        given { walletService.createSessionWallet(walletId) }
+            .willReturn(
+                mono {
+                    Pair(
+                        fields,
+                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isOk
     }
 
     @Test

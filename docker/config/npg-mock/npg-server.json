@@ -1,0 +1,46 @@
+{
+  "build": {
+    "sessionId": "sessionId",
+    "securityToken": "securityToken",
+    "fields": [
+      {
+        "type": "TEXT",
+        "id": "CARD_NUMBER",
+        "src": "http://example/?id=CARD_NUMBER&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "EXPIRATION_DATE",
+        "src": "http://example/?id=EXPIRATION_DATE&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "SECURITY_CODE",
+        "src": "http://example/?id=SECURITY_CODE&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      },
+      {
+        "type": "TEXT",
+        "id": "CARDHOLDER_NAME",
+        "src": "http://example/?id=CARDHOLDER_NAME&lang=ITA&correlationid=xxx&sessionid=sessionId&placeholder=Y",
+        "class": "CARD_FIELD"
+      }
+    ]
+  },
+  "cardData": {
+    "bin": "42424242",
+    "lastFourDigits": "4242",
+    "expiringDate": "11/38",
+    "circuit": "VISA"
+  },
+  "confirmPayment": {
+    "state": "PAYMENT_COMPLETE",
+    "url": "http://example.test"
+  },
+  "refunds": {
+    "operationId": "operationId",
+    "operationTime": "2022-09-01T01:20:00.001Z"
+  }
+}
