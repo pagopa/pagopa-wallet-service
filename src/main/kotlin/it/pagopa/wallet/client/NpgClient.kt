@@ -60,4 +60,83 @@ class NpgClient(
             }
         }
     }
+
+    fun getCardData(sessionId: String, correlationId: UUID): Mono<CardDataResponse> {
+        val response: Mono<CardDataResponse> =
+            try {
+                logger.info("getCardData with correlationId: $correlationId")
+                paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId)
+            } catch (e: WebClientResponseException) {
+                Mono.error(e)
+            }
+        return response.onErrorMap(WebClientResponseException::class.java) {
+            logger.error(
+                "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                it
+            )
+            when (it.statusCode) {
+                HttpStatus.BAD_REQUEST ->
+                    NpgClientException(
+                        description = "Bad request",
+                        httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    )
+                HttpStatus.UNAUTHORIZED ->
+                    NpgClientException(
+                        description = "Misconfigured NPG api key",
+                        httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    )
+                HttpStatus.INTERNAL_SERVER_ERROR ->
+                    NpgClientException(
+                        description = "NPG internal server error",
+                        httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    )
+                else ->
+                    NpgClientException(
+                        description = "NPG server error: ${it.statusCode}",
+                        httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    )
+            }
+        }
+    }
+
+    fun confirmPayment(
+        confirmPaymentRequest: ConfirmPaymentRequest,
+        correlationId: UUID
+    ): Mono<StateResponse> {
+        val response: Mono<StateResponse> =
+            try {
+                logger.info("confirmPayment with correlationId: $correlationId")
+                paymentServicesApi.apiBuildConfirmPaymentPost(correlationId, confirmPaymentRequest)
+            } catch (e: WebClientResponseException) {
+                Mono.error(e)
+            }
+        return response.onErrorMap(WebClientResponseException::class.java) {
+            logger.error(
+                "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                it
+            )
+            when (it.statusCode) {
+                HttpStatus.BAD_REQUEST ->
+                    NpgClientException(
+                        description = "Bad request",
+                        httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    )
+                HttpStatus.UNAUTHORIZED ->
+                    NpgClientException(
+                        description = "Misconfigured NPG api key",
+                        httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+                    )
+                HttpStatus.INTERNAL_SERVER_ERROR ->
+                    NpgClientException(
+                        description = "NPG internal server error",
+                        httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    )
+                else ->
+                    NpgClientException(
+                        description = "NPG server error: ${it.statusCode}",
+                        httpStatusCode = HttpStatus.BAD_GATEWAY,
+                    )
+            }
+        }
+    }
 }

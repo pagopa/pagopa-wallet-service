@@ -150,4 +150,17 @@ class WalletController(
             .collectList()
             .map { ResponseEntity.noContent().build() }
     }
+
+    override fun postWalletValidations(
+        walletId: UUID,
+        orderId: UUID,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
+        return walletService
+            .validateWallet(orderId, walletId)
+            .flatMap { (response, walletEvent) ->
+                walletEvent.saveEvents(loggingEventRepository).map { response }
+            }
+            .map { ResponseEntity.ok().body(it) }
+    }
 }
