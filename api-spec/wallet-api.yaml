@@ -400,8 +400,6 @@ components:
         type:
           type: string
           description: Wallet  verify request details discriminator field.
-          enum:
-            - CARD
         iframeUrl:
           type: string
           description: iframeUrl in order to run gdi check.
@@ -412,8 +410,6 @@ components:
         type:
           type: string
           description: Wallet  verify request details discriminator field.
-          enum:
-            - APM
         redirectUrl:
           type: string
           description: redirect url in order to continue verify.

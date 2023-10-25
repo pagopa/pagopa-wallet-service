@@ -189,116 +189,113 @@ class WalletService(
             walletId: UUID
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
         return walletRepository
-                .findById(walletId.toString())
-                .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-                .map { it.toDomain() }
-                .filter { it.status == WalletStatusDto.INITIALIZED }
-                .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
-                .flatMap {
-                    mono { npgSessionRedisTemplate.findById(orderId.toString()) }
-                            .map { session -> session to it }
-                }
-                .flatMap { (session, wallet) ->
-                    when (wallet.details) {
-                        is it.pagopa.wallet.domain.details.CardDetails ->
-                            npgClient
-                                    .getCardData(session.sessionId, UUID.randomUUID())
-                                    // .map { cardData -> cardData to wallet }
-                                    .flatMap {
-                                        npgClient
-                                                .confirmPayment(
-                                                        buildConfirmPaymentReqeust(session.sessionId),
-                                                        UUID.randomUUID()
-                                                )
-                                                .map { state -> state to it }
-                                    }
-                                    .flatMap { (state, cardData) ->
-                                        mono {
-                                            WalletVerifyRequestsResponseDto()
-                                                    .orderId(orderId)
-                                                    .details(
-                                                            WalletVerifyRequestCardDetailsDto()
-                                                                    .type(
-                                                                            "CARD"
-                                                                    )
-                                                                    .iframeUrl(state.url)
-                                                    )
-                                        }
-                                                .map { response -> response to cardData }
-                                    }
-                                    .map { (response, data) ->
-                                        response to
-                                                Wallet(
-                                                        wallet.id,
-                                                        wallet.userId,
-                                                        WalletStatusDto.INITIALIZED,
-                                                        wallet.creationDate,
-                                                        wallet.updateDate, // TODO update with auto increment with
-                                                        // CHK-2028
-                                                        wallet.paymentMethodId,
-                                                        wallet.paymentInstrumentId,
-                                                        wallet.applications,
-                                                        wallet.contractId,
-                                                        details =
-                                                        it.pagopa.wallet.domain.details.CardDetails(
-                                                                Bin(data.bin.orEmpty()),
-                                                                MaskedPan(
-                                                                        data.bin.orEmpty() +
-                                                                                ("*".repeat(
-                                                                                        16 -
-                                                                                                data.bin.orEmpty().length -
-                                                                                                data.lastFourDigits.orEmpty().length
-                                                                                )) +
-                                                                                data.lastFourDigits.orEmpty()
-                                                                ),
-                                                                ExpiryDate(data.expiringDate.orEmpty()),
-                                                                WalletCardDetailsDto.BrandEnum.valueOf(
-                                                                        data.circuit.orEmpty()
-                                                                ),
-                                                                CardHolderName("?")
-                                                        )
-                                                )
-                                    }
-
-                        else ->
-                            npgClient
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .map { it.toDomain() }
+            .filter { it.status == WalletStatusDto.INITIALIZED }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap {
+                mono { npgSessionRedisTemplate.findById(orderId.toString()) }
+                    .map { session -> session to it }
+            }
+            .flatMap { (session, wallet) ->
+                when (wallet.details) {
+                    is it.pagopa.wallet.domain.details.CardDetails ->
+                        npgClient
+                            .getCardData(session.sessionId, UUID.randomUUID())
+                            // .map { cardData -> cardData to wallet }
+                            .flatMap {
+                                npgClient
                                     .confirmPayment(
-                                            buildConfirmPaymentReqeust(session.sessionId),
-                                            UUID.randomUUID()
+                                        buildConfirmPaymentReqeust(session.sessionId),
+                                        UUID.randomUUID()
                                     )
-                                    .map {
+                                    .map { state -> state to it }
+                            }
+                            .flatMap { (state, cardData) ->
+                                mono {
                                         WalletVerifyRequestsResponseDto()
-                                                .orderId(orderId)
-                                                .details(
-                                                        WalletVerifyRequestAPMDetailsDto()
-                                                                .type("APM")
-                                                                .redirectUrl(it.url)
-                                                )
+                                            .orderId(orderId)
+                                            .details(
+                                                WalletVerifyRequestCardDetailsDto()
+                                                    .type("CARD")
+                                                    .iframeUrl(state.url)
+                                            )
                                     }
-                                    .map { response ->
-                                        response to
-                                                Wallet(
-                                                        wallet.id,
-                                                        wallet.userId,
-                                                        WalletStatusDto.INITIALIZED,
-                                                        wallet.creationDate,
-                                                        wallet.updateDate, // TODO update with auto increment with
-                                                        // CHK-2028
-                                                        wallet.paymentMethodId,
-                                                        wallet.paymentInstrumentId,
-                                                        wallet.applications,
-                                                        wallet.contractId,
-                                                        wallet.details
-                                                )
-                                    }
-                    }
+                                    .map { response -> response to cardData }
+                            }
+                            .map { (response, data) ->
+                                response to
+                                    Wallet(
+                                        wallet.id,
+                                        wallet.userId,
+                                        WalletStatusDto.VERIFIED,
+                                        wallet.creationDate,
+                                        wallet.updateDate, // TODO update with auto increment with
+                                        // CHK-2028
+                                        wallet.paymentMethodId,
+                                        wallet.paymentInstrumentId,
+                                        wallet.applications,
+                                        wallet.contractId,
+                                        details =
+                                            it.pagopa.wallet.domain.details.CardDetails(
+                                                Bin(data.bin.orEmpty()),
+                                                MaskedPan(
+                                                    data.bin.orEmpty() +
+                                                        ("*".repeat(
+                                                            16 -
+                                                                data.bin.orEmpty().length -
+                                                                data.lastFourDigits.orEmpty().length
+                                                        )) +
+                                                        data.lastFourDigits.orEmpty()
+                                                ),
+                                                ExpiryDate(data.expiringDate.orEmpty()),
+                                                WalletCardDetailsDto.BrandEnum.valueOf(
+                                                    data.circuit.orEmpty()
+                                                ),
+                                                CardHolderName("?")
+                                            )
+                                    )
+                            }
+                    else ->
+                        npgClient
+                            .confirmPayment(
+                                buildConfirmPaymentReqeust(session.sessionId),
+                                UUID.randomUUID()
+                            )
+                            .map {
+                                WalletVerifyRequestsResponseDto()
+                                    .orderId(orderId)
+                                    .details(
+                                        WalletVerifyRequestAPMDetailsDto()
+                                            .type("APM")
+                                            .redirectUrl(it.url)
+                                    )
+                            }
+                            .map { response ->
+                                response to
+                                    Wallet(
+                                        wallet.id,
+                                        wallet.userId,
+                                        WalletStatusDto.VERIFIED,
+                                        wallet.creationDate,
+                                        wallet.updateDate, // TODO update with auto increment with
+                                        // CHK-2028
+                                        wallet.paymentMethodId,
+                                        wallet.paymentInstrumentId,
+                                        wallet.applications,
+                                        wallet.contractId,
+                                        wallet.details
+                                    )
+                            }
                 }
-                .flatMap { (response, wallet) ->
-                    walletRepository.save(wallet.toDocument()).map { response to wallet }
-                }
-                .map { (response, wal) ->
-                    response to LoggedAction(wal, WalletDetailsAddedEvent(walletId.toString()))
-                }
+            }
+            .flatMap { (response, wallet) ->
+                walletRepository.save(wallet.toDocument()).map { response to wallet }
+            }
+            .map { (response, wal) ->
+                response to LoggedAction(wal, WalletDetailsAddedEvent(walletId.toString()))
+            }
     }
 
     private fun buildConfirmPaymentReqeust(sessionId: String): ConfirmPaymentRequest =
