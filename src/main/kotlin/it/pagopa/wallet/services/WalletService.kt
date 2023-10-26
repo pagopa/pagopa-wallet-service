@@ -98,12 +98,7 @@ class WalletService(
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
                         .build(
-                            Map.of(
-                                "orderId",
-                                orderId,
-                                "paymentMethodId",
-                                it.paymentMethodId.value
-                            )
+                            Map.of("orderId", orderId, "paymentMethodId", it.paymentMethodId.value)
                         )
 
                 npgClient

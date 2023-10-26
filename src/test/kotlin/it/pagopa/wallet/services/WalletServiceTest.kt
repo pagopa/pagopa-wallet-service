@@ -27,9 +27,11 @@ import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
+import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.Map
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -42,8 +44,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.net.URI
-import java.util.Map
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
@@ -115,9 +115,7 @@ class WalletServiceTest {
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 
-        val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
-                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
-         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
             val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
@@ -125,43 +123,7 @@ class WalletServiceTest {
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                        UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                                .build(
-                                        Map.of(
-                                                "orderId",
-                                                orderId,
-                                                "paymentMethodId",
-                                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument.paymentMethodId
-                                        )
-                                )
                 val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(Order()
-                                .orderId(orderId)
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                .customerId(customerId)
-                        ).paymentSession(
-                                   PaymentSession()
-                                           .actionType(ActionType.VERIFY)
-                                           .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                           .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                           .paymentService("CARDS")
-                                           .resultUrl(resultUrl.toString())
-                                           .cancelUrl(cancelUrl.toString())
-                                           .notificationUrl(notificationUrl.toString())
-                        )
-
                 val nggFields = Fields().sessionId(sessionId)
                 nggFields.fields.addAll(
                     listOf(
@@ -187,12 +149,53 @@ class WalletServiceTest {
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+                val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
+                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         walletDocumentWithSessionWallet.toDomain(),
                         SessionWalletAddedEvent(WALLET_UUID.value.toString())
                     )
+
+                val basePath = URI.create(sessionUrlConfig.basePath)
+                val merchantUrl = sessionUrlConfig.basePath
+                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+                val notificationUrl =
+                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                        .build(
+                            Map.of(
+                                "orderId",
+                                orderId,
+                                "paymentMethodId",
+                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+                                    .paymentMethodId
+                            )
+                        )
+
+                val npgCorrelationId = mockedUUID
+                val npgCreateHostedOrderRequest =
+                    CreateHostedOrderRequest()
+                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                        .merchantUrl(merchantUrl)
+                        .order(
+                            Order()
+                                .orderId(orderId)
+                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                .customerId(customerId)
+                        )
+                        .paymentSession(
+                            PaymentSession()
+                                .actionType(ActionType.VERIFY)
+                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                .paymentService("CARDS")
+                                .resultUrl(resultUrl.toString())
+                                .cancelUrl(cancelUrl.toString())
+                                .notificationUrl(notificationUrl.toString())
+                        )
 
                 given {
                         npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
