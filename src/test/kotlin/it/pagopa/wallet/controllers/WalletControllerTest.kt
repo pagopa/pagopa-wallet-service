@@ -6,15 +6,17 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.npg.model.Fields
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.generated.wallet.model.WalletVerifyRequestCardDetailsDto
+import it.pagopa.generated.wallet.model.WalletVerifyRequestsResponseDto
 import it.pagopa.generated.wallet.model.WalletsDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
+import it.pagopa.wallet.WalletTestUtils.walletDocumentWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
-import java.net.URI
-import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -29,18 +31,23 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
+import java.net.URI
+import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class WalletControllerTest {
-    @MockBean private lateinit var walletService: WalletService
+    @MockBean
+    private lateinit var walletService: WalletService
 
-    @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
+    @MockBean
+    private lateinit var loggingEventRepository: LoggingEventRepository
 
     private lateinit var walletController: WalletController
 
-    @Autowired private lateinit var webClient: WebTestClient
+    @Autowired
+    private lateinit var webClient: WebTestClient
 
     private val objectMapper =
         JsonMapper.builder()
@@ -52,11 +59,11 @@ class WalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         walletController =
-            WalletController(
-                walletService,
-                loggingEventRepository,
-                URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
-            )
+                WalletController(
+                        walletService,
+                        loggingEventRepository,
+                        URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+                )
     }
 
     @Test
@@ -64,23 +71,23 @@ class WalletControllerTest {
         /* preconditions */
 
         given { walletService.createWallet(any(), any(), any()) }
-            .willReturn(
-                mono {
-                    LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
-                }
-            )
+                .willReturn(
+                        mono {
+                            LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
+                        }
+                )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+                .willReturn(Flux.empty())
         /* test */
         webClient
-            .post()
-            .uri("/wallets")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
-            .exchange()
-            .expectStatus()
-            .isCreated
+                .post()
+                .uri("/wallets")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("x-user-id", UUID.randomUUID().toString())
+                .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+                .exchange()
+                .expectStatus()
+                .isCreated
     }
 
     @Test
@@ -89,48 +96,80 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val fields = Fields().sessionId(UUID.randomUUID().toString())
         fields.fields.addAll(
-            listOf(
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/h")
-                    .propertyClass("holder")
-                    .propertyClass("h")
-                    .type("type"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/p")
-                    .propertyClass("pan")
-                    .propertyClass("p")
-                    .type("type"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/c")
-                    .propertyClass("cvv")
-                    .propertyClass("c")
-                    .type("type")
-            )
+                listOf(
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/h")
+                                .propertyClass("holder")
+                                .propertyClass("h")
+                                .type("type"),
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/p")
+                                .propertyClass("pan")
+                                .propertyClass("p")
+                                .type("type"),
+                        Field()
+                                .id(UUID.randomUUID().toString())
+                                .src("https://test.it/c")
+                                .propertyClass("cvv")
+                                .propertyClass("c")
+                                .type("type")
+                )
         )
         given { walletService.createSessionWallet(walletId) }
-            .willReturn(
-                mono {
-                    Pair(
-                        fields,
-                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
-                    )
-                }
-            )
+                .willReturn(
+                        mono {
+                            Pair(
+                                    fields,
+                                    LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
+                            )
+                        }
+                )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+                .willReturn(Flux.empty())
         /* test */
         webClient
-            .post()
-            .uri("/wallets/${walletId}/sessions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
-            .exchange()
-            .expectStatus()
-            .isOk
+                .post()
+                .uri("/wallets/${walletId}/sessions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("x-user-id", UUID.randomUUID().toString())
+                .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+                .exchange()
+                .expectStatus()
+                .isOk
+    }
+
+    @Test
+    fun testValidateWallet() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = UUID.randomUUID()
+        val wallet = walletDocumentWithCardDetails("123456", "0000", "122030", "?", WalletCardDetailsDto.BrandEnum.MASTERCARD)
+        val response = WalletVerifyRequestsResponseDto().orderId(orderId).details(WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl"))
+        given { walletService.validateWallet(orderId, walletId) }
+                .willReturn(
+                        mono {
+                            Pair(
+                                    response,
+                                    LoggedAction(wallet.toDomain(), WalletDetailsAddedEvent(walletId.toString()))
+                            )
+                        }
+                )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+                .willReturn(Flux.empty())
+
+        val stringTest = objectMapper.writeValueAsString(response)
+        /* test */
+        webClient
+                .post()
+                .uri("/wallets/${walletId}/sessions/${orderId}/validations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .json(stringTest)
     }
 
     @Test
@@ -139,11 +178,11 @@ class WalletControllerTest {
         val walletId = WalletId(UUID.randomUUID())
         /* test */
         webClient
-            .delete()
-            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-            .exchange()
-            .expectStatus()
-            .isNoContent
+                .delete()
+                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+                .exchange()
+                .expectStatus()
+                .isNoContent
     }
 
     @Test
@@ -155,14 +194,14 @@ class WalletControllerTest {
         given { walletService.findWalletByUserId(userId) }.willReturn(mono { walletsDto })
         /* test */
         webClient
-            .get()
-            .uri("/wallets")
-            .header("x-user-id", userId.toString())
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .json(stringTest)
+                .get()
+                .uri("/wallets")
+                .header("x-user-id", userId.toString())
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .json(stringTest)
     }
 
     @Test
@@ -174,13 +213,13 @@ class WalletControllerTest {
         given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
         /* test */
         webClient
-            .get()
-            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .json(jsonToTest)
+                .get()
+                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .json(jsonToTest)
     }
 
     @Test
@@ -189,21 +228,21 @@ class WalletControllerTest {
         val walletId = WalletId(UUID.randomUUID())
 
         given { walletService.patchWallet(any(), any()) }
-            .willReturn(
-                mono {
-                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
-                }
-            )
+                .willReturn(
+                        mono {
+                            LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
+                        }
+                )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+                .willReturn(Flux.empty())
 
         /* test */
         webClient
-            .patch()
-            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-            .bodyValue(WalletTestUtils.FLUX_PATCH_SERVICES)
-            .exchange()
-            .expectStatus()
-            .isNoContent
+                .patch()
+                .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+                .bodyValue(WalletTestUtils.FLUX_PATCH_SERVICES)
+                .exchange()
+                .expectStatus()
+                .isNoContent
     }
 }
