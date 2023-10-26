@@ -38,8 +38,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.reactor.mono
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
@@ -332,6 +331,12 @@ class WalletServiceTest {
                 StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
                     .expectNext(Pair(verifyResponse, expectedLoggedAction))
                     .verifyComplete()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(
+                    walletDocumentToSave.details,
+                    CardDetails("CARDS", "123456", "123456******0000", "122030", "MASTERCARD", "?")
+                )
             }
         }
     }
@@ -405,6 +410,9 @@ class WalletServiceTest {
                 StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
                     .expectNext(Pair(verifyResponse, expectedLoggedAction))
                     .verifyComplete()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertNull(walletDocumentToSave.details)
             }
         }
     }
@@ -595,6 +603,9 @@ class WalletServiceTest {
                 StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
                     .expectError(ConfirmPaymentException::class.java)
                     .verify()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
             }
         }
     }
@@ -658,6 +669,9 @@ class WalletServiceTest {
                 StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
                     .expectError(ConfirmPaymentException::class.java)
                     .verify()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
             }
         }
     }

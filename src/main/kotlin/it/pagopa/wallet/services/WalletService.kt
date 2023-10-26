@@ -233,7 +233,15 @@ class WalletService(
                                         state.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN
                                     }
                                     .switchIfEmpty {
-                                        Mono.error(ConfirmPaymentException(wallet.id))
+                                        walletRepository
+                                            .save(
+                                                wallet
+                                                    .copy(status = WalletStatusDto.ERROR)
+                                                    .toDocument()
+                                            )
+                                            .flatMap {
+                                                Mono.error(ConfirmPaymentException(wallet.id))
+                                            }
                                     }
                                     .flatMap { (state, cardData) ->
                                         mono {
@@ -294,7 +302,15 @@ class WalletService(
                                     )
                                     .filter { it.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN }
                                     .switchIfEmpty {
-                                        Mono.error(ConfirmPaymentException(wallet.id))
+                                        walletRepository
+                                            .save(
+                                                wallet
+                                                    .copy(status = WalletStatusDto.ERROR)
+                                                    .toDocument()
+                                            )
+                                            .flatMap {
+                                                Mono.error(ConfirmPaymentException(wallet.id))
+                                            }
                                     }
                                     .map {
                                         WalletVerifyRequestsResponseDto()
