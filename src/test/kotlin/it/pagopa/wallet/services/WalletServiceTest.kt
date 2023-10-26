@@ -315,8 +315,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }
-                    .willAnswer { mono { npgSession } }
+                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }

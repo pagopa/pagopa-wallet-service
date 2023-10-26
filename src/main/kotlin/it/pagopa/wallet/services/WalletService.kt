@@ -190,8 +190,7 @@ class WalletService(
             walletId: UUID
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
         val correlationId = UUID.randomUUID()
-        return (npgSessionRedisTemplate.findById(orderId.toString()) as Mono<NpgSession>).flatMap {
-            session ->
+        return npgSessionRedisTemplate.findById(orderId.toString()).toMono().flatMap { session ->
             walletRepository
                 .findById(walletId.toString())
                 .map { wallet -> wallet to session }
