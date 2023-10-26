@@ -2,6 +2,7 @@ package it.pagopa.wallet.client
 
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.wallet.exception.NpgClientException
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -57,6 +58,49 @@ class NpgClientTest {
         StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
             .expectNext(fields)
             .verifyComplete()
+    }
+
+    @Test
+    fun `Should get card data successfully`() {
+        val cardDataResponse =
+            CardDataResponse()
+                .bin("123456")
+                .lastFourDigits("0000")
+                .expiringDate("122030")
+                .circuit(BrandEnum.MASTERCARD.name)
+
+        // prerequisite
+        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
+            .willReturn(mono { cardDataResponse })
+
+        // test and assertions
+        StepVerifier.create(npgClient.getCardData(sessionId, correlationId))
+            .expectNext(cardDataResponse)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
+        // prerequisite
+
+        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
+            .willThrow(
+                WebClientResponseException.create(
+                    500,
+                    "statusText",
+                    HttpHeaders.EMPTY,
+                    ByteArray(0),
+                    StandardCharsets.UTF_8
+                )
+            )
+
+        // test and assertions
+        StepVerifier.create(npgClient.getCardData(sessionId, correlationId))
+            .expectErrorMatches {
+                it as NpgClientException
+                it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
+            }
+            .verify()
     }
 
     @Test

@@ -13,7 +13,8 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-import it.pagopa.wallet.WalletTestUtils.walletDocumentWithCardDetails
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.*
@@ -23,7 +24,7 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
@@ -245,7 +246,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should validate wallet`() {
+    fun `should validate wallet with card data`() {
         /* preconditions */
 
         val mockedUUID = WALLET_UUID.value
@@ -285,7 +286,7 @@ class WalletServiceTest {
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
 
                 val walletDocumentWithCardDetails =
-                    walletDocumentWithCardDetails(
+                    walletDocumentVerifiedWithCardDetails(
                         "123456",
                         "0000",
                         "122030",
@@ -328,6 +329,330 @@ class WalletServiceTest {
                 StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
                     .expectNext(Pair(verifyResponse, expectedLoggedAction))
                     .verifyComplete()
+            }
+        }
+    }
+
+    @Test
+    fun `should validate wallet with APM`() {
+        /* preconditions */
+
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val sessionId = UUID.randomUUID().toString()
+                val npgCorrelationId = mockedUUID
+                val orderId = UUID.randomUUID()
+
+                val npgStateResponse =
+                    StateResponse()
+                        .state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
+                        .url("http://state.url")
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+                val verifyResponse =
+                    WalletVerifyRequestsResponseDto()
+                        .orderId(orderId)
+                        .details(
+                            WalletVerifyRequestAPMDetailsDto()
+                                .type("APM")
+                                .redirectUrl(npgStateResponse.url)
+                        )
+
+                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                val walletDocumentVerifiedWithAPM = walletDocumentVerifiedWithAPM()
+
+                val expectedLoggedAction =
+                    LoggedAction(
+                        walletDocumentVerifiedWithAPM.toDomain(),
+                        WalletDetailsAddedEvent(WALLET_UUID.value.toString())
+                    )
+
+                given {
+                        npgClient.confirmPayment(
+                            ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                            npgCorrelationId
+                        )
+                    }
+                    .willAnswer { mono { npgStateResponse } }
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocumentWithSessionWallet))
+
+                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willAnswer { Mono.just(it.arguments[0]) }
+
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                    .willAnswer { mono { PaymentMethodResponse().name("PAYPAL") } }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectNext(Pair(verifyResponse, expectedLoggedAction))
+                    .verifyComplete()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws SessionNotFoundException`() {
+        /* preconditions */
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val orderId = UUID.randomUUID()
+
+                given { npgSessionRedisTemplate.findById(orderId.toString()) }.willAnswer { null }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(SessionNotFoundException::class.java)
+                    .verify()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws WalletNotFoundException`() {
+        /* preconditions */
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val orderId = UUID.randomUUID()
+                val sessionId = "sessionId"
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+
+                given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+
+                given { npgSessionRedisTemplate.findById(orderId.toString()) }
+                    .willAnswer { npgSession }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(WalletNotFoundException::class.java)
+                    .verify()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws WalletSessionMismatchException`() {
+        /* preconditions */
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val orderId = UUID.randomUUID()
+                val sessionId = "sessionId"
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", "testWalletIdWrong")
+
+                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(mono { walletDocumentWithSessionWallet })
+
+                given { npgSessionRedisTemplate.findById(orderId.toString()) }
+                    .willAnswer { npgSession }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(WalletSessionMismatchException::class.java)
+                    .verify()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws WalletConflictStatusException`() {
+        /* preconditions */
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val orderId = UUID.randomUUID()
+                val sessionId = "sessionId"
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", WALLET_DOCUMENT.id)
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(mono { WALLET_DOCUMENT })
+
+                given { npgSessionRedisTemplate.findById(orderId.toString()) }
+                    .willAnswer { npgSession }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(WalletConflictStatusException::class.java)
+                    .verify()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws ConfirmPaymentException with card data`() {
+        /* preconditions */
+
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val sessionId = UUID.randomUUID().toString()
+                val npgCorrelationId = mockedUUID
+                val orderId = UUID.randomUUID()
+                val npgGetCardDataResponse =
+                    CardDataResponse()
+                        .bin("123456")
+                        .expiringDate("122030")
+                        .lastFourDigits("0000")
+                        .circuit("MASTERCARD")
+                val npgStateResponse =
+                    StateResponse().state(State.READY_FOR_PAYMENT).url("http://state.url")
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+
+                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                given { npgClient.getCardData(sessionId, npgCorrelationId) }
+                    .willAnswer { mono { npgGetCardDataResponse } }
+
+                given {
+                        npgClient.confirmPayment(
+                            ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                            npgCorrelationId
+                        )
+                    }
+                    .willAnswer { mono { npgStateResponse } }
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocumentWithSessionWallet))
+
+                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willAnswer { Mono.just(it.arguments[0]) }
+
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                    .willAnswer { mono { PaymentMethodResponse().name("CARDS") } }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(ConfirmPaymentException::class.java)
+                    .verify()
+            }
+        }
+    }
+
+    @Test
+    fun `validate should throws ConfirmPaymentException with apm`() {
+        /* preconditions */
+
+        val mockedUUID = WALLET_UUID.value
+        val mockedInstant = Instant.now()
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val sessionId = UUID.randomUUID().toString()
+                val npgCorrelationId = mockedUUID
+                val orderId = UUID.randomUUID()
+                val npgGetCardDataResponse =
+                    CardDataResponse()
+                        .bin("123456")
+                        .expiringDate("122030")
+                        .lastFourDigits("0000")
+                        .circuit("MASTERCARD")
+                val npgStateResponse =
+                    StateResponse().state(State.READY_FOR_PAYMENT).url("http://state.url")
+
+                val npgSession =
+                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+
+                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+
+                given { npgClient.getCardData(sessionId, npgCorrelationId) }
+                    .willAnswer { mono { npgGetCardDataResponse } }
+
+                given {
+                        npgClient.confirmPayment(
+                            ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                            npgCorrelationId
+                        )
+                    }
+                    .willAnswer { mono { npgStateResponse } }
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocumentWithSessionWallet))
+
+                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willAnswer { Mono.just(it.arguments[0]) }
+
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                    .willAnswer { mono { PaymentMethodResponse().name("PAYPAL") } }
+
+                /* test */
+
+                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                    .expectError(ConfirmPaymentException::class.java)
+                    .verify()
             }
         }
     }

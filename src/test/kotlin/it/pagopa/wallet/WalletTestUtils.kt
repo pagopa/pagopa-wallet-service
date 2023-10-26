@@ -59,7 +59,7 @@ object WalletTestUtils {
         )
     }
 
-    fun walletDocumentWithCardDetails(
+    fun walletDocumentVerifiedWithCardDetails(
         bin: String,
         lastFourDigits: String,
         expiryDate: String,
@@ -85,6 +85,22 @@ object WalletTestUtils {
                 brandEnum.name,
                 holderName
             )
+        )
+    }
+
+    fun walletDocumentVerifiedWithAPM(): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.VERIFIED.name,
+            creationDate,
+            creationDate,
+            PAYMENT_METHOD_ID.value.toString(),
+            null,
+            CONTRACT_ID.contractId,
+            listOf(),
+            null
         )
     }
 

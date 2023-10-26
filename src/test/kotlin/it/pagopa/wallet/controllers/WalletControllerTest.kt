@@ -12,7 +12,7 @@ import it.pagopa.generated.wallet.model.WalletVerifyRequestsResponseDto
 import it.pagopa.generated.wallet.model.WalletsDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
-import it.pagopa.wallet.WalletTestUtils.walletDocumentWithCardDetails
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -143,7 +143,7 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = UUID.randomUUID()
         val wallet =
-            walletDocumentWithCardDetails(
+            walletDocumentVerifiedWithCardDetails(
                 "123456",
                 "0000",
                 "122030",
