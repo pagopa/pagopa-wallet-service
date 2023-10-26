@@ -1,9 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.npg.model.CreateHostedOrderRequest
-import it.pagopa.generated.npg.model.Field
-import it.pagopa.generated.npg.model.Fields
-import it.pagopa.generated.npg.model.Order
+import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
@@ -22,6 +19,7 @@ import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
@@ -39,22 +37,34 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
+import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.net.URI
+import java.util.Map
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
+    private val sessionUrlConfig =
+        SessionUrlConfig(
+            "http://localhost:1234",
+            "/esito",
+            "/annulla",
+            "https://localhost/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+        )
 
     private val walletService: WalletService =
         WalletService(
             walletRepository,
             ecommercePaymentMethodsClient,
             npgClient,
-            npgSessionRedisTemplate
+            npgSessionRedisTemplate,
+            sessionUrlConfig
         )
 
     private val mockedUUID = UUID.randomUUID()
@@ -102,24 +112,56 @@ class WalletServiceTest {
     @Test
     fun `should create wallet session`() {
         /* preconditions */
-
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+        val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
+                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
+         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
+            val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
+                val basePath = URI.create(sessionUrlConfig.basePath)
+                val merchantUrl = sessionUrlConfig.basePath
+                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+                val notificationUrl =
+                        UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                                .build(
+                                        Map.of(
+                                                "orderId",
+                                                orderId,
+                                                "paymentMethodId",
+                                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument.paymentMethodId
+                                        )
+                                )
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID().toString()
                 val npgCreateHostedOrderRequest =
                     CreateHostedOrderRequest()
-                        .version("2")
-                        .merchantUrl("https://test")
-                        .order(Order())
+                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                        .merchantUrl(merchantUrl)
+                        .order(Order()
+                                .orderId(orderId)
+                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                .customerId(customerId)
+                        ).paymentSession(
+                                   PaymentSession()
+                                           .actionType(ActionType.VERIFY)
+                                           .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                           .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                           .paymentService("CARDS")
+                                           .resultUrl(resultUrl.toString())
+                                           .cancelUrl(cancelUrl.toString())
+                                           .notificationUrl(notificationUrl.toString())
+                        )
+
                 val nggFields = Fields().sessionId(sessionId)
                 nggFields.fields.addAll(
                     listOf(
@@ -143,8 +185,6 @@ class WalletServiceTest {
 
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
-                val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
-                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
 
@@ -171,7 +211,7 @@ class WalletServiceTest {
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
 
                 /* test */
-
+                Hooks.onOperatorDebug()
                 StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
                     .expectNext(Pair(nggFields, expectedLoggedAction))
                     .verifyComplete()
