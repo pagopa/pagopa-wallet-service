@@ -214,8 +214,8 @@ class WalletService(
                         val wallet = wallet_session_method.t1
                         val session = wallet_session_method.t2
                         val method = wallet_session_method.t3
-                        when (method.name) {
-                            "CARDS" ->
+                        when (method.paymentTypeCode) {
+                            "CP" ->
                                 npgClient
                                     .getCardData(session.sessionId, correlationId)
                                     // .map { cardData -> cardData to wallet }
@@ -252,7 +252,7 @@ class WalletService(
                                             Wallet(
                                                 wallet.id,
                                                 wallet.userId,
-                                                WalletStatusDto.VERIFIED,
+                                                WalletStatusDto.VALIDATION_REQUESTED,
                                                 wallet.creationDate,
                                                 wallet
                                                     .updateDate, // TODO update with auto increment
@@ -310,12 +310,11 @@ class WalletService(
                                             Wallet(
                                                 wallet.id,
                                                 wallet.userId,
-                                                WalletStatusDto.VERIFIED,
+                                                WalletStatusDto.VALIDATION_REQUESTED,
                                                 wallet.creationDate,
                                                 wallet
                                                     .updateDate, // TODO update with auto increment
-                                                // with
-                                                // CHK-2028
+                                                // with CHK-2028
                                                 wallet.paymentMethodId,
                                                 wallet.paymentInstrumentId,
                                                 wallet.applications,

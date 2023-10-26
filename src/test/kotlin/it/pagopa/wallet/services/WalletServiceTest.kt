@@ -4,12 +4,13 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
+import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
+import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
@@ -104,7 +105,7 @@ class WalletServiceTest {
                         walletService.createWallet(
                             listOf(SERVICE_NAME),
                             USER_ID.id,
-                            PAYMENT_METHOD_ID.value
+                            PAYMENT_METHOD_ID_CARDS.value
                         )
                     )
                     .expectNext(expectedLoggedAction)
@@ -322,7 +323,9 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { PaymentMethodResponse().name("CARDS") } }
+                    .willAnswer {
+                        mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
+                    }
 
                 /* test */
 
@@ -395,7 +398,7 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { PaymentMethodResponse().name("PAYPAL") } }
+                    .willAnswer { mono { getValidAPMPaymentMethod() } }
 
                 /* test */
 
@@ -583,7 +586,9 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { PaymentMethodResponse().name("CARDS") } }
+                    .willAnswer {
+                        mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
+                    }
 
                 /* test */
 
@@ -646,7 +651,7 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { PaymentMethodResponse().name("PAYPAL") } }
+                    .willAnswer { mono { getValidAPMPaymentMethod() } }
 
                 /* test */
 

@@ -457,9 +457,9 @@ components:
       type: string
       description: Enumeration of wallet statuses
       enum:
-        - INITIALIZED
         - CREATED
-        - VERIFIED
+        - INITIALIZED
+        - VALIDATION_REQUESTED
         - DELETED
         - ERROR
     WalletCardDetails:

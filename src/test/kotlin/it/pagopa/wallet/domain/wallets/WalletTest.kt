@@ -19,7 +19,7 @@ class WalletTest {
                 WalletStatusDto.CREATED,
                 Instant.now(),
                 Instant.now(),
-                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(),
                 WalletTestUtils.CONTRACT_ID,
@@ -37,7 +37,7 @@ class WalletTest {
                 WalletStatusDto.CREATED,
                 Instant.now(),
                 Instant.now(),
-                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
                     Application(
@@ -63,7 +63,7 @@ class WalletTest {
                 WalletStatusDto.CREATED,
                 Instant.now(),
                 Instant.now(),
-                WalletTestUtils.PAYMENT_METHOD_ID,
+                WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
                     Application(
