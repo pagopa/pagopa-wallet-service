@@ -90,6 +90,7 @@ class WalletService(
     }
 
     fun createSessionWallet(walletId: UUID): Mono<Pair<Fields, LoggedAction<Wallet>>> {
+        val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
@@ -102,7 +103,6 @@ class WalletService(
                     .map { paymentMethod -> paymentMethod to it }
             }
             .flatMap { (paymentMethod, wallet) ->
-                val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
@@ -167,13 +167,7 @@ class WalletService(
                 npgSessionRedisTemplate
                     .save(
                         NpgSession(
-                            UUID.randomUUID()
-                                .toString()
-                                .replace("-", "")
-                                .substring(
-                                    0,
-                                    15
-                                ), // TODO Replace with orderId algorithm result when available
+                            orderId,
                             hostedOrderResponse.sessionId,
                             hostedOrderResponse.securityToken.toString(),
                             wallet.id.value.toString()
