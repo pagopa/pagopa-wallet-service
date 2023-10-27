@@ -17,6 +17,7 @@ import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import it.pagopa.wallet.exception.WalletConflictStatusException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
@@ -29,6 +30,7 @@ import java.util.*
 import java.util.Map
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
@@ -89,6 +91,19 @@ class WalletService(
             .filter { it.status == WalletStatusDto.CREATED }
             .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
             .flatMap {
+                ecommercePaymentMethodsClient
+                    .getPaymentMethodById(it.paymentMethodId.value.toString())
+                    .map { paymentMethod -> paymentMethod to it }
+            }
+            .switchIfEmpty {
+                Mono.error(
+                    EcommercePaymentMethodException(
+                        "Payment method id not found",
+                        HttpStatus.NOT_FOUND
+                    )
+                )
+            }
+            .flatMap {
                 val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -97,9 +112,7 @@ class WalletService(
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            Map.of("orderId", orderId, "paymentMethodId", it.paymentMethodId.value)
-                        )
+                        .build(Map.of("orderId", orderId, "paymentMethodId", it.first.id))
 
                 npgClient
                     .createNpgOrderBuild(
@@ -120,16 +133,13 @@ class WalletService(
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                     .captureType(CaptureType.IMPLICIT)
-                                    .paymentService(
-                                        "CARDS"
-                                    ) // execute call for retrieve by payment method id the service
-                                    // name (GET payment method by id)
+                                    .paymentService(it.first.name)
                                     .resultUrl(resultUrl.toString())
                                     .cancelUrl(cancelUrl.toString())
                                     .notificationUrl(notificationUrl.toString())
                             )
                     )
-                    .map { hostedOrderResponse -> hostedOrderResponse to it }
+                    .map { hostedOrderResponse -> hostedOrderResponse to it.second }
             }
             .map { (hostedOrderResponse, wallet) ->
                 hostedOrderResponse to
