@@ -65,7 +65,7 @@ microservice-chart:
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
-    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0/psp/api/v1"
+    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
