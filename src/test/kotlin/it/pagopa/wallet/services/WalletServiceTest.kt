@@ -191,6 +191,14 @@ class WalletServiceTest {
                         .paymentSession(
                             PaymentSession()
                                 .actionType(ActionType.VERIFY)
+                                .recurrence(
+                                    RecurringSettings()
+                                        .action(RecurringAction.CONTRACT_CREATION)
+                                        .contractId(
+                                            WalletService.CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID
+                                        )
+                                        .contractType(RecurringContractType.CIT)
+                                )
                                 .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                 .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                 .captureType(CaptureType.IMPLICIT)

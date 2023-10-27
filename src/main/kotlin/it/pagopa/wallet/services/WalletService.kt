@@ -52,6 +52,7 @@ class WalletService(
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
         const val CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA = "ITA"
+        const val CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID = "xxx"
     }
     fun createWallet(
         serviceList: List<ServiceName>,
@@ -130,6 +131,12 @@ class WalletService(
                             .paymentSession(
                                 PaymentSession()
                                     .actionType(ActionType.VERIFY)
+                                    .recurrence(
+                                        RecurringSettings()
+                                            .action(RecurringAction.CONTRACT_CREATION)
+                                            .contractId(CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID)
+                                            .contractType(RecurringContractType.CIT)
+                                    )
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                     .captureType(CaptureType.IMPLICIT)
