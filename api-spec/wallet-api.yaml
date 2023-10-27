@@ -242,7 +242,7 @@ paths:
     post:
       tags:
         - wallets
-      summary: Create new validation requests given a inizialized wallet
+      summary: Create new validation request given a initialized wallet
       description: This endpoint returns an object with a url to which to redirect in case of APM or a url on which to build an iframe for GDI check.
       operationId: postWalletValidations
       security:
