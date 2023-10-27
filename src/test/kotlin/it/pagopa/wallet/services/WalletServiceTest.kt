@@ -2,7 +2,6 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
-import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
@@ -34,9 +33,6 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.Map
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -130,11 +126,7 @@ class WalletServiceTest {
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
                 val orderId = UUID.randomUUID().toString()
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version("2")
-                        .merchantUrl("https://test")
-                        .order(Order())
+
                 val nggFields = Fields().sessionId(sessionId)
                 nggFields.fields.addAll(
                     listOf(
@@ -162,7 +154,7 @@ class WalletServiceTest {
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-                        NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+                NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
@@ -188,7 +180,6 @@ class WalletServiceTest {
                             )
                         )
 
-                val npgCorrelationId = mockedUUID
                 val npgCreateHostedOrderRequest =
                     CreateHostedOrderRequest()
                         .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)

@@ -70,7 +70,7 @@ class NpgClientTest {
                 .circuit(BrandEnum.MASTERCARD.name)
 
         // prerequisite
-        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
+        given(paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
             .willReturn(mono { cardDataResponse })
 
         // test and assertions
@@ -83,7 +83,7 @@ class NpgClientTest {
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
         // prerequisite
 
-        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
+        given(paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -111,7 +111,7 @@ class NpgClientTest {
 
         // prerequisite
         given(
-                paymentServicesApi.apiBuildConfirmPaymentPost(
+                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
                     correlationId,
                     ConfirmPaymentRequest().amount("0").sessionId(sessionId)
                 )
@@ -129,7 +129,12 @@ class NpgClientTest {
         // prerequisite
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
 
-        given(paymentServicesApi.apiBuildConfirmPaymentPost(correlationId, confirmPaymentRequest))
+        given(
+                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
+                    correlationId,
+                    confirmPaymentRequest
+                )
+            )
             .willThrow(
                 WebClientResponseException.create(
                     500,
