@@ -191,6 +191,7 @@ class WalletServiceTest {
                                 .actionType(ActionType.VERIFY)
                                 .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                 .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                .captureType(CaptureType.IMPLICIT)
                                 .paymentService("CARDS")
                                 .resultUrl(resultUrl.toString())
                                 .cancelUrl(cancelUrl.toString())

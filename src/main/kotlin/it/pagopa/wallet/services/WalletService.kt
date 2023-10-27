@@ -119,6 +119,7 @@ class WalletService(
                                     .actionType(ActionType.VERIFY)
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                    .captureType(CaptureType.IMPLICIT)
                                     .paymentService(
                                         "CARDS"
                                     ) // execute call for retrieve by payment method id the service
