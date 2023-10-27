@@ -1,32 +1,36 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.npg.model.CreateHostedOrderRequest
-import it.pagopa.generated.npg.model.Fields
-import it.pagopa.generated.npg.model.Order
+import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.SessionWalletAddedEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
-import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.PaymentMethodId
+import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.domain.wallets.Wallet
+import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.WalletConflictStatusException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
+import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.Map
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
@@ -38,10 +42,19 @@ class WalletService(
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
+    @Autowired private val sessionUrlConfig: SessionUrlConfig
 ) {
 
+    companion object {
+        const val CREATE_HOSTED_ORDER_REQUEST_VERSION: String = "2"
+        const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
+        const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
+        const val CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA = "ITA"
+        const val CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID = "xxx"
+    }
+
     fun createWallet(
-        serviceList: List<it.pagopa.wallet.domain.services.ServiceName>,
+        serviceList: List<ServiceName>,
         userId: UUID,
         paymentMethodId: UUID
     ): Mono<LoggedAction<Wallet>> {
@@ -78,15 +91,53 @@ class WalletService(
             .filter { it.status == WalletStatusDto.CREATED }
             .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
             .flatMap {
+                ecommercePaymentMethodsClient
+                    .getPaymentMethodById(it.paymentMethodId.value.toString())
+                    .map { paymentMethod -> paymentMethod to it }
+            }
+            .flatMap { (paymentMethod, wallet) ->
+                val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
+                val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
+                val basePath = URI.create(sessionUrlConfig.basePath)
+                val merchantUrl = sessionUrlConfig.basePath
+                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+                val notificationUrl =
+                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                        .build(Map.of("orderId", orderId, "paymentMethodId", paymentMethod.id))
+
                 npgClient
                     .createNpgOrderBuild(
                         UUID.randomUUID(),
                         CreateHostedOrderRequest()
-                            .version("2")
-                            .merchantUrl("https://test")
-                            .order(Order())
+                            .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                            .merchantUrl(merchantUrl)
+                            .order(
+                                Order()
+                                    .orderId(orderId)
+                                    .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                    .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                    .customerId(customerId)
+                            )
+                            .paymentSession(
+                                PaymentSession()
+                                    .actionType(ActionType.VERIFY)
+                                    .recurrence(
+                                        RecurringSettings()
+                                            .action(RecurringAction.CONTRACT_CREATION)
+                                            .contractId(CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID)
+                                            .contractType(RecurringContractType.CIT)
+                                    )
+                                    .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                    .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                    .captureType(CaptureType.IMPLICIT)
+                                    .paymentService(paymentMethod.name)
+                                    .resultUrl(resultUrl.toString())
+                                    .cancelUrl(cancelUrl.toString())
+                                    .notificationUrl(notificationUrl.toString())
+                            )
                     )
-                    .map { hostedOrderResponse -> hostedOrderResponse to it }
+                    .map { hostedOrderResponse -> hostedOrderResponse to wallet }
             }
             .map { (hostedOrderResponse, wallet) ->
                 hostedOrderResponse to
