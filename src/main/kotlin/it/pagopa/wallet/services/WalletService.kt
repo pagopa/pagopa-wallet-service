@@ -27,7 +27,6 @@ import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
-import java.util.Map
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +35,6 @@ import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
-import reactor.util.function.Tuples
 
 @Service
 @Slf4j
@@ -106,7 +104,12 @@ class WalletService(
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(Map.of("orderId", orderId, "paymentMethodId", paymentMethod.id))
+                        .build(
+                            mapOf(
+                                Pair("orderId", orderId),
+                                Pair("paymentMethodId", paymentMethod.id)
+                            )
+                        )
 
                 npgClient
                     .createNpgOrderBuild(
@@ -201,44 +204,35 @@ class WalletService(
                             WalletSessionMismatchException(session.sessionId, WalletId(walletId))
                         )
                     }
-                    .map { wallet -> wallet to session }
-                    .map { (wallet, session) -> Pair(wallet.toDomain(), session) }
-                    .filter { (wallet) -> wallet.status == WalletStatusDto.INITIALIZED }
+                    .filter { it.status == WalletStatusDto.INITIALIZED.value }
                     .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
-                    .flatMap { (wallet, session) ->
+                    .flatMap { wallet ->
                         ecommercePaymentMethodsClient
-                            .getPaymentMethodById(wallet.paymentMethodId.toString())
-                            .map { method -> Tuples.of(wallet, session, method) }
-                    }
-                    .flatMap { wallet_session_method ->
-                        val wallet = wallet_session_method.t1
-                        val session = wallet_session_method.t2
-                        val method = wallet_session_method.t3
-                        when (method.paymentTypeCode) {
-                                "CP" ->
-                                    confirmPaymentCard(
-                                        session.sessionId,
-                                        correlationId,
-                                        orderId,
-                                        wallet
-                                    )
-                                else ->
-                                    confirmPaymentAPM(
-                                        session.sessionId,
-                                        correlationId,
-                                        orderId,
-                                        wallet
-                                    )
-                            }
-                            .flatMap { (response, wallet) ->
-                                walletRepository.save(wallet.toDocument()).map {
-                                    response to wallet
+                            .getPaymentMethodById(wallet.paymentMethodId)
+                            .flatMap {
+                                when (it.paymentTypeCode) {
+                                    "CP" ->
+                                        confirmPaymentCard(
+                                            session.sessionId,
+                                            correlationId,
+                                            orderId,
+                                            wallet.toDomain()
+                                        )
+                                    else ->
+                                        confirmPaymentAPM(
+                                            session.sessionId,
+                                            correlationId,
+                                            orderId,
+                                            wallet.toDomain()
+                                        )
                                 }
                             }
-                            .map { (response, wal) ->
-                                response to
-                                    LoggedAction(wal, WalletDetailsAddedEvent(walletId.toString()))
-                            }
+                    }
+                    .flatMap { (response, wallet) ->
+                        walletRepository.save(wallet.toDocument()).map { response to wallet }
+                    }
+                    .map { (response, wal) ->
+                        response to LoggedAction(wal, WalletDetailsAddedEvent(walletId.toString()))
                     }
             }
     }
@@ -300,7 +294,12 @@ class WalletService(
                     )
             }
 
-    fun confirmPaymentAPM(sessionId: String, correlationId: UUID, orderId: UUID, wallet: Wallet) =
+    fun confirmPaymentAPM(
+        sessionId: String,
+        correlationId: UUID,
+        orderId: UUID,
+        wallet: Wallet
+    ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
         npgClient
             .confirmPayment(ConfirmPaymentRequest().sessionId(sessionId).amount("0"), correlationId)
             .filter { it.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN }

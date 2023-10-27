@@ -32,7 +32,6 @@ import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
-import java.util.Map
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -167,12 +166,13 @@ class WalletServiceTest {
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
                         .build(
-                            Map.of(
-                                "orderId",
-                                orderId,
-                                "paymentMethodId",
-                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-                                    .paymentMethodId
+                            mapOf(
+                                Pair("orderId", orderId),
+                                Pair(
+                                    "paymentMethodId",
+                                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+                                        .paymentMethodId
+                                )
                             )
                         )
 
