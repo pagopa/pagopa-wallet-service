@@ -112,13 +112,14 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
-        // TODO To be implemented
-        return mono { ResponseEntity.ok().build() }
+        return walletService.findWallet(walletId).map { ResponseEntity.ok(it) }
     }
 
-    override fun getWalletsByIdUser(exchange: ServerWebExchange): Mono<ResponseEntity<WalletsDto>> {
-        // TODO To be implemented
-        return mono { ResponseEntity.ok().build() }
+    override fun getWalletsByIdUser(
+        xUserId: UUID,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletsDto>> {
+        return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
     /*

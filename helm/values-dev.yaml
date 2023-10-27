@@ -65,14 +65,17 @@ microservice-chart:
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
-    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0/psp/api/v1"
+    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
     ECS_SERVICE_ENVIRONMENT: "dev"
-    # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WEBVIEW_PAYMENT_WALLET_URL: https://dev.payment-wallet.pagopa.it/onboarding
+    SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it/"
+    SESSION_URL_OUTCOME_SUFFIX: "/esito"
+    SESSION_URL_CANCEL_SUFFIX: "/cancel"
+    SESSION_URL_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key

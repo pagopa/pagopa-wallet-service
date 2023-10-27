@@ -13,6 +13,8 @@ import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 import org.springframework.http.HttpStatus
 
@@ -47,8 +49,6 @@ object WalletTestUtils {
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.INITIALIZED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -88,8 +88,6 @@ object WalletTestUtils {
             WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             null,
@@ -184,8 +182,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            Instant.now(),
-            Instant.now(),
             PAYMENT_METHOD_ID,
             null,
             listOf(),
@@ -207,6 +203,24 @@ object WalletTestUtils {
             null
         )
     }
+
+    fun walletInfoDto() =
+        WalletInfoDto()
+            .walletId(WALLET_UUID.value)
+            .status(WalletStatusDto.CREATED)
+            .creationDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
+            .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
+            .paymentMethodId(PAYMENT_METHOD_ID.value.toString())
+            .userId(USER_ID.id.toString())
+            .services(listOf())
+            .details(
+                WalletCardDetailsDto()
+                    .maskedPan(MASKED_PAN.maskedPan)
+                    .bin(BIN.bin)
+                    .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                    .expiryDate(EXP_DATE.expDate)
+                    .holder(HOLDER_NAME.holderName)
+            )
 
     val SERVICE_DOCUMENT: Service =
         Service(

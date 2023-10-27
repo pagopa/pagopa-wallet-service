@@ -68,8 +68,17 @@ paths:
       tags:
         - wallets
       summary: Get wallet by user identifier
-      description: Returns a of wallets related to user
+      description: Returns a list of wallets related to user
       operationId: getWalletsByIdUser
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: header
+          name: x-user-id
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Wallet retrieved successfully
@@ -481,11 +490,6 @@ components:
         paymentMethodId:
           description: Payment method identifier
           type: string
-        contractId:
-          description: >-
-            User contract identifier to be used with payment instrument to make
-            a new payment
-          type: string
         status:
           $ref: '#/components/schemas/WalletStatus'
         creationDate:
@@ -504,7 +508,7 @@ components:
         details:
           description: >-
             details for the specific payment instrument. This field is
-            disciminated by the type field
+            discriminated by the type field
           type: object
           oneOf:
             - $ref: '#/components/schemas/WalletCardDetails'
@@ -520,7 +524,6 @@ components:
         - userId
         - status
         - creationDate
-        - contractId
         - updateDate
         - type
         - services

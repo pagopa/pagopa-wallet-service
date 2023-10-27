@@ -27,7 +27,7 @@ class NpgClient(
         val response: Mono<Fields> =
             try {
                 logger.info("Sending orderBuild with correlationId: $correlationId")
-                paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest)
+                paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
