@@ -70,7 +70,6 @@ microservice-chart:
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
     ECS_SERVICE_ENVIRONMENT: "dev"
-    # TODO: Fill
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WEBVIEW_PAYMENT_WALLET_URL: https://dev.payment-wallet.pagopa.it/onboarding
     SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it/"
