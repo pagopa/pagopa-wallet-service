@@ -2,6 +2,10 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.audit.LoggedAction
+import it.pagopa.wallet.audit.SessionWalletAddedEvent
+import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletPatchEvent
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
@@ -19,7 +23,8 @@ import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.*
+import it.pagopa.wallet.exception.WalletConflictStatusException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
@@ -28,7 +33,6 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.Map
-import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

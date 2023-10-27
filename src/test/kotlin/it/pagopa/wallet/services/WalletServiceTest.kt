@@ -118,14 +118,12 @@ class WalletServiceTest {
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
+            val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
             val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
-
                 val nggFields = Fields().sessionId(sessionId)
                 nggFields.fields.addAll(
                         listOf(
@@ -147,13 +145,12 @@ class WalletServiceTest {
                         )
                 )
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                        .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 val npgSession =
-                        NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-                NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                         walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
@@ -168,47 +165,48 @@ class WalletServiceTest {
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
-                        UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                                .build(
-                                        Map.of(
-                                                "orderId",
-                                                orderId,
-                                                "paymentMethodId",
-                                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-                                                        .paymentMethodId
-                                        )
-                                )
+                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                        .build(
+                            Map.of(
+                                "orderId",
+                                orderId,
+                                "paymentMethodId",
+                                walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+                                    .paymentMethodId
+                            )
+                        )
 
+                val npgCorrelationId = mockedUUID
                 val npgCreateHostedOrderRequest =
-                        CreateHostedOrderRequest()
-                                .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                                .merchantUrl(merchantUrl)
-                                .order(
-                                        Order()
-                                                .orderId(orderId)
-                                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                                .customerId(customerId)
+                    CreateHostedOrderRequest()
+                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                        .merchantUrl(merchantUrl)
+                        .order(
+                            Order()
+                                .orderId(orderId)
+                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                .customerId(customerId)
+                        )
+                        .paymentSession(
+                            PaymentSession()
+                                .actionType(ActionType.VERIFY)
+                                .recurrence(
+                                    RecurringSettings()
+                                        .action(RecurringAction.CONTRACT_CREATION)
+                                        .contractId(
+                                            WalletService.CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID
+                                        )
+                                        .contractType(RecurringContractType.CIT)
                                 )
-                                .paymentSession(
-                                        PaymentSession()
-                                                .actionType(ActionType.VERIFY)
-                                                .recurrence(
-                                                        RecurringSettings()
-                                                                .action(RecurringAction.CONTRACT_CREATION)
-                                                                .contractId(
-                                                                        WalletService.CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID
-                                                                )
-                                                                .contractType(RecurringContractType.CIT)
-                                                )
-                                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                                .captureType(CaptureType.IMPLICIT)
-                                                .paymentService("CARDS")
-                                                .resultUrl(resultUrl.toString())
-                                                .cancelUrl(cancelUrl.toString())
-                                                .notificationUrl(notificationUrl.toString())
-                                )
+                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                .captureType(CaptureType.IMPLICIT)
+                                .paymentService("CARDS")
+                                .resultUrl(resultUrl.toString())
+                                .cancelUrl(cancelUrl.toString())
+                                .notificationUrl(notificationUrl.toString())
+                        )
 
                 given {
                     npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
