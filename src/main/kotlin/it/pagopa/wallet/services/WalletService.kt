@@ -30,6 +30,8 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -54,6 +56,11 @@ class WalletService(
         const val CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA = "ITA"
         const val CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID = "xxx"
     }
+
+    /*
+     * Logger instance
+     */
+    var logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
     fun createWallet(
         serviceList: List<ServiceName>,
@@ -254,26 +261,20 @@ class WalletService(
                     )
                     .map { state -> state to it }
             }
-            .filter { (state) -> state.state == State.GDI_VERIFICATION }
+            .doOnNext { logger.debug("State Response: ${it.first}") }
+            .filter { (state) ->
+                state.state == State.GDI_VERIFICATION &&
+                    state.fieldSet != null &&
+                    state.fieldSet!!.fields.isNotEmpty() &&
+                    state.fieldSet!!.fields[0]!!.src != null
+            }
             .switchIfEmpty {
                 walletRepository
                     .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
-                    .flatMap { Mono.error(ConfirmPaymentException(wallet.id)) }
+                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
             }
             .flatMap { (state, cardData) ->
                 mono { state }
-                    .filter {
-                        state.fieldSet != null &&
-                            state.fieldSet!!.fields.isNotEmpty() &&
-                            state.fieldSet!!.fields[0].src != null
-                    }
-                    .switchIfEmpty {
-                        Mono.error(
-                            BadGatewayException(
-                                "Invalid NPG response for state $state, no fieldSet.field received, expected 1"
-                            )
-                        )
-                    }
                     .map {
                         WalletVerifyRequestsResponseDto()
                             .orderId(orderId)
@@ -324,11 +325,12 @@ class WalletService(
     ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
         npgClient
             .confirmPayment(ConfirmPaymentRequest().sessionId(sessionId).amount("0"), correlationId)
-            .filter { it.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN }
+            .doOnNext { logger.debug("State Response: $it") }
+            .filter { it.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN && it.url != null }
             .switchIfEmpty {
                 walletRepository
                     .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
-                    .flatMap { Mono.error(ConfirmPaymentException(wallet.id)) }
+                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
             }
             .map {
                 WalletVerifyRequestsResponseDto()
