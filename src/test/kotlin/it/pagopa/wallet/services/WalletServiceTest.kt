@@ -256,10 +256,15 @@ class WalletServiceTest {
                         .expiringDate("122030")
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
+
                 val npgStateResponse =
                     StateResponse()
-                        .state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
-                        .url("http://state.url")
+                        .state(State.GDI_VERIFICATION)
+                        .fieldSet(
+                            Fields()
+                                .sessionId(sessionId)
+                                .addFieldsItem(Field().src("http://src.state.url"))
+                        )
 
                 val npgSession =
                     NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
@@ -272,9 +277,10 @@ class WalletServiceTest {
                                 .iframeUrl(
                                     Base64.getUrlEncoder()
                                         .encodeToString(
-                                            npgStateResponse.url!!.toByteArray(
-                                                StandardCharsets.UTF_8
-                                            )
+                                            npgStateResponse.fieldSet!!
+                                                .fields[0]
+                                                .src!!
+                                                .toByteArray(StandardCharsets.UTF_8)
                                         )
                                 )
                         )

@@ -254,7 +254,7 @@ class WalletService(
                     )
                     .map { state -> state to it }
             }
-            .filter { (state) -> state.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN }
+            .filter { (state) -> state.state == State.GDI_VERIFICATION }
             .switchIfEmpty {
                 walletRepository
                     .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
@@ -262,11 +262,15 @@ class WalletService(
             }
             .flatMap { (state, cardData) ->
                 mono { state }
-                    .filter { state.url != null }
+                    .filter {
+                        state.fieldSet != null &&
+                            state.fieldSet!!.fields.isNotEmpty() &&
+                            state.fieldSet!!.fields[0].src != null
+                    }
                     .switchIfEmpty {
                         Mono.error(
                             BadGatewayException(
-                                "Invalid NPG response for state $state, state.url is null"
+                                "Invalid NPG response for state $state, no fieldSet.field received, expected 1"
                             )
                         )
                     }
@@ -279,7 +283,10 @@ class WalletService(
                                     .iframeUrl(
                                         Base64.getUrlEncoder()
                                             .encodeToString(
-                                                it.url!!.toByteArray(StandardCharsets.UTF_8)
+                                                it.fieldSet!!
+                                                    .fields[0]
+                                                    .src!!
+                                                    .toByteArray(StandardCharsets.UTF_8)
                                             )
                                     )
                             )
