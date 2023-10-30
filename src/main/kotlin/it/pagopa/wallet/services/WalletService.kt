@@ -24,6 +24,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
@@ -229,10 +230,10 @@ class WalletService(
                             }
                     }
                     .flatMap { (response, wallet) ->
-                        walletRepository.save(wallet.toDocument()).map { response to wallet }
-                    }
-                    .map { (response, wal) ->
-                        response to LoggedAction(wal, WalletDetailsAddedEvent(walletId.toString()))
+                        walletRepository.save(wallet.toDocument()).map {
+                            response to
+                                LoggedAction(wallet, WalletDetailsAddedEvent(walletId.toString()))
+                        }
                     }
             }
     }
@@ -260,13 +261,27 @@ class WalletService(
                     .flatMap { Mono.error(ConfirmPaymentException(wallet.id)) }
             }
             .flatMap { (state, cardData) ->
-                mono {
+                mono { state }
+                    .filter { state.url != null }
+                    .switchIfEmpty {
+                        Mono.error(
+                            BadGatewayException(
+                                "Invalid NPG response for state $state, state.url is null"
+                            )
+                        )
+                    }
+                    .map {
                         WalletVerifyRequestsResponseDto()
                             .orderId(orderId)
                             .details(
                                 WalletVerifyRequestCardDetailsDto()
                                     .type("CARD")
-                                    .iframeUrl(state.url)
+                                    .iframeUrl(
+                                        Base64.getUrlEncoder()
+                                            .encodeToString(
+                                                it.url!!.toByteArray(StandardCharsets.UTF_8)
+                                            )
+                                    )
                             )
                     }
                     .map { response -> response to cardData }

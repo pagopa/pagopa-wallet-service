@@ -29,6 +29,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
@@ -268,7 +269,14 @@ class WalletServiceTest {
                         .details(
                             WalletVerifyRequestCardDetailsDto()
                                 .type("CARD")
-                                .iframeUrl(npgStateResponse.url)
+                                .iframeUrl(
+                                    Base64.getUrlEncoder()
+                                        .encodeToString(
+                                            npgStateResponse.url!!.toByteArray(
+                                                StandardCharsets.UTF_8
+                                            )
+                                        )
+                                )
                         )
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
