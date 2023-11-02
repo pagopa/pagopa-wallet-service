@@ -22,6 +22,7 @@ import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -42,7 +43,8 @@ class WalletService(
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
-    @Autowired private val sessionUrlConfig: SessionUrlConfig
+    @Autowired private val sessionUrlConfig: SessionUrlConfig,
+    @Autowired private val uniqueIdUtils: UniqueIdUtils
 ) {
 
     companion object {
@@ -96,8 +98,8 @@ class WalletService(
                     .map { paymentMethod -> paymentMethod to it }
             }
             .flatMap { (paymentMethod, wallet) ->
-                val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
-                val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
+                val orderId = uniqueIdUtils.generateUniqueId()
+                val customerId = uniqueIdUtils.generateUniqueId()
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)

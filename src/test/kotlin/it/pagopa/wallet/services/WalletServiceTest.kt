@@ -8,6 +8,7 @@ import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
+import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
@@ -27,6 +28,7 @@ import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -50,6 +52,7 @@ class WalletServiceTest {
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
+    private val uniqueIdUtils: UniqueIdUtils = mock()
     private val sessionUrlConfig =
         SessionUrlConfig(
             "http://localhost:1234",
@@ -64,7 +67,8 @@ class WalletServiceTest {
             ecommercePaymentMethodsClient,
             npgClient,
             npgSessionRedisTemplate,
-            sessionUrlConfig
+            sessionUrlConfig,
+            uniqueIdUtils
         )
 
     private val mockedUUID = UUID.randomUUID()
@@ -117,9 +121,9 @@ class WalletServiceTest {
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
-            val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
+            val uniqueId = getUniqueId()
+            val orderId = uniqueId
+            val customerId = uniqueId
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
@@ -146,6 +150,8 @@ class WalletServiceTest {
                 )
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+
+                given { uniqueIdUtils.generateUniqueId() }.willAnswer { uniqueId }
 
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
