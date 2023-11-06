@@ -156,7 +156,8 @@ class WalletController(
         orderId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
-        return walletService.validateWallet(orderId, walletId).flatMap { (response, walletEvent) ->
+        return walletService.validateWalletSession(orderId, walletId).flatMap {
+            (response, walletEvent) ->
             walletEvent.saveEvents(loggingEventRepository).map {
                 ResponseEntity.ok().body(response)
             }

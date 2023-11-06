@@ -13,7 +13,6 @@ import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
@@ -34,7 +33,8 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.reactor.mono
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
@@ -330,7 +330,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectNext(Pair(verifyResponse, expectedLoggedAction))
                     .verifyComplete()
 
@@ -367,24 +367,8 @@ class WalletServiceTest {
 
                 val npgSession =
                     NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
-                val verifyResponse =
-                    WalletVerifyRequestsResponseDto()
-                        .orderId(orderId)
-                        .details(
-                            WalletVerifyRequestAPMDetailsDto()
-                                .type("APM")
-                                .redirectUrl(npgStateResponse.url)
-                        )
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-
-                val walletDocumentVerifiedWithAPM = walletDocumentVerifiedWithAPM()
-
-                val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentVerifiedWithAPM.toDomain(),
-                        WalletDetailsAddedEvent(WALLET_UUID.value.toString())
-                    )
 
                 given {
                         npgClient.confirmPayment(
@@ -409,12 +393,9 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
-                    .expectNext(Pair(verifyResponse, expectedLoggedAction))
-                    .verifyComplete()
-
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertNull(walletDocumentToSave.details)
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
+                    .expectError(NoCardsSessionValidateRequestException::class.java)
+                    .verify()
             }
         }
     }
@@ -437,7 +418,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(SessionNotFoundException::class.java)
                     .verify()
             }
@@ -469,7 +450,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(WalletNotFoundException::class.java)
                     .verify()
             }
@@ -504,7 +485,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(WalletSessionMismatchException::class.java)
                     .verify()
             }
@@ -537,7 +518,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(WalletConflictStatusException::class.java)
                     .verify()
             }
@@ -602,7 +583,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(BadGatewayException::class.java)
                     .verify()
 
@@ -669,7 +650,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(BadGatewayException::class.java)
                     .verify()
 
@@ -739,7 +720,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(BadGatewayException::class.java)
                     .verify()
 
@@ -809,138 +790,7 @@ class WalletServiceTest {
 
                 /* test */
 
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
-
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
-            }
-        }
-    }
-
-    @Test
-    fun `validate should throws BadGatewayException with apm by wrong state`() {
-        /* preconditions */
-
-        val mockedUUID = WALLET_UUID.value
-        val mockedInstant = Instant.now()
-
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
-                val npgStateResponse =
-                    StateResponse().state(State.READY_FOR_PAYMENT).url("http://state.url")
-
-                val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
-
-                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-
-                given { npgClient.getCardData(sessionId, npgCorrelationId) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
-
-                given {
-                        npgClient.confirmPayment(
-                            ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                            npgCorrelationId
-                        )
-                    }
-                    .willAnswer { mono { npgStateResponse } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
-
-                given { walletRepository.findById(any<String>()) }
-                    .willReturn(Mono.just(walletDocumentWithSessionWallet))
-
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidAPMPaymentMethod() } }
-
-                /* test */
-
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
-
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
-            }
-        }
-    }
-
-    @Test
-    fun `validate should throws BadGatewayException with apm by right state and null url`() {
-        /* preconditions */
-
-        val mockedUUID = WALLET_UUID.value
-        val mockedInstant = Instant.now()
-
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
-                val npgStateResponse = StateResponse().state(State.READY_FOR_PAYMENT)
-
-                val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
-
-                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-
-                given { npgClient.getCardData(sessionId, npgCorrelationId) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
-
-                given {
-                        npgClient.confirmPayment(
-                            ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                            npgCorrelationId
-                        )
-                    }
-                    .willAnswer { mono { npgStateResponse } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
-
-                given { walletRepository.findById(any<String>()) }
-                    .willReturn(Mono.just(walletDocumentWithSessionWallet))
-
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidAPMPaymentMethod() } }
-
-                /* test */
-
-                StepVerifier.create(walletService.validateWallet(orderId, WALLET_UUID.value))
+                StepVerifier.create(walletService.validateWalletSession(orderId, WALLET_UUID.value))
                     .expectError(BadGatewayException::class.java)
                     .verify()
 

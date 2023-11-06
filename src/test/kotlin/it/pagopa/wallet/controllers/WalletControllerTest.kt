@@ -156,7 +156,7 @@ class WalletControllerTest {
                 .details(
                     WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
                 )
-        given { walletService.validateWallet(orderId, walletId) }
+        given { walletService.validateWalletSession(orderId, walletId) }
             .willReturn(
                 mono {
                     Pair(

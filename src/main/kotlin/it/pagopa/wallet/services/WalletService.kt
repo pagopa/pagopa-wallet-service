@@ -195,7 +195,7 @@ class WalletService(
             }
     }
 
-    fun validateWallet(
+    fun validateWalletSession(
         orderId: UUID,
         walletId: UUID
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
@@ -227,11 +227,8 @@ class WalletService(
                                             wallet.toDomain()
                                         )
                                     else ->
-                                        confirmPaymentAPM(
-                                            session.sessionId,
-                                            correlationId,
-                                            orderId,
-                                            wallet.toDomain()
+                                        throw NoCardsSessionValidateRequestException(
+                                            WalletId(walletId)
                                         )
                                 }
                             }
@@ -245,7 +242,7 @@ class WalletService(
             }
     }
 
-    fun confirmPaymentCard(
+    private fun confirmPaymentCard(
         sessionId: String,
         correlationId: UUID,
         orderId: UUID,
@@ -315,30 +312,6 @@ class WalletService(
                                 CardHolderName("?")
                             )
                     )
-            }
-
-    fun confirmPaymentAPM(
-        sessionId: String,
-        correlationId: UUID,
-        orderId: UUID,
-        wallet: Wallet
-    ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
-        npgClient
-            .confirmPayment(ConfirmPaymentRequest().sessionId(sessionId).amount("0"), correlationId)
-            .doOnNext { logger.debug("State Response: $it") }
-            .filter { it.state == State.REDIRECTED_TO_EXTERNAL_DOMAIN && it.url != null }
-            .switchIfEmpty {
-                walletRepository
-                    .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
-                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
-            }
-            .map {
-                WalletVerifyRequestsResponseDto()
-                    .orderId(orderId)
-                    .details(WalletVerifyRequestAPMDetailsDto().type("APM").redirectUrl(it.url))
-            }
-            .map { response ->
-                response to wallet.copy(status = WalletStatusDto.VALIDATION_REQUESTED)
             }
 
     fun patchWallet(
