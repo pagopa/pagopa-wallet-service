@@ -28,7 +28,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.Map
-import lombok.extern.slf4j.Slf4j
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -37,7 +37,6 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 
 @Service
-@Slf4j
 class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
@@ -46,6 +45,8 @@ class WalletService(
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils
 ) {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     companion object {
         const val CREATE_HOSTED_ORDER_REQUEST_VERSION: String = "2"
@@ -60,7 +61,7 @@ class WalletService(
         userId: UUID,
         paymentMethodId: UUID
     ): Mono<LoggedAction<Wallet>> {
-
+        logger.info("Create wallet with payment methodId: $paymentMethodId and userId: $userId")
         return ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId.toString())
             .map {
@@ -86,6 +87,7 @@ class WalletService(
     }
 
     fun createSessionWallet(walletId: UUID): Mono<Pair<Fields, LoggedAction<Wallet>>> {
+        logger.info("Create session for walletId: $walletId")
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
@@ -99,7 +101,6 @@ class WalletService(
             }
             .flatMap { (paymentMethod, wallet) ->
                 val orderId = uniqueIdUtils.generateUniqueId()
-                val customerId = uniqueIdUtils.generateUniqueId()
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
@@ -119,7 +120,7 @@ class WalletService(
                                     .orderId(orderId)
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                    .customerId(customerId)
+                                    .customerId(uniqueIdUtils.generateUniqueId())
                             )
                             .paymentSession(
                                 PaymentSession()
