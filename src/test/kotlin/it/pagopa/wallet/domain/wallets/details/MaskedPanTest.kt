@@ -7,7 +7,7 @@ import org.junit.jupiter.api.assertThrows
 
 class MaskedPanTest {
 
-    private val validMaskedPan = "424242******5555"
+    private val validMaskedPan = "42424242****5555"
     private val invalidMaskedPan = "4242425555"
 
     @Test

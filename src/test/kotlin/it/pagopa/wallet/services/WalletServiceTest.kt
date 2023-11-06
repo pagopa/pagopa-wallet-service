@@ -257,8 +257,8 @@ class WalletServiceTest {
                 val orderId = Instant.now().toString() + "ABCDE"
                 val npgGetCardDataResponse =
                     CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
+                        .bin("12345678")
+                        .expiringDate("12/30")
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
 
@@ -294,9 +294,9 @@ class WalletServiceTest {
 
                 val walletDocumentWithCardDetails =
                     walletDocumentVerifiedWithCardDetails(
-                        "123456",
+                        "12345678",
                         "0000",
-                        "122030",
+                        "12/30",
                         "?",
                         WalletCardDetailsDto.BrandEnum.MASTERCARD
                     )
@@ -342,7 +342,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "123456", "123456******0000", "122030", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "12345678****0000", "12/30", "MASTERCARD", "?")
                 )
             }
         }

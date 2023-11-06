@@ -152,9 +152,9 @@ class WalletControllerTest {
         val orderId = Instant.now().toString() + "ABCDE"
         val wallet =
             walletDocumentVerifiedWithCardDetails(
-                "123456",
+                "12345678",
                 "0000",
-                "122030",
+                "12/30",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )

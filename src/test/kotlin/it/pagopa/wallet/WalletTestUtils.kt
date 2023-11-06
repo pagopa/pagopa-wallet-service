@@ -36,9 +36,9 @@ object WalletTestUtils {
 
     val CONTRACT_ID = ContractId("TestContractId")
 
-    val BIN = Bin("424242")
-    val MASKED_PAN = MaskedPan("424242******5555")
-    val EXP_DATE = ExpiryDate("203012")
+    val BIN = Bin("42424242")
+    val MASKED_PAN = MaskedPan("42424242****5555")
+    val EXP_DATE = ExpiryDate("12/30")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
 
@@ -82,7 +82,7 @@ object WalletTestUtils {
             CardDetails(
                 WalletDetailsType.CARDS.name,
                 bin,
-                bin + "*".repeat(6) + lastFourDigits,
+                bin + "*".repeat(4) + lastFourDigits,
                 expiryDate,
                 brandEnum.name,
                 holderName
