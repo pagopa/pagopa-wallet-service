@@ -2,32 +2,36 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.audit.LoggedAction
-import it.pagopa.wallet.audit.SessionWalletAddedEvent
-import it.pagopa.wallet.audit.WalletAddedEvent
-import it.pagopa.wallet.audit.WalletPatchEvent
+import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
+import it.pagopa.wallet.domain.details.Bin
+import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
+import it.pagopa.wallet.domain.details.CardHolderName
+import it.pagopa.wallet.domain.details.ExpiryDate
+import it.pagopa.wallet.domain.details.MaskedPan
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.WalletConflictStatusException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
-import java.util.Map
+import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -53,12 +57,16 @@ class WalletService(
         const val CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID = "xxx"
     }
 
+    /*
+     * Logger instance
+     */
+    var logger: Logger = LoggerFactory.getLogger(this.javaClass)
+
     fun createWallet(
         serviceList: List<ServiceName>,
         userId: UUID,
         paymentMethodId: UUID
     ): Mono<LoggedAction<Wallet>> {
-
         return ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId.toString())
             .map {
@@ -84,6 +92,7 @@ class WalletService(
     }
 
     fun createSessionWallet(walletId: UUID): Mono<Pair<Fields, LoggedAction<Wallet>>> {
+        val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
@@ -96,7 +105,6 @@ class WalletService(
                     .map { paymentMethod -> paymentMethod to it }
             }
             .flatMap { (paymentMethod, wallet) ->
-                val orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val customerId = UUID.randomUUID().toString().replace("-", "").substring(0, 15)
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
@@ -104,7 +112,12 @@ class WalletService(
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(Map.of("orderId", orderId, "paymentMethodId", paymentMethod.id))
+                        .build(
+                            mapOf(
+                                Pair("orderId", orderId),
+                                Pair("paymentMethodId", paymentMethod.id)
+                            )
+                        )
 
                 npgClient
                     .createNpgOrderBuild(
@@ -161,7 +174,13 @@ class WalletService(
                 npgSessionRedisTemplate
                     .save(
                         NpgSession(
-                            hostedOrderResponse.sessionId,
+                            UUID.randomUUID()
+                                .toString()
+                                .replace("-", "")
+                                .substring(
+                                    0,
+                                    15
+                                ), // TODO Replace with orderId algorithm result when available
                             hostedOrderResponse.sessionId,
                             hostedOrderResponse.securityToken.toString(),
                             wallet.id.value.toString()
@@ -175,6 +194,125 @@ class WalletService(
                     LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
             }
     }
+
+    fun validateWalletSession(
+        orderId: UUID,
+        walletId: UUID
+    ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
+        val correlationId = UUID.randomUUID()
+        return mono { npgSessionRedisTemplate.findById(orderId.toString()) }
+            .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
+            .flatMap { session ->
+                walletRepository
+                    .findById(walletId.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+                    .filter { session.walletId == it.id }
+                    .switchIfEmpty {
+                        Mono.error(
+                            WalletSessionMismatchException(session.sessionId, WalletId(walletId))
+                        )
+                    }
+                    .filter { it.status == WalletStatusDto.INITIALIZED.value }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+                    .flatMap { wallet ->
+                        ecommercePaymentMethodsClient
+                            .getPaymentMethodById(wallet.paymentMethodId)
+                            .flatMap {
+                                when (it.paymentTypeCode) {
+                                    "CP" ->
+                                        confirmPaymentCard(
+                                            session.sessionId,
+                                            correlationId,
+                                            orderId,
+                                            wallet.toDomain()
+                                        )
+                                    else ->
+                                        throw NoCardsSessionValidateRequestException(
+                                            WalletId(walletId)
+                                        )
+                                }
+                            }
+                    }
+                    .flatMap { (response, wallet) ->
+                        walletRepository.save(wallet.toDocument()).map {
+                            response to
+                                LoggedAction(wallet, WalletDetailsAddedEvent(walletId.toString()))
+                        }
+                    }
+            }
+    }
+
+    private fun confirmPaymentCard(
+        sessionId: String,
+        correlationId: UUID,
+        orderId: UUID,
+        wallet: Wallet
+    ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
+        npgClient
+            .getCardData(sessionId, correlationId)
+            .flatMap {
+                npgClient
+                    .confirmPayment(
+                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                        correlationId
+                    )
+                    .map { state -> state to it }
+            }
+            .doOnNext { logger.debug("State Response: ${it.first}") }
+            .filter { (state) ->
+                state.state == State.GDI_VERIFICATION &&
+                    state.fieldSet != null &&
+                    state.fieldSet!!.fields.isNotEmpty() &&
+                    state.fieldSet!!.fields[0]!!.src != null
+            }
+            .switchIfEmpty {
+                walletRepository
+                    .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
+                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
+            }
+            .flatMap { (state, cardData) ->
+                mono { state }
+                    .map {
+                        WalletVerifyRequestsResponseDto()
+                            .orderId(orderId)
+                            .details(
+                                WalletVerifyRequestCardDetailsDto()
+                                    .type("CARD")
+                                    .iframeUrl(
+                                        Base64.getUrlEncoder()
+                                            .encodeToString(
+                                                it.fieldSet!!
+                                                    .fields[0]
+                                                    .src!!
+                                                    .toByteArray(StandardCharsets.UTF_8)
+                                            )
+                                    )
+                            )
+                    }
+                    .map { response -> response to cardData }
+            }
+            .map { (response, data) ->
+                response to
+                    wallet.copy(
+                        status = WalletStatusDto.VALIDATION_REQUESTED,
+                        details =
+                            DomainCardDetails(
+                                Bin(data.bin.orEmpty()),
+                                MaskedPan(
+                                    data.bin.orEmpty() +
+                                        ("*".repeat(
+                                            16 -
+                                                data.bin.orEmpty().length -
+                                                data.lastFourDigits.orEmpty().length
+                                        )) +
+                                        data.lastFourDigits.orEmpty()
+                                ),
+                                ExpiryDate(data.expiringDate.orEmpty()),
+                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
+                                CardHolderName("?")
+                            )
+                    )
+            }
 
     fun patchWallet(
         walletId: UUID,

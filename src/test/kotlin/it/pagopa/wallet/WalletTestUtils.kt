@@ -26,7 +26,8 @@ object WalletTestUtils {
 
     val SERVICE_ID = ServiceId(UUID.randomUUID())
 
-    val PAYMENT_METHOD_ID = PaymentMethodId(UUID.randomUUID())
+    val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
+    val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
 
     val PAYMENT_INSTRUMENT_ID = PaymentInstrumentId(UUID.randomUUID())
 
@@ -51,7 +52,52 @@ object WalletTestUtils {
             WalletStatusDto.INITIALIZED.name,
             creationDate,
             creationDate,
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
+            null,
+            CONTRACT_ID.contractId,
+            listOf(),
+            null
+        )
+    }
+
+    fun walletDocumentVerifiedWithCardDetails(
+        bin: String,
+        lastFourDigits: String,
+        expiryDate: String,
+        holderName: String,
+        brandEnum: WalletCardDetailsDto.BrandEnum
+    ): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.VALIDATION_REQUESTED.name,
+            creationDate,
+            creationDate,
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
+            null,
+            CONTRACT_ID.contractId,
+            listOf(),
+            CardDetails(
+                WalletDetailsType.CARDS.name,
+                bin,
+                bin + "*".repeat(6) + lastFourDigits,
+                expiryDate,
+                brandEnum.name,
+                holderName
+            )
+        )
+    }
+
+    fun walletDocumentVerifiedWithAPM(): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.VALIDATION_REQUESTED.name,
+            creationDate,
+            creationDate,
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
             listOf(),
@@ -67,7 +113,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED.name,
             creationDate,
             creationDate,
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
             listOf(),
@@ -82,7 +128,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED.name,
             TIMESTAMP.toString(),
             TIMESTAMP.toString(),
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
             listOf(),
@@ -96,7 +142,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED.name,
             TIMESTAMP.toString(),
             TIMESTAMP.toString(),
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             null,
             listOf(),
@@ -110,7 +156,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED.name,
             TIMESTAMP.toString(),
             TIMESTAMP.toString(),
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
             listOf(
@@ -131,7 +177,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED.name,
             TIMESTAMP.toString(),
             TIMESTAMP.toString(),
-            PAYMENT_METHOD_ID.value.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
             listOf(
@@ -159,7 +205,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             TIMESTAMP,
             TIMESTAMP,
-            PAYMENT_METHOD_ID,
+            PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
@@ -173,7 +219,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             TIMESTAMP,
             TIMESTAMP,
-            PAYMENT_METHOD_ID,
+            PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
@@ -187,7 +233,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             TIMESTAMP,
             TIMESTAMP,
-            PAYMENT_METHOD_ID,
+            PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(),
             CONTRACT_ID,
@@ -202,7 +248,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             Instant.now(),
             Instant.now(),
-            PAYMENT_METHOD_ID,
+            PAYMENT_METHOD_ID_CARDS,
             null,
             listOf(),
             null,
@@ -218,7 +264,7 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             Instant.now(),
             Instant.now(),
-            PAYMENT_METHOD_ID,
+            PAYMENT_METHOD_ID_CARDS,
             null,
             listOf(),
             CONTRACT_ID,
@@ -232,7 +278,7 @@ object WalletTestUtils {
             .status(WalletStatusDto.CREATED)
             .creationDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
             .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
-            .paymentMethodId(PAYMENT_METHOD_ID.value.toString())
+            .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value.toString())
             .userId(USER_ID.id.toString())
             .services(listOf())
             .details(
@@ -262,7 +308,7 @@ object WalletTestUtils {
         WalletCreateRequestDto()
             .services(listOf(ServiceNameDto.PAGOPA))
             .useDiagnosticTracing(false)
-            .paymentMethodId(PAYMENT_METHOD_ID.value)
+            .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
     val PATCH_SERVICE_1: PatchServiceDto =
         PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.DISABLED)
@@ -274,15 +320,23 @@ object WalletTestUtils {
 
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
-            .id(PAYMENT_METHOD_ID.value.toString())
+            .id(PAYMENT_METHOD_ID_CARDS.value.toString())
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("CARDS")
     }
 
+    fun getValidAPMPaymentMethod(): PaymentMethodResponse {
+        return PaymentMethodResponse()
+            .id(PAYMENT_METHOD_ID_APM.value.toString())
+            .paymentTypeCode("PPAL")
+            .status(PaymentMethodStatus.ENABLED)
+            .name("PAYPAL")
+    }
+
     fun getDisabledCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
-            .id(PAYMENT_METHOD_ID.value.toString())
+            .id(PAYMENT_METHOD_ID_CARDS.value.toString())
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.DISABLED)
             .name("CARDS")
@@ -290,7 +344,7 @@ object WalletTestUtils {
 
     fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
-            .id(PAYMENT_METHOD_ID.value.toString())
+            .id(PAYMENT_METHOD_ID_CARDS.value.toString())
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("INVALID")
