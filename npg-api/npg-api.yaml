@@ -8,15 +8,15 @@ servers:
   - url: "https://{gateway_prod}/api/v1"
     description: PROD
 security:
-  - ApiKeyAuth: []
-  - OAuth2: []
+  - ApiKeyAuth: [ ]
+  - OAuth2: [ ]
 paths:
   /psp/api/v1/orders/build:
     post:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Create an order and initiates a payment through build functionality.
       description: "This service is targeted to ecommerce platforms requiring to implement the payment pages in line with their own dedicated UI style guidelines. The service will return a list of fields expressed in JSON format, to be translated into HTML by the ecommerce platform web app. If the paymentService field is valued at CARDS the service will return a list of fields for the CARD_DATA_COLLECTION without going through the PAYMENT_METHOD_SELECTION state and if it's valued with an APM the service will return an url where the customer should be redirected."
       parameters:
@@ -45,32 +45,32 @@ paths:
                   value:
                     sessionId: 052211e8-54c8-4e0a-8402-e10bcb8ff264
                     securityToken: SECURITY_TOKEN
-                    fields: [{
-                      "type":"ACTION",
-                      "class":"APM",
-                      "id":"APM",
-                      "src":"https://<fe>/field.html?id=APM&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
+                    fields: [ {
+                      "type": "ACTION",
+                      "class": "APM",
+                      "id": "APM",
+                      "src": "https://<fe>/field.html?id=APM&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
                     }, {
-                      "type":"ACTION",
-                      "class":"CARD",
-                      "id":"PAY_WITH_CARD",
-                      "src":"https://<fe>/field.html?id=CARD&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
-                    }]
+                      "type": "ACTION",
+                      "class": "CARD",
+                      "id": "PAY_WITH_CARD",
+                      "src": "https://<fe>/field.html?id=CARD&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
+                    } ]
                 CARD_DATA_COLLECTION:
                   value:
                     sessionId: 052211e8-54c8-4e0a-8402-e10bcb8ff264
                     securityToken: SECURITY_TOKEN
-                    fields: [{
-                      "type":"TEXT",
-                      "class":"CARD",
-                      "id":"SECURITY_CODE",
-                      "src":"https://<fe>/field.html?id=SECURITY_CODE&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
+                    fields: [ {
+                      "type": "TEXT",
+                      "class": "CARD",
+                      "id": "SECURITY_CODE",
+                      "src": "https://<fe>/field.html?id=SECURITY_CODE&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
                     }, {
-                      "type":"TEXT",
-                      "class":"CARD",
-                      "id":"CARDHOLDER_EMAIL",
-                      "src":"https://<fe>/field.html?id=CARDHOLDER_EMAIL&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
-                    }]
+                      "type": "TEXT",
+                      "class": "CARD",
+                      "id": "CARDHOLDER_EMAIL",
+                      "src": "https://<fe>/field.html?id=CARDHOLDER_EMAIL&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
+                    } ]
                 APM_PAYMENT_SERVICE:
                   value:
                     sessionId: 052211e8-54c8-4e0a-8402-e10bcb8ff264
@@ -96,7 +96,7 @@ paths:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Finalize a payment.
       description: This service shall be invoked by the ecommerce platforms to finalize the payment. It is limited to the flow versions 1 and 3.
       parameters:
@@ -226,7 +226,7 @@ paths:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Confirm a payment.
       description: This service shall be invoked by the ecommerce platforms to finalize the payment. It is limited to the flow version 2.
       parameters:
@@ -369,7 +369,7 @@ paths:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Cancel a payment.
       description: This service is targeted to ecommerce platforms in order to cancel the current payment session. This is typically required to clean up the collected data in case the user decided to quit the payment before completion.
       parameters:
@@ -471,7 +471,7 @@ paths:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Get current payment state.
       description: This service the ecommerce platforms to retrieve the current state of a payment flow.
       parameters:
@@ -617,9 +617,9 @@ paths:
       tags:
         - Payment Services
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       summary: Get card characteristics.
-      description:  It provides PCI-free non sensitive information about the payment card entered by the user along the current payment session.
+      description: It provides PCI-free non sensitive information about the payment card entered by the user along the current payment session.
       parameters:
         - name: Correlation-Id
           in: header
@@ -727,7 +727,7 @@ components:
           example: "234244353"
         additionalData:
           type: object
-          additionalProperties: {}
+          additionalProperties: { }
           description: Map of additional fields specific to the chosen payment method
           example:
             authorizationCode: "647189"
@@ -793,6 +793,7 @@ components:
         - CARD_DATA_COLLECTION
         - PAYMENT_METHOD_SELECTION
         - READY_FOR_PAYMENT
+        - GDI_VERIFICATION
         - REDIRECTED_TO_EXTERNAL_DOMAIN
         - PAYMENT_COMPLETE
     PaymentMethod:

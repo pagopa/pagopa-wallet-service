@@ -16,6 +16,8 @@ data class SessionWalletAddedEvent(val walletId: String) : LoggingEvent()
 
 data class WalletPatchEvent(val walletId: String) : LoggingEvent()
 
+data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
+
 data class ServiceCreatedEvent(val serviceId: UUID, val serviceName: String) : LoggingEvent()
 
 data class ServiceStatusChangedEvent(

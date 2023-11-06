@@ -6,9 +6,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.npg.model.Fields
+import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.generated.wallet.model.WalletVerifyRequestCardDetailsDto
+import it.pagopa.generated.wallet.model.WalletVerifyRequestsResponseDto
 import it.pagopa.generated.wallet.model.WalletsDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -131,6 +135,53 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isOk
+    }
+
+    @Test
+    fun testValidateWallet() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = UUID.randomUUID()
+        val wallet =
+            walletDocumentVerifiedWithCardDetails(
+                "123456",
+                "0000",
+                "122030",
+                "?",
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
+        val response =
+            WalletVerifyRequestsResponseDto()
+                .orderId(orderId)
+                .details(
+                    WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
+                )
+        given { walletService.validateWalletSession(orderId, walletId) }
+            .willReturn(
+                mono {
+                    Pair(
+                        response,
+                        LoggedAction(
+                            wallet.toDomain(),
+                            WalletDetailsAddedEvent(walletId.toString())
+                        )
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+
+        val stringTest = objectMapper.writeValueAsString(response)
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/validations")
+            .contentType(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(stringTest)
     }
 
     @Test
