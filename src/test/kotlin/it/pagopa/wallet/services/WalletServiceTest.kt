@@ -124,6 +124,7 @@ class WalletServiceTest {
             val uniqueId = getUniqueId()
             val orderId = uniqueId
             val customerId = uniqueId
+            val contractId = uniqueId
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
@@ -201,9 +202,7 @@ class WalletServiceTest {
                                 .recurrence(
                                     RecurringSettings()
                                         .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(
-                                            WalletService.CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID
-                                        )
+                                        .contractId(contractId)
                                         .contractType(RecurringContractType.CIT)
                                 )
                                 .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
@@ -233,7 +232,7 @@ class WalletServiceTest {
 
                 /* test */
                 Hooks.onOperatorDebug()
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value, orderId))
                     .expectNext(Pair(nggFields, expectedLoggedAction))
                     .verifyComplete()
             }
@@ -255,7 +254,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("123456")
@@ -273,7 +272,7 @@ class WalletServiceTest {
                         )
 
                 val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
                 val verifyResponse =
                     WalletVerifyRequestsResponseDto()
                         .orderId(orderId)
@@ -324,7 +323,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -350,7 +349,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should validate wallet with APM`() {
+    fun `should throw error when validate wallet with APM`() {
         /* preconditions */
 
         val mockedUUID = WALLET_UUID.value
@@ -364,7 +363,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
 
                 val npgStateResponse =
                     StateResponse()
@@ -372,7 +371,7 @@ class WalletServiceTest {
                         .url("http://state.url")
 
                 val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
 
@@ -389,7 +388,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -418,7 +417,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
 
                 given { npgSessionRedisTemplate.findById(orderId.toString()) }.willAnswer { null }
 
@@ -443,7 +442,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val sessionId = "sessionId"
 
                 val npgSession =
@@ -475,7 +474,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val sessionId = "sessionId"
 
                 val npgSession =
@@ -510,7 +509,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val sessionId = "sessionId"
 
                 val npgSession =
@@ -546,7 +545,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("123456")
@@ -577,7 +576,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -614,7 +613,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("123456")
@@ -644,7 +643,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -681,7 +680,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = "orderId"
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("123456")
@@ -694,7 +693,7 @@ class WalletServiceTest {
                         .fieldSet(Fields().sessionId(sessionId))
 
                 val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
+                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
                 val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
 
@@ -714,7 +713,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -751,7 +750,7 @@ class WalletServiceTest {
 
                 val sessionId = UUID.randomUUID().toString()
                 val npgCorrelationId = mockedUUID
-                val orderId = UUID.randomUUID()
+                val orderId = Instant.now().toString() + "ABCDE"
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("123456")
@@ -784,7 +783,7 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentWithSessionWallet))
 
-                given { npgSessionRedisTemplate.findById(sessionId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }

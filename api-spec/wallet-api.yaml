@@ -372,7 +372,6 @@ components:
     OrderId:
       description: Order session payment gateway identifier
       type: string
-      format: uuid
     WalletVerifyRequestsResponse:
       type: object
       description: Data to perform a wallet verify with payment gateway
