@@ -30,7 +30,6 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.reactor.mono
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -176,7 +175,7 @@ class WalletService(
                 npgSessionRedisTemplate
                     .save(
                         NpgSession(
-                                orderId,
+                            orderId,
                             hostedOrderResponse.sessionId,
                             hostedOrderResponse.securityToken.toString(),
                             wallet.id.value.toString()

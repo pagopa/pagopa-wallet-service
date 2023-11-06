@@ -3,7 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID
+import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
@@ -104,7 +104,7 @@ class WalletServiceTest {
                         walletService.createWallet(
                             listOf(SERVICE_NAME),
                             USER_ID.id,
-                            PAYMENT_METHOD_ID.value
+                            PAYMENT_METHOD_ID_CARDS.value
                         )
                     )
                     .expectNext(expectedLoggedAction)
