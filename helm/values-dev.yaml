@@ -64,6 +64,9 @@ microservice-chart:
     MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
+    REDIS_HOST: pagopa-d-weu-wallet-redis.redis.cache.windows.net
+    REDIS_PORT: "6380"
+    REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
     NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
@@ -79,6 +82,7 @@ microservice-chart:
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
+    REDIS_PASSWORD: redis-wallet-password
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
