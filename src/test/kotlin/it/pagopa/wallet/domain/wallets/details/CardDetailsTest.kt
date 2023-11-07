@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class CardDetailsTest {
-    private val validBin = "424242"
-    val validMaskedPan = "424242******5555"
-    val validExpiryDate = "203012"
+    private val validBin = "42424242"
+    val validMaskedPan = "42424242****5555"
+    val validExpiryDate = "12/30"
     val brand = BrandEnum.MASTERCARD
     val holderName = "holderName"
     val invalidBin = "42424"

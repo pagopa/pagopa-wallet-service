@@ -6,6 +6,7 @@ import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -26,7 +27,8 @@ import reactor.core.publisher.Mono
 class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
-    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
+    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI,
+    @Autowired private val uniqueIdUtils: UniqueIdUtils
 ) : WalletsApi {
 
     override fun createWallet(
@@ -63,8 +65,9 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<SessionWalletCreateResponseDto>> {
+        val orderId = uniqueIdUtils.generateUniqueId()
         return walletService
-            .createSessionWallet(walletId)
+            .createSessionWallet(walletId, orderId)
             .flatMap { (fields, walletEvent) ->
                 walletEvent.saveEvents(loggingEventRepository).map { fields }
             }
@@ -72,7 +75,7 @@ class WalletController(
                 ResponseEntity.ok()
                     .body(
                         SessionWalletCreateResponseDto()
-                            .orderId(it.sessionId)
+                            .orderId(orderId)
                             .cardFormFields(
                                 it.fields
                                     .stream()
@@ -153,7 +156,7 @@ class WalletController(
 
     override fun postWalletValidations(
         walletId: UUID,
-        orderId: UUID,
+        orderId: String,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
         return walletService.validateWalletSession(orderId, walletId).flatMap {

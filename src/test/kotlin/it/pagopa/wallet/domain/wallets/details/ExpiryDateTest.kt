@@ -7,7 +7,7 @@ import org.junit.jupiter.api.assertThrows
 
 class ExpiryDateTest {
 
-    private val validExpiryDate = "203012"
+    private val validExpiryDate = "12/30"
     private val invalidExpiryDate = "12-10"
 
     @Test

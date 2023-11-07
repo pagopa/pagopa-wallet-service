@@ -25,6 +25,7 @@ import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
+import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -54,7 +55,6 @@ class WalletService(
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
         const val CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA = "ITA"
-        const val CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID = "xxx"
     }
 
     /*
@@ -92,9 +92,11 @@ class WalletService(
             }
     }
 
-    fun createSessionWallet(walletId: UUID): Mono<Pair<Fields, LoggedAction<Wallet>>> {
+    fun createSessionWallet(
+        walletId: UUID,
+        orderId: String
+    ): Mono<Pair<Fields, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
-        val orderId = uniqueIdUtils.generateUniqueId()
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
@@ -131,7 +133,9 @@ class WalletService(
                                     .orderId(orderId)
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                    .customerId(uniqueIdUtils.generateUniqueId())
+                                    .customerId(
+                                        uniqueIdUtils.generateUniqueId()
+                                    ) // TODO To be replaced with the one coming from wallet-token
                             )
                             .paymentSession(
                                 PaymentSession()
@@ -139,7 +143,7 @@ class WalletService(
                                     .recurrence(
                                         RecurringSettings()
                                             .action(RecurringAction.CONTRACT_CREATION)
-                                            .contractId(CREATE_HOSTED_ORDER_REQUEST_CONTRACT_ID)
+                                            .contractId(uniqueIdUtils.generateUniqueId())
                                             .contractType(RecurringContractType.CIT)
                                     )
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
@@ -176,7 +180,10 @@ class WalletService(
                     .save(
                         NpgSession(
                             orderId,
-                            hostedOrderResponse.sessionId,
+                            URLDecoder.decode(
+                                hostedOrderResponse.sessionId,
+                                StandardCharsets.UTF_8
+                            ),
                             hostedOrderResponse.securityToken.toString(),
                             wallet.id.value.toString()
                         )
@@ -191,11 +198,11 @@ class WalletService(
     }
 
     fun validateWalletSession(
-        orderId: UUID,
+        orderId: String,
         walletId: UUID
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
         val correlationId = UUID.randomUUID()
-        return mono { npgSessionRedisTemplate.findById(orderId.toString()) }
+        return mono { npgSessionRedisTemplate.findById(orderId) }
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
                 walletRepository
@@ -240,7 +247,7 @@ class WalletService(
     private fun confirmPaymentCard(
         sessionId: String,
         correlationId: UUID,
-        orderId: UUID,
+        orderId: String,
         wallet: Wallet
     ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
         npgClient

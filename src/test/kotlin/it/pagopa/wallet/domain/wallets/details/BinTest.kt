@@ -7,7 +7,7 @@ import org.junit.jupiter.api.assertThrows
 
 class BinTest {
 
-    private val validBin = "424242"
+    private val validBin = "42424242"
     private val invalidBin = "42424"
 
     @Test

@@ -17,7 +17,9 @@ import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
+import java.time.Instant
 import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
@@ -42,6 +44,8 @@ class WalletControllerTest {
 
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
 
+    @MockBean private lateinit var uniqueIdUtils: UniqueIdUtils
+
     private lateinit var walletController: WalletController
 
     @Autowired private lateinit var webClient: WebTestClient
@@ -59,8 +63,11 @@ class WalletControllerTest {
             WalletController(
                 walletService,
                 loggingEventRepository,
-                URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+                URI.create("https://dev.payment-wallet.pagopa.it/onboarding"),
+                uniqueIdUtils
             )
+
+        given { uniqueIdUtils.generateUniqueId() }.willReturn("ABCDEFGHabcdefgh")
     }
 
     @Test
@@ -91,6 +98,7 @@ class WalletControllerTest {
     fun testCreateSessionWallet() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
+        val uniqueId = uniqueIdUtils.generateUniqueId()
         val fields = Fields().sessionId(UUID.randomUUID().toString())
         fields.fields.addAll(
             listOf(
@@ -114,7 +122,7 @@ class WalletControllerTest {
                     .type("type")
             )
         )
-        given { walletService.createSessionWallet(walletId) }
+        given { walletService.createSessionWallet(walletId, uniqueId) }
             .willReturn(
                 mono {
                     Pair(
@@ -141,12 +149,12 @@ class WalletControllerTest {
     fun testValidateWallet() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
-        val orderId = UUID.randomUUID()
+        val orderId = Instant.now().toString() + "ABCDE"
         val wallet =
             walletDocumentVerifiedWithCardDetails(
-                "123456",
+                "12345678",
                 "0000",
-                "122030",
+                "12/30",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )

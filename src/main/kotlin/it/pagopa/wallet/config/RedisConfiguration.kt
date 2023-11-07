@@ -1,5 +1,7 @@
 package it.pagopa.wallet.config
 
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import java.time.Duration
@@ -21,10 +23,19 @@ class RedisConfiguration {
     ): NpgSessionsTemplateWrapper {
         val npgSessionRedisTemplate = RedisTemplate<String, NpgSession>()
         npgSessionRedisTemplate.connectionFactory = redisConnectionFactory
-        val jackson2JsonRedisSerializer = Jackson2JsonRedisSerializer(NpgSession::class.java)
+        val jackson2JsonRedisSerializer = buildJackson2RedisSerializer(NpgSession::class.java)
         npgSessionRedisTemplate.valueSerializer = jackson2JsonRedisSerializer
         npgSessionRedisTemplate.keySerializer = StringRedisSerializer()
         npgSessionRedisTemplate.afterPropertiesSet()
         return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofMinutes(ttl))
+    }
+
+    private fun <T> buildJackson2RedisSerializer(clazz: Class<T>): Jackson2JsonRedisSerializer<T> {
+        val jackson2JsonRedisSerializer = Jackson2JsonRedisSerializer(clazz)
+        val jacksonObjectMapper = jacksonObjectMapper()
+        val rptSerializationModule = SimpleModule()
+        jacksonObjectMapper.registerModule(rptSerializationModule)
+        jackson2JsonRedisSerializer.setObjectMapper(jacksonObjectMapper)
+        return jackson2JsonRedisSerializer
     }
 }
