@@ -15,12 +15,13 @@
 						"exec": [
 							"pm.test(\"[Wallet for onboarding] New wallet created successfully with POST /wallets\", function () {",
 							"    pm.response.to.have.status(201);",
-							"    const sdk = require('postman-collection');",
 							"    const redirectUrl = pm.response.json().redirectUrl;",
 							"    pm.expect(redirectUrl).to.be.a(\"string\")",
-							"    var walletId = new sdk.Url(redirectUrl).query.get('walletId');",
-							"    var useDiagnosticTracing = new sdk.Url(redirectUrl).query.get('useDiagnosticTracing');",
-							"    pm.expect(walletId).to.be.not.null;",
+              "    const fragment = redirectUrl.split(\"#\")[1];",
+              "    const fragmentSplits = fragment.split(\"&\");",
+              "    var walletId = fragmentSplits[0].split(\"=\")[1];",
+              "    var useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+              "    pm.expect(walletId).to.be.not.null;",
 							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
 							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
 							"    pm.environment.set(\"WALLET_ID\", walletId);",
@@ -569,3 +570,4 @@
 		}
 	]
 }
+

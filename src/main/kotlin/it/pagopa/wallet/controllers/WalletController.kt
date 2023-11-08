@@ -52,8 +52,7 @@ class WalletController(
                 WalletCreateResponseDto()
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
-                            .queryParam("walletId", it.first)
-                            .queryParam("useDiagnosticTracing", it.second)
+                            .fragment("walletId=${it.first}&useDiagnosticTracing=${it.second}")
                             .build()
                             .toUriString()
                     )
