@@ -231,28 +231,28 @@ stages:
               onTimeout: 'reject'
 
   - stage: Release
-      ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
-        dependsOn: Build_release_candidate
-      ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
-        dependsOn: Bluegreen_WaitForApproval
-        condition: succeeded()
-      jobs:
-        - job: make_release
-          displayName: Make github release
-          steps:
-            - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
-                - template: templates/node-job-setup/template.yaml@pagopaCommons
-                  parameters:
-                    persistCredentials: true
-                - template: azure-templates/gradle-github-release.yml
-                  parameters:
-                    gitEmail: $(GIT_EMAIL)
-                    gitUsername: $(GIT_USERNAME)
-                    gitHubConnection: $(GITHUB_CONNECTION)
-                    release_branch: main
-                    semver_chart: '${{ parameters.RELEASE_CHART_SEMVER }}'
-                    semver: '${{ parameters.RELEASE_SEMVER }}'
-            - template: azure-templates/chart-current-version.yml
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Build_release_candidate
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: Bluegreen_WaitForApproval
+      condition: succeeded()
+    jobs:
+      - job: make_release
+        displayName: Make github release
+        steps:
+          - ${{ if eq(parameters['SKIP_RELEASE'], False) }}:
+              - template: templates/node-job-setup/template.yaml@pagopaCommons
+                parameters:
+                  persistCredentials: true
+              - template: azure-templates/gradle-github-release.yml
+                parameters:
+                  gitEmail: $(GIT_EMAIL)
+                  gitUsername: $(GIT_USERNAME)
+                  gitHubConnection: $(GITHUB_CONNECTION)
+                  release_branch: main
+                  semver_chart: '${{ parameters.RELEASE_CHART_SEMVER }}'
+                  semver: '${{ parameters.RELEASE_SEMVER }}'
+          - template: azure-templates/chart-current-version.yml
 
   - stage: "tag_docker_release"
     displayName: 'Tag Docker image to be release'
