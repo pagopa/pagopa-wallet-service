@@ -214,7 +214,7 @@ stages:
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    dependsOn: Blue_deployment
+    dependsOn: Deploy_UAT_Blue
     variables:
       commitUrl: $[ stageDependencies.Build_release_candidate.build.outputs['chart_current_version.commitUrl'] ]
     jobs:
