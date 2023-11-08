@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopawalletservice
-    tag: "0.0.1"
+    tag: "0.0.3"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -32,9 +32,9 @@ microservice-chart:
     path: /pagopa-wallet-service/(.*)
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: ""
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -91,8 +91,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
-  tolerations: [ ]
+  nodeSelector: {}
+  tolerations: []
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -106,4 +106,3 @@ microservice-chart:
     deployment:
       image:
         tag: ""
-
