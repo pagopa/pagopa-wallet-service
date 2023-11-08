@@ -36,8 +36,23 @@
     "circuit": "VISA"
   },
   "confirmPayment": {
-    "state": "PAYMENT_COMPLETE",
-    "url": "http://example.test"
+    "state": "GDI_VERIFICATION",
+    "url": null,
+    "operation": null,
+    "fieldSet": {
+      "sessionId": "sessionId",
+      "securityToken": null,
+      "fields": [
+        {
+          "type": "GDI",
+          "propertyClass": "GDI",
+          "id": "GDI",
+          "src": "https://example.test"
+        }
+      ],
+      "state": null,
+      "url": null
+    }
   },
   "refunds": {
     "operationId": "operationId",
