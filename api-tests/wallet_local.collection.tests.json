@@ -37,11 +37,6 @@
             "key": "x-user-id",
             "value": "{{x-user-id}}",
             "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{authorization}}",
-            "type": "text"
           }
         ],
         "body": {
