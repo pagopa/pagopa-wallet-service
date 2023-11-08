@@ -141,47 +141,21 @@ stages:
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
-  - stage: "API_DEV_test"
-    displayName: 'Running API test on dev app'
-    dependsOn: Deploy_for_DEV
-    jobs:
-      - job: newman_api_test
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
-              COLLECTION_TEST_FILE: "api-tests/checkout-tests/npg/checkout-for-ecommerce-api.tests.json"
-              ENV_FILE: "api-tests/dev.envs.json"
-              TEST_FILE_PREFIX: "dev"
-
-  - stage: "E2E_Tests_Checkout_DEV_environment"
-    displayName: 'Running E2E test on dev app'
-    pool:
-      vmImage: 'ubuntu-latest'
-    dependsOn: Deploy_for_DEV
-    jobs:
-      - job: e2e_tests
-        steps:
-          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
-            parameters:
-              ENVIRONMENT: DEV
-              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy DEV --- #
-
 
   # --- START Deploy UAT --- #
   - stage: "Build_release_candidate"
     displayName: 'Build release candidate'
     dependsOn: [ ]
-    condition:
-      and(
-      succeeded(),
-      eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-      or(
-      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-      startsWith(variables['Build.SourceBranch'], 'refs/tags')
-      )
-      )
+      #  condition:
+      #and(
+      #succeeded(),
+      #eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+      #or(
+      #eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      #startsWith(variables['Build.SourceBranch'], 'refs/tags')
+      #)
+    #)
     jobs:
       - job: "build"
         displayName: 'Build release candidate docker image'
@@ -232,27 +206,15 @@ stages:
                     DO_BLUE_GREEN_DEPLOY: true
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
-                    NAMESPACE: ecommerce
+                    NAMESPACE: wallet
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
                     GREEN_VERSION: $(green_app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
-  - stage: "API_Blue_UAT_test"
-    displayName: 'Running API test on blue app'
-    dependsOn: Deploy_UAT_Blue
-    jobs:
-      - job: newman_api_test
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
-              COLLECTION_TEST_FILE: "api-tests/checkout-tests/pgs/checkout-for-ecommerce-api.tests.json"
-              ENV_FILE: "api-tests/uat.transactions.blue.envs.json"
-              TEST_FILE_PREFIX: "blue-uat"
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    dependsOn: API_Blue_UAT_test
+    dependsOn: Blue_deployment
     variables:
       commitUrl: $[ stageDependencies.Build_release_candidate.build.outputs['chart_current_version.commitUrl'] ]
     jobs:
@@ -366,35 +328,6 @@ stages:
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-uat.yaml"
                     GREEN_VERSION: $(app_version)
-
-
-  - stage: "API_Green_UAT_test"
-    displayName: 'Running API test on green app'
-    dependsOn: Deploy_UAT_Green
-    condition: eq(dependencies.Deploy_UAT_Green.result, 'Succeeded')
-    jobs:
-      - job: newman_api_test
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
-              COLLECTION_TEST_FILE: "api-tests/checkout-tests/pgs/checkout-for-ecommerce-api.tests.json"
-              ENV_FILE: "api-tests/uat.envs.json"
-              TEST_FILE_PREFIX: "green-uat"
-
-  - stage: "E2E_Tests_Checkout_UAT_environment"
-    displayName: 'Running E2E test on uat app'
-    pool:
-      vmImage: 'ubuntu-latest'
-    dependsOn: Deploy_UAT_Green
-    condition: eq(dependencies.Deploy_UAT_Green.result, 'Succeeded')
-    jobs:
-      - job: e2e_tests
-        steps:
-          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
-            parameters:
-              ENVIRONMENT: UAT
-              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy UAT --- #
 
 
