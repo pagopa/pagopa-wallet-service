@@ -10,14 +10,14 @@ microservice-chart:
     httpGet:
       path: /actuator/health/liveness
       port: 8080
-    initialDelaySeconds: 90
+    initialDelaySeconds: 120
     failureThreshold: 6
     periodSeconds: 10
   readinessProbe:
     httpGet:
       path: /actuator/health/readiness
       port: 8080
-    initialDelaySeconds: 90
+    initialDelaySeconds: 120
     failureThreshold: 6
     periodSeconds: 10
   deployment:
@@ -43,10 +43,10 @@ microservice-chart:
   resources:
     requests:
       memory: "512Mi"
-      cpu: "0.25"
+      cpu: "300m"
     limits:
       memory: "512Mi"
-      cpu: "0.25"
+      cpu: "300m"
   autoscaling:
     enable: false
     minReplica: 1
@@ -64,21 +64,30 @@ microservice-chart:
     MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
+    REDIS_HOST: pagopa-d-weu-wallet-redis.redis.cache.windows.net
+    REDIS_PORT: "6380"
+    REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
     NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
     ECS_SERVICE_ENVIRONMENT: "dev"
+    WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WEBVIEW_PAYMENT_WALLET_URL: https://dev.payment-wallet.pagopa.it/onboarding
     SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it/"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"
     SESSION_URL_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.dev.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+    ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
+    ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
+    REDIS_PASSWORD: redis-wallet-password
+    ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
