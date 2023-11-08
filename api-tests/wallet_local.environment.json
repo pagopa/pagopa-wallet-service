@@ -1,0 +1,55 @@
+{
+	"id": "d571e1c2-edbc-46c8-8045-1fb07412d102",
+	"name": "Wallet local env",
+	"values": [
+		{
+			"key": "HOSTNAME",
+			"value": "http://localhost:8200",
+			"enabled": true
+		},
+		{
+			"key": "x-user-id",
+			"value": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+			"enabled": true
+		},
+		{
+			"key": "invalid-x-user-id",
+			"value": "invalidUserId",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_PAYMENT_METHOD_ID",
+			"value": "68473f64-5717-4562-b3fc-2c963f66afa6",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "PAYMENT_METHOD_ID",
+			"value": "378d0b4f-8b69-46b0-8215-07785fe1aad4",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "WALLET_ID",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_WALLET_ID",
+			"value": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "USE_DIAGNOSTIC_TRACING",
+			"value": "true",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2023-10-25T15:48:28.522Z",
+	"_postman_exported_using": "Postman/10.19.7"
+}
