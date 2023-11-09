@@ -74,7 +74,7 @@ microservice-chart:
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
-    ECS_SERVICE_ENVIRONMENT: "uat"
+    ECS_SERVICE_ENVIRONMENT: "dev"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WEBVIEW_PAYMENT_WALLET_URL: https://uat.payment-wallet.pagopa.it/onboarding #set suffix 'npg-onboarding' to use npg workflow. set suffix 'onboading' to use pm workflow
