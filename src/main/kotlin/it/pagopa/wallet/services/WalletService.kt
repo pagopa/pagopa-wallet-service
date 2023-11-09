@@ -139,9 +139,7 @@ class WalletService(
                                     .orderId(orderId)
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                    .customerId(
-                                        ""
-                                    ) // TODO To be replaced with the one coming from wallet-token
+                                // TODO customerId must be valorised with the one coming from
                             )
                             .paymentSession(
                                 PaymentSession()

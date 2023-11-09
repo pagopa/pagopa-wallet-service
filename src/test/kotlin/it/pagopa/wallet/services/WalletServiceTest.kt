@@ -122,7 +122,6 @@ class WalletServiceTest {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
             val uniqueId = getUniqueId()
             val orderId = uniqueId
-            val customerId = ""
             val contractId = uniqueId
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -215,7 +214,6 @@ class WalletServiceTest {
                                 .orderId(orderId)
                                 .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                 .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                .customerId(customerId)
                         )
                         .paymentSession(
                             PaymentSession()
