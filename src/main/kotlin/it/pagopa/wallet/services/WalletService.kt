@@ -107,9 +107,9 @@ class WalletService(
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
                     .map { paymentMethod -> paymentMethod to it }
             }
-            .flatMap {
+            .flatMap { (paymentMethodResponse, wallet) ->
                 generateNPGUniqueIdentifiers().map { (orderId, contractId) ->
-                    Triple(Pair(orderId, contractId), it.first, it.second)
+                    Triple(Pair(orderId, contractId), paymentMethodResponse, wallet)
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
