@@ -30,7 +30,7 @@ class NpgClientTest {
     @Test
     fun `Should create payment order build successfully`() {
         val fields = Fields().sessionId(UUID.randomUUID().toString())
-        fields.fields.addAll(
+        fields.fields!!.addAll(
             listOf(
                 Field()
                     .id(UUID.randomUUID().toString())
@@ -51,7 +51,7 @@ class NpgClientTest {
         )
 
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willReturn(mono { fields })
 
         // test and assertions
@@ -70,7 +70,7 @@ class NpgClientTest {
                 .circuit(BrandEnum.MASTERCARD.name)
 
         // prerequisite
-        given(paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
+        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
             .willReturn(mono { cardDataResponse })
 
         // test and assertions
@@ -83,7 +83,7 @@ class NpgClientTest {
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
         // prerequisite
 
-        given(paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
+        given(paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -111,7 +111,7 @@ class NpgClientTest {
 
         // prerequisite
         given(
-                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
+                paymentServicesApi.apiBuildConfirmPaymentPost(
                     correlationId,
                     ConfirmPaymentRequest().amount("0").sessionId(sessionId)
                 )
@@ -129,12 +129,7 @@ class NpgClientTest {
         // prerequisite
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
 
-        given(
-                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    confirmPaymentRequest
-                )
-            )
+        given(paymentServicesApi.apiBuildConfirmPaymentPost(correlationId, confirmPaymentRequest))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -157,7 +152,7 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication`() {
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -180,7 +175,7 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with INTERNAL_SERVER_ERROR error for 401 during communication`() {
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willThrow(
                 WebClientResponseException.create(
                     401,
@@ -203,7 +198,7 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for 500 from ecommerce-payment-methods`() {
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -226,7 +221,7 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for 404 from ecommerce-payment-methods`() {
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willThrow(
                 WebClientResponseException.create(
                     404,
@@ -249,7 +244,7 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with INTERNAL_SERVER_ERROR error for 400 from ecommerce-payment-methods`() {
         // prerequisite
-        given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest))
             .willThrow(
                 WebClientResponseException.create(
                     400,

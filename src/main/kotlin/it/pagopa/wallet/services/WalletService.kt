@@ -262,10 +262,12 @@ class WalletService(
             }
             .doOnNext { logger.debug("State Response: ${it.first}") }
             .filter { (state) ->
-                state.state == State.GDI_VERIFICATION &&
+                state.state == WorkflowState.GDI_VERIFICATION &&
                     state.fieldSet != null &&
-                    state.fieldSet!!.fields.isNotEmpty() &&
-                    state.fieldSet!!.fields[0]!!.src != null
+                    Optional.ofNullable(state.fieldSet!!.fields)
+                        .orElseGet { listOf<Field>() }
+                        .isNotEmpty() &&
+                    state.fieldSet!!.fields!![0]!!.src != null
             }
             .switchIfEmpty {
                 walletRepository
@@ -284,7 +286,7 @@ class WalletService(
                                         Base64.getUrlEncoder()
                                             .encodeToString(
                                                 it.fieldSet!!
-                                                    .fields[0]
+                                                    .fields!![0]
                                                     .src!!
                                                     .toByteArray(StandardCharsets.UTF_8)
                                             )

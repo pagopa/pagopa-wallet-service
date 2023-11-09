@@ -28,7 +28,7 @@ class NpgClient(
         val response: Mono<Fields> =
             try {
                 logger.info("Sending orderBuild with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest)
+                paymentServicesApi.apiOrdersBuildPost(correlationId, createHostedOrderRequest)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -45,7 +45,7 @@ class NpgClient(
         val response: Mono<CardDataResponse> =
             try {
                 logger.info("getCardData with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId)
+                paymentServicesApi.apiBuildCardDataGet(correlationId, sessionId)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -65,10 +65,7 @@ class NpgClient(
         val response: Mono<StateResponse> =
             try {
                 logger.info("confirmPayment with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    confirmPaymentRequest
-                )
+                paymentServicesApi.apiBuildConfirmPaymentPost(correlationId, confirmPaymentRequest)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }

@@ -100,7 +100,7 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val uniqueId = uniqueIdUtils.generateUniqueId()
         val fields = Fields().sessionId(UUID.randomUUID().toString())
-        fields.fields.addAll(
+        fields.fields!!.addAll(
             listOf(
                 Field()
                     .id(UUID.randomUUID().toString())

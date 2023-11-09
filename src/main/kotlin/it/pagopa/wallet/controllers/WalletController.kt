@@ -1,5 +1,6 @@
 package it.pagopa.wallet.controllers
 
+import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
@@ -76,7 +77,8 @@ class WalletController(
                         SessionWalletCreateResponseDto()
                             .orderId(orderId)
                             .cardFormFields(
-                                it.fields
+                                Optional.ofNullable(it.fields)
+                                    .orElseGet { listOf<Field>() }
                                     .stream()
                                     .map { f ->
                                         FieldDto()
