@@ -25,16 +25,18 @@ microservice-chart:
   service:
     create: true
     type: ClusterIP
-    port: 8080
+    ports:
+      - 8080
   ingress:
     create: true
     host: "weudev.wallet.internal.dev.platform.pagopa.it"
     path: /pagopa-wallet-service/(.*)
+    servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: ""
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -72,10 +74,10 @@ microservice-chart:
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
-    ECS_SERVICE_ENVIRONMENT: "dev"
+    ECS_SERVICE_ENVIRONMENT: "uat"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
-    WEBVIEW_PAYMENT_WALLET_URL: https://dev.payment-wallet.pagopa.it/npg-onboarding #set suffix 'npg-onboarding' to use npg workflow. set suffix 'onboading' to use pm workflow
+    WEBVIEW_PAYMENT_WALLET_URL: https://uat.payment-wallet.pagopa.it/onboarding #set suffix 'npg-onboarding' to use npg workflow. set suffix 'onboading' to use pm workflow
     SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it/"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"
@@ -91,8 +93,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
-  tolerations: [ ]
+  nodeSelector: {}
+  tolerations: []
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
