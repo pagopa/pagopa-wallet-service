@@ -1,5 +1,5 @@
 {
-	"id": "d571e1c2-edbc-46c8-8045-1fb07412d102",
+	"id": "2344b916-4f0f-45f8-8c96-1ee7ca59e1e3",
 	"name": "Wallet local env",
 	"values": [
 		{
@@ -47,9 +47,74 @@
 			"value": "true",
 			"type": "default",
 			"enabled": true
+		},
+		{
+			"key": "ORDER_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_IFRAME_FIELD_URL",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CORRELATION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_SESSION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_IFRAME_FIELD_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "SESSION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_NUMBER",
+			"value": "4242424242424242",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_CVV",
+			"value": "123",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_HOLDER_NAME",
+			"value": "Mario Rossi",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_EXP_DATE",
+			"value": "12/30",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_ORDER_ID",
+			"value": "test",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-10-25T15:48:28.522Z",
-	"_postman_exported_using": "Postman/10.19.7"
+	"_postman_exported_at": "2023-11-08T22:30:57.522Z",
+	"_postman_exported_using": "Postman/10.19.17"
 }
