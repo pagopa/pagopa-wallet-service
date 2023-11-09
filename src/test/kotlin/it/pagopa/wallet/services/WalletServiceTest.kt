@@ -43,7 +43,6 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
@@ -123,14 +122,13 @@ class WalletServiceTest {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
             val uniqueId = getUniqueId()
             val orderId = uniqueId
-            val customerId = uniqueId
             val contractId = uniqueId
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
-                val nggFields = Fields().sessionId(sessionId)
-                nggFields.fields.addAll(
+                val npgFields = Fields().sessionId(sessionId)
+                npgFields.fields.addAll(
                     listOf(
                         Field()
                             .id(UUID.randomUUID().toString())
@@ -149,10 +147,32 @@ class WalletServiceTest {
                             .propertyClass("c")
                     )
                 )
+                val sessionResponseDto =
+                    SessionWalletCreateResponseDto()
+                        .orderId(orderId)
+                        .cardFormFields(
+                            listOf(
+                                FieldDto()
+                                    .id(UUID.randomUUID().toString())
+                                    .src(URI.create("https://test.it/h"))
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                FieldDto()
+                                    .id(UUID.randomUUID().toString())
+                                    .src(URI.create("https://test.it/p"))
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                FieldDto()
+                                    .id(UUID.randomUUID().toString())
+                                    .src(URI.create("https://test.it/c"))
+                                    .propertyClass("cvv")
+                                    .propertyClass("c"),
+                            )
+                        )
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { uniqueId }
+                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
@@ -194,7 +214,6 @@ class WalletServiceTest {
                                 .orderId(orderId)
                                 .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                 .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                .customerId(customerId)
                         )
                         .paymentSession(
                             PaymentSession()
@@ -217,9 +236,9 @@ class WalletServiceTest {
                 given {
                         npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
                     }
-                    .willAnswer { mono { nggFields } }
+                    .willAnswer { mono { npgFields } }
 
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(
@@ -229,11 +248,9 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-
                 /* test */
-                Hooks.onOperatorDebug()
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value, orderId))
-                    .expectNext(Pair(nggFields, expectedLoggedAction))
+                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                     .verifyComplete()
             }
         }
