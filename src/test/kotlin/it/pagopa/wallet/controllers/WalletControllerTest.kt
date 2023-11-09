@@ -4,12 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import it.pagopa.generated.npg.model.Field
-import it.pagopa.generated.npg.model.Fields
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
-import it.pagopa.generated.wallet.model.WalletVerifyRequestCardDetailsDto
-import it.pagopa.generated.wallet.model.WalletVerifyRequestsResponseDto
-import it.pagopa.generated.wallet.model.WalletsDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
@@ -67,7 +62,7 @@ class WalletControllerTest {
                 uniqueIdUtils
             )
 
-        given { uniqueIdUtils.generateUniqueId() }.willReturn("ABCDEFGHabcdefgh")
+        given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })
     }
 
     @Test
@@ -98,35 +93,24 @@ class WalletControllerTest {
     fun testCreateSessionWallet() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
-        val uniqueId = uniqueIdUtils.generateUniqueId()
-        val fields = Fields().sessionId(UUID.randomUUID().toString())
-        fields.fields.addAll(
-            listOf(
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/h")
-                    .propertyClass("holder")
-                    .propertyClass("h")
-                    .type("type"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/p")
-                    .propertyClass("pan")
-                    .propertyClass("p")
-                    .type("type"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/c")
-                    .propertyClass("cvv")
-                    .propertyClass("c")
-                    .type("type")
-            )
-        )
-        given { walletService.createSessionWallet(walletId, uniqueId) }
+        val sessionResponseDto =
+            SessionWalletCreateResponseDto()
+                .orderId("W3948594857645ruey")
+                .cardFormFields(
+                    listOf(
+                        FieldDto()
+                            .id(UUID.randomUUID().toString())
+                            .src(URI.create("https://test.it/h"))
+                            .propertyClass("holder")
+                            .propertyClass("h")
+                            .type("type"),
+                    )
+                )
+        given { walletService.createSessionWallet(walletId) }
             .willReturn(
                 mono {
                     Pair(
-                        fields,
+                        sessionResponseDto,
                         LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
                     )
                 }
@@ -143,6 +127,8 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isOk
+            .expectBody()
+            .json(objectMapper.writeValueAsString(sessionResponseDto))
     }
 
     @Test
