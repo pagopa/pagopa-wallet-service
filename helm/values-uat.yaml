@@ -1,0 +1,149 @@
+microservice-chart:
+  namespace: "wallet"
+  nameOverride: ""
+  fullnameOverride: ""
+  canaryDelivery:
+    create: false
+    ingress:
+      create: true
+      canary:
+        type: bluegreen
+    service:
+      create: true
+    deployment:
+      create: true
+      image:
+        repository: pagopaucommonacr.azurecr.io/pagopawalletservice
+        tag: "latest"
+        pullPolicy: Always
+      envConfig:
+        MONGO_HOST: pagopa-u-weu-wallet-cosmos-account.mongo.cosmos.azure.com
+        MONGO_USERNAME: pagopa-u-weu-wallet-cosmos-account
+        MONGO_PORT: "10255"
+        MONGO_SSL_ENABLED: "true"
+        REDIS_HOST: pagopa-u-weu-wallet-redis.redis.cache.windows.net
+        REDIS_PORT: "6380"
+        REDIS_SSL_ENABLED: "true"
+        WEB_LOGGING_LEVEL: "off"
+        NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
+        NPG_SERVICE_READ_TIMEOUT: "10000"
+        NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
+        ECS_SERVICE_NAME: "pagopa-wallet-service"
+        ECS_SERVICE_ENVIRONMENT: "uat"
+        WALLET_SESSION_TTL: "100000"
+        WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
+        WEBVIEW_PAYMENT_WALLET_URL: https://uat.payment-wallet.pagopa.it/onboarding #set suffix 'npg-onboarding' to use npg workflow. set suffix 'onboading' to use pm workflow
+        SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it/"
+        SESSION_URL_OUTCOME_SUFFIX: "/esito"
+        SESSION_URL_CANCEL_SUFFIX: "/cancel"
+        SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+        ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+        ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
+        ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
+      envSecret:
+        MONGO_PASSWORD: mongo-wallet-password
+        NPG_SERVICE_API_KEY: npg-service-api-key
+        REDIS_PASSWORD: redis-wallet-password
+        ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
+  image:
+    repository: pagopaucommonacr.azurecr.io/pagopawalletservice
+    tag: "0.0.1"
+    pullPolicy: Always
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 8080
+    initialDelaySeconds: 40
+    failureThreshold: 6
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: 8080
+    initialDelaySeconds: 40
+    failureThreshold: 6
+    periodSeconds: 10
+  deployment:
+    create: true
+  service:
+    create: true
+    type: ClusterIP
+    ports:
+      - 8080
+  ingress:
+    create: true
+    host: "weuuat.wallet.internal.uat.platform.pagopa.it"
+    path: /pagopa-wallet-service/(.*)
+    servicePort: 8080
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+  podAnnotations: {}
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "300m"
+    limits:
+      memory: "512Mi"
+      cpu: "300m"
+  autoscaling:
+    enable: false
+    minReplica: 1
+    maxReplica: 10
+    pollingInterval: 10 # seconds
+    cooldownPeriod: 50 # seconds
+    triggers:
+      - type: cpu
+        metadata:
+          # Required
+          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          value: "75"
+  envConfig:
+    MONGO_HOST: pagopa-u-weu-wallet-cosmos-account.mongo.cosmos.azure.com
+    MONGO_USERNAME: pagopa-u-weu-wallet-cosmos-account
+    MONGO_PORT: "10255"
+    MONGO_SSL_ENABLED: "true"
+    REDIS_HOST: pagopa-u-weu-wallet-redis.redis.cache.windows.net
+    REDIS_PORT: "6380"
+    REDIS_SSL_ENABLED: "true"
+    WEB_LOGGING_LEVEL: "off"
+    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
+    NPG_SERVICE_READ_TIMEOUT: "10000"
+    NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
+    ECS_SERVICE_NAME: "pagopa-wallet-service"
+    ECS_SERVICE_ENVIRONMENT: "uat"
+    WALLET_SESSION_TTL: "100000"
+    WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
+    WEBVIEW_PAYMENT_WALLET_URL: https://uat.payment-wallet.pagopa.it/onboarding #set suffix 'npg-onboarding' to use npg workflow. set suffix 'onboading' to use pm workflow
+    SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it/"
+    SESSION_URL_OUTCOME_SUFFIX: "/esito"
+    SESSION_URL_CANCEL_SUFFIX: "/cancel"
+    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+    ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
+    ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
+  envSecret:
+    MONGO_PASSWORD: mongo-wallet-password
+    NPG_SERVICE_API_KEY: npg-service-api-key
+    REDIS_PASSWORD: redis-wallet-password
+    ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
+  keyvault:
+    name: "pagopa-u-wallet-kv"
+    tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
+  nodeSelector: {}
+  tolerations: []
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node_type
+                operator: In
+                values:
+                  - user
