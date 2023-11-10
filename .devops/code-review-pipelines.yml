@@ -78,3 +78,4 @@ stages:
               ENV_FILE: "api-tests/wallet_local.environment.json"
               API_TEST_FILE: "api-tests/wallet_local.collection.tests.json"
               TEST_FILE_PREFIX: "wallet-api-test"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
