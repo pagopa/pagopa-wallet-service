@@ -64,31 +64,12 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<SessionWalletCreateResponseDto>> {
-        val orderId = uniqueIdUtils.generateUniqueId()
         return walletService
-            .createSessionWallet(walletId, orderId)
-            .flatMap { (fields, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map { fields }
+            .createSessionWallet(walletId)
+            .flatMap { (createSessionResponse, walletEvent) ->
+                walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
             }
-            .map {
-                ResponseEntity.ok()
-                    .body(
-                        SessionWalletCreateResponseDto()
-                            .orderId(orderId)
-                            .cardFormFields(
-                                it.fields
-                                    .stream()
-                                    .map { f ->
-                                        FieldDto()
-                                            .id(f.id)
-                                            .src(URI.create(f.src))
-                                            .type(f.type)
-                                            .propertyClass(f.propertyClass)
-                                    }
-                                    .toList()
-                            )
-                    )
-            }
+            .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
     }
 
     /*

@@ -93,9 +93,8 @@ class WalletService(
     }
 
     fun createSessionWallet(
-        walletId: UUID,
-        orderId: String
-    ): Mono<Pair<Fields, LoggedAction<Wallet>>> {
+        walletId: UUID
+    ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
             .findById(walletId.toString())
@@ -108,7 +107,14 @@ class WalletService(
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
                     .map { paymentMethod -> paymentMethod to it }
             }
-            .flatMap { (paymentMethod, wallet) ->
+            .flatMap { (paymentMethodResponse, wallet) ->
+                generateNPGUniqueIdentifiers().map { (orderId, contractId) ->
+                    Triple(Pair(orderId, contractId), paymentMethodResponse, wallet)
+                }
+            }
+            .flatMap { (uniqueIds, paymentMethod, wallet) ->
+                val orderId = uniqueIds.first
+                val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
@@ -133,9 +139,7 @@ class WalletService(
                                     .orderId(orderId)
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                    .customerId(
-                                        uniqueIdUtils.generateUniqueId()
-                                    ) // TODO To be replaced with the one coming from wallet-token
+                                // TODO customerId must be valorised with the one coming from
                             )
                             .paymentSession(
                                 PaymentSession()
@@ -143,7 +147,7 @@ class WalletService(
                                     .recurrence(
                                         RecurringSettings()
                                             .action(RecurringAction.CONTRACT_CREATION)
-                                            .contractId(uniqueIdUtils.generateUniqueId())
+                                            .contractId(contractId)
                                             .contractType(RecurringContractType.CIT)
                                     )
                                     .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
@@ -155,10 +159,11 @@ class WalletService(
                                     .notificationUrl(notificationUrl.toString())
                             )
                     )
-                    .map { hostedOrderResponse -> hostedOrderResponse to wallet }
+                    .map { hostedOrderResponse -> Triple(hostedOrderResponse, wallet, orderId) }
             }
-            .map { (hostedOrderResponse, wallet) ->
-                hostedOrderResponse to
+            .map { (hostedOrderResponse, wallet, orderId) ->
+                Triple(
+                    hostedOrderResponse,
                     Wallet(
                         wallet.id,
                         wallet.userId,
@@ -170,12 +175,16 @@ class WalletService(
                         wallet.applications,
                         wallet.contractId,
                         wallet.details
-                    )
+                    ),
+                    orderId
+                )
             }
-            .flatMap { (hostedOrderResponse, wallet) ->
-                walletRepository.save(wallet.toDocument()).map { hostedOrderResponse to wallet }
+            .flatMap { (hostedOrderResponse, wallet, orderId) ->
+                walletRepository.save(wallet.toDocument()).map {
+                    Triple(hostedOrderResponse, wallet, orderId)
+                }
             }
-            .flatMap { (hostedOrderResponse, wallet) ->
+            .flatMap { (hostedOrderResponse, wallet, orderId) ->
                 npgSessionRedisTemplate
                     .save(
                         NpgSession(
@@ -189,10 +198,26 @@ class WalletService(
                         )
                     )
                     .toMono()
-                    .map { hostedOrderResponse to wallet }
+                    .map {
+                        SessionWalletCreateResponseDto()
+                            .orderId(orderId)
+                            .cardFormFields(
+                                hostedOrderResponse.fields
+                                    .stream()
+                                    .map { f ->
+                                        FieldDto()
+                                            .id(f.id)
+                                            .src(URI.create(f.src))
+                                            .type(f.type)
+                                            .propertyClass(f.propertyClass)
+                                    }
+                                    .toList()
+                            )
+                    }
+                    .map { it to wallet }
             }
-            .map { (hostedOrderResponse, wallet) ->
-                hostedOrderResponse to
+            .map { (sessionResponseDto, wallet) ->
+                sessionResponseDto to
                     LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
             }
     }
@@ -404,5 +429,17 @@ class WalletService(
             }
         }
         return wallet.setApplications(updatedServiceList)
+    }
+
+    /**
+     * The method is used to generate the unique ids useful for the request to NPG (orderId,
+     * contractId)
+     *
+     * @return Mono<Pair<orderId, contractId>>
+     */
+    private fun generateNPGUniqueIdentifiers(): Mono<Pair<String, String>> {
+        return uniqueIdUtils.generateUniqueId().flatMap { orderId ->
+            uniqueIdUtils.generateUniqueId().map { contractId -> orderId to contractId }
+        }
     }
 }
