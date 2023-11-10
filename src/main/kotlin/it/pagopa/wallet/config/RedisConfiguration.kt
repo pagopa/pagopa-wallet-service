@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.UniqueIdDocument
+import it.pagopa.wallet.repositories.UniqueIdTemplateWrapper
 import java.time.Duration
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -28,6 +30,19 @@ class RedisConfiguration {
         npgSessionRedisTemplate.keySerializer = StringRedisSerializer()
         npgSessionRedisTemplate.afterPropertiesSet()
         return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofMinutes(ttl))
+    }
+
+    @Bean
+    fun uniqueIdRedisTemplate(
+        redisConnectionFactory: RedisConnectionFactory
+    ): UniqueIdTemplateWrapper {
+        val uniqueIdTemplateWrapper = RedisTemplate<String, UniqueIdDocument>()
+        uniqueIdTemplateWrapper.connectionFactory = redisConnectionFactory
+        val jackson2JsonRedisSerializer = buildJackson2RedisSerializer(UniqueIdDocument::class.java)
+        uniqueIdTemplateWrapper.valueSerializer = jackson2JsonRedisSerializer
+        uniqueIdTemplateWrapper.keySerializer = StringRedisSerializer()
+        uniqueIdTemplateWrapper.afterPropertiesSet()
+        return UniqueIdTemplateWrapper(uniqueIdTemplateWrapper, Duration.ofSeconds(60))
     }
 
     private fun <T> buildJackson2RedisSerializer(clazz: Class<T>): Jackson2JsonRedisSerializer<T> {
