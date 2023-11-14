@@ -202,7 +202,7 @@ class WalletService(
                         SessionWalletCreateResponseDto()
                             .orderId(orderId)
                             .cardFormFields(
-                                hostedOrderResponse.fields
+                                hostedOrderResponse.fields!!
                                     .stream()
                                     .map { f ->
                                         FieldDto()
