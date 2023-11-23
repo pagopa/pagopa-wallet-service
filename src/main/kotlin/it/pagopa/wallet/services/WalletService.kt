@@ -409,7 +409,11 @@ class WalletService(
                     .map { wallet ->
                         LoggedAction(
                             wallet.toDomain(),
-                            WalletNotificationEvent(walletId.toString())
+                            WalletNotificationEvent(
+                                walletId.toString(),
+                                walletNotificationRequestDto.operationResult.value,
+                                walletNotificationRequestDto.timestampOperation.toString()
+                            )
                         )
                     }
             }
