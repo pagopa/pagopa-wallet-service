@@ -55,6 +55,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -77,6 +78,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             CardDetails(
                 WalletDetailsType.CARDS.name,
@@ -100,6 +102,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -116,6 +119,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -131,6 +135,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -144,6 +149,7 @@ object WalletTestUtils {
             TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
+            null,
             null,
             listOf(),
             null
@@ -159,6 +165,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            null,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),
@@ -180,6 +187,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            null,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),
@@ -209,6 +217,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
+            null,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
         )
 
@@ -223,6 +232,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
+            null,
             null
         )
 
@@ -237,6 +247,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(),
             CONTRACT_ID,
+            null,
             null
         )
 
@@ -251,6 +262,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS,
             null,
             listOf(),
+            null,
             null,
             null
         )
@@ -268,6 +280,7 @@ object WalletTestUtils {
             null,
             listOf(),
             CONTRACT_ID,
+            null,
             null
         )
     }

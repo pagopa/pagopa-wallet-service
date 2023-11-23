@@ -721,14 +721,6 @@ components:
             - VOIDED
             - REFUNDED
             - FAILED
-        authorizationCode:
-          type: string
-          description: Authorization code
-        paymentEndToEndId:
-          description: Circuit unique transaction ID
-          type: string
-        rrn:
-          type: string
       required:
         - timestampOperation
         - operationResult

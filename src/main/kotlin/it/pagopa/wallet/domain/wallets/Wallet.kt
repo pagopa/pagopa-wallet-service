@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
@@ -46,6 +47,7 @@ data class Wallet(
     val paymentInstrumentId: PaymentInstrumentId?,
     val applications: List<Application>,
     val contractId: ContractId?,
+    val validationOperationResult: OperationResultEnum?,
     val details: WalletDetails<*>?
 ) {
     fun toDocument(): Wallet =
@@ -58,6 +60,7 @@ data class Wallet(
             this.paymentMethodId.value.toString(),
             this.paymentInstrumentId?.value?.toString(),
             this.contractId?.contractId,
+            this.validationOperationResult?.value,
             this.applications.map { app ->
                 it.pagopa.wallet.documents.wallets.Application(
                     app.id.id.toString(),

@@ -82,6 +82,7 @@ class WalletService(
                     paymentInstrumentId = null,
                     listOf(), // TODO Find all services by serviceName
                     contractId = null,
+                    validationOperationResult = null,
                     details = null
                 )
             }
@@ -169,6 +170,7 @@ class WalletService(
                         wallet.paymentInstrumentId,
                         wallet.applications,
                         wallet.contractId,
+                        null,
                         wallet.details
                     ),
                     orderId
@@ -386,15 +388,23 @@ class WalletService(
                     .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
                     .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .flatMap { wallet ->
+                        val validationOperationResult = walletNotificationRequestDto.operationResult
                         val newWalletStatus =
-                            when (walletNotificationRequestDto.operationResult) {
+                            when (validationOperationResult) {
                                 WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
                                     WalletStatusDto.VALIDATED
                                 else -> {
                                     WalletStatusDto.ERROR
                                 }
                             }
-                        walletRepository.save(wallet.copy(status = newWalletStatus).toDocument())
+                        walletRepository.save(
+                            wallet
+                                .copy(
+                                    status = newWalletStatus,
+                                    validationOperationResult = validationOperationResult
+                                )
+                                .toDocument()
+                        )
                     }
                     .map { wallet ->
                         LoggedAction(
