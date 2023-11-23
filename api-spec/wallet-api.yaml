@@ -555,6 +555,8 @@ components:
       type: object
       description: Wallet creation response
       properties:
+        walletId:
+          $ref: '#/components/schemas/WalletId'
         redirectUrl:
           type: string
           format: url
@@ -563,6 +565,7 @@ components:
             payment instrument information with walletId and useDiagnosticTracing as query param
           example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
       required:
+        - walletId
         - redirectUrl
     WalletInfo:
       type: object
