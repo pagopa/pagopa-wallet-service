@@ -105,6 +105,15 @@ class WalletController(
         return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
+    override fun notifyWallet(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<Void>> {
+        TODO("Not yet implemented")
+    }
+
     /*
      * @formatter:off
      *
