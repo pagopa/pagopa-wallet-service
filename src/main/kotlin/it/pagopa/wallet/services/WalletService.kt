@@ -121,12 +121,7 @@ class WalletService(
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("orderId", orderId),
-                                Pair("paymentMethodId", paymentMethod.id)
-                            )
-                        )
+                        .build(mapOf(Pair("walletId", wallet.id.value), Pair("orderId", orderId)))
 
                 npgClient
                     .createNpgOrderBuild(

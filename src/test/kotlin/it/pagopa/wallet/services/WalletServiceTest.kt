@@ -57,7 +57,7 @@ class WalletServiceTest {
             "http://localhost:1234",
             "/esito",
             "/annulla",
-            "https://localhost/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}"
         )
 
     private val walletService: WalletService =
@@ -195,12 +195,8 @@ class WalletServiceTest {
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
                         .build(
                             mapOf(
+                                Pair("walletId", walletDocumentWithSessionWallet.id),
                                 Pair("orderId", orderId),
-                                Pair(
-                                    "paymentMethodId",
-                                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-                                        .paymentMethodId
-                                )
                             )
                         )
 
