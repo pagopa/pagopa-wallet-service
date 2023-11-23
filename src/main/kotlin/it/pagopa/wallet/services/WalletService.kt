@@ -361,6 +361,50 @@ class WalletService(
         return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
     }
 
+    fun notifyWallet(
+        walletId: WalletId,
+        orderId: String,
+        securityToken: String,
+        walletNotificationRequestDto: WalletNotificationRequestDto
+    ): Mono<LoggedAction<Wallet>> {
+        return mono { npgSessionRedisTemplate.findById(orderId) }
+            .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
+            .filter { session -> session.securityToken == securityToken }
+            .switchIfEmpty {
+                logger.error("Security token match failed")
+                Mono.error(SecurityTokenMatchException())
+            }
+            .flatMap { session ->
+                walletRepository
+                    .findById(walletId.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+                    .filter { wallet -> session.walletId == wallet.id }
+                    .switchIfEmpty {
+                        Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
+                    }
+                    .map { walletDocument -> walletDocument.toDomain() }
+                    .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+                    .flatMap { wallet ->
+                        val newWalletStatus =
+                            when (walletNotificationRequestDto.operationResult) {
+                                WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
+                                    WalletStatusDto.VALIDATED
+                                else -> {
+                                    WalletStatusDto.ERROR
+                                }
+                            }
+                        walletRepository.save(wallet.copy(status = newWalletStatus).toDocument())
+                    }
+                    .map { wallet ->
+                        LoggedAction(
+                            wallet.toDomain(),
+                            WalletNotificationEvent(walletId.toString())
+                        )
+                    }
+            }
+    }
+
     private fun toWallets(walletList: List<it.pagopa.wallet.documents.wallets.Wallet>): WalletsDto =
         WalletsDto().wallets(walletList.map { toWalletInfoDto(it) })
 

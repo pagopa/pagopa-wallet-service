@@ -58,8 +58,7 @@ class WalletControllerTest {
             WalletController(
                 walletService,
                 loggingEventRepository,
-                URI.create("https://dev.payment-wallet.pagopa.it/onboarding"),
-                uniqueIdUtils
+                URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
             )
 
         given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })

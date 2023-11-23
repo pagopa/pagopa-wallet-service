@@ -4,11 +4,12 @@ import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
-import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.util.*
+import kotlin.collections.map
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,8 +28,7 @@ import reactor.core.publisher.Mono
 class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
-    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI,
-    @Autowired private val uniqueIdUtils: UniqueIdUtils
+    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
 ) : WalletsApi {
 
     override fun createWallet(
@@ -105,13 +105,26 @@ class WalletController(
         return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
+    @SuppressWarnings("kotlin:S6508")
     override fun notifyWallet(
         walletId: UUID,
         orderId: String,
         walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
-        exchange: ServerWebExchange?
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
-        TODO("Not yet implemented")
+        return walletNotificationRequestDto.flatMap { requestDto ->
+            getAuthenticationToken(exchange)
+                .flatMap { securityToken ->
+                    walletService.notifyWallet(
+                        WalletId(walletId),
+                        orderId,
+                        securityToken,
+                        requestDto
+                    )
+                }
+                .flatMap { it.saveEvents(loggingEventRepository) }
+                .map { ResponseEntity.ok().build() }
+        }
     }
 
     /*
@@ -154,5 +167,16 @@ class WalletController(
                 ResponseEntity.ok().body(response)
             }
         }
+    }
+
+    private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {
+        return Mono.justOrEmpty(
+            Optional.ofNullable(exchange.request.headers["Authorization"])
+                .orElse(listOf())
+                .stream()
+                .findFirst()
+                .filter { header: String -> header.startsWith("Bearer ") }
+                .map { header: String -> header.substring("Bearer ".length) }
+        )
     }
 }

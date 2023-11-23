@@ -519,6 +519,7 @@ components:
         - CREATED
         - INITIALIZED
         - VALIDATION_REQUESTED
+        - VALIDATED
         - DELETED
         - ERROR
     WalletCardDetails:
