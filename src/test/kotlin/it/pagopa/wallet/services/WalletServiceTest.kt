@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -1024,7 +1025,6 @@ class WalletServiceTest {
         /* preconditions */
 
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
-
         /* test */
 
         StepVerifier.create(
@@ -1034,6 +1034,100 @@ class WalletServiceTest {
                 )
             )
             .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet not found exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(eq(orderId)) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    WalletTestUtils.NOTIFY_WALLET_REQUEST
+                )
+            )
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws session not found exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionToken = "token"
+
+        given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    WalletTestUtils.NOTIFY_WALLET_REQUEST
+                )
+            )
+            .expectError(SessionNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet id mismatch exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val sessionWalletId = UUID.randomUUID().toString()
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, sessionWalletId)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    WalletTestUtils.NOTIFY_WALLET_REQUEST
+                )
+            )
+            .expectError(WalletSessionMismatchException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet conflict status exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    WalletTestUtils.NOTIFY_WALLET_REQUEST
+                )
+            )
+            .expectError(WalletConflictStatusException::class.java)
             .verify()
     }
 }
