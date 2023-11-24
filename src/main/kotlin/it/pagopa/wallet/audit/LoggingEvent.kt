@@ -30,5 +30,5 @@ data class ServiceStatusChangedEvent(
     val serviceId: UUID,
     val serviceName: String,
     val oldStatus: ServiceStatus,
-    val newStatus: ServiceStatus,
+    val newStatus: ServiceStatus
 ) : LoggingEvent()

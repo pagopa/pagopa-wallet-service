@@ -1134,7 +1134,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `notify wallet should set wallet status to error`() {
+    fun `notify wallet should set wallet status to ERROR`() {
         /* preconditions */
         val orderId = "orderId"
         val sessionId = "sessionId"
@@ -1171,7 +1171,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `notify wallet should set wallet status to validated`() {
+    fun `notify wallet should set wallet status to VALIDATED`() {
         /* preconditions */
         val orderId = "orderId"
         val sessionId = "sessionId"
