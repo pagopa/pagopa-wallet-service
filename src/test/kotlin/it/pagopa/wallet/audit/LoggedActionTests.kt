@@ -22,6 +22,7 @@ class LoggedActionTests {
                 it,
                 WalletNotificationEvent(
                     it,
+                    "validationOperationId",
                     OperationResultEnum.EXECUTED.value,
                     WalletTestUtils.TIMESTAMP.toString()
                 )
@@ -104,6 +105,7 @@ class LoggedActionTests {
             listOf(
                 WalletNotificationEvent(
                     walletId,
+                    "validationOperationId",
                     OperationResultEnum.EXECUTED.value,
                     WalletTestUtils.TIMESTAMP.toString()
                 )

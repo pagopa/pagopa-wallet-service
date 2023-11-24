@@ -387,9 +387,11 @@ object WalletTestUtils {
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
             .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.DECLINED)
             .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
 }

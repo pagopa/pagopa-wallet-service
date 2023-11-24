@@ -711,6 +711,9 @@ components:
           type: string
           format: date-time
           description: Onboarding timestamp
+        operationId:
+          description: Operation ID
+          type: string
         operationResult:
           type: string
           description: outcome received by NPG - https://developer.nexi.it/it/api/notifica
