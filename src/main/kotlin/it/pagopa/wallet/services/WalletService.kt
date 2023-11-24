@@ -378,7 +378,7 @@ class WalletService(
             }
             .flatMap { session ->
                 walletRepository
-                    .findById(walletId.toString())
+                    .findById(walletId.value.toString())
                     .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
                     .filter { wallet -> session.walletId == wallet.id }
                     .switchIfEmpty {
