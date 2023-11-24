@@ -269,6 +269,7 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
+        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -283,6 +284,7 @@ class WalletControllerTest {
                         WALLET_DOMAIN,
                         WalletNotificationEvent(
                             walletId.toString(),
+                            operationId,
                             OperationResultEnum.EXECUTED.value,
                             Instant.now().toString()
                         )

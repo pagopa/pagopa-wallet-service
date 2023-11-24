@@ -411,6 +411,7 @@ class WalletService(
                             wallet.toDomain(),
                             WalletNotificationEvent(
                                 walletId.value.toString(),
+                                walletNotificationRequestDto.operationId,
                                 walletNotificationRequestDto.operationResult.value,
                                 walletNotificationRequestDto.timestampOperation.toString()
                             )

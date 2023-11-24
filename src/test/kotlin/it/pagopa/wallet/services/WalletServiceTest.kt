@@ -1139,6 +1139,7 @@ class WalletServiceTest {
         val orderId = "orderId"
         val sessionId = "sessionId"
         val sessionToken = "token"
+        val operationId = "validationOperationId"
         val walletDocument = walletDocumentVerifiedWithAPM()
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -1157,6 +1158,7 @@ class WalletServiceTest {
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
                     WALLET_UUID.value.toString(),
+                    operationId,
                     OperationResult.DECLINED.value,
                     notifyRequestDto.timestampOperation.toString()
                 )
@@ -1176,6 +1178,7 @@ class WalletServiceTest {
         val orderId = "orderId"
         val sessionId = "sessionId"
         val sessionToken = "token"
+        val operationId = "validationOperationId"
         val walletDocument = walletDocumentVerifiedWithAPM()
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -1194,6 +1197,7 @@ class WalletServiceTest {
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
                     WALLET_UUID.value.toString(),
+                    operationId,
                     OperationResult.EXECUTED.value,
                     notifyRequestDto.timestampOperation.toString()
                 )
