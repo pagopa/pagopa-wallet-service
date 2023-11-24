@@ -50,6 +50,7 @@ class WalletController(
             }
             .map {
                 WalletCreateResponseDto()
+                    .walletId(it.first)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
                             .fragment("walletId=${it.first}&useDiagnosticTracing=${it.second}")

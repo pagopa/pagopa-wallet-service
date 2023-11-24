@@ -56,13 +56,15 @@ class WalletControllerTest {
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build()
 
+    private val webviewPaymentUrl = URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+
     @BeforeEach
     fun beforeTest() {
         walletController =
             WalletController(
                 walletService,
                 loggingEventRepository,
-                URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+                    webviewPaymentUrl
             )
 
         given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })
@@ -90,6 +92,16 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isCreated
+            .expectBody()
+            .json(
+                objectMapper.writeValueAsString(
+                    WalletCreateResponseDto()
+                        .walletId(WALLET_DOMAIN.id.value)
+                        .redirectUrl(
+                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
+                        )
+                )
+            )
     }
 
     @Test
