@@ -383,8 +383,13 @@ object WalletTestUtils {
         return "W49357937935R869i"
     }
 
-    val NOTIFY_WALLET_REQUEST: WalletNotificationRequestDto =
+    val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
-            .operationResult(WalletNotificationRequestDto.OperationResultEnum.EXECUTED)
+            .operationResult(OperationResultEnum.EXECUTED)
+            .timestampOperation(OffsetDateTime.now())
+
+    val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.DECLINED)
             .timestampOperation(OffsetDateTime.now())
 }

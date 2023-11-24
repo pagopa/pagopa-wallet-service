@@ -290,7 +290,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
-            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST)
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
             .isOk
@@ -321,7 +321,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
-            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST)
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
             .isUnauthorized

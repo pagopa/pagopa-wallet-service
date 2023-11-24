@@ -410,7 +410,7 @@ class WalletService(
                         LoggedAction(
                             wallet.toDomain(),
                             WalletNotificationEvent(
-                                walletId.toString(),
+                                walletId.value.toString(),
                                 walletNotificationRequestDto.operationResult.value,
                                 walletNotificationRequestDto.timestampOperation.toString()
                             )
