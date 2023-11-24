@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
@@ -14,6 +15,7 @@ import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
@@ -106,6 +108,16 @@ class WalletController(
         return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
     @SuppressWarnings("kotlin:S6508")
     override fun notifyWallet(
         walletId: UUID,
@@ -115,6 +127,7 @@ class WalletController(
     ): Mono<ResponseEntity<Void>> {
         return walletNotificationRequestDto.flatMap { requestDto ->
             getAuthenticationToken(exchange)
+                .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
                 .flatMap { securityToken ->
                     walletService.notifyWallet(
                         WalletId(walletId),
@@ -172,7 +185,7 @@ class WalletController(
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {
         return Mono.justOrEmpty(
-            Optional.ofNullable(exchange.request.headers["Authorization"])
+            Optional.ofNullable(exchange.request.headers[HttpHeaders.AUTHORIZATION])
                 .orElse(listOf())
                 .stream()
                 .findFirst()

@@ -286,6 +286,8 @@ paths:
       summary: Update Wallet on NPG onboarding authorization response
       description: Update Wallet on NPG onboarding authorization response
       operationId: notifyWallet
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: walletId
@@ -818,3 +820,7 @@ components:
       maximum: 600
       exclusiveMaximum: true
       example: 502
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
