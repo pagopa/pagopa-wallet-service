@@ -306,7 +306,7 @@ class WalletControllerTest {
     }
 
     @Test
-    fun testNotifyWallet401() = runTest {
+    fun testNotifyWalletSecurityTokenMatchException() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
@@ -329,6 +329,25 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized
+            .expectBody()
+    }
+
+    @Test
+    fun testNotifyWalletSecurityTokenNotFoundException() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
