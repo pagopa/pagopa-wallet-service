@@ -61,11 +61,7 @@ class WalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         walletController =
-            WalletController(
-                walletService,
-                loggingEventRepository,
-                    webviewPaymentUrl
-            )
+            WalletController(walletService, loggingEventRepository, webviewPaymentUrl)
 
         given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })
     }
