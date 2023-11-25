@@ -366,6 +366,31 @@ class WalletService(
         return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
     }
 
+    fun findSessionWallet(
+        xUserId: UUID,
+        walletId: WalletId,
+        orderId: String,
+    ): Mono<Wallet> {
+        return mono { npgSessionRedisTemplate.findById(orderId) }
+            .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
+            .flatMap { session ->
+                walletRepository
+                    .findByIdAndUserId(walletId.value.toString(), xUserId.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+                    .filter { wallet -> session.walletId == wallet.id }
+                    .switchIfEmpty {
+                        Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
+                    }
+                    .map { walletDocument -> walletDocument.toDomain() }
+                    .filter { wallet ->
+                        wallet.status == WalletStatusDto.VALIDATION_REQUESTED ||
+                            wallet.status == WalletStatusDto.VALIDATED ||
+                            wallet.status == WalletStatusDto.ERROR
+                    }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            }
+    }
+
     private fun toWallets(walletList: List<it.pagopa.wallet.documents.wallets.Wallet>): WalletsDto =
         WalletsDto().wallets(walletList.map { toWalletInfoDto(it) })
 

@@ -4,6 +4,7 @@ import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -90,6 +91,22 @@ class WalletController(
     ): Mono<ResponseEntity<Void>> {
         // TODO To be implemented
         return mono { ResponseEntity.noContent().build() }
+    }
+
+    override fun getSessionWallet(
+        xUserId: UUID,
+        walletId: UUID,
+        orderId: String,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<SessionWalletRetrieveResponseDto>> {
+        return walletService.findSessionWallet(xUserId, WalletId(walletId), orderId).map {
+            ResponseEntity.ok(
+                    SessionWalletRetrieveResponseDto()
+                            .orderId(orderId)
+                            .walletId(walletId.toString())
+                            .isFinalOutcome(it.status == WalletStatusDto.VALIDATED || it.status == WalletStatusDto.ERROR)
+            )
+        }
     }
 
     override fun getWalletById(

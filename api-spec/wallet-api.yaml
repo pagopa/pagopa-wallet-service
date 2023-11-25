@@ -238,6 +238,66 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
+  /wallets/{walletId}/sessions/{orderId}:
+    get:
+      tags:
+        - wallets
+      summary: Get a session wallet
+      description: This endpoint returns an object containing data related to wallet session identified by orderId and walletId.
+      operationId: getSessionWallet
+      parameters:
+        - name: x-user-id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            $ref: '#/components/schemas/WalletId'
+        - name: orderId
+          in: path
+          description: ID of npg order
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrderId'
+
+      responses:
+        '200':
+          description: Session Wallet created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWalletRetrieveResponse'
+        '400':
+          description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '502':
+          description: Gateway error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '504':
+          description: Timeout serving request
   /wallets/{walletId}/sessions/{orderId}/validations:
     post:
       tags:
@@ -459,6 +519,7 @@ components:
         - CREATED
         - INITIALIZED
         - VALIDATION_REQUESTED
+        - VALIDATED
         - DELETED
         - ERROR
     WalletCardDetails:
@@ -640,6 +701,29 @@ components:
       required:
         - orderId
         - cardFormFields
+    SessionWalletRetrieveResponse:
+      type: object
+      description: Data related to session wallet
+      properties:
+        orderId:
+          type: string
+        walletId:
+          type: string
+        isFinalOutcome:
+          type: boolean
+        outcome:
+          type: number
+          enum:
+            - 0  # SUCCESS
+            - 1  # GENERIC_ERROR
+            - 2  # AUTH_ERROR
+            - 4  # TIMEOUT
+            - 8  # CANCELED_BY_USER
+            - 14 # INVALID_SESSION
+      required:
+        - orderId
+        - walletId
+        - isFinalOutcome
     Field:
       type: object
       properties:
@@ -731,3 +815,8 @@ components:
       maximum: 600
       exclusiveMaximum: true
       example: 502
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
