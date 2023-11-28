@@ -40,10 +40,14 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
@@ -65,6 +69,17 @@ class WalletServiceTest {
             "/annulla",
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}"
         )
+
+    companion object {
+        @JvmStatic
+        private fun operationResultAuthError() =
+            Stream.of(
+                Arguments.of(OperationResult.THREEDS_VALIDATED),
+                Arguments.of(OperationResult.DENIED_BY_RISK),
+                Arguments.of(OperationResult.THREEDS_FAILED),
+                Arguments.of(OperationResult.DECLINED)
+            )
+    }
 
     private val walletService: WalletService =
         WalletService(
@@ -1324,6 +1339,133 @@ class WalletServiceTest {
             SessionWalletRetrieveResponseDto()
                 .isFinalOutcome(false)
                 .walletId(walletId.toString())
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `find session should return response with final status true and outcome 8 CANCELED_BY_USER`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = WalletStatusDto.ERROR.value,
+                validationOperationResult = OperationResult.CANCELED.value
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `find session should return response with final status true and outcome 4 PENDING`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = WalletStatusDto.ERROR.value,
+                validationOperationResult = OperationResult.PENDING.value
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_4)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `find session should return response with final status true and outcome 1 GENERIC_ERROR`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = WalletStatusDto.ERROR.value,
+                validationOperationResult = OperationResult.VOIDED.value
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @ParameterizedTest
+    @MethodSource("operationResultAuthError")
+    fun `find session should return response with final status true and outcome 1 GENERIC_ERROR`(
+        operationResult: OperationResult
+    ) {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = WalletStatusDto.ERROR.value,
+                validationOperationResult = operationResult.value
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2)
                 .orderId(ORDER_ID)
 
         /* test */

@@ -540,7 +540,8 @@ class WalletService(
 
     /**
      * The method is used to retrieve the final outcome from validation operation result received
-     * from NPG
+     * from NPG NUMBER_0 -> SUCCESS NUMBER_1 -> GENERIC_ERROR NUMBER_2 -> AUTH_ERROR NUMBER_4 ->
+     * TIMEOUT NUMBER_8 -> CANCELED_BY_USER
      *
      * @param operationResult the operation result used for retrieve outcome
      * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
