@@ -233,7 +233,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
-            null,
+            OperationResultEnum.EXECUTED,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
         )
 
