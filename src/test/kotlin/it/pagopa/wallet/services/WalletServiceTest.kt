@@ -17,6 +17,7 @@ import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
@@ -1278,5 +1279,49 @@ class WalletServiceTest {
         StepVerifier.create(walletService.findSessionWallet(userId, WALLET_UUID, ORDER_ID))
             .expectError(WalletConflictStatusException::class.java)
             .verify()
+    }
+
+    @Test
+    fun `find session should return response with final status and outcome 0`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentValidated()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }.willReturn(Mono.just(walletDocument))
+
+        val responseDto = SessionWalletRetrieveResponseDto().isFinalOutcome(true).walletId(walletId.toString()).orderId(ORDER_ID).outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0)
+
+        /* test */
+        StepVerifier.create(
+                walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID)
+        )
+                .expectNext(responseDto)
+                .verifyComplete()
+    }
+
+    @Test
+    fun `find session should return response with final status false and outcome null`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }.willReturn(Mono.just(walletDocument))
+
+        val responseDto = SessionWalletRetrieveResponseDto().isFinalOutcome(false).walletId(walletId.toString()).orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(
+                walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID)
+        )
+                .expectNext(responseDto)
+                .verifyComplete()
     }
 }

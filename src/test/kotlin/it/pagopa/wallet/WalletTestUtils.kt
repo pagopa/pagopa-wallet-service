@@ -109,6 +109,23 @@ object WalletTestUtils {
         )
     }
 
+    fun walletDocumentValidated(): Wallet {
+        val creationDate = Instant.now().toString()
+        return Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.VALIDATED.name,
+                creationDate,
+                creationDate,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                OperationResultEnum.EXECUTED.toString(),
+                listOf(),
+                null
+        )
+    }
+
     fun walletDocumentEmptyServicesNullDetailsNoPaymentInstrument(): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(

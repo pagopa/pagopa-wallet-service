@@ -448,7 +448,7 @@ class WalletService(
                                 wallet.status == WalletStatusDto.ERROR
                         SessionWalletRetrieveResponseDto()
                             .orderId(orderId)
-                            .walletId(walletId.toString())
+                            .walletId(walletId.value.toString())
                             .isFinalOutcome(isFinalStatus)
                             .outcome(
                                 if (isFinalStatus)
