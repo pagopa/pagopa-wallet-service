@@ -10,6 +10,7 @@ import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -18,11 +19,15 @@ import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
 import java.util.*
+import java.util.stream.Stream
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
@@ -48,6 +53,15 @@ class WalletControllerTest {
     private lateinit var walletController: WalletController
 
     @Autowired private lateinit var webClient: WebTestClient
+
+    companion object {
+        @JvmStatic
+        private fun walletFinalStatus() =
+            Stream.of(
+                Arguments.of(WalletTestUtils.WALLET_VALIDATED),
+                Arguments.of(WalletTestUtils.WALLET_ERROR)
+            )
+    }
 
     private val objectMapper =
         JsonMapper.builder()
@@ -355,5 +369,62 @@ class WalletControllerTest {
             .expectStatus()
             .isUnauthorized
             .expectBody()
+    }
+
+    @Test
+    fun testFindSessionWithIsFinalOutcomeFalse() = runTest {
+        /* preconditions */
+        val xUserId = UUID.randomUUID()
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+
+        val findSessionResponseDto =
+            SessionWalletRetrieveResponseDto()
+                .walletId(walletId.toString())
+                .orderId(orderId)
+                .isFinalOutcome(false)
+
+        given { walletService.findSessionWallet(eq(xUserId), eq(WalletId(walletId)), eq(orderId)) }
+            .willReturn(Mono.just(WalletTestUtils.WALLET_VALIDATION_REQUESTED))
+
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/${walletId}/sessions/${orderId}")
+            .header("x-user-id", xUserId.toString())
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(objectMapper.writeValueAsString(findSessionResponseDto))
+    }
+
+    @ParameterizedTest
+    @MethodSource("walletFinalStatus")
+    fun testFindSessionWithIsFinalOutcomeTrue(walletWithFinalStatus: Wallet) = runTest {
+        /* preconditions */
+        val xUserId = UUID.randomUUID()
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+
+        val findSessionResponseDto =
+            SessionWalletRetrieveResponseDto()
+                .walletId(walletId.toString())
+                .orderId(orderId)
+                .isFinalOutcome(true)
+
+        given { walletService.findSessionWallet(eq(xUserId), eq(WalletId(walletId)), eq(orderId)) }
+            .willReturn(Mono.just(walletWithFinalStatus))
+
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/${walletId}/sessions/${orderId}")
+            .header("x-user-id", xUserId.toString())
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(objectMapper.writeValueAsString(findSessionResponseDto))
     }
 }
