@@ -1291,16 +1291,20 @@ class WalletServiceTest {
         val walletDocument = walletDocumentValidated()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }.willReturn(Mono.just(walletDocument))
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocument))
 
-        val responseDto = SessionWalletRetrieveResponseDto().isFinalOutcome(true).walletId(walletId.toString()).orderId(ORDER_ID).outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0)
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .orderId(ORDER_ID)
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0)
 
         /* test */
-        StepVerifier.create(
-                walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID)
-        )
-                .expectNext(responseDto)
-                .verifyComplete()
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
     }
 
     @Test
@@ -1313,15 +1317,18 @@ class WalletServiceTest {
         val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }.willReturn(Mono.just(walletDocument))
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocument))
 
-        val responseDto = SessionWalletRetrieveResponseDto().isFinalOutcome(false).walletId(walletId.toString()).orderId(ORDER_ID)
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(false)
+                .walletId(walletId.toString())
+                .orderId(ORDER_ID)
 
         /* test */
-        StepVerifier.create(
-                walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID)
-        )
-                .expectNext(responseDto)
-                .verifyComplete()
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
     }
 }
