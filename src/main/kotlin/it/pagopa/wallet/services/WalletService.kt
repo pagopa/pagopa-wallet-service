@@ -424,7 +424,7 @@ class WalletService(
         xUserId: UUID,
         walletId: WalletId,
         orderId: String,
-    ): Mono<Wallet> {
+    ): Mono<SessionWalletRetrieveResponseDto> {
         return mono { npgSessionRedisTemplate.findById(orderId) }
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
@@ -442,6 +442,22 @@ class WalletService(
                             wallet.status == WalletStatusDto.ERROR
                     }
                     .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+                    .map { wallet ->
+                        val isFinalStatus =
+                            wallet.status == WalletStatusDto.VALIDATED ||
+                                wallet.status == WalletStatusDto.ERROR
+                        SessionWalletRetrieveResponseDto()
+                            .orderId(orderId)
+                            .walletId(walletId.toString())
+                            .isFinalOutcome(isFinalStatus)
+                            .outcome(
+                                if (isFinalStatus)
+                                    wallet.validationOperationResult?.let {
+                                        retrieveFinalOutcome(it)
+                                    }
+                                else null
+                            )
+                    }
             }
     }
 
@@ -519,6 +535,32 @@ class WalletService(
     private fun generateNPGUniqueIdentifiers(): Mono<Pair<String, String>> {
         return uniqueIdUtils.generateUniqueId().flatMap { orderId ->
             uniqueIdUtils.generateUniqueId().map { contractId -> orderId to contractId }
+        }
+    }
+
+    /**
+     * The method is used to retrieve the final outcome from validation operation result received
+     * from NPG
+     *
+     * @param operationResult the operation result used for retrieve outcome
+     * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
+     */
+    private fun retrieveFinalOutcome(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum
+    ): SessionWalletRetrieveResponseDto.OutcomeEnum {
+        return when (operationResult) {
+            WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+            WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
+            WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED,
+            WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
+            WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED,
+            WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+            WalletNotificationRequestDto.OperationResultEnum.PENDING ->
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_4
+            else -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
         }
     }
 }

@@ -101,14 +101,7 @@ class WalletController(
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<SessionWalletRetrieveResponseDto>> {
         return walletService.findSessionWallet(xUserId, WalletId(walletId), orderId).map {
-            ResponseEntity.ok(
-                SessionWalletRetrieveResponseDto()
-                    .orderId(orderId)
-                    .walletId(walletId.toString())
-                    .isFinalOutcome(
-                        it.status == WalletStatusDto.VALIDATED || it.status == WalletStatusDto.ERROR
-                    )
-            )
+            ResponseEntity.ok(it)
         }
     }
 
