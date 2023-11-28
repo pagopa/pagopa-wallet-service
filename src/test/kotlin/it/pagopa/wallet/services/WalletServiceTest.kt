@@ -5,6 +5,7 @@ import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -27,6 +28,7 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
@@ -1209,5 +1211,72 @@ class WalletServiceTest {
             )
             .expectNext(expectedLoggedAction)
             .verifyComplete()
+    }
+
+    @Test
+    fun `find session should throws session not found exception`() {
+        /* preconditions */
+        given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
+        /* test */
+
+        StepVerifier.create(walletService.findSessionWallet(USER_ID.id, WALLET_UUID, ORDER_ID))
+            .expectError(SessionNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `find session should throws wallet not found exception`() {
+        /* preconditions */
+        val userId = USER_ID.id
+        val walletId = WALLET_UUID.value
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(eq(ORDER_ID)) }.willReturn(npgSession)
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.empty())
+        /* test */
+
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `find session should throws wallet id mismatch exception`() {
+        /* preconditions */
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val sessionWalletId = UUID.randomUUID().toString()
+
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, sessionWalletId)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { walletRepository.findByIdAndUserId(any(), any()) }
+            .willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(walletService.findSessionWallet(userId, WALLET_UUID, ORDER_ID))
+            .expectError(WalletSessionMismatchException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `find session should throws wallet conflict status exception`() {
+        /* preconditions */
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { walletRepository.findByIdAndUserId(any(), eq(userId.toString())) }
+            .willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(walletService.findSessionWallet(userId, WALLET_UUID, ORDER_ID))
+            .expectError(WalletConflictStatusException::class.java)
+            .verify()
     }
 }
