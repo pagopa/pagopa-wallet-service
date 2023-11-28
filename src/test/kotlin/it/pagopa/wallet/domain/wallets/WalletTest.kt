@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.details.CardDetails
@@ -23,6 +24,7 @@ class WalletTest {
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(),
                 WalletTestUtils.CONTRACT_ID,
+                OperationResultEnum.EXECUTED,
                 null
             )
         }
@@ -48,6 +50,7 @@ class WalletTest {
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,
+                OperationResultEnum.EXECUTED,
                 null
             )
         }
@@ -74,6 +77,40 @@ class WalletTest {
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,
+                OperationResultEnum.EXECUTED,
+                CardDetails(
+                    WalletTestUtils.BIN,
+                    WalletTestUtils.MASKED_PAN,
+                    WalletTestUtils.EXP_DATE,
+                    WalletTestUtils.BRAND,
+                    WalletTestUtils.HOLDER_NAME
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `can construct wallet without operation result `() {
+
+        assertDoesNotThrow {
+            Wallet(
+                WalletTestUtils.WALLET_UUID,
+                WalletTestUtils.USER_ID,
+                WalletStatusDto.CREATED,
+                Instant.now(),
+                Instant.now(),
+                WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
+                WalletTestUtils.PAYMENT_INSTRUMENT_ID,
+                listOf(
+                    Application(
+                        WalletTestUtils.SERVICE_ID,
+                        WalletTestUtils.SERVICE_NAME,
+                        ServiceStatus.DISABLED,
+                        Instant.now()
+                    )
+                ),
+                WalletTestUtils.CONTRACT_ID,
+                null,
                 CardDetails(
                     WalletTestUtils.BIN,
                     WalletTestUtils.MASKED_PAN,

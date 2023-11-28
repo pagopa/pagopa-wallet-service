@@ -112,6 +112,16 @@
 			"key": "INVALID_ORDER_ID",
 			"value": "test",
 			"enabled": true
+		},
+		{
+			"key": "VALID_SECURITY_TOKEN",
+			"value": "securityToken",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_SECURITY_TOKEN",
+			"value": "invalidSecurityToken",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",

@@ -1,9 +1,9 @@
 {
   "info": {
-    "_postman_id": "6ef5e3ab-c740-4fa3-83da-24e01edff500",
+    "_postman_id": "74b5c4a4-cb15-4dcd-8578-8edb5f14086a",
     "name": "Wallet",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "23305473"
+    "_exporter_id": "24209240"
   },
   "item": [
     {
@@ -723,6 +723,279 @@
             "sessions",
             "{{ORDER_ID}}",
             "validations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notify wallet",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets",
+            "{{WALLET_ID}}",
+            "sessions",
+            "{{ORDER_ID}}",
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notify wallet invalid security token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding] Nofity wallet with invalid security token\", function () {",
+              "    pm.response.to.have.status(401);",
+              "    const detailErrorField = pm.response.json().detail;",
+              "    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{INVALID_SECURITY_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets",
+            "{{WALLET_ID}}",
+            "sessions",
+            "{{ORDER_ID}}",
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notify wallet missing security token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding] Nofity wallet with missing security token\", function () {",
+              "    pm.response.to.have.status(401);",
+              "    const detailErrorField = pm.response.json().detail;",
+              "    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets",
+            "{{WALLET_ID}}",
+            "sessions",
+            "{{ORDER_ID}}",
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notify wallet invalid wallet status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding] Nofity wallet with invalid current status\", function () {",
+              "    pm.response.to.have.status(409);",
+              "    const detailErrorField = pm.response.json().detail;",
+              "    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets",
+            "{{WALLET_ID}}",
+            "sessions",
+            "{{ORDER_ID}}",
+            "notifications"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notify wallet session invalid orderId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding] Nofity wallet with invalid orderId\", function () {",
+              "    pm.response.to.have.status(404);",
+              "    const detailErrorField = pm.response.json().detail;",
+              "    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{INVALID_ORDER_ID}}/notifications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets",
+            "{{WALLET_ID}}",
+            "sessions",
+            "{{INVALID_ORDER_ID}}",
+            "notifications"
           ]
         }
       },

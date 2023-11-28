@@ -1,5 +1,7 @@
 package it.pagopa.wallet.audit
 
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -12,6 +14,20 @@ class LoggedActionTests {
 
     fun saveIdWithLogging(id: String): Mono<LoggedAction<String>> {
         return Mono.just(id).map { LoggedAction(it, WalletAddedEvent(it)) }
+    }
+
+    fun saveWalletNotificationEventWithLogging(id: String): Mono<LoggedAction<String>> {
+        return Mono.just(id).map {
+            LoggedAction(
+                it,
+                WalletNotificationEvent(
+                    it,
+                    "validationOperationId",
+                    OperationResultEnum.EXECUTED.value,
+                    WalletTestUtils.TIMESTAMP.toString()
+                )
+            )
+        }
     }
 
     @Test
@@ -80,5 +96,30 @@ class LoggedActionTests {
         val expected = LoggedAction(walletId1.uppercase(), listOf(WalletAddedEvent(walletId1)))
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `saveEvents saves WalletNotificationEvent events correctly`() {
+        val walletId = "walletId"
+        val expectedSavedEvents =
+            listOf(
+                WalletNotificationEvent(
+                    walletId,
+                    "validationOperationId",
+                    OperationResultEnum.EXECUTED.value,
+                    WalletTestUtils.TIMESTAMP.toString()
+                )
+            )
+
+        given(repository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
+
+        val actualId =
+            saveWalletNotificationEventWithLogging(walletId)
+                .flatMap { it.saveEvents(repository) }
+                .block()
+
+        assertEquals(walletId, actualId)
+
+        verify(repository, times(1)).saveAll(any<Iterable<LoggingEvent>>())
     }
 }

@@ -18,6 +18,13 @@ data class WalletPatchEvent(val walletId: String) : LoggingEvent()
 
 data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
 
+data class WalletNotificationEvent(
+    val walletId: String,
+    val validationOperationId: String,
+    val validationOperationResult: String,
+    val validationOperationTimestamp: String
+) : LoggingEvent()
+
 data class ServiceCreatedEvent(val serviceId: UUID, val serviceName: String) : LoggingEvent()
 
 data class ServiceStatusChangedEvent(

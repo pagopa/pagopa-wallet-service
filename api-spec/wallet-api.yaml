@@ -70,8 +70,6 @@ paths:
       summary: Get wallet by user identifier
       description: Returns a list of wallets related to user
       operationId: getWalletsByIdUser
-      security:
-        - bearerAuth: [ ]
       parameters:
         - in: header
           name: x-user-id
@@ -343,6 +341,72 @@ paths:
           description: Internal Server Error
         '504':
           description: Timeout serving request
+  /wallets/{walletId}/sessions/{orderId}/notifications:
+    post:
+      tags:
+        - wallets
+      summary: Update Wallet on NPG onboarding authorization response
+      description: Update Wallet on NPG onboarding authorization response
+      operationId: notifyWallet
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: walletId
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Unique identifier of the wallet
+        - in: path
+          name: orderId
+          schema:
+            type: string
+          required: true
+          description: Unique identifier of the npg session
+      requestBody:
+        description: Notify wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletNotificationRequest'
+        required: true
+      responses:
+        '200':
+          description: Notification handled successfully
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 400
+                detail: Invalid input
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 401
+                detail: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 500
+                detail: Internal server error
   /services:
     post:
       tags:
@@ -701,6 +765,35 @@ components:
       required:
         - orderId
         - cardFormFields
+    WalletNotificationRequest:
+      type: object
+      description: Request body for execute wallet notification request
+      properties:
+        timestampOperation:
+          type: string
+          format: date-time
+          description: Onboarding timestamp
+        operationId:
+          description: Operation ID
+          type: string
+        operationResult:
+          type: string
+          description: outcome received by NPG - https://developer.nexi.it/it/api/notifica
+          enum:
+            - AUTHORIZED
+            - EXECUTED
+            - DECLINED
+            - DENIED_BY_RISK
+            - THREEDS_VALIDATED
+            - THREEDS_FAILED
+            - PENDING
+            - CANCELED
+            - VOIDED
+            - REFUNDED
+            - FAILED
+      required:
+        - timestampOperation
+        - operationResult
     SessionWalletRetrieveResponse:
       type: object
       description: Data related to session wallet

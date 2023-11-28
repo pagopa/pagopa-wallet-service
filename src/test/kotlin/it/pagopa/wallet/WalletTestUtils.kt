@@ -3,6 +3,7 @@ package it.pagopa.wallet
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.documents.service.Service
 import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
@@ -40,9 +41,9 @@ object WalletTestUtils {
     val EXP_DATE = ExpiryDate("12/30")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
-
+    val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
-    private val TIMESTAMP = Instant.now()
+    val TIMESTAMP = Instant.now()
 
     fun walletDocumentWithSessionWallet(): Wallet {
         val creationDate = Instant.now().toString()
@@ -55,6 +56,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -77,6 +79,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             CardDetails(
                 WalletDetailsType.CARDS.name,
@@ -100,6 +103,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -116,6 +120,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -131,6 +136,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            null,
             listOf(),
             null
         )
@@ -145,6 +151,22 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             null,
+            null,
+            listOf(),
+            null
+        )
+
+    val WALLET_DOCUMENT_WITH_EMPTY_VALIDATION_OPERATION_RESULT: Wallet =
+        Wallet(
+            WALLET_UUID.value.toString(),
+            USER_ID.id.toString(),
+            WalletStatusDto.CREATED.name,
+            TIMESTAMP.toString(),
+            TIMESTAMP.toString(),
+            PAYMENT_METHOD_ID_CARDS.value.toString(),
+            PAYMENT_INSTRUMENT_ID.value.toString(),
+            null,
+            OperationResultEnum.EXECUTED.value,
             listOf(),
             null
         )
@@ -159,6 +181,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            null,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),
@@ -180,6 +203,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
+            OperationResultEnum.EXECUTED.value,
             listOf(
                 WalletServiceDocument(
                     SERVICE_ID.id.toString(),
@@ -209,6 +233,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
+            OperationResultEnum.EXECUTED,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
         )
 
@@ -223,6 +248,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
+            null,
             null
         )
 
@@ -237,6 +263,7 @@ object WalletTestUtils {
             PAYMENT_INSTRUMENT_ID,
             listOf(),
             CONTRACT_ID,
+            null,
             null
         )
 
@@ -251,6 +278,7 @@ object WalletTestUtils {
             PAYMENT_METHOD_ID_CARDS,
             null,
             listOf(),
+            null,
             null,
             null
         )
@@ -268,6 +296,7 @@ object WalletTestUtils {
             null,
             listOf(),
             CONTRACT_ID,
+            null,
             null
         )
     }
@@ -353,4 +382,16 @@ object WalletTestUtils {
     fun getUniqueId(): String {
         return "W49357937935R869i"
     }
+
+    val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.EXECUTED)
+            .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
+
+    val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.DECLINED)
+            .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
 }

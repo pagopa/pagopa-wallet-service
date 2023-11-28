@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -22,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -30,6 +33,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -57,12 +61,7 @@ class WalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         walletController =
-            WalletController(
-                walletService,
-                loggingEventRepository,
-                webviewPaymentUrl,
-                uniqueIdUtils
-            )
+            WalletController(walletService, loggingEventRepository, webviewPaymentUrl)
 
         given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })
     }
@@ -262,5 +261,99 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isNoContent
+    }
+
+    @Test
+    fun testNotifyWallet() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+        val operationId = "validationOperationId"
+        given {
+                walletService.notifyWallet(
+                    eq(WalletId(walletId)),
+                    eq(orderId),
+                    eq(sessionToken),
+                    any()
+                )
+            }
+            .willReturn(
+                mono {
+                    LoggedAction(
+                        WALLET_DOMAIN,
+                        WalletNotificationEvent(
+                            walletId.toString(),
+                            operationId,
+                            OperationResultEnum.EXECUTED.value,
+                            Instant.now().toString()
+                        )
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+    }
+
+    @Test
+    fun testNotifyWalletSecurityTokenMatchException() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+        given {
+                walletService.notifyWallet(
+                    eq(WalletId(walletId)),
+                    eq(orderId),
+                    eq(sessionToken),
+                    any()
+                )
+            }
+            .willReturn(Mono.error(SecurityTokenMatchException()))
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized
+            .expectBody()
+    }
+
+    @Test
+    fun testNotifyWalletSecurityTokenNotFoundException() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized
+            .expectBody()
     }
 }

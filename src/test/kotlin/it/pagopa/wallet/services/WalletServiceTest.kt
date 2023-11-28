@@ -3,6 +3,8 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -14,6 +16,7 @@ import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
@@ -57,7 +60,7 @@ class WalletServiceTest {
             "http://localhost:1234",
             "/esito",
             "/annulla",
-            "https://localhost/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}"
         )
 
     private val walletService: WalletService =
@@ -195,12 +198,8 @@ class WalletServiceTest {
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
                         .build(
                             mapOf(
+                                Pair("walletId", walletDocumentWithSessionWallet.id),
                                 Pair("orderId", orderId),
-                                Pair(
-                                    "paymentMethodId",
-                                    walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
-                                        .paymentMethodId
-                                )
                             )
                         )
 
@@ -1028,7 +1027,6 @@ class WalletServiceTest {
         /* preconditions */
 
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
-
         /* test */
 
         StepVerifier.create(
@@ -1039,5 +1037,177 @@ class WalletServiceTest {
             )
             .expectError(WalletNotFoundException::class.java)
             .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet not found exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(eq(orderId)) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+                )
+            )
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws session not found exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionToken = "token"
+
+        given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+                )
+            )
+            .expectError(SessionNotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet id mismatch exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val sessionWalletId = UUID.randomUUID().toString()
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, sessionWalletId)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+                )
+            )
+            .expectError(WalletSessionMismatchException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throws wallet conflict status exception`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        /* test */
+
+        StepVerifier.create(
+                walletService.notifyWallet(
+                    WALLET_UUID,
+                    orderId,
+                    sessionToken,
+                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+                )
+            )
+            .expectError(WalletConflictStatusException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to ERROR`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = WalletStatusDto.ERROR.value,
+                validationOperationResult = notifyRequestDto.operationResult.value
+            )
+
+        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentWithError))
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentWithError.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.DECLINED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .expectNext(expectedLoggedAction)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to VALIDATED`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument = walletDocumentVerifiedWithAPM()
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+
+        val walletDocumentValidated =
+            walletDocument.copy(
+                status = WalletStatusDto.VALIDATED.value,
+                validationOperationResult = notifyRequestDto.operationResult.value
+            )
+        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentValidated.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.EXECUTED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .expectNext(expectedLoggedAction)
+            .verifyComplete()
     }
 }

@@ -82,6 +82,7 @@ class WalletService(
                     paymentInstrumentId = null,
                     listOf(), // TODO Find all services by serviceName
                     contractId = null,
+                    validationOperationResult = null,
                     details = null
                 )
             }
@@ -121,12 +122,7 @@ class WalletService(
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
                     UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("orderId", orderId),
-                                Pair("paymentMethodId", paymentMethod.id)
-                            )
-                        )
+                        .build(mapOf(Pair("walletId", wallet.id.value), Pair("orderId", orderId)))
 
                 npgClient
                     .createNpgOrderBuild(
@@ -174,6 +170,7 @@ class WalletService(
                         wallet.paymentInstrumentId,
                         wallet.applications,
                         wallet.contractId,
+                        null,
                         wallet.details
                     ),
                     orderId
@@ -364,6 +361,63 @@ class WalletService(
 
     fun findWalletByUserId(userId: UUID): Mono<WalletsDto> {
         return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
+    }
+
+    fun notifyWallet(
+        walletId: WalletId,
+        orderId: String,
+        securityToken: String,
+        walletNotificationRequestDto: WalletNotificationRequestDto
+    ): Mono<LoggedAction<Wallet>> {
+        return mono { npgSessionRedisTemplate.findById(orderId) }
+            .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
+            .filter { session -> session.securityToken == securityToken }
+            .switchIfEmpty {
+                logger.error("Security token match failed")
+                Mono.error(SecurityTokenMatchException())
+            }
+            .flatMap { session ->
+                walletRepository
+                    .findById(walletId.value.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+                    .filter { wallet -> session.walletId == wallet.id }
+                    .switchIfEmpty {
+                        Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
+                    }
+                    .map { walletDocument -> walletDocument.toDomain() }
+                    .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+                    .flatMap { wallet ->
+                        val validationOperationResult = walletNotificationRequestDto.operationResult
+                        val newWalletStatus =
+                            when (validationOperationResult) {
+                                WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
+                                    WalletStatusDto.VALIDATED
+                                else -> {
+                                    WalletStatusDto.ERROR
+                                }
+                            }
+                        walletRepository.save(
+                            wallet
+                                .copy(
+                                    status = newWalletStatus,
+                                    validationOperationResult = validationOperationResult
+                                )
+                                .toDocument()
+                        )
+                    }
+                    .map { wallet ->
+                        LoggedAction(
+                            wallet.toDomain(),
+                            WalletNotificationEvent(
+                                walletId.value.toString(),
+                                walletNotificationRequestDto.operationId,
+                                walletNotificationRequestDto.operationResult.value,
+                                walletNotificationRequestDto.timestampOperation.toString()
+                            )
+                        )
+                    }
+            }
     }
 
     fun findSessionWallet(

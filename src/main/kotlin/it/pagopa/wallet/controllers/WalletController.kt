@@ -5,15 +5,17 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
-import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.util.*
+import kotlin.collections.map
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
@@ -28,8 +30,7 @@ import reactor.core.publisher.Mono
 class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
-    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI,
-    @Autowired private val uniqueIdUtils: UniqueIdUtils
+    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
 ) : WalletsApi {
 
     override fun createWallet(
@@ -134,6 +135,39 @@ class WalletController(
      * @formatter:on
      */
     @SuppressWarnings("kotlin:S6508")
+    override fun notifyWallet(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<Void>> {
+        return walletNotificationRequestDto.flatMap { requestDto ->
+            getAuthenticationToken(exchange)
+                .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
+                .flatMap { securityToken ->
+                    walletService.notifyWallet(
+                        WalletId(walletId),
+                        orderId,
+                        securityToken,
+                        requestDto
+                    )
+                }
+                .flatMap { it.saveEvents(loggingEventRepository) }
+                .map { ResponseEntity.ok().build() }
+        }
+    }
+
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun patchWalletById(
         walletId: UUID,
         patchServiceDto: Flux<PatchServiceDto>,
@@ -163,5 +197,16 @@ class WalletController(
                 ResponseEntity.ok().body(response)
             }
         }
+    }
+
+    private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {
+        return Mono.justOrEmpty(
+            Optional.ofNullable(exchange.request.headers[HttpHeaders.AUTHORIZATION])
+                .orElse(listOf())
+                .stream()
+                .findFirst()
+                .filter { header: String -> header.startsWith("Bearer ") }
+                .map { header: String -> header.substring("Bearer ".length) }
+        )
     }
 }
