@@ -701,6 +701,9 @@ components:
         userId:
           type: string
           description: user identifier
+        contractId:
+          type: string
+          description: contractId
         paymentInstrumentId:
           description: Payment instrument identifier
           type: string

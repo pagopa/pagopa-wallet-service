@@ -469,6 +469,7 @@ class WalletService(
             .walletId(UUID.fromString(wallet.id))
             .status(WalletStatusDto.valueOf(wallet.status))
             .paymentMethodId(wallet.paymentMethodId)
+            .contractId(wallet.contractId)
             .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
             .userId(wallet.userId)
             .updateDate(OffsetDateTime.parse(wallet.updateDate))
