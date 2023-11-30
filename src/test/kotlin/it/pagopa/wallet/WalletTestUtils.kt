@@ -381,6 +381,13 @@ object WalletTestUtils {
                     .holder(HOLDER_NAME.holderName)
             )
 
+    fun walletAuthDataDto() =
+        WalletAuthDataDto()
+            .walletId(WALLET_UUID.value)
+            .contractId(CONTRACT_ID.contractId)
+            .bin(BIN.bin)
+            .brand(BRAND.value)
+
     val SERVICE_DOCUMENT: Service =
         Service(
             SERVICE_ID.id.toString(),
