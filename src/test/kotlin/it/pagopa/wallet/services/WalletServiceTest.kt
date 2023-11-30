@@ -956,7 +956,7 @@ class WalletServiceTest {
 
         /* test */
 
-        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID.value))
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
             .expectNext(walletAuthDataDto)
             .verifyComplete()
     }
@@ -969,7 +969,7 @@ class WalletServiceTest {
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.empty())
         /* test */
 
-        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID.value))
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
             .expectError(WalletNotFoundException::class.java)
             .verify()
     }

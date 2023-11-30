@@ -109,7 +109,7 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletAuthDataDto>> {
-        return walletService.findWalletAuthData(walletId).map { ResponseEntity.ok(it) }
+        return walletService.findWalletAuthData(WalletId(walletId)).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletById(

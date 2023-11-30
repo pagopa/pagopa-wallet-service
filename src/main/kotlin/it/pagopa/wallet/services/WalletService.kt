@@ -363,10 +363,10 @@ class WalletService(
         return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
     }
 
-    fun findWalletAuthData(walletId: UUID): Mono<WalletAuthDataDto> {
+    fun findWalletAuthData(walletId: WalletId): Mono<WalletAuthDataDto> {
         return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { wallet -> toWalletInfoAuthDataDto(wallet) }
     }
 
