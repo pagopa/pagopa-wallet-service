@@ -952,12 +952,11 @@ class WalletServiceTest {
         val wallet = WALLET_DOCUMENT
         val walletAuthDataDto = WalletTestUtils.walletAuthDataDto()
 
-        given { walletRepository.findById(wallet.id) }
-            .willAnswer { Flux.fromIterable(listOf(wallet)) }
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
 
         /* test */
 
-        StepVerifier.create(walletService.findWalletAuthData(UUID.fromString(wallet.id)))
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID.value))
             .expectNext(walletAuthDataDto)
             .verifyComplete()
     }
