@@ -43,8 +43,8 @@ data class Wallet(
         val paymentMethodId: PaymentMethodId,
 ) {
     var status: WalletStatusDto = WalletStatusDto.CREATED
-    var creationDate: Instant? = null
-    var updateDate: Instant? = null
+    lateinit var creationDate: Instant
+    lateinit var updateDate: Instant
     var paymentInstrumentId: PaymentInstrumentId? = null
     var applications: List<Application> = listOf()
     var contractId: ContractId? = null

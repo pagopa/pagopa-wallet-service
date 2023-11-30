@@ -53,9 +53,8 @@ data class Wallet(
             applications: List<Application>
     ): it.pagopa.wallet.documents.wallets.Wallet {
         val wallet = this.copy(applications = applications)
-        //wallet.id = this.id
-        wallet.creationDate = creationDate
-        wallet.updateDate = updateDate
+        //wallet.creationDate = creationDate
+        //wallet.updateDate = updateDate
         wallet.version = version
         return wallet
     }
