@@ -104,6 +104,13 @@ class WalletController(
         }
     }
 
+    override fun getWalletAuthDataById(
+        walletId: UUID,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletAuthDataDto>> {
+        return walletService.findWalletAuthData(WalletId(walletId)).map { ResponseEntity.ok(it) }
+    }
+
     override fun getWalletById(
             walletId: UUID,
             exchange: ServerWebExchange

@@ -12,6 +12,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.SecurityTokenMatchException
+import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -239,6 +240,41 @@ class WalletControllerTest {
             .json(jsonToTest)
     }
 
+    @Test
+    fun testGetWalletAuthDataSuccess() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        val walletAuthData = WalletTestUtils.walletAuthDataDto()
+        val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
+        given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(jsonToTest)
+    }
+
+    @Test
+    fun testGetWalletAuthDataNotFoundException() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        given { walletService.findWalletAuthData(walletId) }
+            .willReturn(Mono.error(WalletNotFoundException(walletId)))
+
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", UUID.randomUUID().toString())
+            .exchange()
+            .expectStatus()
+            .isNotFound
+            .expectBody()
+    }
     @Test
     fun testPatchWalletById() = runTest {
         /* preconditions */

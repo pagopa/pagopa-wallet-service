@@ -487,6 +487,45 @@ paths:
           description: Service not found
         '504':
           description: Timeout serving request
+  /wallets/{walletId}/auth-data:
+    get:
+      tags:
+        - wallets
+      summary: Get wallet auth data by id
+      description: Returns auth data for a single wallet
+      operationId: getWalletAuthDataById
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            $ref: '#/components/schemas/WalletId'
+      responses:
+        '200':
+          description: Wallet retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletAuthData'
+        '404':
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '504':
+          description: Timeout serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
 components:
   schemas:
     WalletId:
@@ -908,6 +947,21 @@ components:
       maximum: 600
       exclusiveMaximum: true
       example: 502
+    WalletAuthData:
+      type: object
+      description: Wallet information
+      properties:
+        walletId:
+          $ref: '#/components/schemas/WalletId'
+        contractId:
+          description: Payment method identifier
+          type: string
+        bin:
+          type: string
+          description: Bin of user card
+        brand:
+          description: The card brand name
+          type: string
   securitySchemes:
     bearerAuth:
       type: http

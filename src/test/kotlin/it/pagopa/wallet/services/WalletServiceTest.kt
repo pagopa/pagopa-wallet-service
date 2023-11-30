@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
@@ -942,6 +943,35 @@ class WalletServiceTest {
                     .verifyComplete()
             }
         }
+    }
+
+    @Test
+    fun `should find wallet auth data by ID`() {
+        /* preconditions */
+
+        val wallet = WALLET_DOCUMENT
+        val walletAuthDataDto = WalletTestUtils.walletAuthDataDto()
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectNext(walletAuthDataDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should throws wallet not found exception when retrieve auth data by ID`() {
+        /* preconditions */
+        val wallet = WALLET_DOCUMENT
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.empty())
+        /* test */
+
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
     }
 
     @Test

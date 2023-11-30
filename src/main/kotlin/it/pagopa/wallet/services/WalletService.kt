@@ -354,6 +354,13 @@ class WalletService(
         return walletRepository.findByUserId(userId.toString()).collectList().map { toWallets(it) }
     }
 
+    fun findWalletAuthData(walletId: WalletId): Mono<WalletAuthDataDto> {
+        return walletRepository
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .map { wallet -> toWalletInfoAuthDataDto(wallet) }
+    }
+
     fun notifyWallet(
             walletId: WalletId,
             orderId: String,
@@ -487,6 +494,25 @@ class WalletService(
             else -> null
         }
     }
+
+    private fun toWalletInfoAuthDataDto(
+        wallet: it.pagopa.wallet.documents.wallets.Wallet
+    ): WalletAuthDataDto =
+        WalletAuthDataDto()
+            .walletId(UUID.fromString(wallet.id))
+            .contractId(wallet.contractId)
+            .bin(
+                when (wallet.details) {
+                    is CardDetails -> wallet.details.bin
+                    else -> null
+                }
+            )
+            .brand(
+                when (wallet.details) {
+                    is CardDetails -> wallet.details.brand
+                    else -> null
+                }
+            )
 
     private fun updateServiceList(
             wallet: it.pagopa.wallet.documents.wallets.Wallet,
