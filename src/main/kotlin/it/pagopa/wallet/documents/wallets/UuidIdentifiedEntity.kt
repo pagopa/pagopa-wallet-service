@@ -7,9 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.annotation.Version
 import java.time.Instant
 
-abstract class UuidIdentifiedEntity {
-    @Id
-    var id: WalletId? = null
+abstract class UuidIdentifiedEntity(@Id var id: WalletId) {
 
     @CreatedDate
     lateinit var creationDate: Instant
@@ -20,11 +18,8 @@ abstract class UuidIdentifiedEntity {
     @Version
     var version: Long? = null
 
-    constructor() {}
-
-    constructor(id: WalletId, creationDate: Instant, updateDate: Instant) {
-        this.id = id
-        this.creationDate
-        this.updateDate
+    constructor(id: WalletId, creationDate: Instant, updateDate: Instant) : this(id) {
+        this.creationDate = creationDate
+        this.updateDate = updateDate
     }
 }

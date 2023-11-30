@@ -14,6 +14,7 @@ import it.pagopa.wallet.domain.details.ExpiryDate
 import it.pagopa.wallet.domain.details.MaskedPan
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -70,10 +71,7 @@ class WalletService(
         return ecommercePaymentMethodsClient
                 .getPaymentMethodById(paymentMethodId.toString())
                 .map {
-                    return@map Wallet.createWallet(
-                            UserId(userId),
-                            it.id
-                    )
+                    return@map Wallet(WalletId(UUID.randomUUID()), UserId(userId), PaymentMethodId(UUID.fromString(it.id)))
                 }
                 .flatMap { wallet ->
                     walletRepository.save(wallet.toDocument()).map {
@@ -153,8 +151,8 @@ class WalletService(
                                     wallet.id,
                                     wallet.userId,
                                     WalletStatusDto.INITIALIZED,
-                                    wallet.creationDate,
-                                    wallet.updateDate, // TODO update with auto increment with CHK-2028
+                                    wallet.creationDate!!,
+                                    wallet.updateDate!!, // TODO update with auto increment with CHK-2028
                                     wallet.paymentMethodId,
                                     wallet.paymentInstrumentId,
                                     wallet.applications,
@@ -282,7 +280,7 @@ class WalletService(
                     }
                     .switchIfEmpty {
                         walletRepository
-                                .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
+                                .save(wallet.toDocument().copy(status = WalletStatusDto.ERROR.name))
                                 .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
                     }
                     .flatMap { (state, cardData) ->
@@ -308,25 +306,26 @@ class WalletService(
                     }
                     .map { (response, data) ->
                         response to
-                                wallet.copy(
-                                        status = WalletStatusDto.VALIDATION_REQUESTED,
-                                        details =
-                                        DomainCardDetails(
-                                                Bin(data.bin.orEmpty()),
-                                                MaskedPan(
-                                                        data.bin.orEmpty() +
-                                                                ("*".repeat(
-                                                                        16 -
-                                                                                data.bin.orEmpty().length -
-                                                                                data.lastFourDigits.orEmpty().length
-                                                                )) +
-                                                                data.lastFourDigits.orEmpty()
-                                                ),
-                                                ExpiryDate(data.expiringDate.orEmpty()),
-                                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
-                                                CardHolderName("?")
+                                wallet
+                                        .copy()
+                                        .status(WalletStatusDto.VALIDATION_REQUESTED)
+                                        .details(
+                                                DomainCardDetails(
+                                                        Bin(data.bin.orEmpty()),
+                                                        MaskedPan(
+                                                                data.bin.orEmpty() +
+                                                                        ("*".repeat(
+                                                                                16 -
+                                                                                        data.bin.orEmpty().length -
+                                                                                        data.lastFourDigits.orEmpty().length
+                                                                        )) +
+                                                                        data.lastFourDigits.orEmpty()
+                                                        ),
+                                                        ExpiryDate(data.expiringDate.orEmpty()),
+                                                        WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
+                                                        CardHolderName("?")
+                                                )
                                         )
-                                )
                     }
 
     fun patchWallet(
@@ -356,9 +355,9 @@ class WalletService(
 
     fun findWalletAuthData(walletId: WalletId): Mono<WalletAuthDataDto> {
         return walletRepository
-            .findById(walletId.value.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { wallet -> toWalletInfoAuthDataDto(wallet) }
+                .findById(walletId.value.toString())
+                .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+                .map { wallet -> toWalletInfoAuthDataDto(wallet) }
     }
 
     fun notifyWallet(
@@ -398,11 +397,11 @@ class WalletService(
                                         }
                                 walletRepository.save(
                                         wallet
-                                                .copy(
-                                                        status = newWalletStatus,
-                                                        validationOperationResult = validationOperationResult
-                                                )
                                                 .toDocument()
+                                                .copy(
+                                                        status = newWalletStatus.name,
+                                                        validationOperationResult = validationOperationResult.name
+                                                )
                                 )
                             }
                             .map { wallet ->
@@ -496,23 +495,23 @@ class WalletService(
     }
 
     private fun toWalletInfoAuthDataDto(
-        wallet: it.pagopa.wallet.documents.wallets.Wallet
+            wallet: it.pagopa.wallet.documents.wallets.Wallet
     ): WalletAuthDataDto =
-        WalletAuthDataDto()
-            .walletId(UUID.fromString(wallet.id))
-            .contractId(wallet.contractId)
-            .bin(
-                when (wallet.details) {
-                    is CardDetails -> wallet.details.bin
-                    else -> null
-                }
-            )
-            .brand(
-                when (wallet.details) {
-                    is CardDetails -> wallet.details.brand
-                    else -> null
-                }
-            )
+            WalletAuthDataDto()
+                    .walletId(wallet.id!!.value)
+                    .contractId(wallet.contractId)
+                    .bin(
+                            when (wallet.details) {
+                                is CardDetails -> wallet.details.bin
+                                else -> null
+                            }
+                    )
+                    .brand(
+                            when (wallet.details) {
+                                is CardDetails -> wallet.details.brand
+                                else -> null
+                            }
+                    )
 
     private fun updateServiceList(
             wallet: it.pagopa.wallet.documents.wallets.Wallet,

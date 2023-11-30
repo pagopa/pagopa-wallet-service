@@ -7,7 +7,6 @@ import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.details.WalletDetails
 import java.time.Instant
-import java.util.*
 
 /**
  * A wallet.
@@ -39,48 +38,48 @@ import java.util.*
  */
 @AggregateRoot
 data class Wallet(
-        @AggregateRootId val id: WalletId?,
+        @AggregateRootId val id: WalletId,
         val userId: UserId,
-        var status: WalletStatusDto,
-        val creationDate: Instant?,
-        var updateDate: Instant?,
         val paymentMethodId: PaymentMethodId,
-        val paymentInstrumentId: PaymentInstrumentId?,
-        val applications: List<Application>,
-        val contractId: ContractId?,
-        val validationOperationResult: OperationResultEnum?,
-        val details: WalletDetails<*>?,
-        val version: Long?
 ) {
+    var status: WalletStatusDto = WalletStatusDto.CREATED
+    var creationDate: Instant? = null
+    var updateDate: Instant? = null
+    var paymentInstrumentId: PaymentInstrumentId? = null
+    var applications: List<Application> = listOf()
+    var contractId: ContractId? = null
+    var validationOperationResult: OperationResultEnum? = null
+    var details: WalletDetails<*>? = null
+    var version: Long? = null
 
-    private fun toDocument(id: WalletId, creationDate: Instant, updateDate: Instant, version: Long): Wallet =
-            Wallet(
-                    id,
-                    this.userId.id.toString(),
-                    this.status.name,
-                    this.paymentMethodId.value.toString(),
-                    this.paymentInstrumentId?.value?.toString(),
-                    this.contractId?.contractId,
-                    this.validationOperationResult?.value,
-                    this.applications.map { app ->
-                        it.pagopa.wallet.documents.wallets.Application(
-                                app.id.id.toString(),
-                                app.name.name,
-                                app.status.name,
-                                app.lastUpdate.toString()
-                        )
-                    },
-                    this.details?.toDocument(),
-                    creationDate,
-                    updateDate,
-                    version
-            )
+    constructor(
+            id: WalletId,
+            userId: UserId,
+            statusDto: WalletStatusDto,
+            creationDate: Instant,
+            updateDate: Instant,
+            paymentMethodId: PaymentMethodId,
+            paymentInstrumentId: PaymentInstrumentId?,
+            applications: List<Application>,
+            contractId: ContractId?,
+            validationOperationResult: OperationResultEnum?,
+            details: WalletDetails<*>?,
+            version: Long?
+    ) : this(id, userId, paymentMethodId) {
+        this.status = statusDto
+        this.creationDate = creationDate
+        this.updateDate = updateDate
+        this.paymentInstrumentId = paymentInstrumentId
+        this.applications = applications
+        this.contractId = contractId
+        this.validationOperationResult = validationOperationResult
+        this.details = details
+        this.version = version
+    }
 
     fun toDocument(): Wallet {
-        if (id != null) {
-            return toDocument(id, creationDate!!, updateDate!!, version!!)
-        }
         return Wallet(
+                id,
                 this.userId.id.toString(),
                 this.status.name,
                 this.paymentMethodId.value.toString(),
@@ -99,7 +98,17 @@ data class Wallet(
         )
     }
 
-    companion object {
+    fun status(status: WalletStatusDto): it.pagopa.wallet.domain.wallets.Wallet {
+        this.status = status
+        return this
+    }
+
+    fun details(details: WalletDetails<*>): it.pagopa.wallet.domain.wallets.Wallet {
+        this.details = details
+        return this
+    }
+
+    /*companion object {
         fun createWallet(
                 userId: UserId,
                 paymentMethodId: String
@@ -117,5 +126,5 @@ data class Wallet(
                 details = null,
                 version = null
         )
-    }
+    }*/
 }
