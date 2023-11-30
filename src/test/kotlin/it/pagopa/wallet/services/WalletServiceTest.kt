@@ -38,7 +38,7 @@ import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
 import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
@@ -861,8 +861,8 @@ class WalletServiceTest {
                         .paymentMethodId(wallet.paymentMethodId)
                         .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
-                        .updateDate(OffsetDateTime.parse(wallet.updateDate))
-                        .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                        .updateDate(wallet.updateDate.atOffset(ZoneOffset.UTC))
+                        .creationDate(wallet.creationDate.atOffset(ZoneOffset.UTC))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
@@ -912,8 +912,8 @@ class WalletServiceTest {
                         .paymentMethodId(wallet.paymentMethodId)
                         .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
-                        .updateDate(OffsetDateTime.parse(wallet.updateDate))
-                        .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                        .updateDate(wallet.updateDate.atOffset(ZoneOffset.UTC))
+                        .creationDate(wallet.creationDate.atOffset(ZoneOffset.UTC))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()

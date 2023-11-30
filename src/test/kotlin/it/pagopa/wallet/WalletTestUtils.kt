@@ -48,11 +48,8 @@ object WalletTestUtils {
     fun walletDocumentWithSessionWallet(): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.INITIALIZED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -71,11 +68,8 @@ object WalletTestUtils {
     ): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.VALIDATION_REQUESTED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -95,11 +89,8 @@ object WalletTestUtils {
     fun walletDocumentVerifiedWithAPM(): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.VALIDATION_REQUESTED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -112,11 +103,8 @@ object WalletTestUtils {
     fun walletDocumentValidated(): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.VALIDATED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -129,11 +117,8 @@ object WalletTestUtils {
     fun walletDocumentEmptyServicesNullDetailsNoPaymentInstrument(): Wallet {
         val creationDate = Instant.now().toString()
         return Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            creationDate,
-            creationDate,
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             null,
             CONTRACT_ID.contractId,
@@ -145,11 +130,8 @@ object WalletTestUtils {
 
     val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS: Wallet =
         Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
@@ -160,11 +142,8 @@ object WalletTestUtils {
 
     val WALLET_DOCUMENT_EMPTY_CONCTRACT_ID: Wallet =
         Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             null,
@@ -175,11 +154,8 @@ object WalletTestUtils {
 
     val WALLET_DOCUMENT_WITH_EMPTY_VALIDATION_OPERATION_RESULT: Wallet =
         Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             null,
@@ -190,11 +166,8 @@ object WalletTestUtils {
 
     val WALLET_DOCUMENT_NULL_DETAILS: Wallet =
         Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
@@ -212,11 +185,8 @@ object WalletTestUtils {
 
     val WALLET_DOCUMENT: Wallet =
         Wallet(
-            WALLET_UUID.value.toString(),
             USER_ID.id.toString(),
             WalletStatusDto.CREATED.name,
-            TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
             PAYMENT_METHOD_ID_CARDS.value.toString(),
             PAYMENT_INSTRUMENT_ID.value.toString(),
             CONTRACT_ID.contractId,
