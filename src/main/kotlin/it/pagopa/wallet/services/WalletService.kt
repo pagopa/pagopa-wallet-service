@@ -15,10 +15,7 @@ import it.pagopa.wallet.domain.details.MaskedPan
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
-import it.pagopa.wallet.domain.wallets.PaymentMethodId
-import it.pagopa.wallet.domain.wallets.UserId
-import it.pagopa.wallet.domain.wallets.Wallet
-import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
@@ -147,8 +144,35 @@ class WalletService(
                                                             .cancelUrl(cancelUrl.toString())
                                                             .notificationUrl(notificationUrl.toString())
                                             )
-                            )
-                            .map { hostedOrderResponse -> Triple(hostedOrderResponse, wallet, orderId) }
+
+                    )
+                    .map { hostedOrderResponse ->
+                        Triple(hostedOrderResponse, wallet, Pair(orderId, contractId))
+                    }
+            }
+            .map { (hostedOrderResponse, wallet, orderIdAndContractId) ->
+                var contractId = orderIdAndContractId.second
+                Triple(
+                    hostedOrderResponse,
+                    Wallet(
+                        wallet.id,
+                        wallet.userId,
+                        WalletStatusDto.INITIALIZED,
+                        wallet.creationDate,
+                        wallet.updateDate, // TODO update with auto increment with CHK-2028
+                        wallet.paymentMethodId,
+                        wallet.paymentInstrumentId,
+                        wallet.applications,
+                        ContractId(contractId),
+                        null,
+                        wallet.details
+                    ),
+                    orderIdAndContractId.first
+                )
+            }
+            .flatMap { (hostedOrderResponse, wallet, orderId) ->
+                walletRepository.save(wallet.toDocument()).map {
+                    Triple(hostedOrderResponse, wallet, orderId)
                 }
                 .map { (hostedOrderResponse, wallet, orderId) ->
                     Triple(
