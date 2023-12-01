@@ -5,80 +5,80 @@ import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.Wallet
-import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 import java.util.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.annotation.Version
+import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("wallets")
 data class Wallet(
-        val walletId: WalletId,
-        val userId: String,
-        val status: String,
-        val paymentMethodId: String,
-        val paymentInstrumentId: String?,
-        val contractId: String?,
-        val validationOperationResult: String?,
-        val applications: List<Application>,
-        val details: WalletDetails<*>?
-) : UuidIdentifiedEntity(walletId) {
+    @Id var id: String,
+    val userId: String,
+    val status: String,
+    val paymentMethodId: String,
+    val paymentInstrumentId: String?,
+    val contractId: String?,
+    val validationOperationResult: String?,
+    val applications: List<Application>,
+    val details: WalletDetails<*>?,
+    @Version var version: Number? = null
+) {
+    @CreatedDate lateinit var creationDate: Instant
+
+    @LastModifiedDate lateinit var updateDate: Instant
 
     constructor(
-            walletId: WalletId,
-            userId: String,
-            status: String,
-            paymentMethodId: String,
-            paymentInstrumentId: String?,
-            contractId: String?,
-            validationOperationResult: String?,
-            applications: List<Application>,
-            details: WalletDetails<*>?,
-            creationDate: Instant,
-            updateDate: Instant
+        walletId: String,
+        userId: String,
+        status: String,
+        paymentMethodId: String,
+        paymentInstrumentId: String?,
+        contractId: String?,
+        validationOperationResult: String?,
+        applications: List<Application>,
+        details: WalletDetails<*>?,
+        creationDate: Instant,
+        updateDate: Instant,
+        version: Number
     ) : this(
-            walletId,
-            userId,
-            status,
-            paymentMethodId,
-            paymentInstrumentId,
-            contractId,
-            validationOperationResult,
-            applications,
-            details
+        walletId,
+        userId,
+        status,
+        paymentMethodId,
+        paymentInstrumentId,
+        contractId,
+        validationOperationResult,
+        applications,
+        details,
+        version
     ) {
         this.creationDate = creationDate
         this.updateDate = updateDate
     }
 
-    fun setApplications(
-            applications: List<Application>
-    ): it.pagopa.wallet.documents.wallets.Wallet {
-        val wallet = this.copy(applications = applications)
-        //wallet.creationDate = creationDate
-        //wallet.updateDate = updateDate
-        wallet.version = version
-        return wallet
-    }
-
     fun toDomain(): Wallet {
-        val wallet = Wallet(
-                id,
-                UserId(UUID.fromString(userId)),
-                WalletStatusDto.valueOf(status),
-                creationDate,
-                updateDate,
-                PaymentMethodId(UUID.fromString(paymentMethodId)),
-                paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
-                applications.map { application -> application.toDomain() },
-                contractId?.let { ContractId(it) },
-                validationOperationResult?.let {
-                    OperationResultEnum.valueOf(validationOperationResult)
+        val wallet =
+            Wallet(
+                WalletId(UUID.fromString(this.id)),
+                UserId(UUID.fromString(this.userId)),
+                WalletStatusDto.valueOf(this.status),
+                PaymentMethodId(UUID.fromString(this.paymentMethodId)),
+                this.paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
+                this.applications.map { application -> application.toDomain() },
+                this.contractId?.let { ContractId(it) },
+                this.validationOperationResult?.let {
+                    OperationResultEnum.valueOf(this.validationOperationResult)
                 },
-                details?.toDomain(),
-                version!!
-        )
-        wallet.creationDate = creationDate
-        wallet.updateDate = updateDate
-        wallet.version = version
-        return wallet;
+                this.details?.toDomain(),
+                this.version
+            )
+        if (this.version != null) {
+            wallet.creationDate = this.creationDate
+            wallet.updateDate = this.updateDate
+        }
+        return wallet
     }
 }

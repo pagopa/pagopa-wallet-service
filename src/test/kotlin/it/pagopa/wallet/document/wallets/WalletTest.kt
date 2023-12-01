@@ -8,10 +8,10 @@ class WalletTest {
 
     @Test
     fun `can build wallet document`() {
-        assertNotNull(WalletTestUtils.WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS)
-        assertNotNull(WalletTestUtils.WALLET_DOCUMENT_NULL_DETAILS)
-        assertNotNull(WalletTestUtils.WALLET_DOCUMENT)
-        assertNotNull(WalletTestUtils.WALLET_DOCUMENT_EMPTY_CONCTRACT_ID)
-        assertNotNull(WalletTestUtils.WALLET_DOCUMENT_WITH_EMPTY_VALIDATION_OPERATION_RESULT)
+        assertNotNull(WalletTestUtils.walletDocumentEmptyServicesNullDetails())
+        assertNotNull(WalletTestUtils.walletDocumentNullDetails())
+        assertNotNull(WalletTestUtils.walletDocument())
+        assertNotNull(WalletTestUtils.walletDocumentEmptyContractId())
+        assertNotNull(WalletTestUtils.walletDocumentWithEmptyValidationOperationResult())
     }
 }

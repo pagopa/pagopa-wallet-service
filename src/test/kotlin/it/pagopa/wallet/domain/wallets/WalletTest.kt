@@ -18,8 +18,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(),
@@ -37,8 +35,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -64,8 +60,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -97,8 +91,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -124,6 +116,6 @@ class WalletTest {
 
     @Test
     fun `can convert domain object to document`() {
-        assert(WalletTestUtils.WALLET_DOMAIN.toDocument() == WalletTestUtils.WALLET_DOCUMENT)
+        assert(WalletTestUtils.WALLET_DOMAIN.toDocument() == WalletTestUtils.walletDocument())
     }
 }

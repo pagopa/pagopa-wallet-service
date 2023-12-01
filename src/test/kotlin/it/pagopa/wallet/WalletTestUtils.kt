@@ -46,17 +46,22 @@ object WalletTestUtils {
     val TIMESTAMP = Instant.now()
 
     fun walletDocumentWithSessionWallet(): Wallet {
-        val creationDate = Instant.now().toString()
-        return Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.INITIALIZED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            null,
-            CONTRACT_ID.contractId,
-            null,
-            listOf(),
-            null
-        )
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.INITIALIZED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                null,
+                listOf(),
+                null
+            )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
     }
 
     fun walletDocumentVerifiedWithCardDetails(
@@ -66,162 +71,212 @@ object WalletTestUtils {
         holderName: String,
         brandEnum: WalletCardDetailsDto.BrandEnum
     ): Wallet {
-        val creationDate = Instant.now().toString()
-        return Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.VALIDATION_REQUESTED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            null,
-            CONTRACT_ID.contractId,
-            null,
-            listOf(),
-            CardDetails(
-                WalletDetailsType.CARDS.name,
-                bin,
-                bin + "*".repeat(4) + lastFourDigits,
-                expiryDate,
-                brandEnum.name,
-                holderName
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.VALIDATION_REQUESTED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                null,
+                listOf(),
+                CardDetails(
+                    WalletDetailsType.CARDS.name,
+                    bin,
+                    bin + "*".repeat(4) + lastFourDigits,
+                    expiryDate,
+                    brandEnum.name,
+                    holderName
+                )
             )
-        )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
     }
 
     fun walletDocumentVerifiedWithAPM(): Wallet {
-        val creationDate = Instant.now().toString()
-        return Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.VALIDATION_REQUESTED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            null,
-            CONTRACT_ID.contractId,
-            null,
-            listOf(),
-            null
-        )
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.VALIDATION_REQUESTED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                null,
+                listOf(),
+                null
+            )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
     }
 
     fun walletDocumentValidated(): Wallet {
-        val creationDate = Instant.now().toString()
-        return Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.VALIDATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            null,
-            CONTRACT_ID.contractId,
-            OperationResultEnum.EXECUTED.toString(),
-            listOf(),
-            null
-        )
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.VALIDATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                OperationResultEnum.EXECUTED.toString(),
+                listOf(),
+                null
+            )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
     }
 
     fun walletDocumentEmptyServicesNullDetailsNoPaymentInstrument(): Wallet {
-        val creationDate = Instant.now().toString()
-        return Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            null,
-            CONTRACT_ID.contractId,
-            null,
-            listOf(),
-            null
-        )
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                null,
+                CONTRACT_ID.contractId,
+                null,
+                listOf(),
+                null
+            )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
     }
 
-    val WALLET_DOCUMENT_EMPTY_SERVICES_NULL_DETAILS: Wallet =
-        Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID.contractId,
-            null,
-            listOf(),
-            null
-        )
-
-    val WALLET_DOCUMENT_EMPTY_CONCTRACT_ID: Wallet =
-        Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            PAYMENT_INSTRUMENT_ID.value.toString(),
-            null,
-            null,
-            listOf(),
-            null
-        )
-
-    val WALLET_DOCUMENT_WITH_EMPTY_VALIDATION_OPERATION_RESULT: Wallet =
-        Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            PAYMENT_INSTRUMENT_ID.value.toString(),
-            null,
-            OperationResultEnum.EXECUTED.value,
-            listOf(),
-            null
-        )
-
-    val WALLET_DOCUMENT_NULL_DETAILS: Wallet =
-        Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID.contractId,
-            null,
-            listOf(
-                WalletServiceDocument(
-                    SERVICE_ID.id.toString(),
-                    SERVICE_NAME.name,
-                    ServiceStatus.DISABLED.toString(),
-                    TIMESTAMP.toString()
-                )
-            ),
-            null
-        )
-
-    val WALLET_DOCUMENT: Wallet =
-        Wallet(
-            USER_ID.id.toString(),
-            WalletStatusDto.CREATED.name,
-            PAYMENT_METHOD_ID_CARDS.value.toString(),
-            PAYMENT_INSTRUMENT_ID.value.toString(),
-            CONTRACT_ID.contractId,
-            OperationResultEnum.EXECUTED.value,
-            listOf(
-                WalletServiceDocument(
-                    SERVICE_ID.id.toString(),
-                    SERVICE_NAME.name,
-                    ServiceStatus.DISABLED.toString(),
-                    TIMESTAMP.toString()
-                )
-            ),
-            CardDetails(
-                TYPE.toString(),
-                BIN.bin,
-                MASKED_PAN.maskedPan,
-                EXP_DATE.expDate,
-                BRAND.toString(),
-                HOLDER_NAME.holderName
+    fun walletDocumentEmptyServicesNullDetails(): Wallet {
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                PAYMENT_INSTRUMENT_ID.value.toString(),
+                CONTRACT_ID.contractId,
+                null,
+                listOf(),
+                null
             )
-        )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
+    }
+
+    fun walletDocumentEmptyContractId(): Wallet {
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                PAYMENT_INSTRUMENT_ID.value.toString(),
+                null,
+                null,
+                listOf(),
+                null
+            )
+        wallet.creationDate = Instant.now()
+        wallet.updateDate = Instant.now()
+        return wallet
+    }
+
+    fun walletDocumentWithEmptyValidationOperationResult(): Wallet {
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                PAYMENT_INSTRUMENT_ID.value.toString(),
+                null,
+                OperationResultEnum.EXECUTED.value,
+                listOf(),
+                null
+            )
+        wallet.creationDate = Instant.now()
+        wallet.updateDate = Instant.now()
+        return wallet
+    }
+
+    fun walletDocumentNullDetails(): Wallet {
+        val creationDate = Instant.now()
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                PAYMENT_INSTRUMENT_ID.value.toString(),
+                CONTRACT_ID.contractId,
+                null,
+                listOf(
+                    WalletServiceDocument(
+                        SERVICE_ID.id.toString(),
+                        SERVICE_NAME.name,
+                        ServiceStatus.DISABLED.toString(),
+                        TIMESTAMP.toString()
+                    )
+                ),
+                null
+            )
+        wallet.creationDate = creationDate
+        wallet.updateDate = creationDate
+        return wallet
+    }
+
+    fun walletDocument(): Wallet {
+        val wallet =
+            Wallet(
+                WALLET_UUID.value.toString(),
+                USER_ID.id.toString(),
+                WalletStatusDto.CREATED.name,
+                PAYMENT_METHOD_ID_CARDS.value.toString(),
+                PAYMENT_INSTRUMENT_ID.value.toString(),
+                CONTRACT_ID.contractId,
+                OperationResultEnum.EXECUTED.value,
+                listOf(
+                    WalletServiceDocument(
+                        SERVICE_ID.id.toString(),
+                        SERVICE_NAME.name,
+                        ServiceStatus.DISABLED.toString(),
+                        TIMESTAMP.toString()
+                    )
+                ),
+                CardDetails(
+                    TYPE.toString(),
+                    BIN.bin,
+                    MASKED_PAN.maskedPan,
+                    EXP_DATE.expDate,
+                    BRAND.toString(),
+                    HOLDER_NAME.holderName
+                )
+            )
+        wallet.creationDate = Instant.now()
+        wallet.updateDate = Instant.now()
+        return wallet
+    }
 
     val WALLET_DOMAIN =
-        Wallet(
+        it.pagopa.wallet.domain.wallets.Wallet(
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
             CONTRACT_ID,
             OperationResultEnum.EXECUTED,
-            CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
+            CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME),
         )
 
     val WALLET_VALIDATION_REQUESTED =
@@ -229,8 +284,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.VALIDATION_REQUESTED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -244,8 +297,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.VALIDATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -259,8 +310,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.ERROR,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -274,8 +323,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
@@ -289,8 +336,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            TIMESTAMP,
-            TIMESTAMP,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
             listOf(),
@@ -301,19 +346,21 @@ object WalletTestUtils {
 
     fun initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
-        return Wallet(
-            WALLET_UUID,
-            USER_ID,
-            WalletStatusDto.CREATED,
-            Instant.now(),
-            Instant.now(),
-            PAYMENT_METHOD_ID_CARDS,
-            null,
-            listOf(),
-            null,
-            null,
-            null
-        )
+        val wallet =
+            Wallet(
+                WALLET_UUID,
+                USER_ID,
+                WalletStatusDto.CREATED,
+                PAYMENT_METHOD_ID_CARDS,
+                null,
+                listOf(),
+                null,
+                null,
+                null
+            )
+        wallet.creationDate = Instant.now()
+        wallet.updateDate = Instant.now()
+        return wallet
     }
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
@@ -322,8 +369,6 @@ object WalletTestUtils {
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
-            Instant.now(),
-            Instant.now(),
             PAYMENT_METHOD_ID_CARDS,
             null,
             listOf(),
