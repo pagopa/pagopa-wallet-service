@@ -154,17 +154,7 @@ class WalletService(
                 val contractId = orderIdAndContractId.second
                 Triple(
                     hostedOrderResponse,
-                    Wallet(
-                        wallet.id,
-                        wallet.userId,
-                        WalletStatusDto.INITIALIZED,
-                        wallet.paymentMethodId,
-                        wallet.paymentInstrumentId,
-                        wallet.applications,
-                        ContractId(contractId),
-                        null,
-                        wallet.details
-                    ),
+                    wallet.contractId(ContractId(contractId)).status(WalletStatusDto.INITIALIZED),
                     orderIdAndContractId.first
                 )
             }

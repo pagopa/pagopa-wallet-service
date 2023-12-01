@@ -54,6 +54,52 @@ data class Wallet(
     lateinit var creationDate: Instant
     lateinit var updateDate: Instant
 
+    constructor(
+        id: WalletId,
+        userId: UserId,
+        status: WalletStatusDto,
+        paymentMethodId: PaymentMethodId,
+        paymentInstrumentId: PaymentInstrumentId?,
+        applications: List<Application>,
+        contractId: ContractId?,
+        validationOperationResult: OperationResultEnum?,
+        details: WalletDetails<*>?,
+        version: Number?,
+        creationDate: Instant,
+        updateDate: Instant
+    ) : this(
+        id,
+        userId,
+        status,
+        paymentMethodId,
+        paymentInstrumentId,
+        applications,
+        contractId,
+        validationOperationResult,
+        details,
+        version
+    ) {
+        this.version = version
+        this.creationDate = creationDate
+        this.updateDate = updateDate
+    }
+
+    fun deepCopy() =
+        it.pagopa.wallet.domain.wallets.Wallet(
+            this.id,
+            this.userId,
+            this.status,
+            this.paymentMethodId,
+            this.paymentInstrumentId,
+            this.applications,
+            this.contractId,
+            this.validationOperationResult,
+            this.details,
+            this.version,
+            this.creationDate,
+            this.updateDate
+        )
+
     fun toDocument(): Wallet {
         val wallet =
             Wallet(
@@ -98,6 +144,11 @@ data class Wallet(
 
     fun details(details: WalletDetails<*>): it.pagopa.wallet.domain.wallets.Wallet {
         this.details = details
+        return this
+    }
+
+    fun contractId(contractId: ContractId): it.pagopa.wallet.domain.wallets.Wallet {
+        this.contractId = contractId
         return this
     }
 
