@@ -199,7 +199,9 @@ class WalletServiceTest {
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+                var walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
+                walletDocumentWithSessionWallet =
+                    walletDocumentWithSessionWallet.copy(contractId = contractId)
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
