@@ -9,14 +9,14 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions
 class MongoConfiguration {
     @Bean
     fun mongoCustomConversions() =
-        MongoCustomConversions(
-            listOf(
-                WalletIdWriter,
-                WalletIdReader,
-                PaymentInstrumentIdReader,
-                PaymentInstrumentIdWriter,
-                PaymentMethodIdReader,
-                PaymentMethodIdWriter
+            MongoCustomConversions(
+                    listOf(
+                            WalletIdWriter,
+                            WalletIdReader,
+                            PaymentInstrumentIdReader,
+                            PaymentInstrumentIdWriter,
+                            PaymentMethodIdReader,
+                            PaymentMethodIdWriter
+                    )
             )
-        )
 }

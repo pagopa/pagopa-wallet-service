@@ -34,7 +34,8 @@ import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
 
@@ -493,8 +494,8 @@ class WalletService(
                     .paymentMethodId(wallet.paymentMethodId)
                     .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                     .userId(wallet.userId)
-                    .updateDate(wallet.updateDate.atOffset(ZoneOffset.UTC))
-                    .creationDate(wallet.creationDate.atOffset(ZoneOffset.UTC))
+                    .updateDate(OffsetDateTime.ofInstant(wallet.updateDate, ZoneId.systemDefault()))
+                    .creationDate(OffsetDateTime.ofInstant(wallet.creationDate, ZoneId.systemDefault()))
                     .services(
                             wallet.applications.map { application ->
                                 ServiceDto()

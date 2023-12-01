@@ -39,16 +39,16 @@ import java.time.Instant
  */
 @AggregateRoot
 data class Wallet(
-    @AggregateRootId val id: WalletId,
-    val userId: UserId,
-    var status: WalletStatusDto = WalletStatusDto.CREATED,
-    val paymentMethodId: PaymentMethodId,
-    var paymentInstrumentId: PaymentInstrumentId? = null,
-    var applications: List<Application> = listOf(),
-    var contractId: ContractId? = null,
-    var validationOperationResult: OperationResultEnum? = null,
-    var details: WalletDetails<*>? = null,
-    var version: Number? = null
+        @AggregateRootId val id: WalletId,
+        val userId: UserId,
+        var status: WalletStatusDto = WalletStatusDto.CREATED,
+        val paymentMethodId: PaymentMethodId,
+        var paymentInstrumentId: PaymentInstrumentId? = null,
+        var applications: List<Application> = listOf(),
+        var contractId: ContractId? = null,
+        var validationOperationResult: OperationResultEnum? = null,
+        var details: WalletDetails<*>? = null,
+        var version: Number? = null
 ) {
 
     lateinit var creationDate: Instant
@@ -56,28 +56,30 @@ data class Wallet(
 
     fun toDocument(): Wallet {
         val wallet =
-            Wallet(
-                this.id.value.toString(),
-                this.userId.id.toString(),
-                this.status.name,
-                this.paymentMethodId.value.toString(),
-                this.paymentInstrumentId?.value?.toString(),
-                this.contractId?.contractId,
-                this.validationOperationResult?.value,
-                this.applications.map { app ->
-                    it.pagopa.wallet.documents.wallets.Application(
-                        app.id.id.toString(),
-                        app.name.name,
-                        app.status.name,
-                        app.lastUpdate.toString()
-                    )
-                },
-                this.details?.toDocument(),
-                this.version
-            )
+                Wallet(
+                        this.id.value.toString(),
+                        this.userId.id.toString(),
+                        this.status.name,
+                        this.paymentMethodId.value.toString(),
+                        this.paymentInstrumentId?.value?.toString(),
+                        this.contractId?.contractId,
+                        this.validationOperationResult?.value,
+                        this.applications.map { app ->
+                            it.pagopa.wallet.documents.wallets.Application(
+                                    app.id.id.toString(),
+                                    app.name.name,
+                                    app.status.name,
+                                    app.lastUpdate.toString()
+                            )
+                        },
+                        this.details?.toDocument(),
+                        this.version
+                )
         if (this.version != null) {
-            wallet.creationDate = creationDate
-            wallet.updateDate = updateDate
+            //wallet.creationDate = creationDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            //wallet.updateDate = updateDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            wallet.creationDate = this.creationDate
+            wallet.updateDate = this.updateDate
         }
         return wallet
     }
@@ -98,7 +100,7 @@ data class Wallet(
     }
 
     fun validationOperationResult(
-        validationOperationResult: WalletNotificationRequestDto.OperationResultEnum?
+            validationOperationResult: WalletNotificationRequestDto.OperationResultEnum?
     ): it.pagopa.wallet.domain.wallets.Wallet {
         this.validationOperationResult = validationOperationResult
         return this
