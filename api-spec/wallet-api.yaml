@@ -151,14 +151,15 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
-    patch:
+  /wallets/{walletId}/services:
+    post:
       tags:
         - wallets
-      summary: Partial wallet update
-      description: Update wallet partially
-      operationId: patchWalletById
+      summary: Update wallet services and their status
+      description: Update wallet services
+      operationId: updateWalletServicesById
       requestBody:
-        description: Create a new wallet
+        description: Update wallet services for the specified wallet
         content:
           application/json:
             schema:
@@ -689,8 +690,6 @@ components:
     WalletPatchRequest:
       type: object
       description: Wallet update request
-      items:
-        $ref: '#/components/schemas/PatchService'
       properties:
         services:
           type: array

@@ -19,8 +19,8 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
 
 @RestController
 @Slf4j
@@ -172,13 +172,14 @@ class WalletController(
      * @formatter:on
      */
     @SuppressWarnings("kotlin:S6508")
-    override fun patchWalletById(
+    override fun updateWalletServicesById(
         walletId: UUID,
-        patchServiceDto: Flux<PatchServiceDto>,
+        patchServiceDto: Mono<WalletPatchRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
 
         return patchServiceDto
+            .flatMapMany { it.services.toFlux() }
             .flatMap {
                 walletService.patchWallet(
                     walletId,
