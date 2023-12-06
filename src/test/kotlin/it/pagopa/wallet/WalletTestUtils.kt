@@ -511,13 +511,14 @@ object WalletTestUtils {
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
-    val PATCH_SERVICE_1: PatchServiceDto =
-        PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.DISABLED)
+    val WALLET_SERVICE_1: WalletServiceDto =
+        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.DISABLED)
 
-    val PATCH_SERVICE_2: PatchServiceDto =
-        PatchServiceDto().name(ServiceNameDto.PAGOPA).status(ServicePatchStatusDto.ENABLED)
+    val WALLET_SERVICE_2: WalletServiceDto =
+        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.ENABLED)
 
-    val FLUX_PATCH_SERVICES: List<PatchServiceDto> = listOf(PATCH_SERVICE_1, PATCH_SERVICE_2)
+    val UPDATE_SERVICES_BODY: WalletServiceUpdateRequestDto =
+        WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()

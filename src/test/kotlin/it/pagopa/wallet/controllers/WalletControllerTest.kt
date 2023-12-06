@@ -8,13 +8,18 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
+import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_1
+import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.domain.services.ServiceName
+import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.services.WalletServiceUpdateData
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
@@ -24,12 +29,14 @@ import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -282,14 +289,25 @@ class WalletControllerTest {
     }
 
     @Test
-    fun testPatchWalletById() = runTest {
+    fun `wallet services updated with valid statuses returns 204`() {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
 
-        given { walletService.patchWallet(any(), any()) }
+        given { walletService.updateWalletServices(any(), any()) }
             .willReturn(
                 mono {
-                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_DOMAIN.id.value.toString()))
+                    LoggedAction(
+                        WalletServiceUpdateData(
+                            successfullyUpdatedServices =
+                                mapOf(
+                                    ServiceName(WALLET_SERVICE_1.name.name) to
+                                        ServiceStatus.valueOf(WALLET_SERVICE_1.status.name)
+                                ),
+                            servicesWithUpdateFailed = mapOf(),
+                            updatedWallet = WALLET_DOMAIN.toDocument()
+                        ),
+                        WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                    )
                 }
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
@@ -297,12 +315,77 @@ class WalletControllerTest {
 
         /* test */
         webClient
-            .patch()
-            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
-            .bodyValue(WalletTestUtils.FLUX_PATCH_SERVICES)
+            .put()
+            .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+            .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
             .exchange()
             .expectStatus()
             .isNoContent
+    }
+
+    @Test
+    fun `wallet services updated with errors returns 409 with both succeeded and failed services`() {
+        val mockedInstant = Instant.now()
+
+        Mockito.mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+            /* preconditions */
+            val walletId = WalletId(UUID.randomUUID())
+            val walletServiceUpdateData =
+                WalletServiceUpdateData(
+                    successfullyUpdatedServices =
+                        mapOf(
+                            ServiceName("PAGOPA") to
+                                ServiceStatus.valueOf(WALLET_SERVICE_1.status.name)
+                        ),
+                    servicesWithUpdateFailed =
+                        mapOf(
+                            ServiceName("PAGOPA") to
+                                ServiceStatus.valueOf(WALLET_SERVICE_2.status.name)
+                        ),
+                    updatedWallet = WALLET_DOMAIN.toDocument()
+                )
+
+            given { walletService.updateWalletServices(any(), any()) }
+                .willReturn(
+                    mono {
+                        LoggedAction(
+                            walletServiceUpdateData,
+                            WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                        )
+                    }
+                )
+            given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+                .willReturn(Flux.empty())
+
+            /* test */
+            val expectedResponse =
+                WalletServicesPartialUpdateDto().apply {
+                    updatedServices =
+                        walletServiceUpdateData.successfullyUpdatedServices.map {
+                            WalletServiceDto()
+                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .status(WalletServiceStatusDto.valueOf(it.value.name))
+                        }
+                    failedServices =
+                        walletServiceUpdateData.servicesWithUpdateFailed.map {
+                            ServiceDto()
+                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .status(ServiceStatusDto.valueOf(it.value.name))
+                        }
+                }
+
+            webClient
+                .put()
+                .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+                .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.CONFLICT)
+                .expectBody(WalletServicesPartialUpdateDto::class.java)
+                .isEqualTo(expectedResponse)
+        }
     }
 
     @Test

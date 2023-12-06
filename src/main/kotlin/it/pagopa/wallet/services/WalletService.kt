@@ -7,17 +7,18 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
+import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
-import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
@@ -34,11 +35,13 @@ import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 @Service
 class WalletService(
     @Autowired private val walletRepository: WalletRepository,
+    @Autowired private val serviceRepository: ServiceRepository,
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
@@ -345,21 +348,6 @@ class WalletService(
                     )
             }
 
-    fun patchWallet(
-        walletId: UUID,
-        service: Pair<ServiceName, ServiceStatus>
-    ): Mono<LoggedAction<Wallet>> {
-        return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { it.toDomain() to updateServiceList(it.toDomain(), service) }
-            .flatMap { (oldService, updatedService) ->
-                walletRepository.save(updatedService.toDocument()).thenReturn(oldService).map {
-                    LoggedAction(it, WalletPatchEvent(it.id.value.toString()))
-                }
-            }
-    }
-
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
         return walletRepository
             .findById(walletId.toString())
@@ -529,36 +517,71 @@ class WalletService(
                 }
             )
 
-    private fun updateServiceList(
-        wallet: Wallet,
-        dataService: Pair<ServiceName, ServiceStatus>
-    ): Wallet {
-        val updatedServiceList = wallet.applications.toMutableList()
-        when (
-            val index =
-                wallet.applications.indexOfFirst { s -> s.name.name == dataService.first.name }
-        ) {
-            -1 ->
-                updatedServiceList.add(
-                    Application(
-                        ServiceId(UUID.randomUUID()),
-                        ServiceName(dataService.first.name),
-                        ServiceStatus.valueOf(dataService.second.name),
-                        Instant.now()
-                    )
-                )
-            else -> {
-                val oldWalletService = updatedServiceList[index]
-                updatedServiceList[index] =
-                    Application(
-                        oldWalletService.id,
-                        oldWalletService.name,
-                        ServiceStatus.valueOf(dataService.second.name),
-                        Instant.now()
-                    )
+    fun updateWalletServices(
+        walletId: UUID,
+        servicesToUpdate: List<Pair<ServiceName, ServiceStatus>>
+    ): Mono<LoggedAction<WalletServiceUpdateData>> {
+        return walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .flatMap { wallet ->
+                val walletApplications = wallet.applications.associateBy { it.name }.toMutableMap()
+
+                servicesToUpdate
+                    .toFlux()
+                    .flatMap { (serviceName, requestedStatus) ->
+                        serviceRepository.findById(serviceName.name).map {
+                            Triple(it, serviceName, requestedStatus)
+                        }
+                    }
+                    .reduce(
+                        Pair(
+                            mutableMapOf<ServiceName, ServiceStatus>(),
+                            mutableMapOf<ServiceName, ServiceStatus>()
+                        )
+                    ) {
+                        (servicesUpdatedSuccessfully, servicesWithUpdateFailed),
+                        (service, serviceName, requestedStatus) ->
+                        val serviceGlobalStatus = ServiceStatus.valueOf(service.status)
+                        val walletApplication = walletApplications[serviceName.name]
+
+                        if (
+                            ServiceStatus.canChangeToStatus(
+                                requested = requestedStatus,
+                                global = serviceGlobalStatus
+                            )
+                        ) {
+                            walletApplications[serviceName.name] =
+                                walletApplication?.copy(
+                                    lastUpdateDate = Instant.now().toString(),
+                                    status = requestedStatus.name
+                                )
+                                    ?: Application(
+                                        id = service.id,
+                                        name = serviceName.name,
+                                        lastUpdateDate = Instant.now().toString(),
+                                        status = requestedStatus.name
+                                    )
+                            servicesUpdatedSuccessfully[serviceName] = requestedStatus
+                        } else {
+                            servicesWithUpdateFailed[serviceName] = serviceGlobalStatus
+                        }
+
+                        Pair(servicesUpdatedSuccessfully, servicesWithUpdateFailed)
+                    }
+                    .map { (servicesUpdatedSuccessfully, servicesWithUpdateFailed) ->
+                        WalletServiceUpdateData(
+                            servicesUpdatedSuccessfully,
+                            servicesWithUpdateFailed,
+                            wallet.copy(
+                                applications = walletApplications.values.toList(),
+                                updateDate = Instant.now()
+                            )
+                        )
+                    }
             }
-        }
-        return wallet.copy(applications = updatedServiceList)
+            .flatMap { walletRepository.save(it.updatedWallet).thenReturn(it) }
+            .map { LoggedAction(it, WalletPatchEvent(it.updatedWallet.id)) }
     }
 
     /**
