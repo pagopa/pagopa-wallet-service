@@ -164,22 +164,7 @@ class WalletService(
                 }
             }
             .map { (hostedOrderResponse, wallet, orderId) ->
-                Triple(
-                    hostedOrderResponse,
-                    Wallet(
-                        wallet.id,
-                        wallet.userId,
-                        WalletStatusDto.INITIALIZED,
-                        wallet.paymentMethodId,
-                        wallet.paymentInstrumentId,
-                        wallet.applications,
-                        wallet.contractId,
-                        null,
-                        wallet.details,
-                        wallet.version
-                    ),
-                    orderId
-                )
+                Triple(hostedOrderResponse, wallet.status(WalletStatusDto.INITIALIZED), orderId)
             }
             .flatMap { (hostedOrderResponse, wallet, orderId) ->
                 walletRepository.save(wallet.toDocument()).map {

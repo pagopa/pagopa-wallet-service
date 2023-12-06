@@ -116,6 +116,7 @@ class WalletTest {
 
     @Test
     fun `can convert domain object to document`() {
-        assert(WalletTestUtils.WALLET_DOMAIN.toDocument() == WalletTestUtils.walletDocument())
+        assert(WalletTestUtils.walletDomain().toDocument().equals(WalletTestUtils.walletDocument()))
+        // assert(WalletTestUtils.WALLET_DOMAIN_NEW.toDocument().equals(WalletTestUtils.walletDocumentNoVersion()))
     }
 }
