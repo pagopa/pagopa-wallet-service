@@ -163,14 +163,6 @@ class WalletService(
                     Triple(hostedOrderResponse, wallet, orderId)
                 }
             }
-            .map { (hostedOrderResponse, wallet, orderId) ->
-                Triple(hostedOrderResponse, wallet.status(WalletStatusDto.INITIALIZED), orderId)
-            }
-            .flatMap { (hostedOrderResponse, wallet, orderId) ->
-                walletRepository.save(wallet.toDocument()).map {
-                    Triple(hostedOrderResponse, wallet, orderId)
-                }
-            }
             .flatMap { (hostedOrderResponse, wallet, orderId) ->
                 npgSessionRedisTemplate
                     .save(
