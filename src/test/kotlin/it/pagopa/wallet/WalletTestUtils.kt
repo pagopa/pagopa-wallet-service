@@ -59,10 +59,10 @@ object WalletTestUtils {
                 null,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -78,10 +78,10 @@ object WalletTestUtils {
                 null,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -110,10 +110,10 @@ object WalletTestUtils {
                     brandEnum.name,
                     holderName
                 ),
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -129,10 +129,10 @@ object WalletTestUtils {
                 null,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -148,10 +148,10 @@ object WalletTestUtils {
                 operationResultEnum.value,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -166,10 +166,11 @@ object WalletTestUtils {
                 CONTRACT_ID.contractId,
                 OperationResultEnum.EXECUTED.toString(),
                 listOf(),
-                null
+                null,
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -185,10 +186,10 @@ object WalletTestUtils {
                 operationResultEnum.value,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -204,10 +205,10 @@ object WalletTestUtils {
                 null,
                 listOf(),
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -222,10 +223,11 @@ object WalletTestUtils {
                 CONTRACT_ID.contractId,
                 null,
                 listOf(),
-                null
+                null,
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -240,10 +242,11 @@ object WalletTestUtils {
                 null,
                 null,
                 listOf(),
-                null
+                null,
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -258,10 +261,11 @@ object WalletTestUtils {
                 null,
                 OperationResultEnum.EXECUTED.value,
                 listOf(),
-                null
+                null,
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -283,17 +287,16 @@ object WalletTestUtils {
                         TIMESTAMP.toString()
                     )
                 ),
-                null
+                null,
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
     fun walletDomain(): it.pagopa.wallet.domain.wallets.Wallet {
         val wallet = WALLET_DOMAIN
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -322,7 +325,10 @@ object WalletTestUtils {
                     EXP_DATE.expDate,
                     BRAND.toString(),
                     HOLDER_NAME.holderName
-                )
+                ),
+                0,
+                creationDate,
+                creationDate
             )
         return wallet
     }
@@ -353,10 +359,10 @@ object WalletTestUtils {
                     BRAND.toString(),
                     HOLDER_NAME.holderName
                 ),
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -371,7 +377,9 @@ object WalletTestUtils {
             CONTRACT_ID,
             OperationResultEnum.EXECUTED,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME),
-            0
+            0,
+            creationDate,
+            creationDate
         )
 
     private fun newWalletDocumentToBeSaved(): it.pagopa.wallet.documents.wallets.Wallet {
@@ -386,15 +394,14 @@ object WalletTestUtils {
             null,
             listOf(),
             null,
-            null
+            0,
+            creationDate,
+            creationDate
         )
     }
 
     fun newWalletDocumentSaved(): it.pagopa.wallet.documents.wallets.Wallet {
         val wallet = newWalletDocumentToBeSaved()
-        wallet.version = 0
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -411,10 +418,10 @@ object WalletTestUtils {
                 null,
                 null,
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
 
         return wallet
     }
@@ -432,10 +439,10 @@ object WalletTestUtils {
                 null,
                 null,
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 
@@ -452,10 +459,10 @@ object WalletTestUtils {
                 CONTRACT_ID,
                 null,
                 null,
-                0
+                0,
+                creationDate,
+                creationDate
             )
-        wallet.creationDate = creationDate
-        wallet.updateDate = creationDate
         return wallet
     }
 

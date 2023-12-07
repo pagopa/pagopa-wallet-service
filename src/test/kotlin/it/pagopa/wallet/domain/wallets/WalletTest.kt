@@ -23,7 +23,10 @@ class WalletTest {
                 listOf(),
                 WalletTestUtils.CONTRACT_ID,
                 OperationResultEnum.EXECUTED,
-                null
+                null,
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -47,7 +50,10 @@ class WalletTest {
                 ),
                 WalletTestUtils.CONTRACT_ID,
                 OperationResultEnum.EXECUTED,
-                null
+                null,
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -78,7 +84,10 @@ class WalletTest {
                     WalletTestUtils.EXP_DATE,
                     WalletTestUtils.BRAND,
                     WalletTestUtils.HOLDER_NAME
-                )
+                ),
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -109,38 +118,12 @@ class WalletTest {
                     WalletTestUtils.EXP_DATE,
                     WalletTestUtils.BRAND,
                     WalletTestUtils.HOLDER_NAME
-                )
+                ),
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
-    }
-
-    @Test
-    fun `can convert domain object to document`() {
-        val walletDomain = WalletTestUtils.walletDomain()
-        assert(walletDomain == walletDomain)
-        assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDomain())
         assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDocument().toDomain())
-        assert(!WalletTestUtils.walletDomain().equals(WalletTestUtils.walletDocument()))
-        assert(
-            WalletTestUtils.walletDomain().hashCode() ==
-                WalletTestUtils.walletDocument().toDomain().hashCode()
-        )
-        assert(
-            WalletTestUtils.walletDomain().status(WalletStatusDto.ERROR).toDocument() !=
-                WalletTestUtils.walletDocument()
-        )
-        assert(
-            WalletTestUtils.walletDomain().applications(listOf()).toDocument() !=
-                WalletTestUtils.walletDocument()
-        )
-        assert(
-            WalletTestUtils.walletDomain().contractId(ContractId("ctrId")).toDocument() !=
-                WalletTestUtils.walletDocument()
-        )
-        assert(
-            WalletTestUtils.walletDomain()
-                .validationOperationResult(OperationResultEnum.VOIDED)
-                .toDocument() != WalletTestUtils.walletDocument()
-        )
     }
 }

@@ -37,7 +37,7 @@ import java.time.Instant
  *  </pre>
  */
 @AggregateRoot
-class Wallet(
+data class Wallet(
     @AggregateRootId val id: WalletId,
     val userId: UserId,
     var status: WalletStatusDto = WalletStatusDto.CREATED,
@@ -47,57 +47,10 @@ class Wallet(
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
     var details: WalletDetails<*>? = null,
-    var version: Number? = null
+    val version: Int,
+    val creationDate: Instant,
+    val updateDate: Instant
 ) {
-
-    lateinit var creationDate: Instant
-    lateinit var updateDate: Instant
-
-    constructor(
-        id: WalletId,
-        userId: UserId,
-        status: WalletStatusDto,
-        paymentMethodId: PaymentMethodId,
-        paymentInstrumentId: PaymentInstrumentId?,
-        applications: List<Application>,
-        contractId: ContractId?,
-        validationOperationResult: OperationResultEnum?,
-        details: WalletDetails<*>?,
-        version: Number?,
-        creationDate: Instant,
-        updateDate: Instant
-    ) : this(
-        id,
-        userId,
-        status,
-        paymentMethodId,
-        paymentInstrumentId,
-        applications,
-        contractId,
-        validationOperationResult,
-        details,
-        version
-    ) {
-        this.version = version
-        this.creationDate = creationDate
-        this.updateDate = updateDate
-    }
-
-    private fun copy() =
-        Wallet(
-            this.id,
-            this.userId,
-            this.status,
-            this.paymentMethodId,
-            this.paymentInstrumentId,
-            this.applications,
-            this.contractId,
-            this.validationOperationResult,
-            this.details,
-            this.version,
-            this.creationDate,
-            this.updateDate
-        )
 
     fun toDocument(): Wallet {
         val wallet =
@@ -118,82 +71,11 @@ class Wallet(
                     )
                 },
                 this.details?.toDocument(),
-                this.version
+                this.version,
+                creationDate,
+                updateDate
             )
 
-        if (this.version != null) {
-            wallet.creationDate = this.creationDate
-            wallet.updateDate = this.updateDate
-        }
         return wallet
-    }
-
-    fun applications(applications: List<Application>): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = copy()
-        wallet.applications = applications
-        return wallet
-    }
-
-    fun status(status: WalletStatusDto): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = copy()
-        wallet.status = status
-        return wallet
-    }
-
-    fun details(details: WalletDetails<*>): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = copy()
-        wallet.details = details
-        return wallet
-    }
-
-    fun contractId(contractId: ContractId): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = copy()
-        wallet.contractId = contractId
-        return wallet
-    }
-
-    fun validationOperationResult(
-        validationOperationResult: OperationResultEnum?
-    ): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = copy()
-        wallet.validationOperationResult = validationOperationResult
-        return wallet
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as it.pagopa.wallet.domain.wallets.Wallet
-
-        if (id != other.id) return false
-        if (userId != other.userId) return false
-        if (status != other.status) return false
-        if (paymentMethodId != other.paymentMethodId) return false
-        if (paymentInstrumentId != other.paymentInstrumentId) return false
-        if (applications != other.applications) return false
-        if (contractId != other.contractId) return false
-        if (validationOperationResult != other.validationOperationResult) return false
-        if (details != other.details) return false
-        if (version != other.version) return false
-        if (creationDate != other.creationDate) return false
-        if (updateDate != other.updateDate) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + userId.hashCode()
-        result = 31 * result + status.hashCode()
-        result = 31 * result + paymentMethodId.hashCode()
-        result = 31 * result + (paymentInstrumentId?.hashCode() ?: 0)
-        result = 31 * result + applications.hashCode()
-        result = 31 * result + (contractId?.hashCode() ?: 0)
-        result = 31 * result + (validationOperationResult?.hashCode() ?: 0)
-        result = 31 * result + (details?.hashCode() ?: 0)
-        result = 31 * result + (version?.hashCode() ?: 0)
-        result = 31 * result + creationDate.hashCode()
-        result = 31 * result + updateDate.hashCode()
-        return result
     }
 }

@@ -71,10 +71,13 @@ class WalletService(
             .getPaymentMethodById(paymentMethodId.toString())
             .map {
                 return@map Wallet(
-                    WalletId(UUID.randomUUID()),
-                    UserId(userId),
-                    WalletStatusDto.CREATED,
-                    PaymentMethodId(UUID.fromString(it.id))
+                    id = WalletId(UUID.randomUUID()),
+                    userId = UserId(userId),
+                    status = WalletStatusDto.CREATED,
+                    paymentMethodId = PaymentMethodId(UUID.fromString(it.id)),
+                    version = 0,
+                    creationDate = Instant.now(),
+                    updateDate = Instant.now()
                 )
             }
             .flatMap { wallet ->
@@ -154,7 +157,10 @@ class WalletService(
                 val contractId = orderIdAndContractId.second
                 Triple(
                     hostedOrderResponse,
-                    wallet.contractId(ContractId(contractId)).status(WalletStatusDto.INITIALIZED),
+                    wallet.copy(
+                        contractId = ContractId(contractId),
+                        status = WalletStatusDto.INITIALIZED
+                    ),
                     orderIdAndContractId.first
                 )
             }
@@ -272,9 +278,9 @@ class WalletService(
                     state.fieldSet!!.fields[0]!!.src != null
             }
             .switchIfEmpty {
-                walletRepository.save(wallet.status(WalletStatusDto.ERROR).toDocument()).flatMap {
-                    Mono.error(BadGatewayException("Invalid state received from NPG"))
-                }
+                walletRepository
+                    .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
+                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
             }
             .flatMap { (state, cardData) ->
                 mono { state }
@@ -299,9 +305,9 @@ class WalletService(
             }
             .map { (response, data) ->
                 response to
-                    wallet
-                        .status(WalletStatusDto.VALIDATION_REQUESTED)
-                        .details(
+                    wallet.copy(
+                        status = WalletStatusDto.VALIDATION_REQUESTED,
+                        details =
                             DomainCardDetails(
                                 Bin(data.bin.orEmpty()),
                                 MaskedPan(
@@ -317,7 +323,7 @@ class WalletService(
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
                                 CardHolderName("?")
                             )
-                        )
+                    )
             }
 
     fun patchWallet(
@@ -389,8 +395,10 @@ class WalletService(
                             }
                         walletRepository.save(
                             wallet
-                                .status(newWalletStatus)
-                                .validationOperationResult(validationOperationResult)
+                                .copy(
+                                    status = newWalletStatus,
+                                    validationOperationResult = validationOperationResult
+                                )
                                 .toDocument()
                         )
                     }
@@ -531,7 +539,7 @@ class WalletService(
                     )
             }
         }
-        return wallet.applications(updatedServiceList)
+        return wallet.copy(applications = updatedServiceList)
     }
 
     /**
