@@ -79,7 +79,7 @@ class WalletService(
             }
             .flatMap { wallet ->
                 walletRepository.save(wallet.toDocument()).map {
-                    LoggedAction(it.toDomain(), WalletAddedEvent(it.toDomain().id.value.toString()))
+                    LoggedAction(it.toDomain(), WalletAddedEvent(it.id))
                 }
             }
     }

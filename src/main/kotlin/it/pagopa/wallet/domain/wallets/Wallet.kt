@@ -1,6 +1,5 @@
 package it.pagopa.wallet.domain.wallets
 
-import it.pagopa.generated.wallet.model.WalletNotificationRequestDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
@@ -84,7 +83,7 @@ class Wallet(
         this.updateDate = updateDate
     }
 
-    fun copy() =
+    private fun copy() =
         Wallet(
             this.id,
             this.userId,
@@ -154,7 +153,7 @@ class Wallet(
     }
 
     fun validationOperationResult(
-        validationOperationResult: WalletNotificationRequestDto.OperationResultEnum?
+        validationOperationResult: OperationResultEnum?
     ): it.pagopa.wallet.domain.wallets.Wallet {
         val wallet = copy()
         wallet.validationOperationResult = validationOperationResult
@@ -180,5 +179,21 @@ class Wallet(
         if (creationDate != other.creationDate) return false
         if (updateDate != other.updateDate) return false
         return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + userId.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + paymentMethodId.hashCode()
+        result = 31 * result + (paymentInstrumentId?.hashCode() ?: 0)
+        result = 31 * result + applications.hashCode()
+        result = 31 * result + (contractId?.hashCode() ?: 0)
+        result = 31 * result + (validationOperationResult?.hashCode() ?: 0)
+        result = 31 * result + (details?.hashCode() ?: 0)
+        result = 31 * result + (version?.hashCode() ?: 0)
+        result = 31 * result + creationDate.hashCode()
+        result = 31 * result + updateDate.hashCode()
+        return result
     }
 }

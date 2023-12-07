@@ -22,6 +22,11 @@ class WalletTest {
     fun `can convert document to domain object`() {
         assert(WalletTestUtils.walletDocument().toDomain().equals(WalletTestUtils.walletDomain()))
         assert(
+            WalletTestUtils.walletDocument()
+                .hashCode()
+                .equals(WalletTestUtils.walletDomain().toDocument().hashCode())
+        )
+        assert(
             !WalletTestUtils.walletDocument()
                 .toDomain()
                 .equals(WalletTestUtils.walletDomain().status(WalletStatusDto.ERROR))

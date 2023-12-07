@@ -73,4 +73,20 @@ class Wallet(
         if (updateDate != other.updateDate) return false
         return true
     }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + userId.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + paymentMethodId.hashCode()
+        result = 31 * result + (paymentInstrumentId?.hashCode() ?: 0)
+        result = 31 * result + (contractId?.hashCode() ?: 0)
+        result = 31 * result + (validationOperationResult?.hashCode() ?: 0)
+        result = 31 * result + applications.hashCode()
+        result = 31 * result + (details?.hashCode() ?: 0)
+        result = 31 * result + (version?.hashCode() ?: 0)
+        result = 31 * result + creationDate.hashCode()
+        result = 31 * result + updateDate.hashCode()
+        return result
+    }
 }
