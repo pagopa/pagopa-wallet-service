@@ -117,6 +117,29 @@ class WalletTest {
     @Test
     fun `can convert domain object to document`() {
         assert(WalletTestUtils.walletDomain().toDocument().equals(WalletTestUtils.walletDocument()))
-        // assert(WalletTestUtils.WALLET_DOMAIN_NEW.toDocument().equals(WalletTestUtils.walletDocumentNoVersion()))
+        assert(
+            !WalletTestUtils.walletDomain()
+                .status(WalletStatusDto.ERROR)
+                .toDocument()
+                .equals(WalletTestUtils.walletDocument())
+        )
+        assert(
+            !WalletTestUtils.walletDomain()
+                .applications(listOf())
+                .toDocument()
+                .equals(WalletTestUtils.walletDocument())
+        )
+        assert(
+            !WalletTestUtils.walletDomain()
+                .contractId(ContractId("ctrId"))
+                .toDocument()
+                .equals(WalletTestUtils.walletDocument())
+        )
+        assert(
+            !WalletTestUtils.walletDomain()
+                .validationOperationResult(OperationResultEnum.VOIDED)
+                .toDocument()
+                .equals(WalletTestUtils.walletDocument())
+        )
     }
 }

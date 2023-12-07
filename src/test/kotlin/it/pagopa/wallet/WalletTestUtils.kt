@@ -360,36 +360,6 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocument(creationDate: Instant, updateDate: Instant, version: Long): Wallet {
-        val wallet =
-            Wallet(
-                WALLET_UUID.value.toString(),
-                USER_ID.id.toString(),
-                WalletStatusDto.CREATED.name,
-                PAYMENT_METHOD_ID_CARDS.value.toString(),
-                PAYMENT_INSTRUMENT_ID.value.toString(),
-                CONTRACT_ID.contractId,
-                OperationResultEnum.EXECUTED.value,
-                listOf(
-                    WalletServiceDocument(
-                        SERVICE_ID.id.toString(),
-                        SERVICE_NAME.name,
-                        ServiceStatus.DISABLED.toString(),
-                        TIMESTAMP.toString()
-                    )
-                ),
-                CardDetails(
-                    TYPE.toString(),
-                    BIN.bin,
-                    MASKED_PAN.maskedPan,
-                    EXP_DATE.expDate,
-                    BRAND.toString(),
-                    HOLDER_NAME.holderName
-                )
-            )
-        return wallet
-    }
-
     val WALLET_DOMAIN =
         it.pagopa.wallet.domain.wallets.Wallet(
             WALLET_UUID,
@@ -402,19 +372,6 @@ object WalletTestUtils {
             OperationResultEnum.EXECUTED,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME),
             0
-        )
-
-    val WALLET_DOMAIN_NEW =
-        it.pagopa.wallet.domain.wallets.Wallet(
-            WALLET_UUID,
-            USER_ID,
-            WalletStatusDto.CREATED,
-            PAYMENT_METHOD_ID_CARDS,
-            PAYMENT_INSTRUMENT_ID,
-            listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
-            CONTRACT_ID,
-            OperationResultEnum.EXECUTED,
-            CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME)
         )
 
     fun newWalletDocumentToBeSaved(): it.pagopa.wallet.documents.wallets.Wallet {

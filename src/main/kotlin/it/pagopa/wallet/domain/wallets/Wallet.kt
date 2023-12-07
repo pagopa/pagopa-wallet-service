@@ -84,8 +84,8 @@ class Wallet(
         this.updateDate = updateDate
     }
 
-    fun deepCopy() =
-        it.pagopa.wallet.domain.wallets.Wallet(
+    fun copy() =
+        Wallet(
             this.id,
             this.userId,
             this.status,
@@ -130,30 +130,35 @@ class Wallet(
     }
 
     fun applications(applications: List<Application>): it.pagopa.wallet.domain.wallets.Wallet {
-        this.applications = applications
-        return this
+        val wallet = copy()
+        wallet.applications = applications
+        return wallet
     }
 
     fun status(status: WalletStatusDto): it.pagopa.wallet.domain.wallets.Wallet {
-        this.status = status
-        return this
+        val wallet = copy()
+        wallet.status = status
+        return wallet
     }
 
     fun details(details: WalletDetails<*>): it.pagopa.wallet.domain.wallets.Wallet {
-        this.details = details
-        return this
+        val wallet = copy()
+        wallet.details = details
+        return wallet
     }
 
     fun contractId(contractId: ContractId): it.pagopa.wallet.domain.wallets.Wallet {
-        this.contractId = contractId
-        return this
+        val wallet = copy()
+        wallet.contractId = contractId
+        return wallet
     }
 
     fun validationOperationResult(
         validationOperationResult: WalletNotificationRequestDto.OperationResultEnum?
     ): it.pagopa.wallet.domain.wallets.Wallet {
-        this.validationOperationResult = validationOperationResult
-        return this
+        val wallet = copy()
+        wallet.validationOperationResult = validationOperationResult
+        return wallet
     }
 
     override fun equals(other: Any?): Boolean {
@@ -174,26 +179,6 @@ class Wallet(
         if (version != other.version) return false
         if (creationDate != other.creationDate) return false
         if (updateDate != other.updateDate) return false
-        /*if (version != null) {
-            if (creationDate != other.creationDate) return false
-            if (updateDate != other.updateDate) return false
-        }*/
         return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + userId.hashCode()
-        result = 31 * result + status.hashCode()
-        result = 31 * result + paymentMethodId.hashCode()
-        result = 31 * result + (paymentInstrumentId?.hashCode() ?: 0)
-        result = 31 * result + applications.hashCode()
-        result = 31 * result + (contractId?.hashCode() ?: 0)
-        result = 31 * result + (validationOperationResult?.hashCode() ?: 0)
-        result = 31 * result + (details?.hashCode() ?: 0)
-        result = 31 * result + (version?.hashCode() ?: 0)
-        result = 31 * result + creationDate.hashCode()
-        result = 31 * result + updateDate.hashCode()
-        return result
     }
 }

@@ -1390,7 +1390,6 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
@@ -1418,7 +1417,6 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
@@ -1446,7 +1444,6 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
@@ -1477,18 +1474,12 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
             walletDocumentWithError(
                 WalletNotificationRequestDto.OperationResultEnum.valueOf(operationResult.value)
             )
-
-        /*walletDocument.copy(
-            status = WalletStatusDto.ERROR.value,
-            validationOperationResult = operationResult.value
-        )*/
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocumentWithError))

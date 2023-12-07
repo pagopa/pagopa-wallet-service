@@ -30,35 +30,6 @@ class Wallet(
 
     @LastModifiedDate lateinit var updateDate: Instant
 
-    constructor(
-        walletId: String,
-        userId: String,
-        status: String,
-        paymentMethodId: String,
-        paymentInstrumentId: String?,
-        contractId: String?,
-        validationOperationResult: String?,
-        applications: List<Application>,
-        details: WalletDetails<*>?,
-        creationDate: Instant,
-        updateDate: Instant,
-        version: Number
-    ) : this(
-        walletId,
-        userId,
-        status,
-        paymentMethodId,
-        paymentInstrumentId,
-        contractId,
-        validationOperationResult,
-        applications,
-        details,
-        version
-    ) {
-        this.creationDate = creationDate
-        this.updateDate = updateDate
-    }
-
     fun toDomain(): Wallet {
         val wallet =
             Wallet(
@@ -100,26 +71,6 @@ class Wallet(
         if (version != other.version) return false
         if (creationDate != other.creationDate) return false
         if (updateDate != other.updateDate) return false
-        /*if (version != null) {
-            if (creationDate != other.creationDate) return false
-            if (updateDate != other.updateDate) return false
-        }*/
         return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + userId.hashCode()
-        result = 31 * result + status.hashCode()
-        result = 31 * result + paymentMethodId.hashCode()
-        result = 31 * result + (paymentInstrumentId?.hashCode() ?: 0)
-        result = 31 * result + (contractId?.hashCode() ?: 0)
-        result = 31 * result + (validationOperationResult?.hashCode() ?: 0)
-        result = 31 * result + applications.hashCode()
-        result = 31 * result + (details?.hashCode() ?: 0)
-        result = 31 * result + (version?.hashCode() ?: 0)
-        result = 31 * result + creationDate.hashCode()
-        result = 31 * result + updateDate.hashCode()
-        return result
     }
 }
