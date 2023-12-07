@@ -374,7 +374,7 @@ object WalletTestUtils {
             0
         )
 
-    fun newWalletDocumentToBeSaved(): it.pagopa.wallet.documents.wallets.Wallet {
+    private fun newWalletDocumentToBeSaved(): it.pagopa.wallet.documents.wallets.Wallet {
 
         return Wallet(
             WALLET_UUID.value.toString(),
