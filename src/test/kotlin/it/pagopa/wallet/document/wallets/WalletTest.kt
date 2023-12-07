@@ -20,36 +20,31 @@ class WalletTest {
 
     @Test
     fun `can convert document to domain object`() {
-        assert(WalletTestUtils.walletDocument().toDomain().equals(WalletTestUtils.walletDomain()))
+        assert(WalletTestUtils.walletDocument() == WalletTestUtils.walletDocument())
+        assert(WalletTestUtils.walletDocument() == WalletTestUtils.walletDomain().toDocument())
         assert(
-            WalletTestUtils.walletDocument()
-                .hashCode()
-                .equals(WalletTestUtils.walletDomain().toDocument().hashCode())
+            WalletTestUtils.walletDocument().hashCode() ==
+                WalletTestUtils.walletDomain().toDocument().hashCode()
+        )
+        assert(!WalletTestUtils.walletDocument().equals(WalletTestUtils.walletDomain()))
+        assert(
+            WalletTestUtils.walletDocument().toDomain() !=
+                WalletTestUtils.walletDomain().status(WalletStatusDto.ERROR)
         )
         assert(
-            !WalletTestUtils.walletDocument()
-                .toDomain()
-                .equals(WalletTestUtils.walletDomain().status(WalletStatusDto.ERROR))
+            WalletTestUtils.walletDocument().toDomain() !=
+                WalletTestUtils.walletDomain().contractId(ContractId("ctrId"))
         )
         assert(
-            !WalletTestUtils.walletDocument()
-                .toDomain()
-                .equals(WalletTestUtils.walletDomain().contractId(ContractId("ctrId")))
+            WalletTestUtils.walletDocument().toDomain() !=
+                WalletTestUtils.walletDomain().applications(listOf())
         )
         assert(
-            !WalletTestUtils.walletDocument()
-                .toDomain()
-                .equals(WalletTestUtils.walletDomain().applications(listOf()))
-        )
-        assert(
-            !WalletTestUtils.walletDocument()
-                .toDomain()
-                .equals(
-                    WalletTestUtils.walletDomain()
-                        .validationOperationResult(
-                            WalletNotificationRequestDto.OperationResultEnum.VOIDED
-                        )
-                )
+            WalletTestUtils.walletDocument().toDomain() !=
+                WalletTestUtils.walletDomain()
+                    .validationOperationResult(
+                        WalletNotificationRequestDto.OperationResultEnum.VOIDED
+                    )
         )
     }
 }
