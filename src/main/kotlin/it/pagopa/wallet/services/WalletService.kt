@@ -27,7 +27,6 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneId
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
@@ -467,8 +466,8 @@ class WalletService(
             .paymentMethodId(wallet.paymentMethodId)
             .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
             .userId(wallet.userId)
-            .updateDate(OffsetDateTime.ofInstant(wallet.updateDate, ZoneId.systemDefault()))
-            .creationDate(OffsetDateTime.ofInstant(wallet.creationDate, ZoneId.systemDefault()))
+            .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+            .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .services(
                 wallet.applications.map { application ->
                     ServiceDto()
