@@ -72,8 +72,8 @@ data class Wallet(
                 },
                 this.details?.toDocument(),
                 this.version,
-                creationDate,
-                updateDate
+                this.creationDate,
+                this.updateDate
             )
 
         return wallet
