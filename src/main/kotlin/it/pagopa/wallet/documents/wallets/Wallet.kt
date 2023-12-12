@@ -46,8 +46,8 @@ data class Wallet(
                     },
                 details = this.details?.toDomain(),
                 version = this.version,
-                creationDate = creationDate,
-                updateDate = updateDate
+                creationDate = this.creationDate,
+                updateDate = this.updateDate
             )
         return wallet
     }
