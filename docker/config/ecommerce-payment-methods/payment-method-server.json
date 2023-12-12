@@ -1,31 +1,32 @@
-{"payment-methods": [
-  {
-    "id": "378d0b4f-8b69-46b0-8215-07785fe1aad4",
-    "name": "CARDS",
-    "description": "Carte di credito o debito",
-    "asset": "mastercard",
-    "status": "ENABLED",
-    "paymentTypeCode": "CP",
-    "ranges": [
-      {
-        "min": 0,
-        "max": 999999999
-      }
-    ]
-  },
-  {
-    "id": "1fb6287c-6e9f-11ee-b962-0242ac120002",
-    "name": "PAYPAL",
-    "description": "Paypal",
-    "asset": "paypal",
-    "status": "DISABLED",
-    "paymentTypeCode": "PPAY",
-    "ranges": [
-      {
-        "min": 0,
-        "max": 999999999
-      }
-    ]
-  }
+{
+  "payment-methods": [
+    {
+      "id": "378d0b4f-8b69-46b0-8215-07785fe1aad4",
+      "name": "CARDS",
+      "description": "Carte di credito o debito",
+      "asset": "mastercard",
+      "status": "ENABLED",
+      "paymentTypeCode": "CP",
+      "ranges": [
+        {
+          "min": 0,
+          "max": 999999999
+        }
+      ]
+    },
+    {
+      "id": "1fb6287c-6e9f-11ee-b962-0242ac120002",
+      "name": "PAYPAL",
+      "description": "Paypal",
+      "asset": "paypal",
+      "status": "ENABLED",
+      "paymentTypeCode": "PPAY",
+      "ranges": [
+        {
+          "min": 0,
+          "max": 999999999
+        }
+      ]
+    }
   ]
 }
