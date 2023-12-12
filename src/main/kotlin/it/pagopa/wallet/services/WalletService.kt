@@ -92,17 +92,16 @@ class WalletService(
                 walletRepository
                     .save(wallet.toDocument())
                     .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
-                    .zipWith(
-                        mono {
+                    .map { loggedAction ->
+                        Pair(
+                            loggedAction,
                             paymentMethodResponse.name.let {
                                 when (it) {
                                     "CARDS" -> onboardingReturnUrlConfig.cardReturnUrl
                                     else -> onboardingReturnUrlConfig.apmReturnUrl
                                 }
                             }
-                        }
-                    ) { a, b ->
-                        Pair(a, b)
+                        )
                     }
             }
     }
