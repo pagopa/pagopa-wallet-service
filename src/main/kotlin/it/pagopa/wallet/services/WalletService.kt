@@ -59,6 +59,13 @@ class WalletService(
      */
     var logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
+    private data class SessionCreationData(
+        val paymentGatewayResponse: Fields,
+        val wallet: Wallet,
+        val orderId: String,
+        val isAPM: Boolean
+    )
+
     fun createWallet(
         serviceList: List<ServiceName>,
         userId: UUID,
@@ -169,26 +176,23 @@ class WalletService(
                             )
                     )
                     .map { hostedOrderResponse ->
-                        Triple(hostedOrderResponse, wallet, Pair(orderId, contractId))
+                        SessionCreationData(
+                            hostedOrderResponse,
+                            wallet.copy(
+                                contractId = ContractId(contractId),
+                                status = WalletStatusDto.INITIALIZED
+                            ),
+                            orderId,
+                            isAPM = paymentMethod.paymentTypeCode != "CP"
+                        )
                     }
             }
-            .map { (hostedOrderResponse, wallet, orderIdAndContractId) ->
-                val contractId = orderIdAndContractId.second
-                Triple(
-                    hostedOrderResponse,
-                    wallet.copy(
-                        contractId = ContractId(contractId),
-                        status = WalletStatusDto.INITIALIZED
-                    ),
-                    orderIdAndContractId.first
-                )
+            .flatMap { sessionCreationData ->
+                walletRepository
+                    .save(sessionCreationData.wallet.toDocument())
+                    .thenReturn(sessionCreationData)
             }
-            .flatMap { (hostedOrderResponse, wallet, orderId) ->
-                walletRepository.save(wallet.toDocument()).map {
-                    Triple(hostedOrderResponse, wallet, orderId)
-                }
-            }
-            .flatMap { (hostedOrderResponse, wallet, orderId) ->
+            .flatMap { (hostedOrderResponse, wallet, orderId, isAPM) ->
                 npgSessionRedisTemplate
                     .save(
                         NpgSession(
@@ -205,18 +209,7 @@ class WalletService(
                     .map {
                         SessionWalletCreateResponseDto()
                             .orderId(orderId)
-                            .cardFormFields(
-                                hostedOrderResponse.fields
-                                    .stream()
-                                    .map { f ->
-                                        FieldDto()
-                                            .id(f.id)
-                                            .src(URI.create(f.src))
-                                            .type(f.type)
-                                            .propertyClass(f.propertyClass)
-                                    }
-                                    .toList()
-                            )
+                            .sessionData(buildResponseSessionData(hostedOrderResponse, isAPM))
                     }
                     .map { it to wallet }
             }
@@ -225,6 +218,28 @@ class WalletService(
                     LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
             }
     }
+
+    private fun buildResponseSessionData(
+        hostedOrderResponse: Fields,
+        isAPM: Boolean
+    ): SessionWalletCreateResponseSessionDataDto =
+        if (isAPM) {
+            SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
+        } else {
+            SessionWalletCreateResponseCardDataDto()
+                .cardFormFields(
+                    hostedOrderResponse.fields
+                        .stream()
+                        .map { f ->
+                            FieldDto()
+                                .id(f.id)
+                                .src(URI.create(f.src))
+                                .type(f.type)
+                                .propertyClass(f.propertyClass)
+                        }
+                        .toList()
+                )
+        }
 
     fun validateWalletSession(
         orderId: String,
