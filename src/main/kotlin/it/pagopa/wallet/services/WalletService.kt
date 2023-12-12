@@ -9,11 +9,8 @@ import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.details.Bin
+import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
-import it.pagopa.wallet.domain.details.CardHolderName
-import it.pagopa.wallet.domain.details.ExpiryDate
-import it.pagopa.wallet.domain.details.MaskedPan
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
@@ -96,8 +93,9 @@ class WalletService(
                         Pair(
                             loggedAction,
                             paymentMethodResponse.name.let {
-                                when (it) {
-                                    "CARDS" -> onboardingReturnUrlConfig.cardReturnUrl
+                                when (WalletDetailsType.valueOf(it)) {
+                                    WalletDetailsType.CARDS ->
+                                        onboardingReturnUrlConfig.cardReturnUrl
                                     else -> onboardingReturnUrlConfig.apmReturnUrl
                                 }
                             }
