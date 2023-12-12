@@ -823,13 +823,43 @@ components:
       properties:
         orderId:
           type: string
+        sessionData:
+          oneOf:
+            - $ref: "#/components/schemas/SessionWalletCreateResponseCardData"
+            - $ref: "#/components/schemas/SessionWalletCreateResponseAPMData"
+          discriminator:
+            propertyName: paymentMethodType
+            mapping:
+              cards: "#/components/schemas/SessionWalletCreateResponseCardData"
+              apm: "#/components/schemas/SessionWalletCreateResponseAPMData"
+      required:
+        - orderId
+        - cardFormFields
+    SessionWalletCreateResponseCardData:
+      type: object
+      description: Session data returned by `createSessionWallet` operation in case of a credit card session
+      properties:
+        paymentMethodType:
+          type: string
         cardFormFields:
           type: array
           items:
             $ref: '#/components/schemas/Field'
       required:
-        - orderId
+        - paymentMethodType
         - cardFormFields
+    SessionWalletCreateResponseAPMData:
+      type: object
+      description: Session data returned by `createSessionWallet` operation in case of a credit card session
+      properties:
+        paymentMethodType:
+          type: string
+        redirectUrl:
+          type: string
+          format: url
+      required:
+        - paymentMethodType
+        - redirectUrl
     WalletNotificationRequest:
       type: object
       description: Request body for execute wallet notification request

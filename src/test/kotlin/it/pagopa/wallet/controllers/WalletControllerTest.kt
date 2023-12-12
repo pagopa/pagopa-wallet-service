@@ -114,21 +114,59 @@ class WalletControllerTest {
     }
 
     @Test
-    fun testCreateSessionWallet() = runTest {
+    fun testCreateSessionWalletWithCard() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
         val sessionResponseDto =
             SessionWalletCreateResponseDto()
                 .orderId("W3948594857645ruey")
-                .cardFormFields(
-                    listOf(
-                        FieldDto()
-                            .id(UUID.randomUUID().toString())
-                            .src(URI.create("https://test.it/h"))
-                            .propertyClass("holder")
-                            .propertyClass("h")
-                            .type("type"),
+                .sessionData(
+                    SessionWalletCreateResponseCardDataDto()
+                        .cardFormFields(
+                            listOf(
+                                FieldDto()
+                                    .id(UUID.randomUUID().toString())
+                                    .src(URI.create("https://test.it/h"))
+                                    .propertyClass("holder")
+                                    .propertyClass("h")
+                                    .type("type"),
+                            )
+                        )
+                )
+        given { walletService.createSessionWallet(walletId) }
+            .willReturn(
+                mono {
+                    Pair(
+                        sessionResponseDto,
+                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
                     )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(objectMapper.writeValueAsString(sessionResponseDto))
+    }
+
+    @Test
+    fun testCreateSessionWalletWithAPM() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val sessionResponseDto =
+            SessionWalletCreateResponseDto()
+                .orderId("W3948594857645ruey")
+                .sessionData(
+                    SessionWalletCreateResponseAPMDataDto().redirectUrl("https://apm-redirect.url")
                 )
         given { walletService.createSessionWallet(walletId) }
             .willReturn(
