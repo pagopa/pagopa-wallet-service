@@ -10,11 +10,9 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
-import kotlin.collections.map
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -29,8 +27,7 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository,
-    @Value("\${webview.payment-wallet}") private val webviewPaymentWalletUrl: URI
+    @Autowired private val loggingEventRepository: LoggingEventRepository
 ) : WalletsApi {
 
     override fun createWallet(
@@ -47,15 +44,20 @@ class WalletController(
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId
                     )
-                    .flatMap { it.saveEvents(loggingEventRepository) }
-                    .map { it.id.value to request.useDiagnosticTracing }
+                    .flatMap { (loggedAction, returnUri) ->
+                        loggedAction.saveEvents(loggingEventRepository).map {
+                            Triple(it.id.value, request.useDiagnosticTracing, returnUri)
+                        }
+                    }
             }
-            .map {
+            .map { (walletId, useDiagnosticSettings, returnUri) ->
                 WalletCreateResponseDto()
-                    .walletId(it.first)
+                    .walletId(walletId)
                     .redirectUrl(
-                        UriComponentsBuilder.fromUri(webviewPaymentWalletUrl.toURL().toURI())
-                            .fragment("walletId=${it.first}&useDiagnosticTracing=${it.second}")
+                        UriComponentsBuilder.fromUri(returnUri)
+                            .fragment(
+                                "walletId=${walletId}&useDiagnosticTracing=${useDiagnosticSettings}"
+                            )
                             .build()
                             .toUriString()
                     )

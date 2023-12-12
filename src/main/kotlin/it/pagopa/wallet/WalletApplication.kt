@@ -1,12 +1,13 @@
 package it.pagopa.wallet
 
+import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-@EnableConfigurationProperties(SessionUrlConfig::class)
+@EnableConfigurationProperties(SessionUrlConfig::class, OnboardingReturnUrlConfig::class)
 class WalletApplication
 
 fun main(args: Array<String>) {

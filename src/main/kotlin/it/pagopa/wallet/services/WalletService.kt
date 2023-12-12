@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
@@ -44,7 +45,8 @@ class WalletService(
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
-    @Autowired private val uniqueIdUtils: UniqueIdUtils
+    @Autowired private val uniqueIdUtils: UniqueIdUtils,
+    @Autowired private val onboardingReturnUrlConfig: OnboardingReturnUrlConfig
 ) {
 
     companion object {
@@ -63,30 +65,45 @@ class WalletService(
         serviceList: List<ServiceName>,
         userId: UUID,
         paymentMethodId: UUID
-    ): Mono<LoggedAction<Wallet>> {
+    ): Mono<Pair<LoggedAction<Wallet>, URI>> {
         logger.info("Create wallet with payment methodId: $paymentMethodId and userId: $userId")
         return ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId.toString())
             .map {
                 val creationTime = Instant.now()
-                return@map Wallet(
-                    WalletId(UUID.randomUUID()),
-                    UserId(userId),
-                    WalletStatusDto.CREATED,
-                    creationTime,
-                    creationTime,
-                    PaymentMethodId(UUID.fromString(it.id)),
-                    paymentInstrumentId = null,
-                    listOf(), // TODO Find all services by serviceName
-                    contractId = null,
-                    validationOperationResult = null,
-                    details = null
+                return@map Pair(
+                    Wallet(
+                        WalletId(UUID.randomUUID()),
+                        UserId(userId),
+                        WalletStatusDto.CREATED,
+                        creationTime,
+                        creationTime,
+                        PaymentMethodId(paymentMethodId),
+                        paymentInstrumentId = null,
+                        listOf(), // TODO Find all services by serviceName
+                        contractId = null,
+                        validationOperationResult = null,
+                        details = null
+                    ),
+                    it
                 )
             }
-            .flatMap { wallet ->
-                walletRepository.save(wallet.toDocument()).map {
-                    LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString()))
-                }
+            .flatMap { (wallet, paymentMethodResponse) ->
+                walletRepository
+                    .save(wallet.toDocument())
+                    .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
+                    .zipWith(
+                        mono {
+                            paymentMethodResponse.name.let {
+                                when (it) {
+                                    "CARDS" -> onboardingReturnUrlConfig.cardReturnUrl
+                                    else -> onboardingReturnUrlConfig.apmReturnUrl
+                                }
+                            }
+                        }
+                    ) { a, b ->
+                        Pair(a, b)
+                    }
             }
     }
 

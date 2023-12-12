@@ -61,8 +61,7 @@ class WalletControllerTest {
 
     @BeforeEach
     fun beforeTest() {
-        walletController =
-            WalletController(walletService, loggingEventRepository, webviewPaymentUrl)
+        walletController = WalletController(walletService, loggingEventRepository)
 
         given { uniqueIdUtils.generateUniqueId() }.willReturn(mono { "ABCDEFGHabcdefgh" })
     }
@@ -74,7 +73,13 @@ class WalletControllerTest {
         given { walletService.createWallet(any(), any(), any()) }
             .willReturn(
                 mono {
-                    LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
+                    Pair(
+                        LoggedAction(
+                            WALLET_DOMAIN,
+                            WalletAddedEvent(WALLET_DOMAIN.id.value.toString())
+                        ),
+                        webviewPaymentUrl
+                    )
                 }
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
@@ -275,6 +280,7 @@ class WalletControllerTest {
             .isNotFound
             .expectBody()
     }
+
     @Test
     fun testPatchWalletById() = runTest {
         /* preconditions */
