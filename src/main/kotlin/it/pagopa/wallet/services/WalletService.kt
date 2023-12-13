@@ -90,10 +90,15 @@ class WalletService(
                         Pair(
                             loggedAction,
                             paymentMethodResponse.name.let {
+                                /*
+                                 * Safe value of call here since EcommercePaymentMethodsClient already perform a check
+                                 * against returned payment method name and WalletDetailsType enumeration
+                                 */
                                 when (WalletDetailsType.valueOf(it)) {
                                     WalletDetailsType.CARDS ->
                                         onboardingReturnUrlConfig.cardReturnUrl
-                                    else -> onboardingReturnUrlConfig.apmReturnUrl
+                                    WalletDetailsType.PAYPAL ->
+                                        onboardingReturnUrlConfig.apmReturnUrl
                                 }
                             }
                         )
