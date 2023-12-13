@@ -5,14 +5,13 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.details.Bin
+import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
-import it.pagopa.wallet.domain.details.CardHolderName
-import it.pagopa.wallet.domain.details.ExpiryDate
-import it.pagopa.wallet.domain.details.MaskedPan
+import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
@@ -44,7 +43,8 @@ class WalletService(
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
-    @Autowired private val uniqueIdUtils: UniqueIdUtils
+    @Autowired private val uniqueIdUtils: UniqueIdUtils,
+    @Autowired private val onboardingReturnUrlConfig: OnboardingReturnUrlConfig
 ) {
 
     companion object {
@@ -72,9 +72,9 @@ class WalletService(
                 return@map Pair(
                     Wallet(
                         id = WalletId(UUID.randomUUID()),
-                        userId =UserId(userId),
-                        status =WalletStatusDto.CREATED,
-                        paymentMethodId =PaymentMethodId(paymentMethodId),
+                        userId = UserId(userId),
+                        status = WalletStatusDto.CREATED,
+                        paymentMethodId = PaymentMethodId(paymentMethodId),
                         version = 0,
                         creationDate = creationTime,
                         updateDate = creationTime
@@ -284,7 +284,7 @@ class WalletService(
                     )
                     .map { state -> state to it }
             }
-            .doOnNext { logger.debug("State Response: ${it.first}") }
+            .doOnNext { logger.debug("State Response: {}", it.first) }
             .filter { (state) ->
                 state.state == State.GDI_VERIFICATION &&
                     state.fieldSet != null &&
@@ -535,7 +535,7 @@ class WalletService(
         ) {
             -1 ->
                 updatedServiceList.add(
-                    it.pagopa.wallet.domain.wallets.Application(
+                    Application(
                         ServiceId(UUID.randomUUID()),
                         ServiceName(dataService.first.name),
                         ServiceStatus.valueOf(dataService.second.name),
@@ -545,7 +545,7 @@ class WalletService(
             else -> {
                 val oldWalletService = updatedServiceList[index]
                 updatedServiceList[index] =
-                    it.pagopa.wallet.domain.wallets.Application(
+                    Application(
                         oldWalletService.id,
                         oldWalletService.name,
                         ServiceStatus.valueOf(dataService.second.name),

@@ -15,6 +15,7 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
+import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.newWalletDocumentSaved
 import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
@@ -1168,7 +1169,7 @@ class WalletServiceTest {
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, sessionWalletId)
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument()))
         /* test */
 
         StepVerifier.create(
