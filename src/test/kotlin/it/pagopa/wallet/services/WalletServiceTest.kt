@@ -205,26 +205,27 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
-                val npgFields = Fields().sessionId(sessionId).state(State.GDI_VERIFICATION)
-                npgFields.fields.addAll(
-                    listOf(
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/h")
-                            .propertyClass("holder")
-                            .propertyClass("h"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/p")
-                            .propertyClass("pan")
-                            .propertyClass("p"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/c")
-                            .propertyClass("cvv")
-                            .propertyClass("c")
-                    )
-                )
+                val npgFields =
+                    Fields().sessionId(sessionId).state(WorkflowState.GDI_VERIFICATION).apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
+                            )
+                    }
                 val sessionResponseDto =
                     SessionWalletCreateResponseDto()
                         .orderId(orderId)
@@ -348,26 +349,27 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
-                val npgFields = Fields().sessionId(sessionId).state(State.READY_FOR_PAYMENT)
-                npgFields.fields.addAll(
-                    listOf(
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/h")
-                            .propertyClass("holder")
-                            .propertyClass("h"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/p")
-                            .propertyClass("pan")
-                            .propertyClass("p"),
-                        Field()
-                            .id(UUID.randomUUID().toString())
-                            .src("https://test.it/c")
-                            .propertyClass("cvv")
-                            .propertyClass("c")
-                    )
-                )
+                val npgFields =
+                    Fields().sessionId(sessionId).state(WorkflowState.READY_FOR_PAYMENT).apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
+                            )
+                    }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
@@ -468,7 +470,7 @@ class WalletServiceTest {
                     Fields()
                         .sessionId(sessionId)
                         .url(apmRedirectUrl)
-                        .state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
+                        .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
 
                 val sessionResponseDto =
                     SessionWalletCreateResponseDto()
@@ -578,7 +580,10 @@ class WalletServiceTest {
                 val sessionId = UUID.randomUUID().toString()
                 val apmRedirectUrl = "https://apm-url"
                 val npgFields =
-                    Fields().sessionId(sessionId).url(apmRedirectUrl).state(State.READY_FOR_PAYMENT)
+                    Fields()
+                        .sessionId(sessionId)
+                        .url(apmRedirectUrl)
+                        .state(WorkflowState.READY_FOR_PAYMENT)
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
@@ -681,7 +686,7 @@ class WalletServiceTest {
 
                 val npgStateResponse =
                     StateResponse()
-                        .state(State.GDI_VERIFICATION)
+                        .state(WorkflowState.GDI_VERIFICATION)
                         .fieldSet(
                             Fields()
                                 .sessionId(sessionId)
@@ -700,7 +705,7 @@ class WalletServiceTest {
                                     Base64.getUrlEncoder()
                                         .encodeToString(
                                             npgStateResponse.fieldSet!!
-                                                .fields[0]
+                                                .fields!![0]
                                                 .src!!
                                                 .toByteArray(StandardCharsets.UTF_8)
                                         )
@@ -781,7 +786,7 @@ class WalletServiceTest {
 
                 val npgStateResponse =
                     StateResponse()
-                        .state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
+                        .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
                         .url("http://state.url")
 
                 val npgSession =
@@ -955,7 +960,7 @@ class WalletServiceTest {
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
                 val npgStateResponse =
-                    StateResponse().state(State.READY_FOR_PAYMENT).url("http://state.url")
+                    StateResponse().state(WorkflowState.READY_FOR_PAYMENT).url("http://state.url")
 
                 val npgSession =
                     NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
@@ -1019,7 +1024,7 @@ class WalletServiceTest {
                         .expiringDate("122030")
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
-                val npgStateResponse = StateResponse().state(State.GDI_VERIFICATION)
+                val npgStateResponse = StateResponse().state(WorkflowState.GDI_VERIFICATION)
 
                 val npgSession =
                     NpgSession(orderId.toString(), sessionId, "token", WALLET_UUID.value.toString())
@@ -1085,7 +1090,7 @@ class WalletServiceTest {
                         .circuit("MASTERCARD")
                 val npgStateResponse =
                     StateResponse()
-                        .state(State.GDI_VERIFICATION)
+                        .state(WorkflowState.GDI_VERIFICATION)
                         .fieldSet(Fields().sessionId(sessionId))
 
                 val npgSession =
@@ -1152,7 +1157,7 @@ class WalletServiceTest {
                         .circuit("MASTERCARD")
                 val npgStateResponse =
                     StateResponse()
-                        .state(State.GDI_VERIFICATION)
+                        .state(WorkflowState.GDI_VERIFICATION)
                         .fieldSet(Fields().sessionId(sessionId).addFieldsItem(Field().id("field")))
 
                 val npgSession =

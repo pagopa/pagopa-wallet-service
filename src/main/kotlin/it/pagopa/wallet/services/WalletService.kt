@@ -225,7 +225,7 @@ class WalletService(
         isAPM: Boolean
     ): SessionWalletCreateResponseSessionDataDto =
         if (isAPM) {
-            if (hostedOrderResponse.state != State.REDIRECTED_TO_EXTERNAL_DOMAIN) {
+            if (hostedOrderResponse.state != WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN) {
                 throw NpgClientException(
                     "Got state ${hostedOrderResponse.state} instead of REDIRECTED_TO_EXTERNAL_DOMAIN for APM session initialization",
                     HttpStatus.BAD_GATEWAY
@@ -234,7 +234,7 @@ class WalletService(
 
             SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
         } else {
-            if (hostedOrderResponse.state != State.GDI_VERIFICATION) {
+            if (hostedOrderResponse.state != WorkflowState.GDI_VERIFICATION) {
                 throw NpgClientException(
                     "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization",
                     HttpStatus.BAD_GATEWAY
@@ -243,7 +243,7 @@ class WalletService(
 
             SessionWalletCreateResponseCardDataDto()
                 .cardFormFields(
-                    hostedOrderResponse.fields
+                    hostedOrderResponse.fields!!
                         .stream()
                         .map { f ->
                             FieldDto()
@@ -321,10 +321,10 @@ class WalletService(
             }
             .doOnNext { logger.debug("State Response: {}", it.first) }
             .filter { (state) ->
-                state.state == State.GDI_VERIFICATION &&
-                    state.fieldSet != null &&
-                    state.fieldSet!!.fields.isNotEmpty() &&
-                    state.fieldSet!!.fields[0]!!.src != null
+                state.state == WorkflowState.GDI_VERIFICATION &&
+                    state.fieldSet?.fields != null &&
+                    state.fieldSet!!.fields!!.isNotEmpty() &&
+                    state.fieldSet!!.fields!![0]!!.src != null
             }
             .switchIfEmpty {
                 walletRepository
@@ -343,7 +343,7 @@ class WalletService(
                                         Base64.getUrlEncoder()
                                             .encodeToString(
                                                 it.fieldSet!!
-                                                    .fields[0]
+                                                    .fields!![0]
                                                     .src!!
                                                     .toByteArray(StandardCharsets.UTF_8)
                                             )
@@ -425,7 +425,7 @@ class WalletService(
                 walletRepository
                     .findById(walletId.value.toString())
                     .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-                    .filter { wallet -> session.walletId == wallet.id.toString() }
+                    .filter { wallet -> session.walletId == wallet.id }
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
