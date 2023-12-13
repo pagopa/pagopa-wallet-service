@@ -69,34 +69,36 @@ to get a good default configuration.
 
 If you want to customize the application environment, reference this table:
 
-| Variable name                     | Description                                                        | type              | default |
-|-----------------------------------|--------------------------------------------------------------------|-------------------|---------|
-| NPG_SERVICE_URI                   | URL used to contact the payment gateway                            | string            |         |
-| NPG_SERVICE_READ_TIMEOUT          | Timeout for requests towards the payment gateway                   | string            |         |
-| NPG_SERVICE_CONNECTION_TIMEOUT    | Timeout for estabilishing connections towards the payment gateway  | string            |         |
-| NPG_SERVICE_API_KEY               | Payment gateway API key                                            | string            |         |
-| MONGO_HOST                        | Host where MongoDB instance used to persist wallet data            | hostname (string) |         |
-| MONGO_PORT                        | Port where MongoDB is bound to in MongoDB host                     | number            |         |
-| MONGO_USERNAME                    | MongoDB username used to connect to the database                   | string            |         |
-| MONGO_PASSWORD                    | MongoDB password used to connect to the database                   | string            |         |
-| MONGO_SSL_ENABLED                 | Whether SSL is enabled while connecting to MongoDB                 | string            |         |
-| DEFAULT_LOGGING_LEVEL             | Application root logger level                                      | string            | INFO    |
-| APP_LOGGING_LEVEL                 | it.pagopa logger level                                             | string            | INFO    |
-| WEB_LOGGING_LEVEL                 | Web logger level                                                   | string            | DEBUG   |
-| SESSION_URL_BASEPATH              | NPG URL base path                                                  | string            |         |
-| SESSION_URL_OUTCOME_SUFFIX        | NPG outcome url suffix                                             | string            |         |
-| SESSION_URL_CANCEL_SUFFIX         | NPG user cancel operation return url suffix                        | string            |         |
-| SESSION_URL_NOTIFICATION_URL      | NPG notification URL                                               | string            |         |
-| WALLET_ONBOARDING_CARD_RETURN_URL | Onboarding wallet front-end return url for card method             | string            |         |
-| WALLET_ONBOARDING_APM_RETURN_URL  | Onboarding wallet front-end return url for other methods than card | string            |         |
-| ECOMMERCE_PAYMENT_METHODS_URI     | eCommerce payment methods uri                                      | string            |         |
-| ECOMMERCE_PAYMENT_METHODS_TIMEOUT | eCommerce payment methods read and connection timeout              | string            |         |
-| ECOMMERCE_PAYMENT_METHODS_API_KEY | eCommerce payment methods api key                                  | string            |         |
-| REDIS_HOST                        | Redis host name                                                    | string            |         |
-| REDIS_PASSWORD                    | Redis password                                                     | string            |         |
-| REDIS_PORT                        | Redis port                                                         | string            |         |
-| REDIS_SSL_ENABLED                 | Whether SSL is enabled while connecting to  Redis                  | string            |         |
-| WALLET_SESSION_TTL                | Wallet session TTL in minutes                                      | int               |         |
+| Variable name                        | Description                                                        | type              | default |
+|--------------------------------------|--------------------------------------------------------------------|-------------------|---------|
+| NPG_SERVICE_URI                      | URL used to contact the payment gateway                            | string            |         |
+| NPG_SERVICE_READ_TIMEOUT             | Timeout for requests towards the payment gateway                   | string            |         |
+| NPG_SERVICE_CONNECTION_TIMEOUT       | Timeout for estabilishing connections towards the payment gateway  | string            |         |
+| NPG_SERVICE_API_KEY                  | Payment gateway API key                                            | string            |         |
+| MONGO_HOST                           | Host where MongoDB instance used to persist wallet data            | hostname (string) |         |
+| MONGO_PORT                           | Port where MongoDB is bound to in MongoDB host                     | number            |         |
+| MONGO_USERNAME                       | MongoDB username used to connect to the database                   | string            |         |
+| MONGO_PASSWORD                       | MongoDB password used to connect to the database                   | string            |         |
+| MONGO_SSL_ENABLED                    | Whether SSL is enabled while connecting to MongoDB                 | string            |         |
+| DEFAULT_LOGGING_LEVEL                | Application root logger level                                      | string            | INFO    |
+| APP_LOGGING_LEVEL                    | it.pagopa logger level                                             | string            | INFO    |
+| WEB_LOGGING_LEVEL                    | Web logger level                                                   | string            | DEBUG   |
+| SESSION_URL_BASEPATH                 | NPG URL base path                                                  | string            |         |
+| SESSION_URL_OUTCOME_SUFFIX           | NPG outcome url suffix                                             | string            |         |
+| SESSION_URL_CANCEL_SUFFIX            | NPG user cancel operation return url suffix                        | string            |         |
+| SESSION_URL_NOTIFICATION_URL         | NPG notification URL                                               | string            |         |
+| WALLET_ONBOARDING_CARD_RETURN_URL    | Onboarding wallet front-end return url for card method             | string            |         |
+| WALLET_ONBOARDING_APM_RETURN_URL     | Onboarding wallet front-end return url for other methods than card | string            |         |
+| WALLET_ONBOARDING_PAYPAL_PSP_API_KEY | Onboarding PSP API key for PayPal                                  | string            |         |
+| ECOMMERCE_PAYMENT_METHODS_URI        | eCommerce payment methods uri                                      | string            |         |
+| ECOMMERCE_PAYMENT_METHODS_TIMEOUT    | eCommerce payment methods read and connection timeout              | string            |         |
+| ECOMMERCE_PAYMENT_METHODS_API_KEY    | eCommerce payment methods api key                                  | string            |         |
+| REDIS_HOST                           | Redis host name                                                    | string            |         |
+| REDIS_PASSWORD                       | Redis password                                                     | string            |         |
+| REDIS_PORT                           | Redis port                                                         | string            |         |
+| REDIS_SSL_ENABLED                    | Whether SSL is enabled while connecting to  Redis                  | string            |         |
+| WALLET_SESSION_TTL                   | Wallet session TTL in minutes                                      | int               |         |
+
 
 ### Run docker container
 

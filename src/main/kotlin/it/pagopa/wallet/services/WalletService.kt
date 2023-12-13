@@ -5,7 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.config.OnboardingReturnUrlConfig
+import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
@@ -45,7 +45,7 @@ class WalletService(
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
-    @Autowired private val onboardingReturnUrlConfig: OnboardingReturnUrlConfig
+    @Autowired private val onboardingConfig: OnboardingConfig
 ) {
 
     companion object {
@@ -103,10 +103,8 @@ class WalletService(
                                  * against returned payment method name and WalletDetailsType enumeration
                                  */
                                 when (WalletDetailsType.valueOf(it)) {
-                                    WalletDetailsType.CARDS ->
-                                        onboardingReturnUrlConfig.cardReturnUrl
-                                    WalletDetailsType.PAYPAL ->
-                                        onboardingReturnUrlConfig.apmReturnUrl
+                                    WalletDetailsType.CARDS -> onboardingConfig.cardReturnUrl
+                                    WalletDetailsType.PAYPAL -> onboardingConfig.apmReturnUrl
                                 }
                             }
                         )

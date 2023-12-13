@@ -40,6 +40,31 @@ class WebClientConfig {
         return PaymentServicesApi(apiClient)
     }
 
+    @Bean(name = ["npgPaypalWebClient"])
+    fun npgPaypalClient(
+        @Value("\${npgService.uri}") baseUrl: String,
+        @Value("\${npgService.readTimeout}") readTimeout: Int,
+        @Value("\${npgService.connectionTimeout}") connectionTimeout: Int,
+        onboardingConfig: OnboardingConfig
+    ): PaymentServicesApi {
+        val httpClient =
+            HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
+                .doOnConnected { connection: Connection ->
+                    connection.addHandlerLast(
+                        ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS)
+                    )
+                }
+        val webClient =
+            it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
+                .clientConnector(ReactorClientHttpConnector(httpClient))
+                .baseUrl(baseUrl)
+                .build()
+        val apiClient = it.pagopa.generated.npg.ApiClient(webClient).setBasePath(baseUrl)
+        apiClient.setApiKey(onboardingConfig.payPalPSPApiKey)
+        return PaymentServicesApi(apiClient)
+    }
+
     @Bean(name = ["ecommercePaymentMethodsWebClient"])
     fun ecommercePaymentMethodsClient(
         @Value("\${ecommercePaymentMethods.uri}") baseUrl: String,

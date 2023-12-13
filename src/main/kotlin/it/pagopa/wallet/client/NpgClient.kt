@@ -2,6 +2,7 @@ package it.pagopa.wallet.client
 
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
+import it.pagopa.wallet.domain.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import java.util.*
 import org.slf4j.LoggerFactory
@@ -16,7 +17,8 @@ import reactor.core.publisher.Mono
 /** NPG API client service class */
 @Component
 class NpgClient(
-    @Autowired @Qualifier("npgWebClient") private val paymentServicesApi: PaymentServicesApi,
+    @Autowired @Qualifier("npgWebClient") private val cardsServicesApi: PaymentServicesApi,
+    @Autowired @Qualifier("npgPaypalWebClient") private val paypalServicesApi: PaymentServicesApi
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -25,10 +27,25 @@ class NpgClient(
         correlationId: UUID,
         createHostedOrderRequest: CreateHostedOrderRequest
     ): Mono<Fields> {
+        val client =
+            when (createHostedOrderRequest.paymentSession?.paymentService) {
+                WalletDetailsType.CARDS.name -> {
+                    cardsServicesApi
+                }
+                WalletDetailsType.PAYPAL.name -> {
+                    paypalServicesApi
+                }
+                else ->
+                    throw NpgClientException(
+                        "Invalid /order/build request: unhandled `paymentSession.paymentService` (value is ${createHostedOrderRequest.paymentSession?.paymentService})",
+                        HttpStatus.BAD_GATEWAY
+                    )
+            }
+
         val response: Mono<Fields> =
             try {
                 logger.info("Sending orderBuild with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest)
+                client.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -45,7 +62,7 @@ class NpgClient(
         val response: Mono<CardDataResponse> =
             try {
                 logger.info("getCardData with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId)
+                cardsServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -65,7 +82,7 @@ class NpgClient(
         val response: Mono<StateResponse> =
             try {
                 logger.info("confirmPayment with correlationId: $correlationId")
-                paymentServicesApi.pspApiV1BuildConfirmPaymentPost(
+                cardsServicesApi.pspApiV1BuildConfirmPaymentPost(
                     correlationId,
                     confirmPaymentRequest
                 )

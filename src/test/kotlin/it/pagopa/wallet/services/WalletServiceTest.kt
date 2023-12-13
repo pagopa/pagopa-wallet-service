@@ -30,7 +30,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPa
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.config.OnboardingReturnUrlConfig
+import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -69,10 +69,11 @@ class WalletServiceTest {
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
     private val uniqueIdUtils: UniqueIdUtils = mock()
-    private val onboardingReturnUrlConfig =
-        OnboardingReturnUrlConfig(
+    private val onboardingConfig =
+        OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
-            cardReturnUrl = URI.create("http://localhost/onboarding/creditcard")
+            cardReturnUrl = URI.create("http://localhost/onboarding/creditcard"),
+            payPalPSPApiKey = "paypalPSPApiKey"
         )
     private val sessionUrlConfig =
         SessionUrlConfig(
@@ -101,7 +102,7 @@ class WalletServiceTest {
             npgSessionRedisTemplate,
             sessionUrlConfig,
             uniqueIdUtils,
-            onboardingReturnUrlConfig
+            onboardingConfig
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
@@ -140,7 +141,7 @@ class WalletServiceTest {
                     )
                     .assertNext { createWalletOutput ->
                         assertEquals(
-                            Pair(expectedLoggedAction, onboardingReturnUrlConfig.cardReturnUrl),
+                            Pair(expectedLoggedAction, onboardingConfig.cardReturnUrl),
                             createWalletOutput
                         )
                     }
@@ -183,7 +184,7 @@ class WalletServiceTest {
                     )
                     .assertNext { createWalletOutput ->
                         assertEquals(
-                            Pair(expectedLoggedAction, onboardingReturnUrlConfig.apmReturnUrl),
+                            Pair(expectedLoggedAction, onboardingConfig.apmReturnUrl),
                             createWalletOutput
                         )
                     }
