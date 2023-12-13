@@ -46,6 +46,7 @@ microservice-chart:
         NPG_SERVICE_API_KEY: npg-service-api-key
         REDIS_PASSWORD: redis-wallet-password
         ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
+        WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopawalletservice
     tag: "0.2.2"
@@ -135,6 +136,7 @@ microservice-chart:
     NPG_SERVICE_API_KEY: npg-service-api-key
     REDIS_PASSWORD: redis-wallet-password
     ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
+    WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

@@ -5,7 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.config.OnboardingReturnUrlConfig
+import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -48,7 +48,7 @@ class WalletService(
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
-    @Autowired private val onboardingReturnUrlConfig: OnboardingReturnUrlConfig
+    @Autowired private val onboardingConfig: OnboardingConfig
 ) {
 
     companion object {
@@ -106,10 +106,8 @@ class WalletService(
                                  * against returned payment method name and WalletDetailsType enumeration
                                  */
                                 when (WalletDetailsType.valueOf(it)) {
-                                    WalletDetailsType.CARDS ->
-                                        onboardingReturnUrlConfig.cardReturnUrl
-                                    WalletDetailsType.PAYPAL ->
-                                        onboardingReturnUrlConfig.apmReturnUrl
+                                    WalletDetailsType.CARDS -> onboardingConfig.cardReturnUrl
+                                    WalletDetailsType.PAYPAL -> onboardingConfig.apmReturnUrl
                                 }
                             }
                         )
@@ -118,7 +116,8 @@ class WalletService(
     }
 
     fun createSessionWallet(
-        walletId: UUID
+        walletId: UUID,
+        sessionInputDataDto: SessionInputDataDto
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
@@ -180,12 +179,23 @@ class WalletService(
                             )
                     )
                     .map { hostedOrderResponse ->
-                        SessionCreationData(
-                            hostedOrderResponse,
+                        val newDetails =
+                            when (sessionInputDataDto) {
+                                is SessionInputCardDataDto -> wallet.details
+                                is SessionInputPayPalDataDto ->
+                                    PayPalDetails(null, sessionInputDataDto.pspId)
+                                else ->
+                                    throw InternalServerErrorException("Unhandled session input")
+                            }
+                        val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
-                                status = WalletStatusDto.INITIALIZED
-                            ),
+                                status = WalletStatusDto.INITIALIZED,
+                                details = newDetails
+                            )
+                        SessionCreationData(
+                            hostedOrderResponse,
+                            updatedWallet,
                             orderId,
                             isAPM = paymentMethod.paymentTypeCode != "CP"
                         )

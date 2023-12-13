@@ -520,6 +520,14 @@ object WalletTestUtils {
     val UPDATE_SERVICES_BODY: WalletServiceUpdateRequestDto =
         WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
+    val PSP_ID = UUID.randomUUID().toString()
+
+    val APM_SESSION_CREATE_REQUEST =
+        SessionInputPayPalDataDto().apply {
+            pspId = PSP_ID
+            paymentMethodType = "PAYPAL"
+        }
+
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
             .id(PAYMENT_METHOD_ID_CARDS.value.toString())

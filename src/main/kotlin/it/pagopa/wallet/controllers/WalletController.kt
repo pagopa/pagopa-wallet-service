@@ -69,10 +69,11 @@ class WalletController(
 
     override fun createSessionWallet(
         walletId: UUID,
+        sessionInputDataDto: Mono<SessionInputDataDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<SessionWalletCreateResponseDto>> {
-        return walletService
-            .createSessionWallet(walletId)
+        return sessionInputDataDto
+            .flatMap { walletService.createSessionWallet(walletId, it) }
             .flatMap { (createSessionResponse, walletEvent) ->
                 walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
             }
