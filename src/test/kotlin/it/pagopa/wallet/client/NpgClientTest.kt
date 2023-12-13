@@ -29,26 +29,28 @@ class NpgClientTest {
 
     @Test
     fun `Should create payment order build successfully`() {
-        val fields = Fields().sessionId(UUID.randomUUID().toString())
-        fields.fields.addAll(
-            listOf(
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/h")
-                    .propertyClass("holder")
-                    .propertyClass("h"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/p")
-                    .propertyClass("pan")
-                    .propertyClass("p"),
-                Field()
-                    .id(UUID.randomUUID().toString())
-                    .src("https://test.it/c")
-                    .propertyClass("cvv")
-                    .propertyClass("c")
-            )
-        )
+        val fields =
+            Fields().apply {
+                sessionId = UUID.randomUUID().toString()
+                fields =
+                    listOf(
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/h")
+                            .propertyClass("holder")
+                            .propertyClass("h"),
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/p")
+                            .propertyClass("pan")
+                            .propertyClass("p"),
+                        Field()
+                            .id(UUID.randomUUID().toString())
+                            .src("https://test.it/c")
+                            .propertyClass("cvv")
+                            .propertyClass("c")
+                    )
+            }
 
         // prerequisite
         given(paymentServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
