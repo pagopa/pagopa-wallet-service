@@ -8,8 +8,6 @@ import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
-import java.net.URI
-import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +19,8 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.net.URI
+import java.util.*
 
 @RestController
 @Slf4j
@@ -46,17 +46,17 @@ class WalletController(
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request.useDiagnosticTracing, returnUri)
+                            Triple(it.id.value, request, returnUri)
                         }
                     }
             }
-            .map { (walletId, useDiagnosticSettings, returnUri) ->
+            .map { (walletId, request, returnUri) ->
                 WalletCreateResponseDto()
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${useDiagnosticSettings}"
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
                             .build()
                             .toUriString()
@@ -195,8 +195,7 @@ class WalletController(
         orderId: String,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
-        return walletService.validateWalletSession(orderId, walletId).flatMap {
-            (response, walletEvent) ->
+        return walletService.validateWalletSession(orderId, walletId).flatMap { (response, walletEvent) ->
             walletEvent.saveEvents(loggingEventRepository).map {
                 ResponseEntity.ok().body(response)
             }
