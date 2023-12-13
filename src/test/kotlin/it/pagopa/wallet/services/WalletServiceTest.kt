@@ -11,18 +11,19 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
-import it.pagopa.wallet.WalletTestUtils.WALLET_DOCUMENT
-import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
-import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
+import it.pagopa.wallet.WalletTestUtils.newWalletDocumentSaved
+import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
+import it.pagopa.wallet.WalletTestUtils.walletDocumentWithError
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithSessionWallet
+import it.pagopa.wallet.WalletTestUtils.walletDomain
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
@@ -32,6 +33,7 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
@@ -120,7 +122,8 @@ class WalletServiceTest {
                         WalletAddedEvent(mockedUUID.toString())
                     )
 
-                given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+                given { walletRepository.save(any()) }
+                    .willAnswer { Mono.just(newWalletDocumentSaved()) }
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
@@ -250,9 +253,9 @@ class WalletServiceTest {
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                var walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
-                walletDocumentWithSessionWallet =
-                    walletDocumentWithSessionWallet.copy(contractId = contractId)
+                var walletDocumentWithSessionWallet =
+                    walletDocumentWithSessionWallet(ContractId(contractId))
+
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
@@ -586,11 +589,10 @@ class WalletServiceTest {
                 val orderId = Instant.now().toString() + "ABCDE"
                 val sessionId = "sessionId"
 
-                val npgSession =
-                    NpgSession(orderId.toString(), sessionId, "token", WALLET_DOCUMENT.id)
+                val npgSession = NpgSession(orderId, sessionId, "token", walletDocument().id)
 
                 given { walletRepository.findById(any<String>()) }
-                    .willReturn(mono { WALLET_DOCUMENT })
+                    .willReturn(mono { walletDocument() })
 
                 given { npgSessionRedisTemplate.findById(orderId.toString()) }
                     .willAnswer { npgSession }
@@ -878,7 +880,7 @@ class WalletServiceTest {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val wallet = WALLET_DOCUMENT
+                val wallet = walletDocument()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -886,8 +888,8 @@ class WalletServiceTest {
                         .paymentMethodId(wallet.paymentMethodId)
                         .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
-                        .updateDate(OffsetDateTime.parse(wallet.updateDate))
-                        .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                        .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+                        .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
@@ -929,7 +931,7 @@ class WalletServiceTest {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val wallet = WALLET_DOCUMENT
+                val wallet = walletDocument()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -937,8 +939,8 @@ class WalletServiceTest {
                         .paymentMethodId(wallet.paymentMethodId)
                         .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
-                        .updateDate(OffsetDateTime.parse(wallet.updateDate))
-                        .creationDate(OffsetDateTime.parse(wallet.creationDate))
+                        .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+                        .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
@@ -973,7 +975,7 @@ class WalletServiceTest {
     fun `should find wallet auth data by ID`() {
         /* preconditions */
 
-        val wallet = WALLET_DOCUMENT
+        val wallet = walletDocument()
         val walletAuthDataDto = WalletTestUtils.walletAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
@@ -988,7 +990,7 @@ class WalletServiceTest {
     @Test
     fun `should throws wallet not found exception when retrieve auth data by ID`() {
         /* preconditions */
-        val wallet = WALLET_DOCUMENT
+        val wallet = walletDocument()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.empty())
         /* test */
@@ -1056,21 +1058,21 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val expectedLoggedAction =
-                    LoggedAction(WALLET_DOMAIN, WalletPatchEvent(WALLET_UUID.value.toString()))
+                    LoggedAction(walletDomain(), WalletPatchEvent(WALLET_UUID.value.toString()))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
-
+                val walletDocument = walletDocument()
                 given { walletRepository.findById(any<String>()) }
-                    .willReturn(Mono.just(WALLET_DOCUMENT))
+                    .willReturn(Mono.just(walletDocument))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willReturn(Mono.just(WALLET_DOCUMENT))
+                    .willReturn(Mono.just(walletDocument))
 
                 /* test */
-                assertEquals(WALLET_DOCUMENT.applications.size, 1)
-                assertEquals(WALLET_DOCUMENT.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
                 assertEquals(
-                    WALLET_DOCUMENT.applications[0].status,
+                    walletDocument.applications[0].status,
                     ServiceStatus.DISABLED.toString()
                 )
 
@@ -1190,7 +1192,7 @@ class WalletServiceTest {
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(WALLET_DOCUMENT))
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument()))
         /* test */
 
         StepVerifier.create(
@@ -1217,11 +1219,7 @@ class WalletServiceTest {
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
-        val walletDocumentWithError =
-            walletDocument.copy(
-                status = WalletStatusDto.ERROR.value,
-                validationOperationResult = notifyRequestDto.operationResult.value
-            )
+        val walletDocumentWithError = walletDocumentWithError(notifyRequestDto.operationResult)
 
         given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentWithError))
 
@@ -1257,11 +1255,8 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
 
-        val walletDocumentValidated =
-            walletDocument.copy(
-                status = WalletStatusDto.VALIDATED.value,
-                validationOperationResult = notifyRequestDto.operationResult.value
-            )
+        val walletDocumentValidated = walletDocumentValidated(notifyRequestDto.operationResult)
+
         given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
 
         val expectedLoggedAction =
@@ -1324,7 +1319,7 @@ class WalletServiceTest {
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, sessionWalletId)
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         given { walletRepository.findByIdAndUserId(any(), any()) }
-            .willReturn(Mono.just(WALLET_DOCUMENT))
+            .willReturn(Mono.just(walletDocument()))
         /* test */
 
         StepVerifier.create(walletService.findSessionWallet(userId, WALLET_UUID, ORDER_ID))
@@ -1342,7 +1337,7 @@ class WalletServiceTest {
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         given { walletRepository.findByIdAndUserId(any(), eq(userId.toString())) }
-            .willReturn(Mono.just(WALLET_DOCUMENT))
+            .willReturn(Mono.just(walletDocument()))
         /* test */
 
         StepVerifier.create(walletService.findSessionWallet(userId, WALLET_UUID, ORDER_ID))
@@ -1408,14 +1403,10 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
-            walletDocument.copy(
-                status = WalletStatusDto.ERROR.value,
-                validationOperationResult = OperationResult.CANCELED.value
-            )
+            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.CANCELED)
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocumentWithError))
@@ -1439,14 +1430,10 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
-            walletDocument.copy(
-                status = WalletStatusDto.ERROR.value,
-                validationOperationResult = OperationResult.PENDING.value
-            )
+            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.PENDING)
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocumentWithError))
@@ -1470,14 +1457,10 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
-            walletDocument.copy(
-                status = WalletStatusDto.ERROR.value,
-                validationOperationResult = OperationResult.VOIDED.value
-            )
+            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.VOIDED)
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocumentWithError))
@@ -1504,13 +1487,11 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         val walletDocumentWithError =
-            walletDocument.copy(
-                status = WalletStatusDto.ERROR.value,
-                validationOperationResult = operationResult.value
+            walletDocumentWithError(
+                WalletNotificationRequestDto.OperationResultEnum.valueOf(operationResult.value)
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }

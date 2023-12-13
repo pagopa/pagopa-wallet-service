@@ -5,12 +5,14 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
-import it.pagopa.wallet.config.OnboardingReturnUrlConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.details.*
+import it.pagopa.wallet.domain.details.Bin
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
+import it.pagopa.wallet.domain.details.CardHolderName
+import it.pagopa.wallet.domain.details.ExpiryDate
+import it.pagopa.wallet.domain.details.MaskedPan
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
@@ -42,8 +44,7 @@ class WalletService(
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
-    @Autowired private val uniqueIdUtils: UniqueIdUtils,
-    @Autowired private val onboardingReturnUrlConfig: OnboardingReturnUrlConfig
+    @Autowired private val uniqueIdUtils: UniqueIdUtils
 ) {
 
     companion object {
@@ -70,17 +71,13 @@ class WalletService(
                 val creationTime = Instant.now()
                 return@map Pair(
                     Wallet(
-                        WalletId(UUID.randomUUID()),
-                        UserId(userId),
-                        WalletStatusDto.CREATED,
-                        creationTime,
-                        creationTime,
-                        PaymentMethodId(paymentMethodId),
-                        paymentInstrumentId = null,
-                        listOf(), // TODO Find all services by serviceName
-                        contractId = null,
-                        validationOperationResult = null,
-                        details = null
+                        id = WalletId(UUID.randomUUID()),
+                        userId =UserId(userId),
+                        status =WalletStatusDto.CREATED,
+                        paymentMethodId =PaymentMethodId(paymentMethodId),
+                        version = 0,
+                        creationDate = creationTime,
+                        updateDate = creationTime
                     ),
                     it
                 )
@@ -171,21 +168,12 @@ class WalletService(
                     }
             }
             .map { (hostedOrderResponse, wallet, orderIdAndContractId) ->
-                var contractId = orderIdAndContractId.second
+                val contractId = orderIdAndContractId.second
                 Triple(
                     hostedOrderResponse,
-                    Wallet(
-                        wallet.id,
-                        wallet.userId,
-                        WalletStatusDto.INITIALIZED,
-                        wallet.creationDate,
-                        wallet.updateDate, // TODO update with auto increment with CHK-2028
-                        wallet.paymentMethodId,
-                        wallet.paymentInstrumentId,
-                        wallet.applications,
-                        ContractId(contractId),
-                        null,
-                        wallet.details
+                    wallet.copy(
+                        contractId = ContractId(contractId),
+                        status = WalletStatusDto.INITIALIZED
                     ),
                     orderIdAndContractId.first
                 )
@@ -359,11 +347,12 @@ class WalletService(
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { it.toDomain() to updateServiceList(it, service) }
+            .map { it.toDomain() to updateServiceList(it.toDomain(), service) }
             .flatMap { (oldService, updatedService) ->
-                walletRepository.save(updatedService).thenReturn(oldService)
+                walletRepository.save(updatedService.toDocument()).thenReturn(oldService).map {
+                    LoggedAction(it, WalletPatchEvent(it.id.value.toString()))
+                }
             }
-            .map { LoggedAction(it, WalletPatchEvent(it.id.value.toString())) }
     }
 
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
@@ -401,7 +390,7 @@ class WalletService(
                 walletRepository
                     .findById(walletId.value.toString())
                     .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-                    .filter { wallet -> session.walletId == wallet.id }
+                    .filter { wallet -> session.walletId == wallet.id.toString() }
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
@@ -452,7 +441,7 @@ class WalletService(
                 walletRepository
                     .findByIdAndUserId(walletId.value.toString(), xUserId.toString())
                     .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-                    .filter { wallet -> session.walletId == wallet.id }
+                    .filter { wallet -> session.walletId == wallet.id.toString() }
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
@@ -492,8 +481,8 @@ class WalletService(
             .paymentMethodId(wallet.paymentMethodId)
             .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
             .userId(wallet.userId)
-            .updateDate(OffsetDateTime.parse(wallet.updateDate))
-            .creationDate(OffsetDateTime.parse(wallet.creationDate))
+            .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+            .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .services(
                 wallet.applications.map { application ->
                     ServiceDto()
@@ -536,34 +525,35 @@ class WalletService(
             )
 
     private fun updateServiceList(
-        wallet: it.pagopa.wallet.documents.wallets.Wallet,
+        wallet: Wallet,
         dataService: Pair<ServiceName, ServiceStatus>
-    ): it.pagopa.wallet.documents.wallets.Wallet {
+    ): Wallet {
         val updatedServiceList = wallet.applications.toMutableList()
         when (
-            val index = wallet.applications.indexOfFirst { s -> s.name == dataService.first.name }
+            val index =
+                wallet.applications.indexOfFirst { s -> s.name.name == dataService.first.name }
         ) {
             -1 ->
                 updatedServiceList.add(
-                    it.pagopa.wallet.documents.wallets.Application(
-                        UUID.randomUUID().toString(),
-                        dataService.first.name,
-                        dataService.second.name,
-                        Instant.now().toString()
+                    it.pagopa.wallet.domain.wallets.Application(
+                        ServiceId(UUID.randomUUID()),
+                        ServiceName(dataService.first.name),
+                        ServiceStatus.valueOf(dataService.second.name),
+                        Instant.now()
                     )
                 )
             else -> {
                 val oldWalletService = updatedServiceList[index]
                 updatedServiceList[index] =
-                    it.pagopa.wallet.documents.wallets.Application(
+                    it.pagopa.wallet.domain.wallets.Application(
                         oldWalletService.id,
                         oldWalletService.name,
-                        dataService.second.name,
-                        Instant.now().toString()
+                        ServiceStatus.valueOf(dataService.second.name),
+                        Instant.now()
                     )
             }
         }
-        return wallet.setApplications(updatedServiceList)
+        return wallet.copy(applications = updatedServiceList)
     }
 
     /**

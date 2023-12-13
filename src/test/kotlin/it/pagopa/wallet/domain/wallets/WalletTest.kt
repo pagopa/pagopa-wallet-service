@@ -18,14 +18,15 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(),
                 WalletTestUtils.CONTRACT_ID,
                 OperationResultEnum.EXECUTED,
-                null
+                null,
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -37,8 +38,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -51,7 +50,10 @@ class WalletTest {
                 ),
                 WalletTestUtils.CONTRACT_ID,
                 OperationResultEnum.EXECUTED,
-                null
+                null,
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -64,8 +66,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -84,7 +84,10 @@ class WalletTest {
                     WalletTestUtils.EXP_DATE,
                     WalletTestUtils.BRAND,
                     WalletTestUtils.HOLDER_NAME
-                )
+                ),
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
     }
@@ -97,8 +100,6 @@ class WalletTest {
                 WalletTestUtils.WALLET_UUID,
                 WalletTestUtils.USER_ID,
                 WalletStatusDto.CREATED,
-                Instant.now(),
-                Instant.now(),
                 WalletTestUtils.PAYMENT_METHOD_ID_CARDS,
                 WalletTestUtils.PAYMENT_INSTRUMENT_ID,
                 listOf(
@@ -117,13 +118,12 @@ class WalletTest {
                     WalletTestUtils.EXP_DATE,
                     WalletTestUtils.BRAND,
                     WalletTestUtils.HOLDER_NAME
-                )
+                ),
+                0,
+                WalletTestUtils.creationDate,
+                WalletTestUtils.creationDate
             )
         }
-    }
-
-    @Test
-    fun `can convert domain object to document`() {
-        assert(WalletTestUtils.WALLET_DOMAIN.toDocument() == WalletTestUtils.WALLET_DOCUMENT)
+        assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDocument().toDomain())
     }
 }

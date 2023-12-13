@@ -40,35 +40,42 @@ import java.time.Instant
 data class Wallet(
     @AggregateRootId val id: WalletId,
     val userId: UserId,
-    var status: WalletStatusDto,
-    val creationDate: Instant,
-    var updateDate: Instant,
+    var status: WalletStatusDto = WalletStatusDto.CREATED,
     val paymentMethodId: PaymentMethodId,
-    val paymentInstrumentId: PaymentInstrumentId?,
-    val applications: List<Application>,
-    val contractId: ContractId?,
-    val validationOperationResult: OperationResultEnum?,
-    val details: WalletDetails<*>?
+    var paymentInstrumentId: PaymentInstrumentId? = null,
+    var applications: List<Application> = listOf(),
+    var contractId: ContractId? = null,
+    var validationOperationResult: OperationResultEnum? = null,
+    var details: WalletDetails<*>? = null,
+    val version: Int,
+    val creationDate: Instant,
+    val updateDate: Instant
 ) {
-    fun toDocument(): Wallet =
-        Wallet(
-            this.id.value.toString(),
-            this.userId.id.toString(),
-            this.status.name,
-            this.creationDate.toString(),
-            this.updateDate.toString(),
-            this.paymentMethodId.value.toString(),
-            this.paymentInstrumentId?.value?.toString(),
-            this.contractId?.contractId,
-            this.validationOperationResult?.value,
-            this.applications.map { app ->
-                it.pagopa.wallet.documents.wallets.Application(
-                    app.id.id.toString(),
-                    app.name.name,
-                    app.status.name,
-                    app.lastUpdate.toString()
-                )
-            },
-            this.details?.toDocument()
-        )
+
+    fun toDocument(): Wallet {
+        val wallet =
+            Wallet(
+                this.id.value.toString(),
+                this.userId.id.toString(),
+                this.status.name,
+                this.paymentMethodId.value.toString(),
+                this.paymentInstrumentId?.value?.toString(),
+                this.contractId?.contractId,
+                this.validationOperationResult?.value,
+                this.applications.map { app ->
+                    it.pagopa.wallet.documents.wallets.Application(
+                        app.id.id.toString(),
+                        app.name.name,
+                        app.status.name,
+                        app.lastUpdate.toString()
+                    )
+                },
+                this.details?.toDocument(),
+                this.version,
+                this.creationDate,
+                this.updateDate
+            )
+
+        return wallet
+    }
 }
