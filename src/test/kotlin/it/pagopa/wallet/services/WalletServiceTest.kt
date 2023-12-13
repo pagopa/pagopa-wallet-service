@@ -12,6 +12,7 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
+import it.pagopa.wallet.WalletTestUtils.creationDate
 import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
@@ -71,7 +72,7 @@ class WalletServiceTest {
     private val onboardingReturnUrlConfig =
         OnboardingReturnUrlConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
-            cardReturnUrl = URI.create("http://localhost/onboarding/apm")
+            cardReturnUrl = URI.create("http://localhost/onboarding/creditcard")
         )
     private val sessionUrlConfig =
         SessionUrlConfig(
@@ -103,14 +104,14 @@ class WalletServiceTest {
             onboardingReturnUrlConfig
         )
     private val mockedUUID = WALLET_UUID.value
-    private val mockedInstant = Instant.now()
+    private val mockedInstant = creationDate
 
     @Test
     fun `should save wallet document for CARDS payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
-            uuidMockStatic.`when`<Any> { UUID.randomUUID() }.thenReturn(mockedUUID)
+            uuidMockStatic.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockStatic ->
                 println("Mocked uuid: $mockedUUID")
@@ -119,8 +120,8 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument(),
-                        WalletAddedEvent(mockedUUID.toString())
+                        newWalletDocumentSaved().toDomain(),
+                        WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
                 given { walletRepository.save(any()) }

@@ -41,11 +41,11 @@ object WalletTestUtils {
     val EXP_DATE = ExpiryDate("12/30")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val HOLDER_NAME = CardHolderName("holderName")
-    val ORDER_ID = "WFHDJFIRUT48394832"
+    const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
-    val TIMESTAMP = Instant.now()
+    val TIMESTAMP: Instant = Instant.now()
 
-    val creationDate = Instant.now()
+    val creationDate: Instant = Instant.now()
 
     fun walletDocumentWithSessionWallet(): Wallet {
         val wallet =
