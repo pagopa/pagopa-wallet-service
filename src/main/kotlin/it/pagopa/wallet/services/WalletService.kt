@@ -31,6 +31,7 @@ import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
@@ -227,8 +228,22 @@ class WalletService(
         isAPM: Boolean
     ): SessionWalletCreateResponseSessionDataDto =
         if (isAPM) {
+            if (hostedOrderResponse.state != State.REDIRECTED_TO_EXTERNAL_DOMAIN) {
+                throw NpgClientException(
+                    "Got state ${hostedOrderResponse.state} instead of REDIRECTED_TO_EXTERNAL_DOMAIN for APM session initialization",
+                    HttpStatus.BAD_GATEWAY
+                )
+            }
+
             SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
         } else {
+            if (hostedOrderResponse.state != State.GDI_VERIFICATION) {
+                throw NpgClientException(
+                    "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization",
+                    HttpStatus.BAD_GATEWAY
+                )
+            }
+
             SessionWalletCreateResponseCardDataDto()
                 .cardFormFields(
                     hostedOrderResponse.fields
