@@ -226,13 +226,19 @@ class WalletService(
     ): SessionWalletCreateResponseSessionDataDto =
         if (isAPM) {
             if (hostedOrderResponse.state != State.REDIRECTED_TO_EXTERNAL_DOMAIN) {
-                throw NpgClientException("Got state ${hostedOrderResponse.state} instead of REDIRECTED_TO_EXTERNAL_DOMAIN for APM session initialization", HttpStatus.BAD_GATEWAY)
+                throw NpgClientException(
+                    "Got state ${hostedOrderResponse.state} instead of REDIRECTED_TO_EXTERNAL_DOMAIN for APM session initialization",
+                    HttpStatus.BAD_GATEWAY
+                )
             }
 
             SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
         } else {
             if (hostedOrderResponse.state != State.GDI_VERIFICATION) {
-                throw NpgClientException("Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization", HttpStatus.BAD_GATEWAY)
+                throw NpgClientException(
+                    "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization",
+                    HttpStatus.BAD_GATEWAY
+                )
             }
 
             SessionWalletCreateResponseCardDataDto()

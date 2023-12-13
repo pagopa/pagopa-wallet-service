@@ -426,8 +426,8 @@ class WalletServiceTest {
                         )
 
                 given {
-                    npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
-                }
+                        npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -464,7 +464,11 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
                 val apmRedirectUrl = "https://apm-url"
-                val npgFields = Fields().sessionId(sessionId).url(apmRedirectUrl).state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
+                val npgFields =
+                    Fields()
+                        .sessionId(sessionId)
+                        .url(apmRedirectUrl)
+                        .state(State.REDIRECTED_TO_EXTERNAL_DOMAIN)
 
                 val sessionResponseDto =
                     SessionWalletCreateResponseDto()
@@ -573,7 +577,8 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val sessionId = UUID.randomUUID().toString()
                 val apmRedirectUrl = "https://apm-url"
-                val npgFields = Fields().sessionId(sessionId).url(apmRedirectUrl).state(State.READY_FOR_PAYMENT)
+                val npgFields =
+                    Fields().sessionId(sessionId).url(apmRedirectUrl).state(State.READY_FOR_PAYMENT)
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
@@ -632,8 +637,8 @@ class WalletServiceTest {
                         )
 
                 given {
-                    npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
-                }
+                        npgClient.createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
