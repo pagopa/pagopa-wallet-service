@@ -8,6 +8,8 @@ import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import java.net.URI
+import java.util.*
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,8 +21,6 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.net.URI
-import java.util.*
 
 @RestController
 @Slf4j
@@ -195,7 +195,8 @@ class WalletController(
         orderId: String,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
-        return walletService.validateWalletSession(orderId, walletId).flatMap { (response, walletEvent) ->
+        return walletService.validateWalletSession(orderId, walletId).flatMap {
+            (response, walletEvent) ->
             walletEvent.saveEvents(loggingEventRepository).map {
                 ResponseEntity.ok().body(response)
             }
