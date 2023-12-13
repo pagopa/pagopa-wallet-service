@@ -60,7 +60,7 @@ class ExceptionHandlerTest {
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Bad request",
-                description = "Invalid request"
+                description = "Input request is not valid"
             ),
             response.body
         )
@@ -75,7 +75,7 @@ class ExceptionHandlerTest {
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = "Nullpointer exception"
+                description = "An internal error occurred processing the request"
             ),
             response.body
         )
