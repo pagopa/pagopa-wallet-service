@@ -41,10 +41,10 @@ import it.pagopa.wallet.documents.service.Service as ServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
+import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.Service
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.Application
 import it.pagopa.wallet.domain.wallets.ContractId
