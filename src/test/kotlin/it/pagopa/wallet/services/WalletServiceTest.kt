@@ -10,6 +10,8 @@ import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESUL
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
+import it.pagopa.wallet.WalletTestUtils.SERVICE_DOCUMENT
+import it.pagopa.wallet.WalletTestUtils.SERVICE_ID
 import it.pagopa.wallet.WalletTestUtils.PSP_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -34,15 +36,21 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
+import it.pagopa.wallet.documents.service.Service as ServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.domain.services.Service
+import it.pagopa.wallet.domain.services.ServiceId
+import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.Application
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
@@ -68,6 +76,7 @@ import reactor.test.StepVerifier
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
+    private val serviceRepository: ServiceRepository = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
@@ -100,6 +109,7 @@ class WalletServiceTest {
     private val walletService: WalletService =
         WalletService(
             walletRepository,
+            serviceRepository,
             ecommercePaymentMethodsClient,
             npgClient,
             npgSessionRedisTemplate,
@@ -1362,7 +1372,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should patch wallet document when adding services`() {
+    fun `should patch wallet document when adding services with valid statuses`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -1377,8 +1387,30 @@ class WalletServiceTest {
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
+                val newServiceStatus = ServiceStatus.ENABLED
                 val expectedLoggedAction =
-                    LoggedAction(wallet, WalletPatchEvent(WALLET_UUID.value.toString()))
+                    LoggedAction(
+                        WalletServiceUpdateData(
+                            updatedWallet =
+                                wallet
+                                    .copy(
+                                        applications =
+                                            listOf(
+                                                Application(
+                                                    SERVICE_ID,
+                                                    SERVICE_NAME,
+                                                    newServiceStatus,
+                                                    mockedInstant
+                                                )
+                                            ),
+                                        updateDate = mockedInstant
+                                    )
+                                    .toDocument(),
+                            successfullyUpdatedServices = mapOf(SERVICE_NAME to newServiceStatus),
+                            servicesWithUpdateFailed = mapOf()
+                        ),
+                        WalletPatchEvent(WALLET_UUID.value.toString())
+                    )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
@@ -1390,13 +1422,18 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
+                given { serviceRepository.findById(SERVICE_NAME.name) }
+                    .willReturn(
+                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                    )
+
                 /* test */
                 assertTrue(wallet.applications.isEmpty())
 
                 StepVerifier.create(
-                        walletService.patchWallet(
+                        walletService.updateWalletServices(
                             WALLET_UUID.value,
-                            Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                            listOf(Pair(SERVICE_NAME, newServiceStatus))
                         )
                     )
                     .expectNext(expectedLoggedAction)
@@ -1409,7 +1446,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should patch wallet document editing service status`() {
+    fun `should patch wallet document editing service status with valid status`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -1418,8 +1455,32 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
+                val newServiceStatus = ServiceStatus.ENABLED
+
                 val expectedLoggedAction =
-                    LoggedAction(walletDomain(), WalletPatchEvent(WALLET_UUID.value.toString()))
+                    LoggedAction(
+                        WalletServiceUpdateData(
+                            updatedWallet =
+                                walletDomain()
+                                    .copy(
+                                        applications =
+                                            listOf(
+                                                Application(
+                                                    SERVICE_ID,
+                                                    SERVICE_NAME,
+                                                    newServiceStatus,
+                                                    mockedInstant
+                                                )
+                                            ),
+                                        updateDate = mockedInstant
+                                    )
+                                    .toDocument(),
+                            successfullyUpdatedServices =
+                                mapOf(SERVICE_NAME to ServiceStatus.ENABLED),
+                            servicesWithUpdateFailed = mapOf()
+                        ),
+                        WalletPatchEvent(WALLET_UUID.value.toString())
+                    )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
                 val walletDocument = walletDocument()
@@ -1428,6 +1489,11 @@ class WalletServiceTest {
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
+
+                given { serviceRepository.findById(SERVICE_NAME.name) }
+                    .willReturn(
+                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                    )
 
                 /* test */
                 assertEquals(walletDocument.applications.size, 1)
@@ -1438,9 +1504,104 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.patchWallet(
+                        walletService.updateWalletServices(
                             WALLET_UUID.value,
-                            Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                            listOf(Pair(SERVICE_NAME, newServiceStatus))
+                        )
+                    )
+                    .expectNext(expectedLoggedAction)
+                    .verifyComplete()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(walletDocumentToSave.applications.size, 1)
+                assertEquals(walletDocumentToSave.applications[0].name, SERVICE_NAME.name)
+                assertEquals(
+                    walletDocumentToSave.applications[0].status,
+                    ServiceStatus.ENABLED.toString()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `should patch wallet document editing service status and return services that could not be changed`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val newServiceStatus = ServiceStatus.ENABLED
+
+                val disabledService =
+                    Service(
+                        ServiceId(UUID.randomUUID()),
+                        ServiceName("INCOMING_SERVICE"),
+                        ServiceStatus.INCOMING,
+                        Instant.now()
+                    )
+
+                val walletDocument = walletDocument()
+
+                val expectedLoggedAction =
+                    LoggedAction(
+                        WalletServiceUpdateData(
+                            updatedWallet =
+                                walletDomain()
+                                    .copy(
+                                        applications =
+                                            listOf(
+                                                Application(
+                                                    SERVICE_ID,
+                                                    SERVICE_NAME,
+                                                    newServiceStatus,
+                                                    mockedInstant
+                                                )
+                                            ),
+                                        updateDate = mockedInstant
+                                    )
+                                    .toDocument(),
+                            successfullyUpdatedServices =
+                                mapOf(SERVICE_NAME to ServiceStatus.ENABLED),
+                            servicesWithUpdateFailed =
+                                mapOf(disabledService.name to ServiceStatus.INCOMING)
+                        ),
+                        WalletPatchEvent(WALLET_UUID.value.toString())
+                    )
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocument))
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willReturn(Mono.just(walletDocument))
+
+                given { serviceRepository.findById(SERVICE_NAME.name) }
+                    .willReturn(
+                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                    )
+
+                given { serviceRepository.findById(disabledService.name.name) }
+                    .willReturn(Mono.just(ServiceDocument.fromDomain(disabledService)))
+
+                /* test */
+                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
+                assertEquals(
+                    walletDocument.applications[0].status,
+                    ServiceStatus.DISABLED.toString()
+                )
+
+                StepVerifier.create(
+                        walletService.updateWalletServices(
+                            WALLET_UUID.value,
+                            listOf(
+                                Pair(SERVICE_NAME, newServiceStatus),
+                                Pair(disabledService.name, newServiceStatus)
+                            )
                         )
                     )
                     .expectNext(expectedLoggedAction)
@@ -1465,9 +1626,9 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.patchWallet(
+                walletService.updateWalletServices(
                     WALLET_UUID.value,
-                    Pair(SERVICE_NAME, ServiceStatus.ENABLED)
+                    listOf(Pair(SERVICE_NAME, ServiceStatus.ENABLED))
                 )
             )
             .expectError(WalletNotFoundException::class.java)

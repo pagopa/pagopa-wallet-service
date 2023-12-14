@@ -59,7 +59,7 @@ class ExceptionHandler {
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Bad request")
-                    .detail(e.localizedMessage)
+                    .detail("Input request is not valid")
             )
     }
 
@@ -72,7 +72,7 @@ class ExceptionHandler {
                 ProblemJsonDto()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .title("Error processing the request")
-                    .detail(e.message)
+                    .detail("An internal error occurred processing the request")
             )
     }
 }

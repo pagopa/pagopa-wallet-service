@@ -28,7 +28,6 @@ data class Wallet(
     @CreatedDate var creationDate: Instant,
     @LastModifiedDate var updateDate: Instant
 ) {
-
     fun toDomain(): Wallet {
         val wallet =
             Wallet(
