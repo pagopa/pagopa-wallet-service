@@ -1,7 +1,10 @@
 {
   "buildApm": {
     "state": "REDIRECTED_TO_EXTERNAL_DOMAIN",
-    "url": "https://localhost.it"
+    "url": "https://localhost.it",
+    "securityToken": "securityToken",
+    "sessionId": "sessionId",
+    "sriHash": "sriHash"
   },
   "buildCards": {
     "sessionId": "sessionId",

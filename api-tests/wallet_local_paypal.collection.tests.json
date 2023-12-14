@@ -425,7 +425,7 @@
 							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"apm\");",
 							"    pm.expect(sessionData.redirectUrl).to.be.a(\"string\");",
 							"    pm.expect(response.orderId).to.be.a(\"string\");",
-							" ",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
 							"});",
 							"",
 							"",
@@ -507,10 +507,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},

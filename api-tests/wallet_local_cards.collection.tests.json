@@ -450,32 +450,11 @@
 							"                \"id\": \"CARDHOLDER_NAME\"",
 							"            }",
 							"        ];",
-							"    saveNpgData(response);",
 							"    pm.expect(expectedCardFormFieldsDataWithoutSrc).eql(cardFormFieldsDataWithoutSrc);",
 							"    pm.expect(response.orderId).to.be.a(\"string\");",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
 							" ",
 							"});",
-							"",
-							"function saveNpgData(response){",
-							"    console.log(\"Read NPG response data...\");",
-							"    const orderId = response.orderId;",
-							"    const fieldUrl = response.cardFormFields[0].src;",
-							"    ",
-							"    const parsedUrl = new sdk.Url(fieldUrl).toJSON();",
-							"    const correlationId = parsedUrl.query.find((queryParam) =>queryParam.key==\"correlationid\").value;",
-							"    const sessionId= parsedUrl.query.find((queryParam) =>queryParam.key==\"sessionid\").value.replaceAll(\"%2F\",\"/\").replaceAll(\"%2B\",\"+\").replaceAll(\"%3D\",\"=\");",
-							"    const fieldId= parsedUrl.query.find((queryParam) =>queryParam.key==\"id\").value;",
-							"    console.log(`Order id: [${orderId}]`);",
-							"    console.log(`Field url: [${fieldUrl}]`);",
-							"    console.log(`correlation id: [${correlationId}]`);",
-							"    console.log(`session id: [${sessionId}]`);",
-							"    console.log(`field id: [${fieldId}]`);",
-							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
-							"    pm.environment.set(\"NPG_IFRAME_FIELD_URL\", fieldUrl);",
-							"    pm.environment.set(\"NPG_CORRELATION_ID\", correlationId);",
-							"    pm.environment.set(\"NPG_SESSION_ID\", sessionId);",
-							"    pm.environment.set(\"NPG_IFRAME_FIELD_ID\", fieldId);",
-							"}",
 							"",
 							""
 						],
@@ -555,10 +534,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
