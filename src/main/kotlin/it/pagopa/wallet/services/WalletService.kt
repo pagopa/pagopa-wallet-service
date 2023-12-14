@@ -113,7 +113,8 @@ class WalletService(
     }
 
     fun createSessionWallet(
-        walletId: UUID
+        walletId: UUID,
+        sessionInputDataDto: SessionInputDataDto
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
@@ -175,12 +176,23 @@ class WalletService(
                             )
                     )
                     .map { hostedOrderResponse ->
-                        SessionCreationData(
-                            hostedOrderResponse,
+                        val newDetails =
+                            when (sessionInputDataDto) {
+                                is SessionInputCardDataDto -> wallet.details
+                                is SessionInputPayPalDataDto ->
+                                    PayPalDetails(null, sessionInputDataDto.pspId)
+                                else ->
+                                    throw InternalServerErrorException("Unhandled session input")
+                            }
+                        val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
-                                status = WalletStatusDto.INITIALIZED
-                            ),
+                                status = WalletStatusDto.INITIALIZED,
+                                details = newDetails
+                            )
+                        SessionCreationData(
+                            hostedOrderResponse,
+                            updatedWallet,
                             orderId,
                             isAPM = paymentMethod.paymentTypeCode != "CP"
                         )

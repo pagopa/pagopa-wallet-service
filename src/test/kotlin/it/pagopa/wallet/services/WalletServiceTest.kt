@@ -4,11 +4,13 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
+import it.pagopa.wallet.WalletTestUtils.PSP_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
@@ -34,6 +36,7 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -330,7 +333,12 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                StepVerifier.create(
+                        walletService.createSessionWallet(
+                            WALLET_UUID.value,
+                            SessionInputCardDataDto()
+                        )
+                    )
                     .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                     .verifyComplete()
             }
@@ -444,7 +452,12 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                StepVerifier.create(
+                        walletService.createSessionWallet(
+                            WALLET_UUID.value,
+                            SessionInputCardDataDto()
+                        )
+                    )
                     .expectError(NpgClientException::class.java)
                     .verify()
             }
@@ -489,7 +502,10 @@ class WalletServiceTest {
 
                 var walletDocumentWithSessionWallet = walletDocumentWithSessionWallet()
                 walletDocumentWithSessionWallet =
-                    walletDocumentWithSessionWallet.copy(contractId = contractId)
+                    walletDocumentWithSessionWallet.copy(
+                        contractId = contractId,
+                        details = PayPalDetails(maskedEmail = null, pspId = PSP_ID)
+                    )
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
@@ -557,7 +573,12 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                StepVerifier.create(
+                        walletService.createSessionWallet(
+                            WALLET_UUID.value,
+                            APM_SESSION_CREATE_REQUEST
+                        )
+                    )
                     .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                     .verifyComplete()
             }
@@ -658,7 +679,12 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(it.arguments[0]) }
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(walletService.createSessionWallet(WALLET_UUID.value))
+                StepVerifier.create(
+                        walletService.createSessionWallet(
+                            WALLET_UUID.value,
+                            APM_SESSION_CREATE_REQUEST
+                        )
+                    )
                     .expectError(NpgClientException::class.java)
                     .verify()
             }
