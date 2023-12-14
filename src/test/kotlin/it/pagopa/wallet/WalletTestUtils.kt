@@ -8,6 +8,7 @@ import it.pagopa.wallet.documents.service.Service
 import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
@@ -117,7 +118,7 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocumentVerifiedWithAPM(): Wallet {
+    fun walletDocumentVerifiedWithAPM(details: WalletDetails<*>): Wallet {
         val wallet =
             Wallet(
                 WALLET_UUID.value.toString(),
@@ -128,7 +129,7 @@ object WalletTestUtils {
                 CONTRACT_ID.contractId,
                 null,
                 listOf(),
-                null,
+                details,
                 0,
                 creationDate,
                 creationDate
@@ -174,7 +175,10 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocumentValidated(operationResultEnum: OperationResultEnum): Wallet {
+    fun walletDocumentValidated(
+        operationResultEnum: OperationResultEnum,
+        details: WalletDetails<*>
+    ): Wallet {
         val wallet =
             Wallet(
                 WALLET_UUID.value.toString(),
@@ -185,7 +189,7 @@ object WalletTestUtils {
                 CONTRACT_ID.contractId,
                 operationResultEnum.value,
                 listOf(),
-                null,
+                details,
                 0,
                 creationDate,
                 creationDate
@@ -560,6 +564,18 @@ object WalletTestUtils {
             .operationResult(OperationResultEnum.EXECUTED)
             .timestampOperation(OffsetDateTime.now())
             .operationId("validationOperationId")
+
+    val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS:
+        WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.EXECUTED)
+            .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
+            .details(
+                WalletNotificationRequestPaypalDetailsDto()
+                    .type("PAYPAL")
+                    .maskedEmail("te**@te**.it")
+            )
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()

@@ -431,20 +431,24 @@ class WalletService(
                     .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
                     .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .flatMap { wallet ->
-                        val validationOperationResult = walletNotificationRequestDto.operationResult
-                        val newWalletStatus =
-                            when (validationOperationResult) {
-                                WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
-                                    WalletStatusDto.VALIDATED
-                                else -> {
-                                    WalletStatusDto.ERROR
-                                }
-                            }
+                        val (newWalletStatus, walletDetails) =
+                            handleWalletNotification(
+                                wallet = wallet,
+                                walletNotificationRequestDto = walletNotificationRequestDto
+                            )
+                        logger.info(
+                            "Updating wallet [{}] from status: [{}] to [{}]",
+                            wallet.id.value,
+                            wallet.status,
+                            newWalletStatus
+                        )
                         walletRepository.save(
                             wallet
                                 .copy(
                                     status = newWalletStatus,
-                                    validationOperationResult = validationOperationResult
+                                    validationOperationResult =
+                                        walletNotificationRequestDto.operationResult,
+                                    details = walletDetails
                                 )
                                 .toDocument()
                         )
@@ -461,6 +465,48 @@ class WalletService(
                         )
                     }
             }
+    }
+
+    private fun handleWalletNotification(
+        wallet: Wallet,
+        walletNotificationRequestDto: WalletNotificationRequestDto
+    ): Pair<WalletStatusDto, it.pagopa.wallet.domain.details.WalletDetails<*>> {
+        val operationResult = walletNotificationRequestDto.operationResult
+        val operationDetails = walletNotificationRequestDto.details
+        logger.info(
+            "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], notification details: [{}]",
+            wallet.id.value,
+            operationResult,
+            operationDetails
+        )
+        return when (val walletDetails = wallet.details) {
+            is it.pagopa.wallet.domain.details.CardDetails ->
+                if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                    Pair(WalletStatusDto.VALIDATED, walletDetails)
+                } else {
+                    Pair(WalletStatusDto.ERROR, walletDetails)
+                }
+            is it.pagopa.wallet.domain.details.PayPalDetails ->
+                if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                    if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
+                        Pair(
+                            WalletStatusDto.VALIDATED,
+                            walletDetails.copy(maskedEmail = operationDetails.maskedEmail)
+                        )
+                    } else {
+                        logger.error(
+                            "No details received for PayPal wallet, cannot retrieve maskedEmail"
+                        )
+                        Pair(WalletStatusDto.ERROR, walletDetails)
+                    }
+                } else {
+                    Pair(WalletStatusDto.ERROR, walletDetails)
+                }
+            else ->
+                throw InvalidRequestException(
+                    "Unhandled wallet details for notification request: $walletDetails"
+                )
+        }
     }
 
     fun findSessionWallet(

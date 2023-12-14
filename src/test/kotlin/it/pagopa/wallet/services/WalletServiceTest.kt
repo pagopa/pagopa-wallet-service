@@ -6,6 +6,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
@@ -34,6 +35,8 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails
+import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -1543,13 +1546,20 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `notify wallet should set wallet status to ERROR`() {
+    fun `notify wallet should set wallet status to ERROR for CARDS`() {
         /* preconditions */
         val orderId = "orderId"
         val sessionId = "sessionId"
         val sessionToken = "token"
         val operationId = "validationOperationId"
-        val walletDocument = walletDocumentVerifiedWithAPM()
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "12345678",
+                "0000",
+                "12/30",
+                "?",
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
@@ -1578,19 +1588,27 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `notify wallet should set wallet status to VALIDATED`() {
+    fun `notify wallet should set wallet status to VALIDATED for CARDS`() {
         /* preconditions */
         val orderId = "orderId"
         val sessionId = "sessionId"
         val sessionToken = "token"
         val operationId = "validationOperationId"
-        val walletDocument = walletDocumentVerifiedWithAPM()
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "12345678",
+                "0000",
+                "12/30",
+                "?",
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
 
-        val walletDocumentValidated = walletDocumentValidated(notifyRequestDto.operationResult)
+        val walletDocumentValidated =
+            walletDocument.copy(status = WalletStatusDto.VALIDATED.toString())
 
         given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
 
@@ -1713,7 +1731,8 @@ class WalletServiceTest {
         val userId = USER_ID.id
         val sessionId = "sessionId"
         val sessionToken = "token"
-        val walletDocument = walletDocumentVerifiedWithAPM()
+        val walletDocument =
+            walletDocumentVerifiedWithAPM(PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it")))
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -1841,6 +1860,170 @@ class WalletServiceTest {
         /* test */
         StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
             .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to ERROR for PAYPAL`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument =
+            walletDocumentVerifiedWithAPM(PayPalDetails(MaskedEmail("te**@te**.it")))
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        val walletDocumentWithError =
+            walletDocument.copy(
+                validationOperationResult = notifyRequestDto.operationResult.value,
+                status = WalletStatusDto.ERROR.value
+            )
+
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentWithError.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.DECLINED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .assertNext { assertEquals(expectedLoggedAction, it) }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `notify wallet should throw error for unhandled wallet details`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument = walletDocumentVerifiedWithAPM(mock())
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        val walletDocumentWithError = walletDocumentWithError(notifyRequestDto.operationResult)
+
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentWithError.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.DECLINED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .expectError(InvalidRequestException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `notify wallet should throw error for PAYPAL wallet and wrong details into notification request`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument =
+            walletDocumentVerifiedWithAPM(PayPalDetails(MaskedEmail("te**@te**.it")))
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+
+        val walletDocumentWithError =
+            walletDocument.copy(
+                validationOperationResult = notifyRequestDto.operationResult.value,
+                status = WalletStatusDto.ERROR.value
+            )
+
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentWithError.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.EXECUTED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .assertNext { assertEquals(expectedLoggedAction, it) }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to VALIDATED for PAYPAL`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
+        val walletDocument =
+            walletDocumentVerifiedWithAPM(
+                PayPalDetails(
+                    MaskedEmail(
+                        (notifyRequestDto.details as WalletNotificationRequestPaypalDetailsDto)
+                            .maskedEmail
+                    )
+                )
+            )
+
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        val walletDocumentValidated =
+            walletDocument.copy(
+                validationOperationResult = notifyRequestDto.operationResult.value,
+                status = WalletStatusDto.VALIDATED.toString()
+            )
+
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentValidated.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.EXECUTED.value,
+                    notifyRequestDto.timestampOperation.toString()
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
 }
