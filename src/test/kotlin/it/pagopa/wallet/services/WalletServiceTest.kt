@@ -37,6 +37,8 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails
+import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -1755,7 +1757,9 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val walletDocument =
-            walletDocumentVerifiedWithAPM(PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it")))
+            walletDocumentVerifiedWithAPM(
+                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+            )
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -1894,7 +1898,9 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithAPM(PayPalDetails(MaskedEmail("te**@te**.it")))
+            walletDocumentVerifiedWithAPM(
+                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+            )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
@@ -1969,7 +1975,9 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithAPM(PayPalDetails(MaskedEmail("te**@te**.it")))
+            walletDocumentVerifiedWithAPM(
+                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+            )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
@@ -2013,10 +2021,12 @@ class WalletServiceTest {
         val walletDocument =
             walletDocumentVerifiedWithAPM(
                 PayPalDetails(
-                    MaskedEmail(
-                        (notifyRequestDto.details as WalletNotificationRequestPaypalDetailsDto)
-                            .maskedEmail
-                    )
+                    maskedEmail =
+                        MaskedEmail(
+                            (notifyRequestDto.details as WalletNotificationRequestPaypalDetailsDto)
+                                .maskedEmail
+                        ),
+                    pspId = "pspId"
                 )
             )
 
