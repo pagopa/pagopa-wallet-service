@@ -523,6 +523,14 @@ object WalletTestUtils {
 
     val FLUX_PATCH_SERVICES: List<PatchServiceDto> = listOf(PATCH_SERVICE_1, PATCH_SERVICE_2)
 
+    val PSP_ID = UUID.randomUUID().toString()
+
+    val APM_SESSION_CREATE_REQUEST =
+        SessionInputPayPalDataDto().apply {
+            pspId = PSP_ID
+            paymentMethodType = "PAYPAL"
+        }
+
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
             .id(PAYMENT_METHOD_ID_CARDS.value.toString())

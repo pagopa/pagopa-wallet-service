@@ -203,6 +203,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/WalletId'
+      requestBody:
+        description: Session input data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionInputData'
       responses:
         '200':
           description: Session Wallet created successfully
@@ -791,6 +797,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletInfo'
+    SessionInputData:
+      type: object
+      description: Data needed to create  session
+      oneOf:
+        - $ref: "#/components/schemas/SessionInputCardData"
+        - $ref: "#/components/schemas/SessionInputPayPalData"
+      discriminator:
+        propertyName: paymentMethodType
+        mapping:
+          cards: "#/components/schemas/SessionInputCardData"
+          paypal: "#/components/schemas/SessionInputPayPalData"
+    SessionInputCardData:
+      type: object
+      description: Data required to initialize a card onboarding session
+      properties:
+        paymentMethodType:
+          type: string
+      required:
+        - paymentMethodType
+    SessionInputPayPalData:
+      type: object
+      description: Data required to initialize a PayPal onboarding session
+      properties:
+        paymentMethodType:
+          type: string
+        pspId:
+          type: string
+      required:
+        - paymentMethodType
+        - pspId
     SessionWalletCreateResponse:
       type: object
       description: Form data needed to create a credit card input form
@@ -808,7 +844,7 @@ components:
               apm: "#/components/schemas/SessionWalletCreateResponseAPMData"
       required:
         - orderId
-        - cardFormFields
+        - sessionData
     SessionWalletCreateResponseCardData:
       type: object
       description: Session data returned by `createSessionWallet` operation in case of a credit card session

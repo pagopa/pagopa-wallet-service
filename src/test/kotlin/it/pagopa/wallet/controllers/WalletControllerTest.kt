@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
@@ -127,7 +128,7 @@ class WalletControllerTest {
                             )
                         )
                 )
-        given { walletService.createSessionWallet(walletId) }
+        given { walletService.createSessionWallet(eq(walletId), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -144,7 +145,7 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .bodyValue(SessionInputCardDataDto().apply { paymentMethodType = "cards" })
             .exchange()
             .expectStatus()
             .isOk
@@ -162,7 +163,7 @@ class WalletControllerTest {
                 .sessionData(
                     SessionWalletCreateResponseAPMDataDto().redirectUrl("https://apm-redirect.url")
                 )
-        given { walletService.createSessionWallet(walletId) }
+        given { walletService.createSessionWallet(eq(walletId), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -179,7 +180,7 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .bodyValue(WalletTestUtils.APM_SESSION_CREATE_REQUEST)
             .exchange()
             .expectStatus()
             .isOk
