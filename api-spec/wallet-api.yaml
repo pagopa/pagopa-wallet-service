@@ -151,18 +151,19 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
-    patch:
+  /wallets/{walletId}/services:
+    put:
       tags:
         - wallets
-      summary: Partial wallet update
-      description: Update wallet partially
-      operationId: patchWalletById
+      summary: Update wallet services and their status
+      description: Update wallet services
+      operationId: updateWalletServicesById
       requestBody:
-        description: Create a new wallet
+        description: Update wallet services for the specified wallet
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WalletPatchRequest'
+              $ref: '#/components/schemas/WalletServiceUpdateRequest'
       parameters:
         - name: walletId
           in: path
@@ -173,6 +174,14 @@ paths:
       responses:
         '204':
           description: Wallet updated successfully
+        '409':
+          description: |
+           Wallet request is inconsistent with global service status
+           (e.g. the user requested a service to be enabled but the service has a global status of disabled)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletServicesPartialUpdate"
         '400':
           description: Invalid input id
           content:
@@ -462,7 +471,7 @@ paths:
       description: Set service status
       operationId: setServiceStatus
       requestBody:
-        description: Set service satus
+        description: Set service status
         content:
           application/json:
             schema:
@@ -581,6 +590,25 @@ components:
         redirectUrl:
           type: string
           description: redirect url in order to continue verify.
+    WalletServicesPartialUpdate:
+      type: object
+      description: Response for wallet services partial update due to status conflicts
+      properties:
+        updatedServices:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletService"
+        failedServices:
+          type: array
+          items:
+            $ref: "#/components/schemas/Service"
+      example:
+        updatedServices:
+          - name: "PAGOPA"
+            status: "ENABLED"
+        failedServices:
+          - name: "PARI"
+            status: "DISABLED"
     ServiceName:
       type: string
       description: Enumeration of services
@@ -601,14 +629,14 @@ components:
       description: Service identifier
       type: string
       format: uuid
-    PatchService:
+    WalletService:
       type: object
       properties:
         name:
           $ref: '#/components/schemas/ServiceName'
         status:
-          $ref: '#/components/schemas/ServicePatchStatus'
-    ServicePatchStatus:
+          $ref: '#/components/schemas/WalletServiceStatus'
+    WalletServiceStatus:
       type: string
       description: Enumeration of wallet statuses
       enum:
@@ -692,17 +720,15 @@ components:
         - type
         - abi
         - maskedEmail
-    WalletPatchRequest:
+    WalletServiceUpdateRequest:
       type: object
       description: Wallet update request
-      items:
-        $ref: '#/components/schemas/PatchService'
       properties:
         services:
           type: array
           description: List of services to update
           items:
-            $ref: '#/components/schemas/PatchService'
+            $ref: '#/components/schemas/WalletService'
     WalletCreateRequest:
       type: object
       description: Wallet creation request

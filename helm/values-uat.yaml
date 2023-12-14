@@ -49,7 +49,7 @@ microservice-chart:
         WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopawalletservice
-    tag: "0.2.1"
+    tag: "0.2.2"
     pullPolicy: Always
   livenessProbe:
     httpGet:
