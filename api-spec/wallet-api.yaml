@@ -870,7 +870,7 @@ components:
               apm: "#/components/schemas/SessionWalletCreateResponseAPMData"
       required:
         - orderId
-        - cardFormFields
+        - sessionData
     SessionWalletCreateResponseCardData:
       type: object
       description: Session data returned by `createSessionWallet` operation in case of a credit card session
