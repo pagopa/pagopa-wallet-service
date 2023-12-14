@@ -10,9 +10,9 @@ import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESUL
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
+import it.pagopa.wallet.WalletTestUtils.PSP_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.SERVICE_ID
-import it.pagopa.wallet.WalletTestUtils.PSP_ID
 import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
@@ -39,10 +39,10 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.service.Service as ServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails
 import it.pagopa.wallet.domain.services.Service
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.Application
 import it.pagopa.wallet.domain.wallets.ContractId
