@@ -800,6 +800,136 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Notify wallet error for missing details",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const paymentMethodId = pm.environment.get(\"PAYMENT_METHOD_ID\");",
+							"const useDiagnosticSettings = pm.environment.get(\"USE_DIAGNOSTIC_TRACING\");",
+							"",
+							"const createWalletRequestBody = {",
+							"  \"services\": [",
+							"    \"PAGOPA\"",
+							"  ],",
+							"  \"useDiagnosticTracing\": useDiagnosticSettings,",
+							"  \"paymentMethodId\": paymentMethodId",
+							"};",
+							"",
+							"",
+							"const createWalletRequestObject = {",
+							"  url: pm.environment.get(\"HOSTNAME\") + \"/wallets\",",
+							"  method: 'POST',",
+							"  header: {",
+							"    'Content-Type': 'application/json',",
+							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`",
+							"  },",
+							"  body: {",
+							"    mode: 'raw',",
+							"    raw: JSON.stringify(createWalletRequestBody)",
+							"  }",
+							"};",
+							"",
+							"pm.sendRequest(createWalletRequestObject, (error, response) => {",
+							"  if (error) {",
+							"    throw error;",
+							"  } else {",
+							"    const responseBody = response.json();",
+							"    postSession(responseBody.walletId);",
+							"  }",
+							"});",
+							"",
+							"",
+							"function postSession(walletId) {",
+							"  if (walletId) {",
+							"    const postSessionRequest = {",
+							"      \"paymentMethodType\": \"paypal\",",
+							"      \"pspId\": \"pspId\"",
+							"    };",
+							"    const postSessionRequestObject = {",
+							"      url: pm.environment.get(\"HOSTNAME\") + `/wallets/${walletId}/sessions`,",
+							"      method: 'POST',",
+							"      header: {",
+							"        'Content-Type': 'application/json',",
+							"      },",
+							"      body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify(postSessionRequest)",
+							"      }",
+							"    };",
+							"",
+							"    pm.sendRequest(postSessionRequestObject, (error, response) => {",
+							"      if (error) {",
+							"        throw error;",
+							"      } else {",
+							"        const responseBody = response.json();",
+							"        orderId = responseBody.orderId;",
+							"        pm.environment.set(\"WALLET_ID\", walletId);",
+							"        pm.environment.set(\"ORDER_ID\", orderId);",
+							"      }",
+							"    });",
+							"  } else {",
+							"    throw new Error(`Cannot perform post session for wallet id: ${walletId}`);",
+							"  }",
+							"}",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
