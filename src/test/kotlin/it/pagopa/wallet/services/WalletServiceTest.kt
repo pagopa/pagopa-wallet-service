@@ -2,6 +2,7 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
@@ -359,7 +360,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should throw exception if receives a state that is not GDI_VERIFICATION when creating session for cards`() {
+    fun `should throw exception if receives an empty fields list when creating session for cards`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -373,24 +374,7 @@ class WalletServiceTest {
                 val sessionId = UUID.randomUUID().toString()
                 val npgFields =
                     Fields().sessionId(sessionId).state(WorkflowState.READY_FOR_PAYMENT).apply {
-                        fields =
-                            listOf(
-                                Field()
-                                    .id(UUID.randomUUID().toString())
-                                    .src("https://test.it/h")
-                                    .propertyClass("holder")
-                                    .propertyClass("h"),
-                                Field()
-                                    .id(UUID.randomUUID().toString())
-                                    .src("https://test.it/p")
-                                    .propertyClass("pan")
-                                    .propertyClass("p"),
-                                Field()
-                                    .id(UUID.randomUUID().toString())
-                                    .src("https://test.it/c")
-                                    .propertyClass("cvv")
-                                    .propertyClass("c")
-                            )
+                        fields = listOf()
                     }
 
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }

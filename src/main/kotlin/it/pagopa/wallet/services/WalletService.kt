@@ -263,9 +263,10 @@ class WalletService(
                 .redirectUrl(hostedOrderResponse.url)
                 .paymentMethodType("apm")
         } else {
-            if (hostedOrderResponse.state != WorkflowState.GDI_VERIFICATION) {
+            val cardFields = hostedOrderResponse.fields!!
+            if (cardFields.isEmpty()) {
                 throw NpgClientException(
-                    "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization",
+                    "Received empty fields array in orders/build call to NPG!",
                     HttpStatus.BAD_GATEWAY
                 )
             }
@@ -273,7 +274,7 @@ class WalletService(
             SessionWalletCreateResponseCardDataDto()
                 .paymentMethodType("cards")
                 .cardFormFields(
-                    hostedOrderResponse.fields!!
+                    cardFields
                         .stream()
                         .map { f ->
                             FieldDto()
