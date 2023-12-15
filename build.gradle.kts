@@ -135,7 +135,8 @@ tasks.register("wallet", GenerateTask::class.java) {
       "useSpringBoot3" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
-      "enumPropertyNaming" to "UPPERCASE"
+      "enumPropertyNaming" to "UPPERCASE",
+      "legacyDiscriminatorBehavior" to "true"
     )
   )
 }
