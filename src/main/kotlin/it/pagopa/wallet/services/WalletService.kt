@@ -179,6 +179,8 @@ class WalletService(
                             )
                     )
                     .map { hostedOrderResponse ->
+                        val isAPM = paymentMethod.paymentTypeCode != "CP"
+
                         val newDetails =
                             when (sessionInputDataDto) {
                                 is SessionInputCardDataDto -> wallet.details
@@ -187,17 +189,29 @@ class WalletService(
                                 else ->
                                     throw InternalServerErrorException("Unhandled session input")
                             }
+
+                        /*
+                         * Credit card onboarding requires a two-step validation process
+                         * (see WalletService#confirmPaymentCard), while for APMs
+                         * we just need the gateway to notify us of the onboarding outcome
+                         */
+                        val newStatus =
+                            if (isAPM) {
+                                WalletStatusDto.VALIDATION_REQUESTED
+                            } else {
+                                WalletStatusDto.INITIALIZED
+                            }
                         val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
-                                status = WalletStatusDto.INITIALIZED,
+                                status = newStatus,
                                 details = newDetails
                             )
                         SessionCreationData(
                             hostedOrderResponse,
                             updatedWallet,
                             orderId,
-                            isAPM = paymentMethod.paymentTypeCode != "CP"
+                            isAPM = isAPM
                         )
                     }
             }
@@ -245,7 +259,9 @@ class WalletService(
                 )
             }
 
-            SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
+            SessionWalletCreateResponseAPMDataDto()
+                .redirectUrl(hostedOrderResponse.url)
+                .paymentMethodType("apm")
         } else {
             if (hostedOrderResponse.state != WorkflowState.GDI_VERIFICATION) {
                 throw NpgClientException(
@@ -255,6 +271,7 @@ class WalletService(
             }
 
             SessionWalletCreateResponseCardDataDto()
+                .paymentMethodType("cards")
                 .cardFormFields(
                     hostedOrderResponse.fields!!
                         .stream()

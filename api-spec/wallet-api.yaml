@@ -214,6 +214,7 @@ paths:
             $ref: '#/components/schemas/WalletId'
       requestBody:
         description: Session input data
+        required: true
         content:
           application/json:
             schema:
@@ -364,7 +365,7 @@ paths:
       description: Update Wallet on NPG onboarding authorization response
       operationId: notifyWallet
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       parameters:
         - in: path
           name: walletId
@@ -922,33 +923,9 @@ components:
             - VOIDED
             - REFUNDED
             - FAILED
-        details:
-          description: Wallet notified payment method details
-          type: object
-          oneOf:
-            - $ref: '#/components/schemas/WalletNotificationRequestPaypalDetails'
-          discriminator:
-            propertyName: type
-            mapping:
-              PAYPAL: '#/components/schemas/WalletNotificationRequestPaypalDetails'
       required:
         - timestampOperation
         - operationResult
-    WalletNotificationRequestPaypalDetails:
-      type: object
-      description: APM wallet notification details for PayPal onboarding
-      properties:
-        type:
-          type: string
-          description: discriminator field, fixed value `PAYPAL`
-        maskedEmail:
-          type: string
-      required:
-        - type
-        - maskedEmail
-      example:
-        type: PAYPAL
-        maskedEmail: t***@t***.it
     SessionWalletRetrieveResponse:
       type: object
       description: Data related to session wallet
