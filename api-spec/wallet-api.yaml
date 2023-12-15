@@ -214,6 +214,7 @@ paths:
             $ref: '#/components/schemas/WalletId'
       requestBody:
         description: Session input data
+        required: true
         content:
           application/json:
             schema:
