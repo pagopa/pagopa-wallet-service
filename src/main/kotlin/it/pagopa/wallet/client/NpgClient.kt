@@ -1,10 +1,10 @@
 package it.pagopa.wallet.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
 import it.pagopa.wallet.domain.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import java.util.*
 
 /** NPG API client service class */
 @Component
@@ -32,9 +33,11 @@ class NpgClient(
                 WalletDetailsType.CARDS.name -> {
                     cardsServicesApi
                 }
+
                 WalletDetailsType.PAYPAL.name -> {
                     paypalServicesApi
                 }
+
                 else ->
                     throw NpgClientException(
                         "Invalid /order/build request: unhandled `paymentSession.paymentService` (value is ${createHostedOrderRequest.paymentSession?.paymentService})",
@@ -46,9 +49,11 @@ class NpgClient(
             try {
                 logger.info("Sending orderBuild with correlationId: $correlationId")
                 client.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest)
+                    .doOnNext { logger.info("NPG build response: ${ObjectMapper().writeValueAsString(it)}") }
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
+
         return response.onErrorMap(WebClientResponseException::class.java) {
             logger.error(
                 "Error communicating with NPG-orderBuild for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -105,16 +110,19 @@ class NpgClient(
                     description = "Bad request",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                 )
+
             HttpStatus.UNAUTHORIZED ->
                 NpgClientException(
                     description = "Misconfigured NPG api key",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                 )
+
             HttpStatus.INTERNAL_SERVER_ERROR ->
                 NpgClientException(
                     description = "NPG internal server error",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
                 )
+
             else ->
                 NpgClientException(
                     description = "NPG server error: $statusCode",
