@@ -1,13 +1,13 @@
 package it.pagopa.wallet.controllers
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_1
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
@@ -28,6 +28,7 @@ import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -41,6 +42,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -123,6 +125,7 @@ class WalletControllerTest {
                 .orderId("W3948594857645ruey")
                 .sessionData(
                     SessionWalletCreateResponseCardDataDto()
+                        .paymentMethodType("cards")
                         .cardFormFields(
                             listOf(
                                 FieldDto()
@@ -151,12 +154,18 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(SessionInputCardDataDto().apply { paymentMethodType = "cards" })
+            .bodyValue(
+                // workaround since this class is the request entrypoint and so discriminator
+                // mapping annotation is not read during serialization
+                ObjectMapper()
+                    .writeValueAsString(SessionInputCardDataDto() as SessionInputDataDto)
+                    .replace("SessionInputCardData", "cards")
+            )
             .exchange()
             .expectStatus()
             .isOk
-            .expectBody()
-            .json(objectMapper.writeValueAsString(sessionResponseDto))
+            .expectBody<SessionWalletCreateResponseDto>()
+            .consumeWith { assertEquals(sessionResponseDto, it.responseBody) }
     }
 
     @Test
@@ -167,7 +176,9 @@ class WalletControllerTest {
             SessionWalletCreateResponseDto()
                 .orderId("W3948594857645ruey")
                 .sessionData(
-                    SessionWalletCreateResponseAPMDataDto().redirectUrl("https://apm-redirect.url")
+                    SessionWalletCreateResponseAPMDataDto()
+                        .paymentMethodType("apm")
+                        .redirectUrl("https://apm-redirect.url")
                 )
         given { walletService.createSessionWallet(eq(walletId), any()) }
             .willReturn(
@@ -186,12 +197,18 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.APM_SESSION_CREATE_REQUEST)
+            .bodyValue(
+                // workaround since this class is the request entrypoint and so discriminator
+                // mapping annotation is not read during serialization
+                ObjectMapper()
+                    .writeValueAsString(WalletTestUtils.APM_SESSION_CREATE_REQUEST)
+                    .replace("SessionInputPayPalData", "paypal")
+            )
             .exchange()
             .expectStatus()
             .isOk
-            .expectBody()
-            .json(objectMapper.writeValueAsString(sessionResponseDto))
+            .expectBody<SessionWalletCreateResponseDto>()
+            .consumeWith { assertEquals(sessionResponseDto, it.responseBody) }
     }
 
     @Test
