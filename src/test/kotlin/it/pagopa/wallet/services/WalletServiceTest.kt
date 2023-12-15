@@ -521,7 +521,9 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        walletDocumentWithSessionWallet.toDomain(),
+                        walletDocumentWithSessionWallet
+                            .toDomain()
+                            .copy(status = WalletStatusDto.VALIDATION_REQUESTED),
                         SessionWalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
