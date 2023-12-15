@@ -259,7 +259,9 @@ class WalletService(
                 )
             }
 
-            SessionWalletCreateResponseAPMDataDto().redirectUrl(hostedOrderResponse.url)
+            SessionWalletCreateResponseAPMDataDto()
+                .redirectUrl(hostedOrderResponse.url)
+                .paymentMethodType("apm")
         } else {
             if (hostedOrderResponse.state != WorkflowState.GDI_VERIFICATION) {
                 throw NpgClientException(
@@ -269,6 +271,7 @@ class WalletService(
             }
 
             SessionWalletCreateResponseCardDataDto()
+                .paymentMethodType("cards")
                 .cardFormFields(
                     hostedOrderResponse.fields!!
                         .stream()

@@ -245,6 +245,7 @@ class WalletServiceTest {
                         .orderId(orderId)
                         .sessionData(
                             SessionWalletCreateResponseCardDataDto()
+                                .paymentMethodType("cards")
                                 .cardFormFields(
                                     listOf(
                                         FieldDto()
@@ -500,7 +501,9 @@ class WalletServiceTest {
                     SessionWalletCreateResponseDto()
                         .orderId(orderId)
                         .sessionData(
-                            SessionWalletCreateResponseAPMDataDto().redirectUrl(apmRedirectUrl)
+                            SessionWalletCreateResponseAPMDataDto()
+                                .redirectUrl(apmRedirectUrl)
+                                .paymentMethodType("apm")
                         )
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
