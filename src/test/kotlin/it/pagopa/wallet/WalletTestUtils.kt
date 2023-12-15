@@ -529,7 +529,7 @@ object WalletTestUtils {
     val APM_SESSION_CREATE_REQUEST =
         SessionInputPayPalDataDto().apply {
             pspId = PSP_ID
-            paymentMethodType = "PAYPAL"
+            paymentMethodType = "paypal"
         }
 
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {

@@ -264,9 +264,8 @@ class WalletService(
                 .paymentMethodType("apm")
         } else {
             if (hostedOrderResponse.state != WorkflowState.GDI_VERIFICATION) {
-                throw NpgClientException(
-                    "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization",
-                    HttpStatus.BAD_GATEWAY
+                logger.warn(
+                    "Got state ${hostedOrderResponse.state} instead of GDI_VERIFICATION for card session initialization"
                 )
             }
 
