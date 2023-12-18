@@ -160,7 +160,24 @@ class WalletController(
                     )
                 }
                 .flatMap { it.saveEvents(loggingEventRepository) }
-                .map { ResponseEntity.ok().build() }
+                .map {
+                    /*
+                     * @formatter:off
+                     * Here wallet can have only VALIDATED or ERROR statuses.
+                     * For wallet were NPG gives EXECUTED but wallet status is ERROR will be returned a 400 bad request
+                     * since it means that NPG notify request is incoherent with onboarded wallet
+                     * @formatter:on
+                     */
+                    if (
+                        it.status == WalletStatusDto.ERROR &&
+                            it.validationOperationResult ==
+                                WalletNotificationRequestDto.OperationResultEnum.EXECUTED
+                    ) {
+                        ResponseEntity.badRequest().build()
+                    } else {
+                        ResponseEntity.ok().build()
+                    }
+                }
         }
     }
 
