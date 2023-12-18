@@ -32,7 +32,7 @@ microservice-chart:
         ECS_SERVICE_ENVIRONMENT: "uat"
         WALLET_SESSION_TTL: "100000"
         WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
-        WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditCard
+        WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
         WALLET_ONBOARDING_APM_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/apm
         SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
         SESSION_URL_OUTCOME_SUFFIX: "/esito"
@@ -79,9 +79,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -122,7 +122,7 @@ microservice-chart:
     ECS_SERVICE_ENVIRONMENT: "uat"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
-    WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditCard
+    WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
     WALLET_ONBOARDING_APM_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/apm
     SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
@@ -140,8 +140,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: { }
+  tolerations: [ ]
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
