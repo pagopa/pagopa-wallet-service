@@ -46,11 +46,9 @@ class RedisConfiguration {
     }
 
     private fun <T> buildJackson2RedisSerializer(clazz: Class<T>): Jackson2JsonRedisSerializer<T> {
-        val jackson2JsonRedisSerializer = Jackson2JsonRedisSerializer(clazz)
         val jacksonObjectMapper = jacksonObjectMapper()
         val rptSerializationModule = SimpleModule()
         jacksonObjectMapper.registerModule(rptSerializationModule)
-        jackson2JsonRedisSerializer.setObjectMapper(jacksonObjectMapper)
-        return jackson2JsonRedisSerializer
+        return Jackson2JsonRedisSerializer(jacksonObjectMapper, clazz)
     }
 }
