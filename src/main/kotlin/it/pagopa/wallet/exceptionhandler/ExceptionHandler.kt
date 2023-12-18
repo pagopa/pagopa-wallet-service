@@ -1,8 +1,9 @@
 package it.pagopa.wallet.exceptionhandler
 
-import it.pagopa.generated.wallet.model.ProblemJsonDto
+import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
+import it.pagopa.wallet.exception.WalletServiceStatusConflictException
 import jakarta.xml.bind.ValidationException
 import java.util.*
 import org.slf4j.Logger
@@ -73,6 +74,29 @@ class ExceptionHandler {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .title("Error processing the request")
                     .detail("An internal error occurred processing the request")
+            )
+    }
+
+    @ExceptionHandler(WalletServiceStatusConflictException::class)
+    fun walletServiceStatusConflictExceptionHandler(
+        exception: WalletServiceStatusConflictException
+    ): ResponseEntity<WalletServicesPartialUpdateDto> {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                WalletServicesPartialUpdateDto().apply {
+                    updatedServices =
+                        exception.updatedServices.map {
+                            WalletServiceDto()
+                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .status(WalletServiceStatusDto.valueOf(it.value.name))
+                        }
+                    failedServices =
+                        exception.failedServices.map {
+                            ServiceDto()
+                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .status(ServiceStatusDto.valueOf(it.value.name))
+                        }
+                }
             )
     }
 }
