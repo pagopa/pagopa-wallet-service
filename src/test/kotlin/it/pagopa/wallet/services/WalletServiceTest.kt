@@ -42,7 +42,6 @@ import it.pagopa.wallet.documents.service.Service as ServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
-import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.Service
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
@@ -488,8 +487,8 @@ class WalletServiceTest {
                         .orderId(orderId)
                         .sessionData(
                             SessionWalletCreateResponseAPMDataDto()
-                                .paymentMethodType("apm")
                                 .redirectUrl(apmRedirectUrl)
+                                .paymentMethodType("apm")
                         )
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
@@ -580,9 +579,7 @@ class WalletServiceTest {
                             APM_SESSION_CREATE_REQUEST
                         )
                     )
-                    .assertNext { response ->
-                        assertEquals(Pair(sessionResponseDto, expectedLoggedAction), response)
-                    }
+                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                     .verifyComplete()
             }
         }
