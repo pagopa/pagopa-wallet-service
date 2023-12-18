@@ -151,13 +151,13 @@ stages:
           - template: azure-templates/api-tests.yml
             parameters:
               ENV_FILE: "api-tests/dev.cards.envs.json"
-              TEST_FILE_PREFIX: "dev-CARDS"
+              TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
               ENV_FILE: "api-tests/dev.paypal.envs.json"
-              TEST_FILE_PREFIX: "dev-CARDS"
+              TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
   # --- END Deploy DEV --- #
