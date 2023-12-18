@@ -16,7 +16,6 @@ import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.InvalidRequestException
 import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -658,7 +657,7 @@ class WalletControllerTest {
                     "operationResult": "EXECUTED",
                     "operationId": "operationId",
                     "details": {
-                        "type": "FAKE"
+                        "type": "PAYPAL"
                     }
                 }
             """
@@ -685,7 +684,19 @@ class WalletControllerTest {
                         any()
                     )
                 }
-                .willReturn(Mono.error(InvalidRequestException("wrong request")))
+                .willReturn(
+                    mono {
+                        LoggedAction(
+                            WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR),
+                            WalletNotificationEvent(
+                                walletId.toString(),
+                                operationId,
+                                OperationResultEnum.EXECUTED.value,
+                                Instant.now().toString()
+                            )
+                        )
+                    }
+                )
             given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
                 .willReturn(Flux.empty())
             /* test */
