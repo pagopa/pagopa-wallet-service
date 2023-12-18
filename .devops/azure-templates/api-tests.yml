@@ -19,5 +19,5 @@ steps:
     condition: succeededOrFailed()
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml'
+      testResultsFiles: '**/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml'
       searchFolder: '$(System.DefaultWorkingDirectory)'
