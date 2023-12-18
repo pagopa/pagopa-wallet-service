@@ -1,0 +1,130 @@
+{
+	"id": "2344b916-4f0f-45f8-8c96-1ee7ca59e1e3",
+	"name": "Wallet local env PAYPAL",
+	"values": [
+		{
+			"key": "HOSTNAME",
+			"value": "http://localhost:8200",
+			"enabled": true
+		},
+		{
+			"key": "x-user-id",
+			"value": "8b264e06-d257-4735-b35a-7d28b99f5a0c",
+			"enabled": true
+		},
+		{
+			"key": "invalid-x-user-id",
+			"value": "invalidUserId",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_PAYMENT_METHOD_ID",
+			"value": "68473f64-5717-4562-b3fc-2c963f66afa6",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "PAYMENT_METHOD_ID",
+			"value": "1fb6287c-6e9f-11ee-b962-0242ac120002",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "WALLET_ID",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_WALLET_ID",
+			"value": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "USE_DIAGNOSTIC_TRACING",
+			"value": "true",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "ORDER_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_IFRAME_FIELD_URL",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CORRELATION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_SESSION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_IFRAME_FIELD_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "SESSION_ID",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_NUMBER",
+			"value": "4242424242424242",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_CVV",
+			"value": "123",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_CARD_HOLDER_NAME",
+			"value": "Mario Rossi",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "NPG_EXP_DATE",
+			"value": "12/30",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_ORDER_ID",
+			"value": "test",
+			"enabled": true
+		},
+		{
+			"key": "VALID_SECURITY_TOKEN",
+			"value": "securityToken",
+			"enabled": true
+		},
+		{
+			"key": "INVALID_SECURITY_TOKEN",
+			"value": "invalidSecurityToken",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2023-11-08T22:30:57.522Z",
+	"_postman_exported_using": "Postman/10.19.17"
+}

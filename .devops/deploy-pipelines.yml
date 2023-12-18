@@ -150,9 +150,15 @@ stages:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
-              ENV_FILE: "api-tests/dev.envs.json"
-              TEST_FILE_PREFIX: "dev"
-              API_TEST_FILE: "api-tests/wallet_payment_api.tests.json"
+              ENV_FILE: "api-tests/dev.cards.envs.json"
+              TEST_FILE_PREFIX: "dev-CARDS"
+              API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              ENV_FILE: "api-tests/dev.paypal.envs.json"
+              TEST_FILE_PREFIX: "dev-CARDS"
+              API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
   # --- END Deploy DEV --- #
 
@@ -162,12 +168,12 @@ stages:
     dependsOn: [ ]
     condition:
       and(
-          succeeded(),
-          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-          or(
-            eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags')
-          )
+      succeeded(),
+      eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+      or(
+      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags')
+      )
       )
     jobs:
       - job: "build"

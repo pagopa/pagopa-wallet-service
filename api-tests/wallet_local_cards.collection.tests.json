@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "f3258813-0480-4387-8c30-34a98d4edea2",
-		"name": "Wallet",
+		"_postman_id": "c70a2a7c-3637-4661-8b78-a33905375714",
+		"name": "Wallet CARDS onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "23963988"
 	},
@@ -13,10 +13,11 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] New wallet created successfully with POST /wallets\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet created successfully with POST /wallets\", function () {",
 							"    pm.response.to.have.status(201);",
 							"    const redirectUrl = pm.response.json().redirectUrl;",
 							"    pm.expect(redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(redirectUrl).to.be.include(\"creditcard#\");",
 							"    const fragment = redirectUrl.split(\"#\")[1];",
 							"    const fragmentSplits = fragment.split(\"&\");",
 							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
@@ -25,7 +26,7 @@
 							"    pm.expect(walletId).to.be.not.null;",
 							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
 							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
-							"     pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+							"    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
 							"    pm.environment.set(\"WALLET_ID\", walletId);",
 							"});"
 						],
@@ -70,7 +71,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] New wallet creation request with error invalid payment method id\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error invalid payment method id\", function () {",
 							"    pm.response.to.have.status(502);",
 							"});"
 						],
@@ -115,7 +116,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] New wallet creation request with error invalid service name PAGOPA\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error invalid service name PAGOPA\", function () {",
 							"    pm.response.to.have.status(400);",
 							"});"
 						],
@@ -160,7 +161,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] New wallet creation request with error x-user-id header not found\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error x-user-id header not found\", function () {",
 							"    pm.response.to.have.status(400);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
@@ -208,7 +209,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] New wallet creation request with error x-user-id invalid format\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error x-user-id invalid format\", function () {",
 							"    pm.response.to.have.status(400);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
@@ -255,7 +256,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by id with GET /wallets/:idWallet\", function () {",
 							"    pm.response.to.have.status(200);",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
@@ -295,7 +296,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Get wallet by id return 404 not found for GET /wallets/:idWallet\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by id return 404 not found for GET /wallets/:idWallet\", function () {",
 							"    pm.response.to.have.status(404);",
 							"});"
 						],
@@ -326,7 +327,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
 							"    pm.response.to.have.status(200);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.wallets).to.be.not.null;",
@@ -375,7 +376,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Get wallet by x-user-id with error invalid format\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id with error invalid format\", function () {",
 							"    pm.response.to.have.status(400);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
@@ -416,12 +417,13 @@
 						"exec": [
 							"const sdk = require('postman-collection');",
 							"",
-							"pm.test(\"[Wallet for onboarding] New wallet session created successfully with POST /wallets/:idWallet/sessions\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet session created successfully with POST /wallets/:idWallet/sessions\", function () {",
 							"    pm.response.to.have.status(200);",
 							"",
 							"    const response = pm.response.json();",
-							"    ",
-							"    const cardFormFieldsDataWithoutSrc = response.cardFormFields.map(form => {",
+							"    const sessionData = response.sessionData;",
+							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"cards\");",
+							"    const cardFormFieldsDataWithoutSrc = sessionData.cardFormFields.map(form => {",
 							"        const { src, ...rest } = form;",
 							"        return rest;",
 							"    });",
@@ -448,32 +450,11 @@
 							"                \"id\": \"CARDHOLDER_NAME\"",
 							"            }",
 							"        ];",
-							"    saveNpgData(response);",
 							"    pm.expect(expectedCardFormFieldsDataWithoutSrc).eql(cardFormFieldsDataWithoutSrc);",
 							"    pm.expect(response.orderId).to.be.a(\"string\");",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
 							" ",
 							"});",
-							"",
-							"function saveNpgData(response){",
-							"    console.log(\"Read NPG response data...\");",
-							"    const orderId = response.orderId;",
-							"    const fieldUrl = response.cardFormFields[0].src;",
-							"    ",
-							"    const parsedUrl = new sdk.Url(fieldUrl).toJSON();",
-							"    const correlationId = parsedUrl.query.find((queryParam) =>queryParam.key==\"correlationid\").value;",
-							"    const sessionId= parsedUrl.query.find((queryParam) =>queryParam.key==\"sessionid\").value.replaceAll(\"%2F\",\"/\").replaceAll(\"%2B\",\"+\").replaceAll(\"%3D\",\"=\");",
-							"    const fieldId= parsedUrl.query.find((queryParam) =>queryParam.key==\"id\").value;",
-							"    console.log(`Order id: [${orderId}]`);",
-							"    console.log(`Field url: [${fieldUrl}]`);",
-							"    console.log(`correlation id: [${correlationId}]`);",
-							"    console.log(`session id: [${sessionId}]`);",
-							"    console.log(`field id: [${fieldId}]`);",
-							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
-							"    pm.environment.set(\"NPG_IFRAME_FIELD_URL\", fieldUrl);",
-							"    pm.environment.set(\"NPG_CORRELATION_ID\", correlationId);",
-							"    pm.environment.set(\"NPG_SESSION_ID\", sessionId);",
-							"    pm.environment.set(\"NPG_IFRAME_FIELD_ID\", fieldId);",
-							"}",
 							"",
 							""
 						],
@@ -495,10 +476,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -525,7 +506,7 @@
 						"exec": [
 							"const sdk = require('postman-collection');",
 							"",
-							"pm.test(\"[Wallet for onboarding] New wallet session faild with 404 POST /wallets/:idWallet/sessions\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet session faild with 404 POST /wallets/:idWallet/sessions\", function () {",
 							"    pm.response.to.have.status(404);",
 							"",
 							"    const response = pm.response.json();",
@@ -553,10 +534,10 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -581,7 +562,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Session wallet validate fails for invalid wallet id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Session wallet validate fails for invalid wallet id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
 							"    pm.response.to.have.status(404);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.title).to.equals(\"Wallet not found\")",
@@ -633,7 +614,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Session wallet validate fails for invalid order id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Session wallet validate fails for invalid order id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
 							"    pm.response.to.have.status(404);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.title).to.equals(\"Session not found\")",
@@ -684,7 +665,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Session wallet validated successfully with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Session wallet validated successfully with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
 							"    pm.response.to.have.status(200);",
 							"    const response = pm.response.json();",
 							"    pm.expect(response.orderId).to.be.a(\"string\");",
@@ -737,7 +718,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
@@ -791,7 +772,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Nofity wallet with invalid security token\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid security token\", function () {",
 							"    pm.response.to.have.status(401);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
@@ -847,7 +828,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Nofity wallet with missing security token\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with missing security token\", function () {",
 							"    pm.response.to.have.status(401);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
@@ -898,7 +879,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Nofity wallet with invalid current status\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid current status\", function () {",
 							"    pm.response.to.have.status(409);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
@@ -954,7 +935,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding] Nofity wallet with invalid orderId\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid orderId\", function () {",
 							"    pm.response.to.have.status(404);",
 							"    const detailErrorField = pm.response.json().detail;",
 							"    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
