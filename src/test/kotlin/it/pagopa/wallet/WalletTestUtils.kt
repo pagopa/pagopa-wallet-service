@@ -488,12 +488,19 @@ object WalletTestUtils {
                     .holder(HOLDER_NAME.holderName)
             )
 
-    fun walletAuthDataDto() =
+    fun walletCardAuthDataDto() =
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
-            .bin(BIN.bin)
             .brand(BRAND.value)
+            .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
+
+    fun walletAPMAuthDataDto() =
+        WalletAuthDataDto()
+            .walletId(WALLET_UUID.value)
+            .contractId(CONTRACT_ID.contractId)
+            .brand("PAYPAL")
+            .paymentMethodData(WalletAuthAPMDataDto().paymentMethodType("apm"))
 
     val SERVICE_DOCUMENT: Service =
         Service(

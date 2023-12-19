@@ -2,6 +2,7 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
+import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
@@ -1333,11 +1334,11 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should find wallet auth data by ID`() {
+    fun `should find wallet auth data by ID with cards`() {
         /* preconditions */
 
         val wallet = walletDocument()
-        val walletAuthDataDto = WalletTestUtils.walletAuthDataDto()
+        val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
 
@@ -1346,6 +1347,38 @@ class WalletServiceTest {
         StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
             .expectNext(walletAuthDataDto)
             .verifyComplete()
+    }
+
+    @Test
+    fun `should find wallet auth data by ID with apm`() {
+        /* preconditions */
+
+        val wallet =
+            walletDocument().copy(details = PayPalDetails(MaskedEmail("maskedEmail"), "pspId"))
+        val walletAuthDataDto = WalletTestUtils.walletAPMAuthDataDto()
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .assertNext { assertEquals(walletAuthDataDto, it) }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should throw exception if getAuthData is called with null details`() {
+        /* preconditions */
+
+        val wallet = walletDocument().copy(details = null)
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectError(RuntimeException::class.java)
+            .verify()
     }
 
     @Test

@@ -1077,12 +1077,42 @@ components:
         contractId:
           description: Payment method identifier
           type: string
-        bin:
-          type: string
-          description: Bin of user card
         brand:
           description: The card brand name
           type: string
+        paymentMethodData:
+          oneOf:
+            - $ref: "#/components/schemas/WalletAuthCardData"
+            - $ref: "#/components/schemas/WalletAuthAPMData"
+          discriminator:
+            propertyName: paymentMethodType
+            mapping:
+              cards: "#/components/schemas/WalletAuthCardData"
+              apm: "#/components/schemas/WalletAuthAPMData"
+      required:
+        - contractId
+        - brand
+        - paymentMethodData
+    WalletAuthCardData:
+      x-discriminator-value: cards
+      type: object
+      properties:
+        paymentMethodType:
+          type: string
+        bin:
+          type: string
+          description: Bin of user card
+      required:
+        - paymentMethodType
+        - bin
+    WalletAuthAPMData:
+      x-discriminator-value: apm
+      type: object
+      properties:
+        paymentMethodType:
+          type: string
+      required:
+        - paymentMethodType
   securitySchemes:
     bearerAuth:
       type: http

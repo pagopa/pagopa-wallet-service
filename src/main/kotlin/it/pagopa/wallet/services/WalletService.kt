@@ -9,6 +9,7 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
@@ -604,22 +605,30 @@ class WalletService(
 
     private fun toWalletInfoAuthDataDto(
         wallet: it.pagopa.wallet.documents.wallets.Wallet
-    ): WalletAuthDataDto =
-        WalletAuthDataDto()
+    ): WalletAuthDataDto {
+        val (brand, paymentMethodData) =
+            when (wallet.details) {
+                is CardDetails ->
+                    wallet.details.brand to
+                        WalletAuthCardDataDto().paymentMethodType("cards").bin(wallet.details.bin)
+                is PayPalDetailsDocument ->
+                    "PAYPAL" to WalletAuthAPMDataDto().paymentMethodType("apm")
+                null ->
+                    throw RuntimeException(
+                        "Called getAuthData on null wallet details for wallet id: ${wallet.id}!"
+                    )
+                else ->
+                    throw RuntimeException(
+                        "Unhandled wallet details variant in getAuthData for wallet id ${wallet.id}"
+                    )
+            }
+
+        return WalletAuthDataDto()
             .walletId(UUID.fromString(wallet.id))
             .contractId(wallet.contractId)
-            .bin(
-                when (wallet.details) {
-                    is CardDetails -> wallet.details.bin
-                    else -> null
-                }
-            )
-            .brand(
-                when (wallet.details) {
-                    is CardDetails -> wallet.details.brand
-                    else -> null
-                }
-            )
+            .brand(brand)
+            .paymentMethodData(paymentMethodData)
+    }
 
     fun updateWalletServices(
         walletId: UUID,

@@ -309,10 +309,28 @@ class WalletControllerTest {
     }
 
     @Test
-    fun testGetWalletAuthDataSuccess() = runTest {
+    fun testGetWalletCardAuthDataSuccess() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
-        val walletAuthData = WalletTestUtils.walletAuthDataDto()
+        val walletAuthData = WalletTestUtils.walletCardAuthDataDto()
+        val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
+        given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(jsonToTest)
+    }
+
+    @Test
+    fun testGetWalletAPMAuthDataSuccess() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        val walletAuthData = WalletTestUtils.walletAPMAuthDataDto()
         val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
         given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
         /* test */
