@@ -1642,6 +1642,58 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `should throw error when trying to patch service status for unknown service`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val newServiceStatus = ServiceStatus.ENABLED
+
+                val unknownService =
+                    Service(
+                        ServiceId(UUID.randomUUID()),
+                        ServiceName("UNKNOWN_SERVICE"),
+                        ServiceStatus.INCOMING,
+                        Instant.now()
+                    )
+
+                val walletDocument = walletDocument()
+
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocument))
+
+                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                    .willReturn(
+                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                    )
+
+                given { serviceRepository.findByName(unknownService.name.name) }
+                    .willReturn(Mono.empty())
+
+                /* test */
+
+                StepVerifier.create(
+                        walletService.updateWalletServices(
+                            WALLET_UUID.value,
+                            listOf(
+                                Pair(SERVICE_NAME, newServiceStatus),
+                                Pair(unknownService.name, newServiceStatus)
+                            )
+                        )
+                    )
+                    .expectError(ServiceNameNotFoundException::class.java)
+                    .verify()
+
+                Mockito.verify(walletRepository, times(0)).save(any())
+            }
+        }
+    }
+
+    @Test
     fun `should throws wallet not found exception`() {
         /* preconditions */
 

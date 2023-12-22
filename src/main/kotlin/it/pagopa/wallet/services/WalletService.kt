@@ -646,6 +646,7 @@ class WalletService(
                         serviceRepository
                             .findByName(serviceName.name)
                             .map { Triple(it, serviceName, requestedStatus) }
+                            .switchIfEmpty(Mono.error(ServiceNameNotFoundException(serviceName)))
                     }
                     .reduce(
                         Triple(

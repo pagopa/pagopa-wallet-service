@@ -17,6 +17,7 @@ import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.SecurityTokenMatchException
+import it.pagopa.wallet.exception.ServiceNameNotFoundException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
@@ -458,6 +459,41 @@ class WalletControllerTest {
                 .expectStatus()
                 .isEqualTo(HttpStatus.CONFLICT)
                 .expectBody(WalletServicesPartialUpdateDto::class.java)
+                .isEqualTo(expectedResponse)
+        }
+    }
+
+    @Test
+    fun `wallet services updated with unknown service returns 404`() {
+        val mockedInstant = Instant.now()
+
+        Mockito.mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+            /* preconditions */
+            val walletId = WalletId(UUID.randomUUID())
+
+            given { walletService.updateWalletServices(any(), any()) }
+                .willReturn(Mono.error(ServiceNameNotFoundException(ServiceName("UNKNOWN"))))
+
+            /* test */
+            val expectedResponse =
+                ProblemJsonDto()
+                    .status(404)
+                    .title("Service not found")
+                    .detail("Service with name 'UNKNOWN' not found")
+
+            val walletUpdateRequest =
+                WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
+
+            webClient
+                .put()
+                .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+                .bodyValue(walletUpdateRequest)
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.NOT_FOUND)
+                .expectBody(ProblemJsonDto::class.java)
                 .isEqualTo(expectedResponse)
         }
     }
