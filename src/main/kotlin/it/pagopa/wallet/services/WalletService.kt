@@ -643,9 +643,9 @@ class WalletService(
                 servicesToUpdate
                     .toFlux()
                     .flatMap { (serviceName, requestedStatus) ->
-                        serviceRepository.findById(serviceName.name).map {
-                            Triple(it, serviceName, requestedStatus)
-                        }
+                        serviceRepository
+                            .findByName(serviceName.name)
+                            .map { Triple(it, serviceName, requestedStatus) }
                     }
                     .reduce(
                         Triple(

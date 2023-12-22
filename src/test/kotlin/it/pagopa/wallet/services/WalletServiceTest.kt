@@ -1445,7 +1445,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { serviceRepository.findById(SERVICE_NAME.name) }
+                given { serviceRepository.findByName(SERVICE_NAME.name) }
                     .willReturn(
                         Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
                     )
@@ -1513,7 +1513,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findById(SERVICE_NAME.name) }
+                given { serviceRepository.findByName(SERVICE_NAME.name) }
                     .willReturn(
                         Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
                     )
@@ -1602,12 +1602,12 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findById(SERVICE_NAME.name) }
+                given { serviceRepository.findByName(SERVICE_NAME.name) }
                     .willReturn(
                         Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
                     )
 
-                given { serviceRepository.findById(disabledService.name.name) }
+                given { serviceRepository.findByName(disabledService.name.name) }
                     .willReturn(Mono.just(ServiceDocument.fromDomain(disabledService)))
 
                 /* test */
