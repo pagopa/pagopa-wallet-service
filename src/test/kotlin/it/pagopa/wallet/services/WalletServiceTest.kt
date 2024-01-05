@@ -1547,6 +1547,70 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `should keep old applications when patching wallet`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val walletDocument = walletDocument()
+
+                val expectedLoggedAction =
+                    LoggedAction(
+                        WalletServiceUpdateData(
+                            updatedWallet =
+                                walletDomain()
+                                    .copy(
+                                        applications =
+                                            walletDocument.applications.map { it.toDomain() },
+                                        updateDate = mockedInstant
+                                    )
+                                    .toDocument(),
+                            successfullyUpdatedServices = mapOf(),
+                            servicesWithUpdateFailed = mapOf()
+                        ),
+                        WalletPatchEvent(WALLET_UUID.value.toString())
+                    )
+
+                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
+                given { walletRepository.findById(any<String>()) }
+                    .willReturn(Mono.just(walletDocument))
+
+                given { walletRepository.save(walletArgumentCaptor.capture()) }
+                    .willReturn(Mono.just(walletDocument))
+
+                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                    .willReturn(
+                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                    )
+
+                /* test */
+                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
+                assertEquals(
+                    walletDocument.applications[0].status,
+                    ServiceStatus.DISABLED.toString()
+                )
+
+                StepVerifier.create(walletService.updateWalletServices(WALLET_UUID.value, listOf()))
+                    .assertNext { assertEquals(expectedLoggedAction, it) }
+                    .verifyComplete()
+
+                val walletDocumentToSave = walletArgumentCaptor.firstValue
+                assertEquals(walletDocumentToSave.applications.size, 1)
+                assertEquals(walletDocumentToSave.applications[0].name, SERVICE_NAME.name)
+                assertEquals(
+                    walletDocumentToSave.applications[0].status,
+                    ServiceStatus.DISABLED.toString()
+                )
+            }
+        }
+    }
+
+    @Test
     fun `should patch wallet document editing service status and return services that could not be changed`() {
         /* preconditions */
 

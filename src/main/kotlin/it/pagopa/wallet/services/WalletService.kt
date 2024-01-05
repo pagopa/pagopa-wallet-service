@@ -638,7 +638,8 @@ class WalletService(
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .flatMap { wallet ->
-                val walletApplications = wallet.applications.associateBy { it.name }.toMap()
+                val walletApplications =
+                    wallet.applications.associateBy { ServiceName(it.name) }.toMap()
 
                 servicesToUpdate
                     .toFlux()
@@ -652,7 +653,7 @@ class WalletService(
                         Triple(
                             mutableMapOf<ServiceName, ServiceStatus>(),
                             mutableMapOf<ServiceName, ServiceStatus>(),
-                            mutableMapOf<ServiceName, Application>()
+                            walletApplications.toMutableMap()
                         )
                     ) {
                         (
@@ -661,7 +662,7 @@ class WalletService(
                             updatedApplications),
                         (service, serviceName, requestedStatus) ->
                         val serviceGlobalStatus = ServiceStatus.valueOf(service.status)
-                        val walletApplication = walletApplications[serviceName.name]
+                        val walletApplication = walletApplications[serviceName]
 
                         if (
                             ServiceStatus.canChangeToStatus(
