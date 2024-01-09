@@ -276,7 +276,10 @@ class WalletControllerTest {
     fun testGetWalletByIdUser() = runTest {
         /* preconditions */
         val userId = UUID.randomUUID()
-        val walletsDto = WalletsDto().addWalletsItem(WalletTestUtils.walletInfoDto())
+        val walletsDto =
+            WalletsDto()
+                .addWalletsItem(WalletTestUtils.walletInfoDto())
+                .addWalletsItem(WalletTestUtils.walletInfoDtoAPM())
         val stringTest = objectMapper.writeValueAsString(walletsDto)
         given { walletService.findWalletByUserId(userId) }.willReturn(mono { walletsDto })
         /* test */
@@ -298,6 +301,25 @@ class WalletControllerTest {
         val walletInfo = WalletTestUtils.walletInfoDto()
         val jsonToTest = objectMapper.writeValueAsString(walletInfo)
         given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
+        /* test */
+        webClient
+            .get()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(jsonToTest)
+    }
+
+    @Test
+    fun `get paypal wallet by id`() {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        val walletInfo = WalletTestUtils.walletInfoDtoAPM()
+        val jsonToTest = objectMapper.writeValueAsString(walletInfo)
+        given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
+
         /* test */
         webClient
             .get()

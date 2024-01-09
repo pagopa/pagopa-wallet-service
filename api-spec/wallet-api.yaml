@@ -711,19 +711,16 @@ components:
         type:
           type: string
           description: Wallet details discriminator field.
-        abi:
-          description: bank identifier
+        pspId:
           type: string
-          minLength: 1
-          maxLength: 5
-          example: '12345'
+          description: PSP identifier for the PayPal wallet
         maskedEmail:
           description: email masked pan
           type: string
           example: test***@***test.it
       required:
         - type
-        - abi
+        - pspId
         - maskedEmail
     WalletServiceUpdateRequest:
       type: object

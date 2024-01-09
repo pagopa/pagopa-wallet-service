@@ -599,6 +599,10 @@ class WalletService(
                     .holder(details.holder)
                     .expiryDate(details.expiryDate)
                     .maskedPan(details.maskedPan)
+            is PayPalDetailsDocument ->
+                WalletPaypalDetailsDto()
+                    .maskedEmail(details.maskedEmail?.value)
+                    .pspId(details.pspId)
             else -> null
         }
     }
