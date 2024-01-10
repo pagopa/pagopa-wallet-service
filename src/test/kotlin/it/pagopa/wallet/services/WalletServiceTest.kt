@@ -44,7 +44,6 @@ import it.pagopa.wallet.documents.service.Service as ServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
-import it.pagopa.wallet.domain.details.MaskedEmail
 import it.pagopa.wallet.domain.services.Service
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
@@ -1442,8 +1441,7 @@ class WalletServiceTest {
     fun `should find wallet auth data by ID with apm`() {
         /* preconditions */
 
-        val wallet =
-            walletDocument().copy(details = PayPalDetails(MaskedEmail("maskedEmail"), "pspId"))
+        val wallet = walletDocument().copy(details = PayPalDetails(MASKED_EMAIL.value, "pspId"))
         val walletAuthDataDto = WalletTestUtils.walletAPMAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
@@ -2145,7 +2143,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val walletDocument =
             walletDocumentVerifiedWithAPM(
-                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+                PayPalDetails(maskedEmail = MASKED_EMAIL.value, pspId = "pspId")
             )
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
@@ -2286,7 +2284,7 @@ class WalletServiceTest {
         val operationId = "validationOperationId"
         val walletDocument =
             walletDocumentVerifiedWithAPM(
-                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+                PayPalDetails(maskedEmail = MASKED_EMAIL.value, pspId = "pspId")
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -2363,7 +2361,7 @@ class WalletServiceTest {
         val operationId = "validationOperationId"
         val walletDocument =
             walletDocumentVerifiedWithAPM(
-                PayPalDetails(maskedEmail = MaskedEmail("te**@te**.it"), pspId = "pspId")
+                PayPalDetails(maskedEmail = MASKED_EMAIL.value, pspId = "pspId")
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -2407,14 +2405,7 @@ class WalletServiceTest {
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
         val walletDocument =
             walletDocumentVerifiedWithAPM(
-                PayPalDetails(
-                    maskedEmail =
-                        MaskedEmail(
-                            (notifyRequestDto.details as WalletNotificationRequestPaypalDetailsDto)
-                                .maskedEmail
-                        ),
-                    pspId = "pspId"
-                )
+                PayPalDetails(maskedEmail = MASKED_EMAIL.value, pspId = "pspId")
             )
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())

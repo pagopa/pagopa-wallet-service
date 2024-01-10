@@ -391,7 +391,7 @@ object WalletTestUtils {
                         TIMESTAMP.toString()
                     )
                 ),
-                PayPalDetailsDocument(maskedEmail = MASKED_EMAIL, pspId = PSP_ID),
+                PayPalDetailsDocument(maskedEmail = MASKED_EMAIL.value, pspId = PSP_ID),
                 0,
                 creationDate,
                 creationDate
@@ -632,7 +632,7 @@ object WalletTestUtils {
             .details(
                 WalletNotificationRequestPaypalDetailsDto()
                     .type("PAYPAL")
-                    .maskedEmail("te**@te**.it")
+                    .maskedEmail(MASKED_EMAIL.value)
             )
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =

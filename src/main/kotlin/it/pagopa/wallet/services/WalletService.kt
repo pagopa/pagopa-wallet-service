@@ -13,6 +13,7 @@ import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
+import it.pagopa.wallet.domain.details.PayPalDetails
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
@@ -505,12 +506,14 @@ class WalletService(
                 } else {
                     Pair(WalletStatusDto.ERROR, walletDetails)
                 }
-            is it.pagopa.wallet.domain.details.PayPalDetails ->
+            is PayPalDetails ->
                 if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
                         Pair(
                             WalletStatusDto.VALIDATED,
-                            walletDetails.copy(maskedEmail = operationDetails.maskedEmail)
+                            walletDetails.copy(
+                                maskedEmail = MaskedEmail(operationDetails.maskedEmail)
+                            )
                         )
                     } else {
                         logger.error(
@@ -600,9 +603,7 @@ class WalletService(
                     .expiryDate(details.expiryDate)
                     .maskedPan(details.maskedPan)
             is PayPalDetailsDocument ->
-                WalletPaypalDetailsDto()
-                    .maskedEmail(details.maskedEmail?.value)
-                    .pspId(details.pspId)
+                WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
             else -> null
         }
     }
