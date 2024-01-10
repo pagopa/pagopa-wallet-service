@@ -5,7 +5,7 @@ import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
-import it.pagopa.wallet.domain.details.WalletDetails
+import it.pagopa.wallet.domain.wallets.details.WalletDetails
 import java.time.Instant
 
 /**

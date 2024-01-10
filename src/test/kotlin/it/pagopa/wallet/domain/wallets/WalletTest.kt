@@ -3,8 +3,8 @@ package it.pagopa.wallet.domain.wallets
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.domain.details.CardDetails
 import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.details.CardDetails
 import java.time.Instant
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow

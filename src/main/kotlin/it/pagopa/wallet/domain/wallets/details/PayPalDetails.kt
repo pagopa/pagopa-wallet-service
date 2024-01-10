@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.details
+package it.pagopa.wallet.domain.wallets.details
 
 data class PayPalDetails(val maskedEmail: MaskedEmail?, val pspId: String) :
     WalletDetails<PayPalDetails> {

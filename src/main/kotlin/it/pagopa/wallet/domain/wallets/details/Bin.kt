@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.details
+package it.pagopa.wallet.domain.wallets.details
 
 data class Bin(val bin: String) {
     init {

@@ -1,7 +1,6 @@
 package it.pagopa.wallet.domain.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
-import it.pagopa.wallet.domain.details.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

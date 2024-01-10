@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.details
+package it.pagopa.wallet.domain.wallets.details
 
 /** Extensible interface to handle multiple wallet details typologies, such as CARDS */
 sealed interface WalletDetails<T> {

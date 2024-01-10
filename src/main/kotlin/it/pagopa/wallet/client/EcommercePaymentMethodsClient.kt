@@ -3,7 +3,7 @@ package it.pagopa.wallet.client
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
-import it.pagopa.wallet.domain.details.WalletDetailsType
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

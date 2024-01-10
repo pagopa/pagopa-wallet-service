@@ -10,11 +10,11 @@ import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.details.*
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.details.*
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -400,7 +400,7 @@ object WalletTestUtils {
     }
 
     val WALLET_DOMAIN =
-        it.pagopa.wallet.domain.wallets.Wallet(
+        Wallet(
             WALLET_UUID,
             USER_ID,
             WalletStatusDto.CREATED,
@@ -415,7 +415,7 @@ object WalletTestUtils {
             creationDate
         )
 
-    private fun newWalletDocumentToBeSaved(): it.pagopa.wallet.documents.wallets.Wallet {
+    private fun newWalletDocumentToBeSaved(): Wallet {
 
         return Wallet(
             WALLET_UUID.value.toString(),
@@ -433,7 +433,7 @@ object WalletTestUtils {
         )
     }
 
-    fun newWalletDocumentSaved(): it.pagopa.wallet.documents.wallets.Wallet {
+    fun newWalletDocumentSaved(): Wallet {
         val wallet = newWalletDocumentToBeSaved()
         return wallet
     }

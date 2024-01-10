@@ -11,12 +11,12 @@ import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.details.*
-import it.pagopa.wallet.domain.details.CardDetails as DomainCardDetails
-import it.pagopa.wallet.domain.details.PayPalDetails
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
+import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
@@ -490,7 +490,7 @@ class WalletService(
     private fun handleWalletNotification(
         wallet: Wallet,
         walletNotificationRequestDto: WalletNotificationRequestDto
-    ): Pair<WalletStatusDto, it.pagopa.wallet.domain.details.WalletDetails<*>> {
+    ): Pair<WalletStatusDto, it.pagopa.wallet.domain.wallets.details.WalletDetails<*>> {
         val operationResult = walletNotificationRequestDto.operationResult
         val operationDetails = walletNotificationRequestDto.details
         logger.info(
@@ -500,7 +500,7 @@ class WalletService(
             operationDetails
         )
         return when (val walletDetails = wallet.details) {
-            is it.pagopa.wallet.domain.details.CardDetails ->
+            is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     Pair(WalletStatusDto.VALIDATED, walletDetails)
                 } else {

@@ -1,4 +1,4 @@
-package it.pagopa.wallet.domain.details
+package it.pagopa.wallet.domain.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.documents.wallets.details.CardDetails

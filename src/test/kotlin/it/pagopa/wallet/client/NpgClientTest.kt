@@ -3,7 +3,7 @@ package it.pagopa.wallet.client
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
-import it.pagopa.wallet.domain.details.WalletDetailsType
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.services.WalletService
 import java.nio.charset.StandardCharsets

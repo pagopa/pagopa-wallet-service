@@ -2,7 +2,7 @@ package it.pagopa.wallet.client
 
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
-import it.pagopa.wallet.domain.details.WalletDetailsType
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import java.util.*
 import org.slf4j.LoggerFactory
