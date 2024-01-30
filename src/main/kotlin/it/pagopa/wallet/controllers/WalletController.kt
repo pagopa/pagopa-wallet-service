@@ -65,6 +65,14 @@ class WalletController(
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
 
+    override fun createWalletForPayments(
+        xUserId: UUID,
+        walletPaymentCreateRequestDto: Mono<WalletPaymentCreateRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletPaymentCreateResponseDto>> {
+        TODO("Not yet implemented")
+    }
+
     override fun createSessionWallet(
         walletId: UUID,
         sessionInputDataDto: Mono<SessionInputDataDto>,
