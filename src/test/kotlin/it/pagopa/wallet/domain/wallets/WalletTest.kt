@@ -45,7 +45,8 @@ class WalletTest {
                         WalletTestUtils.SERVICE_ID,
                         WalletTestUtils.SERVICE_NAME,
                         ServiceStatus.DISABLED,
-                        Instant.now()
+                        Instant.now(),
+                        WalletTestUtils.APPLICATION_METADATA
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,
@@ -73,7 +74,8 @@ class WalletTest {
                         WalletTestUtils.SERVICE_ID,
                         WalletTestUtils.SERVICE_NAME,
                         ServiceStatus.DISABLED,
-                        Instant.now()
+                        Instant.now(),
+                        WalletTestUtils.APPLICATION_METADATA
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,
@@ -107,7 +109,8 @@ class WalletTest {
                         WalletTestUtils.SERVICE_ID,
                         WalletTestUtils.SERVICE_NAME,
                         ServiceStatus.DISABLED,
-                        Instant.now()
+                        Instant.now(),
+                        WalletTestUtils.APPLICATION_METADATA
                     )
                 ),
                 WalletTestUtils.CONTRACT_ID,

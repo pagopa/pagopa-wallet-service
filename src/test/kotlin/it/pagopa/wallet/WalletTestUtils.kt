@@ -10,6 +10,7 @@ import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
+import it.pagopa.wallet.domain.services.ApplicationMetadata
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
@@ -19,6 +20,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.collections.HashMap
 import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
@@ -35,6 +37,9 @@ object WalletTestUtils {
     val PAYMENT_INSTRUMENT_ID = PaymentInstrumentId(UUID.randomUUID())
 
     val SERVICE_NAME = ServiceName("PAGOPA")
+
+    private val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
+    val APPLICATION_METADATA = ApplicationMetadata(APPLICATION_METADATA_HASHMAP)
 
     val CONTRACT_ID = ContractId("TestContractId")
 
@@ -291,7 +296,8 @@ object WalletTestUtils {
                         SERVICE_ID.id.toString(),
                         SERVICE_NAME.name,
                         ServiceStatus.DISABLED.toString(),
-                        TIMESTAMP.toString()
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA.data
                     )
                 ),
                 null,
@@ -322,7 +328,8 @@ object WalletTestUtils {
                         SERVICE_ID.id.toString(),
                         SERVICE_NAME.name,
                         ServiceStatus.DISABLED.toString(),
-                        TIMESTAMP.toString()
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA_HASHMAP
                     )
                 ),
                 CardDetails(
@@ -355,7 +362,8 @@ object WalletTestUtils {
                         SERVICE_ID.id.toString(),
                         SERVICE_NAME.name,
                         ServiceStatus.DISABLED.toString(),
-                        TIMESTAMP.toString()
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA_HASHMAP
                     )
                 ),
                 CardDetails(
@@ -388,7 +396,8 @@ object WalletTestUtils {
                         SERVICE_ID.id.toString(),
                         SERVICE_NAME.name,
                         ServiceStatus.DISABLED.toString(),
-                        TIMESTAMP.toString()
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA_HASHMAP
                     )
                 ),
                 PayPalDetailsDocument(maskedEmail = MASKED_EMAIL.value, pspId = PSP_ID),
@@ -406,7 +415,15 @@ object WalletTestUtils {
             WalletStatusDto.CREATED,
             PAYMENT_METHOD_ID_CARDS,
             PAYMENT_INSTRUMENT_ID,
-            listOf(Application(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, TIMESTAMP)),
+            listOf(
+                Application(
+                    SERVICE_ID,
+                    SERVICE_NAME,
+                    ServiceStatus.DISABLED,
+                    TIMESTAMP,
+                    APPLICATION_METADATA
+                )
+            ),
             CONTRACT_ID,
             OperationResultEnum.EXECUTED,
             CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME),

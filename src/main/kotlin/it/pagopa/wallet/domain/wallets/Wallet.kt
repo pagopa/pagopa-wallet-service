@@ -67,7 +67,8 @@ data class Wallet(
                         app.id.id.toString(),
                         app.name.name,
                         app.status.name,
-                        app.lastUpdate.toString()
+                        app.lastUpdate.toString(),
+                        app.metadata.data
                     )
                 },
                 this.details?.toDocument(),

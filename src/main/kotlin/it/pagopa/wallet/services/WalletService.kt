@@ -684,7 +684,8 @@ class WalletService(
                                         id = service.id,
                                         name = serviceName.name,
                                         lastUpdateDate = Instant.now().toString(),
-                                        status = requestedStatus.name
+                                        status = requestedStatus.name,
+                                        metadata = hashMapOf()
                                     )
                             servicesUpdatedSuccessfully[serviceName] = requestedStatus
                         } else {
