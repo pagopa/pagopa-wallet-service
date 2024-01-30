@@ -11,6 +11,7 @@ import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
+import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
@@ -112,6 +113,65 @@ class WalletService(
                                     WalletDetailsType.PAYPAL -> onboardingConfig.apmReturnUrl
                                 }
                             }
+                        )
+                    }
+            }
+    }
+    fun createWalletForPayment(
+        userId: UUID,
+        paymentMethodId: UUID,
+        transactionId: UUID
+    ): Mono<Pair<LoggedAction<Wallet>, WalletPaymentCreateResponseDto>> {
+        logger.info(
+            "Create wallet for payment with contestual onboarding with payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
+        )
+        return ecommercePaymentMethodsClient
+            .getPaymentMethodById(paymentMethodId.toString())
+            .map {
+                val creationTime = Instant.now()
+                return@map Pair(
+                    Wallet(
+                        id = WalletId(UUID.randomUUID()),
+                        userId = UserId(userId),
+                        status = WalletStatusDto.CREATED,
+                        paymentMethodId = PaymentMethodId(paymentMethodId),
+                        version = 0,
+                        creationDate = creationTime,
+                        updateDate = creationTime,
+                        applications =
+                            listOf(
+                                Application(
+                                    ServiceId(UUID.randomUUID()),
+                                    ServiceName("PAGOPA"),
+                                    ServiceStatus.ENABLED,
+                                    creationTime
+                                    // ADD DETAILS WITH trnasactionId and flag for contestual
+                                    // onboarding
+                                )
+                            )
+                    ),
+                    it
+                )
+            }
+            .flatMap { (wallet, paymentMethodResponse) ->
+                walletRepository
+                    .save(wallet.toDocument())
+                    .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
+                    .map { loggedAction ->
+                        Pair(
+                            loggedAction,
+                            WalletPaymentCreateResponseDto()
+                                .redirectUrl(
+                                    paymentMethodResponse.name.let {
+                                        when (WalletDetailsType.valueOf(it)) {
+                                            WalletDetailsType.CARDS -> "new redirectUrl"
+                                            else -> {
+                                                null
+                                            }
+                                        }
+                                    }
+                                )
+                                .walletId(wallet.id.value)
                         )
                     }
             }
