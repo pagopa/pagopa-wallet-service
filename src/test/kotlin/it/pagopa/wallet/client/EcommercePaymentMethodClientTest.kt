@@ -24,7 +24,7 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getValidCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willReturn(mono { paymentMethod })
 
         // test and assertions
@@ -37,7 +37,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for exception during communication`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -60,7 +60,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with INTERNAL_SERVER_ERROR error for 401 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
                     401,
@@ -83,7 +83,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 500 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -106,7 +106,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 404 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
                     404,
@@ -129,7 +129,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 400 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
                     400,
@@ -154,7 +154,7 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getDisabledCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willReturn(mono { paymentMethod })
 
         // test and assertions
@@ -172,7 +172,7 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getInvalidCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willReturn(mono { paymentMethod })
 
         // test and assertions

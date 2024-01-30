@@ -27,7 +27,7 @@ class EcommercePaymentMethodsClient(
         val maybePaymentMethodResponse: Mono<PaymentMethodResponse> =
             try {
                 logger.info("Starting getPaymentMethod given id $paymentMethodId")
-                ecommercePaymentMethodsClient.getPaymentMethod(paymentMethodId)
+                ecommercePaymentMethodsClient.getPaymentMethod(paymentMethodId, null)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
