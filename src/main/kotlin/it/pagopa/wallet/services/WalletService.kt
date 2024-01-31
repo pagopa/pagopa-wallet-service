@@ -11,6 +11,7 @@ import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
+import it.pagopa.wallet.domain.services.ApplicationMetadata
 import it.pagopa.wallet.domain.services.ServiceId
 import it.pagopa.wallet.domain.services.ServiceName
 import it.pagopa.wallet.domain.services.ServiceStatus
@@ -149,9 +150,13 @@ class WalletService(
                                     ), // We enter a static value since these wallets will be
                                     // created only for pagopa payments
                                     ServiceStatus.ENABLED,
-                                    creationTime
-                                    // ADD DETAILS WITH trnasactionId and flag for contestual
-                                    // onboarding
+                                    creationTime,
+                                    ApplicationMetadata(
+                                        hashMapOf(
+                                            Pair("onboardeWithPayment", "true"),
+                                            Pair("transactionId", transactionId.toString())
+                                        )
+                                    )
                                 )
                             )
                     ),
