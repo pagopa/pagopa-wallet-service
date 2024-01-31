@@ -6,6 +6,7 @@ import it.pagopa.generated.npg.model.Field
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_METADATA
 import it.pagopa.wallet.WalletTestUtils.MASKED_EMAIL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
@@ -1513,7 +1514,8 @@ class WalletServiceTest {
                                                     SERVICE_ID,
                                                     SERVICE_NAME,
                                                     newServiceStatus,
-                                                    mockedInstant
+                                                    mockedInstant,
+                                                    APPLICATION_METADATA
                                                 )
                                             ),
                                         updateDate = mockedInstant
@@ -1582,7 +1584,8 @@ class WalletServiceTest {
                                                     SERVICE_ID,
                                                     SERVICE_NAME,
                                                     newServiceStatus,
-                                                    mockedInstant
+                                                    mockedInstant,
+                                                    APPLICATION_METADATA
                                                 )
                                             ),
                                         updateDate = mockedInstant
@@ -1734,7 +1737,8 @@ class WalletServiceTest {
                                                     SERVICE_ID,
                                                     SERVICE_NAME,
                                                     newServiceStatus,
-                                                    mockedInstant
+                                                    mockedInstant,
+                                                    APPLICATION_METADATA
                                                 )
                                             ),
                                         updateDate = mockedInstant
@@ -2336,16 +2340,15 @@ class WalletServiceTest {
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
-        val expectedLoggedAction =
-            LoggedAction(
-                walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.DECLINED.value,
-                    notifyRequestDto.timestampOperation.toString()
-                )
+        LoggedAction(
+            walletDocumentWithError.toDomain(),
+            WalletNotificationEvent(
+                WALLET_UUID.value.toString(),
+                operationId,
+                OperationResult.DECLINED.value,
+                notifyRequestDto.timestampOperation.toString()
             )
+        )
 
         /* test */
         StepVerifier.create(
