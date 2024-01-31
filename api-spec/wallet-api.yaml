@@ -98,7 +98,7 @@ paths:
     post:
       tags:
         - wallets
-      summary: Create a new wallet for payment with contestual onboarding
+      summary: Create a new wallet for payment with contextual onboarding
       description: Creates a new wallet for payment with contestul onboarding
       operationId: createWalletForPayments
       parameters:
@@ -815,7 +815,7 @@ components:
         - redirectUrl
     WalletPaymentCreateRequest:
       type: object
-      description: Wallet for payment with contestual onboarding creation request
+      description: Wallet for payment with contextual onboarding creation request
       properties:
         useDiagnosticTracing:
           type: boolean
@@ -831,7 +831,7 @@ components:
         - paymentMethodId
     WalletPaymentCreateResponse:
       type: object
-      description: Wallet for payment with contestual onboarding creation response
+      description: Wallet for payment with contextual onboarding creation response
       properties:
         walletId:
           $ref: '#/components/schemas/WalletId'

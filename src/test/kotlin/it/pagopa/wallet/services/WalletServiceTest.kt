@@ -170,7 +170,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should save wallet document for payment with contestual onboarding for CARDS payment method`() {
+    fun `should save wallet document for payment with contextual onboarding for CARDS payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
@@ -232,7 +232,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should save wallet document for payment with contestual onboarding for APM payment method`() {
+    fun `should save wallet document for payment with contextual onboarding for APM payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
