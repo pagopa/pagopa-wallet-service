@@ -11,6 +11,7 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -79,9 +80,25 @@ class WalletController(
                         paymentMethodId = request.paymentMethodId,
                         transactionId = request.transactionId
                     )
-                    .flatMap { (loggedAction, response) ->
-                        loggedAction.saveEvents(loggingEventRepository).map { response }
+                    .flatMap { (loggedAction, returnUri) ->
+                        loggedAction.saveEvents(loggingEventRepository).map {
+                            Triple(it.id.value, request, returnUri)
+                        }
                     }
+            }
+            .map { (walletId, request, returnUri) ->
+                val response = WalletPaymentCreateResponseDto()
+                if (returnUri.getOrNull() != null) {
+                    response.redirectUrl(
+                        UriComponentsBuilder.fromUri(returnUri.get())
+                            .fragment(
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
+                            )
+                            .build()
+                            .toUriString()
+                    )
+                }
+                response.walletId(walletId)
             }
             .map { ResponseEntity.status(HttpStatus.CREATED).body(it) }
     }

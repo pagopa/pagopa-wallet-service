@@ -124,7 +124,7 @@ class WalletService(
         userId: UUID,
         paymentMethodId: UUID,
         transactionId: UUID
-    ): Mono<Pair<LoggedAction<Wallet>, WalletPaymentCreateResponseDto>> {
+    ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for payment with contestual onboarding with payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
         )
@@ -170,18 +170,15 @@ class WalletService(
                     .map { loggedAction ->
                         Pair(
                             loggedAction,
-                            WalletPaymentCreateResponseDto()
-                                .redirectUrl(
-                                    paymentMethodResponse.name.let {
-                                        when (WalletDetailsType.valueOf(it)) {
-                                            WalletDetailsType.CARDS -> walletPaymentReturnUrl
-                                            else -> {
-                                                null
-                                            }
-                                        }
+                            paymentMethodResponse.name.let {
+                                when (WalletDetailsType.valueOf(it)) {
+                                    WalletDetailsType.CARDS ->
+                                        Optional.of(URI.create(walletPaymentReturnUrl))
+                                    else -> {
+                                        Optional.empty()
                                     }
-                                )
-                                .walletId(wallet.id.value)
+                                }
+                            }
                         )
                     }
             }
