@@ -79,7 +79,7 @@ microservice-chart:
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WALLET_ONBOARDING_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/creditcard
     WALLET_ONBOARDING_APM_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/apm
-    WALLET_PAYMENT_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/creditcard #TODO modify with new redirect url
+    WALLET_PAYMENT_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/payment/creditcard
     SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"

@@ -99,6 +99,8 @@ class WalletServiceTest {
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}"
         )
 
+    private val onboardingWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
+
     companion object {
         @JvmStatic
         private fun operationResultAuthError() =
@@ -119,7 +121,8 @@ class WalletServiceTest {
             npgSessionRedisTemplate,
             sessionUrlConfig,
             uniqueIdUtils,
-            onboardingConfig
+            onboardingConfig,
+            onboardingWalletCreditCardReturnUrl
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
