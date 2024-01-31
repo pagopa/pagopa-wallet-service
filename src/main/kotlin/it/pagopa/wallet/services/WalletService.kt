@@ -54,7 +54,7 @@ class WalletService(
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
-    @Value("\${wallet.payment.cardReturnUrl}") private val walletPaymentReturnUrl: String
+    @Autowired @Value("\${wallet.payment.cardReturnUrl}") private val walletPaymentReturnUrl: String
 ) {
 
     companion object {
@@ -146,14 +146,14 @@ class WalletService(
                                 Application(
                                     ServiceId(UUID.randomUUID()),
                                     ServiceName(
-                                        "PAGOPA"
+                                        ServiceNameDto.PAGOPA.value
                                     ), // We enter a static value since these wallets will be
                                     // created only for pagopa payments
                                     ServiceStatus.ENABLED,
                                     creationTime,
                                     ApplicationMetadata(
                                         hashMapOf(
-                                            Pair("onboardeWithPayment", "true"),
+                                            Pair("paymentWithContextualOnboard", "true"),
                                             Pair("transactionId", transactionId.toString())
                                         )
                                     )

@@ -188,11 +188,11 @@ class WalletServiceTest {
                                 listOf(
                                     ApplicationDocument(
                                         WALLET_UUID.value.toString(),
-                                        "PAGOPA",
+                                        ServiceNameDto.PAGOPA.value,
                                         ServiceStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
-                                            Pair("onboardeWithPayment", "true"),
+                                            Pair("paymentWithContextualOnboard", "true"),
                                             Pair("transactionId", transactionId.toString())
                                         )
                                     )
@@ -251,11 +251,11 @@ class WalletServiceTest {
                                 listOf(
                                     ApplicationDocument(
                                         WALLET_UUID.value.toString(),
-                                        "PAGOPA",
+                                        ServiceNameDto.PAGOPA.value,
                                         ServiceStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
-                                            Pair("onboardeWithPayment", "true"),
+                                            Pair("paymentWithContextualOnboard", "true"),
                                             Pair("transactionId", transactionId.toString())
                                         )
                                     )
