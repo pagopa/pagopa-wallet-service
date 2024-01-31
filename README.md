@@ -90,6 +90,7 @@ If you want to customize the application environment, reference this table:
 | WALLET_ONBOARDING_CARD_RETURN_URL    | Onboarding wallet front-end return url for card method             | string            |         |
 | WALLET_ONBOARDING_APM_RETURN_URL     | Onboarding wallet front-end return url for other methods than card | string            |         |
 | WALLET_ONBOARDING_PAYPAL_PSP_API_KEY | Onboarding PSP API key for PayPal                                  | string            |         |
+| WALLET_PAYMENT_CARD_RETURN_URL       | Payment with contestual onboarding credit card                     | string            |         |
 | ECOMMERCE_PAYMENT_METHODS_URI        | eCommerce payment methods uri                                      | string            |         |
 | ECOMMERCE_PAYMENT_METHODS_TIMEOUT    | eCommerce payment methods read and connection timeout              | string            |         |
 | ECOMMERCE_PAYMENT_METHODS_API_KEY    | eCommerce payment methods api key                                  | string            |         |

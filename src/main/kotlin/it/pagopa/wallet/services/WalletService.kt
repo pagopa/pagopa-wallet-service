@@ -34,6 +34,7 @@ import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -51,7 +52,8 @@ class WalletService(
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
-    @Autowired private val onboardingConfig: OnboardingConfig
+    @Autowired private val onboardingConfig: OnboardingConfig,
+    @Value("\${wallet.payment.cardReturnUrl}") private val walletPaymentReturnUrl: String
 ) {
 
     companion object {
@@ -142,7 +144,10 @@ class WalletService(
                             listOf(
                                 Application(
                                     ServiceId(UUID.randomUUID()),
-                                    ServiceName("PAGOPA"),
+                                    ServiceName(
+                                        "PAGOPA"
+                                    ), // We enter a static value since these wallets will be
+                                    // created only for pagopa payments
                                     ServiceStatus.ENABLED,
                                     creationTime
                                     // ADD DETAILS WITH trnasactionId and flag for contestual
@@ -164,7 +169,7 @@ class WalletService(
                                 .redirectUrl(
                                     paymentMethodResponse.name.let {
                                         when (WalletDetailsType.valueOf(it)) {
-                                            WalletDetailsType.CARDS -> "new redirectUrl"
+                                            WalletDetailsType.CARDS -> walletPaymentReturnUrl
                                             else -> {
                                                 null
                                             }
