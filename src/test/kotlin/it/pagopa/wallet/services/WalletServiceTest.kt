@@ -180,7 +180,7 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = mockedUUID
+                val transactionId = "transactionId"
                 val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
@@ -245,7 +245,7 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = mockedUUID
+                val transactionId = "transactionId"
                 val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
@@ -260,7 +260,7 @@ class WalletServiceTest {
                                         creationDate.toString(),
                                         hashMapOf(
                                             Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId.toString()),
+                                            Pair("transactionId", transactionId),
                                             Pair("amount", amount.toString())
                                         )
                                     )

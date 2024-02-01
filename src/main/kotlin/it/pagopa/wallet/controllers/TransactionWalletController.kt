@@ -27,7 +27,7 @@ class TransactionWalletController(
 
     override fun createWalletForTransaction(
         xUserId: UUID,
-        transactionId: UUID,
+        transactionId: String,
         walletTransactionCreateRequestDto: Mono<WalletTransactionCreateRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletTransactionCreateResponseDto>> {
