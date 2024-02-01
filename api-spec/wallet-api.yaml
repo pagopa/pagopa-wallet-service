@@ -596,6 +596,11 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
 components:
   schemas:
+    AmountEuroCents:
+      description: Amount for payments, in euro cents
+      type: integer
+      minimum: 0
+      maximum: 99999999
     WalletId:
       description: Wallet identifier
       type: string
@@ -825,10 +830,13 @@ components:
         transactionId:
           type: string
           format: uuid
+        amount:
+          $ref: '#/components/schemas/AmountEuroCents'
       required:
         - transactionId
         - useDiagnosticTracing
         - paymentMethodId
+        - amount
     WalletPaymentCreateResponse:
       type: object
       description: Wallet for payment with contextual onboarding creation response
