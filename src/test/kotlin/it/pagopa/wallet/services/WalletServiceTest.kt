@@ -181,6 +181,7 @@ class WalletServiceTest {
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val transactionId = mockedUUID
+                val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
                         .copy(
@@ -193,7 +194,8 @@ class WalletServiceTest {
                                         creationDate.toString(),
                                         hashMapOf(
                                             Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId.toString())
+                                            Pair("transactionId", transactionId.toString()),
+                                            Pair("amount", amount.toString())
                                         )
                                     )
                                 )
@@ -214,7 +216,8 @@ class WalletServiceTest {
                         walletService.createWalletForPayment(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = transactionId
+                            transactionId = transactionId,
+                            amount = amount
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -243,6 +246,7 @@ class WalletServiceTest {
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val transactionId = mockedUUID
+                val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
                         .copy(
@@ -256,7 +260,8 @@ class WalletServiceTest {
                                         creationDate.toString(),
                                         hashMapOf(
                                             Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId.toString())
+                                            Pair("transactionId", transactionId.toString()),
+                                            Pair("amount", amount.toString())
                                         )
                                     )
                                 )
@@ -277,7 +282,8 @@ class WalletServiceTest {
                         walletService.createWalletForPayment(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            transactionId = transactionId
+                            transactionId = transactionId,
+                            amount = 100
                         )
                     )
                     .assertNext { createWalletOutput ->

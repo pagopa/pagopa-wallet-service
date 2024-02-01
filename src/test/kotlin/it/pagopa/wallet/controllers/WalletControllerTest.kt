@@ -121,7 +121,7 @@ class WalletControllerTest {
     fun testCreateWalletPaymentCardsMethod() = runTest {
         /* preconditions */
 
-        given { walletService.createWalletForPayment(any(), any(), any()) }
+        given { walletService.createWalletForPayment(any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -151,7 +151,7 @@ class WalletControllerTest {
                     WalletPaymentCreateResponseDto()
                         .walletId(WALLET_DOMAIN.id.value)
                         .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}&paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
+                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
                         )
                 )
             )
@@ -161,7 +161,7 @@ class WalletControllerTest {
     fun testCreateWalletPaymentAPMMethod() = runTest {
         /* preconditions */
 
-        given { walletService.createWalletForPayment(any(), any(), any()) }
+        given { walletService.createWalletForPayment(any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(

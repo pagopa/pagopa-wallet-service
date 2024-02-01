@@ -586,6 +586,7 @@ object WalletTestUtils {
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
             .transactionId(UUID.randomUUID())
+            .amount(200)
 
     val WALLET_SERVICE_1: WalletServiceDto =
         WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.DISABLED)

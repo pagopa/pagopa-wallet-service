@@ -123,7 +123,8 @@ class WalletService(
     fun createWalletForPayment(
         userId: UUID,
         paymentMethodId: UUID,
-        transactionId: UUID
+        transactionId: UUID,
+        amount: Int
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for payment with contextual onboarding with payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
@@ -154,7 +155,8 @@ class WalletService(
                                     ApplicationMetadata(
                                         hashMapOf(
                                             Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId.toString())
+                                            Pair("transactionId", transactionId.toString()),
+                                            Pair("amount", amount.toString())
                                         )
                                     )
                                 )

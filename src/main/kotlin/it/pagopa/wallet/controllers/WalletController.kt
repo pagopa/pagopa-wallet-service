@@ -78,7 +78,8 @@ class WalletController(
                     .createWalletForPayment(
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
-                        transactionId = request.transactionId
+                        transactionId = request.transactionId,
+                        amount = request.amount
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {
@@ -92,7 +93,7 @@ class WalletController(
                     response.redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri.get())
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}"
                             )
                             .build()
                             .toUriString()
