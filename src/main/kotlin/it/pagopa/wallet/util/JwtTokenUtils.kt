@@ -47,7 +47,7 @@ class JwtTokenUtils(
                     .signWith(signingKeyForNpgNotification)
 
             jwtBuilder.claim(TRANSACTION_ID_CLAIM, transactionIdAsClaim) // claim TransactionId
-            jwtBuilder.claim(WALLET_ID_CLAIM, transactionIdAsClaim) // claim WalletId
+            jwtBuilder.claim(WALLET_ID_CLAIM, walletIdAsClaim) // claim WalletId
 
             Either.right(jwtBuilder.compact())
         } catch (e: JwtException) {
