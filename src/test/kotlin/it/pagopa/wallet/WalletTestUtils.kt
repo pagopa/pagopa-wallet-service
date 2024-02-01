@@ -581,11 +581,10 @@ object WalletTestUtils {
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
-    val CREATE_WALLET_PAYMENTS_REQUEST: WalletPaymentCreateRequestDto =
-        WalletPaymentCreateRequestDto()
+    val CREATE_WALLET_TRANSACTION_REQUEST: WalletTransactionCreateRequestDto =
+        WalletTransactionCreateRequestDto()
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
-            .transactionId(UUID.randomUUID())
             .amount(200)
 
     val WALLET_SERVICE_1: WalletServiceDto =

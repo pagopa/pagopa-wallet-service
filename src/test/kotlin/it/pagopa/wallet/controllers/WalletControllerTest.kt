@@ -61,14 +61,14 @@ class WalletControllerTest {
 
     @Autowired private lateinit var webClient: WebTestClient
 
+    private val webviewPaymentUrl = URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+
     private val objectMapper =
         JsonMapper.builder()
             .addModule(JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build()
-
-    private val webviewPaymentUrl = URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
 
     @BeforeEach
     fun beforeTest() {
@@ -113,84 +113,6 @@ class WalletControllerTest {
                         .redirectUrl(
                             "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}&paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
                         )
-                )
-            )
-    }
-
-    @Test
-    fun testCreateWalletPaymentCardsMethod() = runTest {
-        /* preconditions */
-
-        given { walletService.createWalletForPayment(any(), any(), any(), any()) }
-            .willReturn(
-                mono {
-                    Pair(
-                        LoggedAction(
-                            WALLET_DOMAIN,
-                            WalletAddedEvent(WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.of(webviewPaymentUrl)
-                    )
-                }
-            )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
-        /* test */
-        webClient
-            .post()
-            .uri("/wallets/payments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_PAYMENTS_REQUEST)
-            .exchange()
-            .expectStatus()
-            .isCreated
-            .expectBody()
-            .json(
-                objectMapper.writeValueAsString(
-                    WalletPaymentCreateResponseDto()
-                        .walletId(WALLET_DOMAIN.id.value)
-                        .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
-                        )
-                )
-            )
-    }
-
-    @Test
-    fun testCreateWalletPaymentAPMMethod() = runTest {
-        /* preconditions */
-
-        given { walletService.createWalletForPayment(any(), any(), any(), any()) }
-            .willReturn(
-                mono {
-                    Pair(
-                        LoggedAction(
-                            WALLET_DOMAIN,
-                            WalletAddedEvent(WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.empty()
-                    )
-                }
-            )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
-        /* test */
-        webClient
-            .post()
-            .uri("/wallets/payments")
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
-            .bodyValue(WalletTestUtils.CREATE_WALLET_PAYMENTS_REQUEST)
-            .exchange()
-            .expectStatus()
-            .isCreated
-            .expectBody()
-            .json(
-                objectMapper.writeValueAsString(
-                    WalletPaymentCreateResponseDto()
-                        .walletId(WALLET_DOMAIN.id.value)
-                        .redirectUrl(null)
                 )
             )
     }

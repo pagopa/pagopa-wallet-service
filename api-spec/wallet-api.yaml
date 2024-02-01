@@ -94,16 +94,23 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
-  /wallets/payments:
+  /transactions/{transactionId}/wallets:
     post:
       tags:
-        - wallets
-      summary: Create a new wallet for payment with contextual onboarding
-      description: Creates a new wallet for payment with contestul onboarding
-      operationId: createWalletForPayments
+        - transaction-wallets
+      summary: Create a new wallet for transactionId with contextual onboarding
+      description: Creates a new wallet for transactionId with contestul onboarding
+      operationId: createWalletForTransaction
       parameters:
         - in: header
           name: x-user-id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: transactionId
+          in: path
+          description: ecommerce transaction id
           required: true
           schema:
             type: string
@@ -113,7 +120,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WalletPaymentCreateRequest'
+              $ref: '#/components/schemas/WalletTransactionCreateRequest'
         required: true
       responses:
         '201':
@@ -121,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WalletPaymentCreateResponse'
+                $ref: '#/components/schemas/WalletTransactionCreateResponse'
         '400':
           description: Formally invalid input
           content:
@@ -818,28 +825,24 @@ components:
       required:
         - walletId
         - redirectUrl
-    WalletPaymentCreateRequest:
+    WalletTransactionCreateRequest:
       type: object
-      description: Wallet for payment with contextual onboarding creation request
+      description: Wallet for transaction with contextual onboarding creation request
       properties:
         useDiagnosticTracing:
           type: boolean
         paymentMethodId:
           type: string
           format: uuid
-        transactionId:
-          type: string
-          format: uuid
         amount:
           $ref: '#/components/schemas/AmountEuroCents'
       required:
-        - transactionId
         - useDiagnosticTracing
         - paymentMethodId
         - amount
-    WalletPaymentCreateResponse:
+    WalletTransactionCreateResponse:
       type: object
-      description: Wallet for payment with contextual onboarding creation response
+      description: Wallet for transaction with contextual onboarding creation response
       properties:
         walletId:
           $ref: '#/components/schemas/WalletId'

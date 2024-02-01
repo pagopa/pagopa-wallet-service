@@ -11,12 +11,10 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
@@ -65,43 +63,6 @@ class WalletController(
                     )
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
-    }
-
-    override fun createWalletForPayments(
-        xUserId: UUID,
-        walletPaymentCreateRequestDto: Mono<WalletPaymentCreateRequestDto>,
-        exchange: ServerWebExchange
-    ): Mono<ResponseEntity<WalletPaymentCreateResponseDto>> {
-        return walletPaymentCreateRequestDto
-            .flatMap { request ->
-                walletService
-                    .createWalletForPayment(
-                        userId = xUserId,
-                        paymentMethodId = request.paymentMethodId,
-                        transactionId = request.transactionId,
-                        amount = request.amount
-                    )
-                    .flatMap { (loggedAction, returnUri) ->
-                        loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request, returnUri)
-                        }
-                    }
-            }
-            .map { (walletId, request, returnUri) ->
-                val response = WalletPaymentCreateResponseDto()
-                if (returnUri.getOrNull() != null) {
-                    response.redirectUrl(
-                        UriComponentsBuilder.fromUri(returnUri.get())
-                            .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}"
-                            )
-                            .build()
-                            .toUriString()
-                    )
-                }
-                response.walletId(walletId)
-            }
-            .map { ResponseEntity.status(HttpStatus.CREATED).body(it) }
     }
 
     override fun createSessionWallet(

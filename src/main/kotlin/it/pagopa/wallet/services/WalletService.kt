@@ -120,14 +120,14 @@ class WalletService(
                     }
             }
     }
-    fun createWalletForPayment(
+    fun createWalletForTransaction(
         userId: UUID,
         paymentMethodId: UUID,
         transactionId: UUID,
         amount: Int
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
-            "Create wallet for payment with contextual onboarding with payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
+            "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
         )
         return ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId.toString())

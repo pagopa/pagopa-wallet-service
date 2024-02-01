@@ -213,7 +213,7 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForPayment(
+                        walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = transactionId,
@@ -279,7 +279,7 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForPayment(
+                        walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
                             transactionId = transactionId,
