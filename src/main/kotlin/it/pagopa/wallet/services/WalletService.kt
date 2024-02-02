@@ -223,7 +223,7 @@ class WalletService(
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
                 val pagopaApplication =
                     wallet.applications.singleOrNull { application ->
-                        application.name.equals(ServiceNameDto.PAGOPA) &&
+                        application.name.equals(ServiceName(ServiceNameDto.PAGOPA.value)) &&
                             application.status == ServiceStatus.ENABLED
                     }
                 val isTransactionWithContextualOnboard =
@@ -277,7 +277,14 @@ class WalletService(
                                             .contractId(contractId)
                                             .contractType(RecurringContractType.CIT)
                                     )
-                                    .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                    .amount(
+                                        if (isTransactionWithContextualOnboard)
+                                            pagopaApplication
+                                                ?.metadata
+                                                ?.data
+                                                ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                                        else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                    )
                                     .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                     .captureType(CaptureType.IMPLICIT)
                                     .paymentService(paymentMethod.name)
