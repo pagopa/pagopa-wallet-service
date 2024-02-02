@@ -230,6 +230,13 @@ class WalletService(
                 val isTransactionWithContextualOnboard =
                     isWalletForTransactionWithContextualOnboard(pagopaApplication)
                 val orderId = uniqueIds.first
+                val amount =
+                    if (isTransactionWithContextualOnboard)
+                        pagopaApplication
+                            ?.metadata
+                            ?.data
+                            ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                    else null
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
@@ -256,11 +263,7 @@ class WalletService(
                                 Order()
                                     .orderId(orderId)
                                     .amount(
-                                        if (isTransactionWithContextualOnboard)
-                                            pagopaApplication
-                                                ?.metadata
-                                                ?.data
-                                                ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                                        if (isTransactionWithContextualOnboard) amount
                                         else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
                                     )
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
@@ -279,11 +282,7 @@ class WalletService(
                                             .contractType(RecurringContractType.CIT)
                                     )
                                     .amount(
-                                        if (isTransactionWithContextualOnboard)
-                                            pagopaApplication
-                                                ?.metadata
-                                                ?.data
-                                                ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                                        if (isTransactionWithContextualOnboard) amount
                                         else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
                                     )
                                     .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
