@@ -194,9 +194,20 @@ class WalletServiceTest {
                                         ServiceStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
-                                            Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId.toString()),
-                                            Pair("amount", amount.toString())
+                                            Pair(
+                                                ApplicationMetadata.Metadata
+                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                                    .value,
+                                                "true"
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                transactionId
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                amount.toString()
+                                            )
                                         )
                                     )
                                 )
@@ -260,9 +271,20 @@ class WalletServiceTest {
                                         ServiceStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
-                                            Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId),
-                                            Pair("amount", amount.toString())
+                                            Pair(
+                                                ApplicationMetadata.Metadata
+                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                                    .value,
+                                                "true"
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                transactionId
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                amount.toString()
+                                            )
                                         )
                                     )
                                 )
