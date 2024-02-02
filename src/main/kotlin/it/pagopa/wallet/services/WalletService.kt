@@ -24,6 +24,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.net.URLDecoder
@@ -54,6 +55,7 @@ class WalletService(
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
+    @Autowired private val jwtTokenUtils: JwtTokenUtils,
     @Autowired @Value("\${wallet.payment.cardReturnUrl}") private val walletPaymentReturnUrl: String
 ) {
 
@@ -875,10 +877,10 @@ class WalletService(
         orderId: String,
         transactionId: String?
     ): URI {
-        return if (!isTransactionWithContextualOnboard)
+        return if (!isTransactionWithContextualOnboard) {
             UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
                 .build(mapOf(Pair("walletId", walletId), Pair("orderId", orderId)))
-        else
+        } else {
             UriComponentsBuilder.fromHttpUrl(
                     sessionUrlConfig.trxWithContextualOnboardNotificationUrl
                 )
@@ -888,9 +890,17 @@ class WalletService(
                         Pair("orderId", orderId),
                         Pair(
                             "sessionToken",
-                            transactionId?.let { "token" }
-                        ) // TODO call token generation
+                            transactionId?.let {
+                                jwtTokenUtils
+                                    .generateJwtTokenForNpgNotifications(
+                                        walletId.toString(),
+                                        transactionId
+                                    )
+                                    .fold({ throw it }, { token -> token })
+                            }
+                        )
                     )
                 )
+        }
     }
 }

@@ -55,6 +55,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -84,6 +85,7 @@ class WalletServiceTest {
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
     private val uniqueIdUtils: UniqueIdUtils = mock()
+    private val jwtTokenUtils: JwtTokenUtils = mock()
     private val onboardingConfig =
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
@@ -122,6 +124,7 @@ class WalletServiceTest {
             sessionUrlConfig,
             uniqueIdUtils,
             onboardingConfig,
+            jwtTokenUtils,
             onboardingPaymentWalletCreditCardReturnUrl
         )
     private val mockedUUID = WALLET_UUID.value
