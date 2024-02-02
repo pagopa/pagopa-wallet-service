@@ -57,6 +57,7 @@ import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
+import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -185,7 +186,7 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = "transactionId"
+                val transactionId = "0cbd232af3464a6985921cf437510e03"
                 val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
@@ -206,7 +207,7 @@ class WalletServiceTest {
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                                transactionId
+                                                TransactionId(transactionId).value().toString()
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.AMOUNT.value,
@@ -232,7 +233,7 @@ class WalletServiceTest {
                         walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = transactionId,
+                            transactionId = TransactionId(transactionId),
                             amount = amount
                         )
                     )
@@ -261,7 +262,7 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = "transactionId"
+                val transactionId = "0cbd232af3464a6985921cf437510e03"
                 val amount = 100
                 val walletDocument =
                     newWalletDocumentSaved()
@@ -283,7 +284,7 @@ class WalletServiceTest {
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                                transactionId
+                                                TransactionId(transactionId).value().toString()
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.AMOUNT.value,
@@ -309,7 +310,7 @@ class WalletServiceTest {
                         walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            transactionId = transactionId,
+                            transactionId = TransactionId(transactionId),
                             amount = 100
                         )
                     )

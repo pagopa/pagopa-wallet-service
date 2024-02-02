@@ -25,6 +25,7 @@ import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.ServiceRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
+import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.net.URLDecoder
@@ -125,7 +126,7 @@ class WalletService(
     fun createWalletForTransaction(
         userId: UUID,
         paymentMethodId: UUID,
-        transactionId: String,
+        transactionId: TransactionId,
         amount: Int
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
@@ -164,7 +165,7 @@ class WalletService(
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                                transactionId
+                                                transactionId.value().toString()
                                             ),
                                             Pair(
                                                 ApplicationMetadata.Metadata.AMOUNT.value,

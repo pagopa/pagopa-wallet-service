@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.util.TransactionId
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
@@ -37,7 +38,7 @@ class TransactionWalletController(
                     .createWalletForTransaction(
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
-                        transactionId = transactionId,
+                        transactionId = TransactionId(transactionId),
                         amount = request.amount
                     )
                     .flatMap { (loggedAction, returnUri) ->
