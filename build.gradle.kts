@@ -59,7 +59,10 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.springframework.boot:spring-boot-starter-aop")
   implementation("io.netty:netty-resolver-dns-native-macos:4.1.90.Final")
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
+  implementation("io.vavr:vavr:0.10.4")
+  implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+  implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+  implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
   // Kotlin dependencies
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
