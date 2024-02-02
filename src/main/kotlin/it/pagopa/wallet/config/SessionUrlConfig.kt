@@ -9,5 +9,6 @@ data class SessionUrlConfig(
     val basePath: String,
     val outcomeSuffix: String,
     val cancelSuffix: String,
-    val notificationUrl: String
+    val notificationUrl: String,
+    val trxWithContextualOnboardNotificationUrl: String
 )
