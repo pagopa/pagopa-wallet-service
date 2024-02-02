@@ -886,7 +886,10 @@ class WalletService(
                     mapOf(
                         Pair("walletId", walletId),
                         Pair("orderId", orderId),
-                        Pair("sessionToken", transactionId?.let { "token" })
+                        Pair(
+                            "sessionToken",
+                            transactionId?.let { "token" }
+                        ) // TODO call token generation
                     )
                 )
     }
