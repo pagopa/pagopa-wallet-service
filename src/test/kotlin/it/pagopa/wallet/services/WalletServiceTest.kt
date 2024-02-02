@@ -100,7 +100,7 @@ class WalletServiceTest {
             "/esito",
             "/annulla",
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}",
-            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
+            "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
         )
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
@@ -664,6 +664,7 @@ class WalletServiceTest {
                         )
                         .build(
                             mapOf(
+                                Pair("transactionId", transactionId),
                                 Pair("walletId", walletDocumentWithSessionWallet.id),
                                 Pair("orderId", orderId),
                                 Pair("sessionToken", "token")
