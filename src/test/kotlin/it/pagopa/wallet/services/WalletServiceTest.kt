@@ -95,7 +95,8 @@ class WalletServiceTest {
             "http://localhost:1234",
             "/esito",
             "/annulla",
-            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}"
+            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}",
+            "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
         )
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"

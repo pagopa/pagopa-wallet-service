@@ -154,9 +154,20 @@ class WalletService(
                                     creationTime,
                                     ApplicationMetadata(
                                         hashMapOf(
-                                            Pair("paymentWithContextualOnboard", "true"),
-                                            Pair("transactionId", transactionId),
-                                            Pair("amount", amount.toString())
+                                            Pair(
+                                                ApplicationMetadata.Metadata
+                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                                    .value,
+                                                "true"
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                transactionId
+                                            ),
+                                            Pair(
+                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                amount.toString()
+                                            )
                                         )
                                     )
                                 )
@@ -208,6 +219,13 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
+                val pagopaApplication =
+                    wallet.applications.singleOrNull { application ->
+                        application.name.equals(ServiceNameDto.PAGOPA) &&
+                            application.status == ServiceStatus.ENABLED
+                    }
+                val isTransactionWithContextualOnboard =
+                    isWalletForTransactionWithContextualOnboard(pagopaApplication)
                 val orderId = uniqueIds.first
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -215,8 +233,15 @@ class WalletService(
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(mapOf(Pair("walletId", wallet.id.value), Pair("orderId", orderId)))
+                    buildNotificationUrl(
+                        isTransactionWithContextualOnboard,
+                        wallet.id.value,
+                        orderId,
+                        pagopaApplication
+                            ?.metadata
+                            ?.data
+                            ?.get(ApplicationMetadata.Metadata.TRANSACTION_ID.value)
+                    )
 
                 npgClient
                     .createNpgOrderBuild(
@@ -227,13 +252,23 @@ class WalletService(
                             .order(
                                 Order()
                                     .orderId(orderId)
-                                    .amount(CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                                    .amount(
+                                        if (isTransactionWithContextualOnboard)
+                                            pagopaApplication
+                                                ?.metadata
+                                                ?.data
+                                                ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                                        else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                    )
                                     .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
                                 // TODO customerId must be valorised with the one coming from
                             )
                             .paymentSession(
                                 PaymentSession()
-                                    .actionType(ActionType.VERIFY)
+                                    .actionType(
+                                        if (isTransactionWithContextualOnboard) ActionType.PAY
+                                        else ActionType.VERIFY
+                                    )
                                     .recurrence(
                                         RecurringSettings()
                                             .action(RecurringAction.CONTRACT_CREATION)
@@ -821,5 +856,38 @@ class WalletService(
                 SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_4
             else -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
         }
+    }
+
+    private fun isWalletForTransactionWithContextualOnboard(
+        application: it.pagopa.wallet.domain.wallets.Application?
+    ): Boolean {
+        if (application != null) {
+            return application.metadata.data[
+                    ApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                .toBoolean()
+        }
+        return false
+    }
+
+    private fun buildNotificationUrl(
+        isTransactionWithContextualOnboard: Boolean,
+        walletId: UUID,
+        orderId: String,
+        transactionId: String?
+    ): URI {
+        return if (!isTransactionWithContextualOnboard)
+            UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                .build(mapOf(Pair("walletId", walletId), Pair("orderId", orderId)))
+        else
+            UriComponentsBuilder.fromHttpUrl(
+                    sessionUrlConfig.trxWithContextualOnboardNotificationUrl
+                )
+                .build(
+                    mapOf(
+                        Pair("walletId", walletId),
+                        Pair("orderId", orderId),
+                        Pair("sessionToken", transactionId?.let { "token" })
+                    )
+                )
     }
 }
