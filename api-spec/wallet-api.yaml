@@ -604,7 +604,7 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
 
   /migrations/wallets:
-    post:
+    put:
       tags:
         - migration
       summary: Initializes a new wallet or returns details for pm of an existing one
@@ -1256,7 +1256,7 @@ components:
           type: string
         fiscalCode:
           type: string
-          description: Card owner's fiscal code
+          description: User registered's fiscal code
       required:
         - walletIdPM
         - fiscalCode
