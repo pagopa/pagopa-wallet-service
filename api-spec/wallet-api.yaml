@@ -13,6 +13,8 @@ tags:
       url: >-
         https://pagopa.atlassian.net/wiki/spaces/WA/overview?homepageId=622658099
       description: Documentation
+  - name: migration
+    description: Api's dedicate to migration phase
 servers:
   - url: https://${hostname}
 paths:
@@ -600,6 +602,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+
+  /wallets/cards:
+    post:
+      tags:
+        - migration
+      summary: Initializes a new wallet or returns details for pm of an existing one
+      description: |
+        Create the association between the new pair (walletId, contractId) and the old PM's walletId.
+        The API has an idempotent behaviour.
+      operationId: createWalletByPM
+      requestBody:
+        description: Initialize a new wallet
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletPmAssociationRequest'
+        required: true
+      responses:
+        '200':
+          description: Wallet initialized successfully and details about new association.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletPmAssociationResponse'
+        '400':
+          description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '429':
+          description: Too many requests
+          headers:
+            Retry-After:
+              description: "The number of milliseconds after which request can be retried"
+              schema:
+                type: number
+        '500':
+          description: Internal server error serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+
 components:
   schemas:
     AmountEuroCents:
@@ -1203,6 +1249,35 @@ components:
           type: string
       required:
         - paymentMethodType
+    WalletPmAssociationRequest:
+      type: object
+      properties:
+        walletIdPM:
+          type: string
+        fiscalCode:
+          type: string
+          description: Card owner's fiscal code
+      required:
+        - walletIdPM
+        - fiscalCode
+    WalletPmAssociationResponse:
+      type: object
+      properties:
+        walletId:
+          $ref: '#/components/schemas/WalletId'
+        walletIdPM:
+          type: string
+        contractId:
+          description: Payment method identifier
+          type: string
+        status:
+          $ref: '#/components/schemas/WalletStatus'
+      required:
+        - walletId
+        - walletIdPM
+        - contractId
+        - status
+
   securitySchemes:
     bearerAuth:
       type: http
