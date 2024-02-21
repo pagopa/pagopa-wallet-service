@@ -1252,8 +1252,9 @@ components:
     WalletPmAssociationRequest:
       type: object
       properties:
-        walletIdPM:
-          type: string
+        walletIdPm:
+          type: integer
+          format: int64
         fiscalCode:
           type: string
           description: User registered's fiscal code
