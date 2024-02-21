@@ -1249,17 +1249,19 @@ components:
           type: string
       required:
         - paymentMethodType
+    WalletIdPm:
+      type: integer
+      format: int64
     WalletPmAssociationRequest:
       type: object
       properties:
         walletIdPm:
-          type: integer
-          format: int64
+          $ref: '#/components/schemas/WalletIdPm'
         fiscalCode:
           type: string
           description: User registered's fiscal code
       required:
-        - walletIdPM
+        - walletIdPm
         - fiscalCode
     WalletPmAssociationResponse:
       type: object
@@ -1267,8 +1269,7 @@ components:
         walletId:
           $ref: '#/components/schemas/WalletId'
         walletIdPm:
-          type: integer
-          format: int64
+          $ref: '#/components/schemas/WalletIdPm'
         contractId:
           description: Payment method identifier
           type: string
@@ -1276,7 +1277,7 @@ components:
           $ref: '#/components/schemas/WalletStatus'
       required:
         - walletId
-        - walletIdPM
+        - walletIdPm
         - contractId
         - status
 
