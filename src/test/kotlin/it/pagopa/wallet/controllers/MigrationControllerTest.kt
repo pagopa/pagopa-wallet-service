@@ -1,7 +1,6 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,7 +9,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class MigrationControllerTest {
