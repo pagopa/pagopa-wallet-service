@@ -1267,7 +1267,8 @@ components:
         walletId:
           $ref: '#/components/schemas/WalletId'
         walletIdPm:
-          type: string
+          type: integer
+          format: int64
         contractId:
           description: Payment method identifier
           type: string
