@@ -1063,6 +1063,9 @@ components:
             - VOIDED
             - REFUNDED
             - FAILED
+        errorCode:
+          type: string
+          description: Error code for the onboarding operation received by NPG
         details:
           description: Wallet notified payment method details
           type: object
