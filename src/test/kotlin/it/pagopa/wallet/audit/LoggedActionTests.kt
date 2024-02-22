@@ -21,10 +21,11 @@ class LoggedActionTests {
             LoggedAction(
                 it,
                 WalletNotificationEvent(
-                    it,
-                    "validationOperationId",
-                    OperationResultEnum.EXECUTED.value,
-                    WalletTestUtils.TIMESTAMP.toString()
+                    walletId = it,
+                    validationOperationId = "validationOperationId",
+                    validationOperationResult = OperationResultEnum.EXECUTED.value,
+                    validationErrorCode = null,
+                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                 )
             )
         }
@@ -104,10 +105,11 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletNotificationEvent(
-                    walletId,
-                    "validationOperationId",
-                    OperationResultEnum.EXECUTED.value,
-                    WalletTestUtils.TIMESTAMP.toString()
+                    walletId = walletId,
+                    validationOperationId = "validationOperationId",
+                    validationOperationResult = OperationResultEnum.EXECUTED.value,
+                    validationErrorCode = null,
+                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                 )
             )
 

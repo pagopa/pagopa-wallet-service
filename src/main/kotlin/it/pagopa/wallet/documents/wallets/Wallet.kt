@@ -22,6 +22,7 @@ data class Wallet(
     val paymentInstrumentId: String?,
     val contractId: String?,
     val validationOperationResult: String?,
+    var validationErrorCode: String?,
     val applications: List<Application>,
     val details: WalletDetails<*>?,
     @Version var version: Int,
@@ -43,6 +44,7 @@ data class Wallet(
                     this.validationOperationResult?.let {
                         OperationResultEnum.valueOf(this.validationOperationResult)
                     },
+                validationErrorCode = validationErrorCode,
                 details = this.details?.toDomain(),
                 version = this.version,
                 creationDate = this.creationDate,

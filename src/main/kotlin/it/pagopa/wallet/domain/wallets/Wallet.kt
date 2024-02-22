@@ -46,6 +46,7 @@ data class Wallet(
     var applications: List<Application> = listOf(),
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
+    var validationErrorCode: String? = null,
     var details: WalletDetails<*>? = null,
     val version: Int,
     val creationDate: Instant,
@@ -55,26 +56,28 @@ data class Wallet(
     fun toDocument(): Wallet {
         val wallet =
             Wallet(
-                this.id.value.toString(),
-                this.userId.id.toString(),
-                this.status.name,
-                this.paymentMethodId.value.toString(),
-                this.paymentInstrumentId?.value?.toString(),
-                this.contractId?.contractId,
-                this.validationOperationResult?.value,
-                this.applications.map { app ->
-                    it.pagopa.wallet.documents.wallets.Application(
-                        app.id.id.toString(),
-                        app.name.name,
-                        app.status.name,
-                        app.lastUpdate.toString(),
-                        app.metadata.data
-                    )
-                },
-                this.details?.toDocument(),
-                this.version,
-                this.creationDate,
-                this.updateDate
+                id = this.id.value.toString(),
+                userId = this.userId.id.toString(),
+                status = this.status.name,
+                paymentMethodId = this.paymentMethodId.value.toString(),
+                paymentInstrumentId = this.paymentInstrumentId?.value?.toString(),
+                contractId = this.contractId?.contractId,
+                validationOperationResult = this.validationOperationResult?.value,
+                validationErrorCode = this.validationErrorCode,
+                applications =
+                    this.applications.map { app ->
+                        it.pagopa.wallet.documents.wallets.Application(
+                            app.id.id.toString(),
+                            app.name.name,
+                            app.status.name,
+                            app.lastUpdate.toString(),
+                            app.metadata.data
+                        )
+                    },
+                details = this.details?.toDocument(),
+                version = this.version,
+                creationDate = this.creationDate,
+                updateDate = this.updateDate
             )
 
         return wallet
