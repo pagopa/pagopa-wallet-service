@@ -106,13 +106,6 @@ class WalletServiceTest {
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
     companion object {
-        @JvmStatic
-        private fun operationResultAuthError() =
-            Stream.of(
-                Arguments.of(OperationResult.THREEDS_VALIDATED),
-                Arguments.of(OperationResult.DENIED_BY_RISK),
-                Arguments.of(OperationResult.THREEDS_FAILED)
-            )
 
         @JvmStatic
         private fun declinedAuthErrorCodeTestSource() =
@@ -156,6 +149,48 @@ class WalletServiceTest {
                 Arguments.of("911", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
                 Arguments.of("913", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
                 Arguments.of("999", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
+                Arguments.of(null, SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
+            )
+
+        @JvmStatic
+        private fun operationResultErrorStatusMethodSource() =
+            Stream.of(
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.PENDING,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.CANCELED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.VOIDED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.REFUNDED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                ),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.FAILED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                ),
             )
     }
 
@@ -2582,119 +2617,6 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `find session should return response with final status true and outcome 8 CANCELED_BY_USER`() {
-        /* preconditions */
-        val walletId = WALLET_UUID.value
-        val userId = USER_ID.id
-        val sessionId = "sessionId"
-        val sessionToken = "token"
-        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        val walletDocumentWithError =
-            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.CANCELED)
-
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
-            .willReturn(Mono.just(walletDocumentWithError))
-        val responseDto =
-            SessionWalletRetrieveResponseDto()
-                .isFinalOutcome(true)
-                .walletId(walletId.toString())
-                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8)
-                .orderId(ORDER_ID)
-
-        /* test */
-        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
-            .expectNext(responseDto)
-            .verifyComplete()
-    }
-
-    @Test
-    fun `find session should return response with final status true and outcome 1 PENDING`() {
-        /* preconditions */
-        val walletId = WALLET_UUID.value
-        val userId = USER_ID.id
-        val sessionId = "sessionId"
-        val sessionToken = "token"
-        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        val walletDocumentWithError =
-            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.PENDING)
-
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
-            .willReturn(Mono.just(walletDocumentWithError))
-        val responseDto =
-            SessionWalletRetrieveResponseDto()
-                .isFinalOutcome(true)
-                .walletId(walletId.toString())
-                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1)
-                .orderId(ORDER_ID)
-
-        /* test */
-        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
-            .expectNext(responseDto)
-            .verifyComplete()
-    }
-
-    @Test
-    fun `find session should return response with final status true and outcome 1 GENERIC_ERROR`() {
-        /* preconditions */
-        val walletId = WALLET_UUID.value
-        val userId = USER_ID.id
-        val sessionId = "sessionId"
-        val sessionToken = "token"
-        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        val walletDocumentWithError =
-            walletDocumentWithError(WalletNotificationRequestDto.OperationResultEnum.VOIDED)
-
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
-            .willReturn(Mono.just(walletDocumentWithError))
-        val responseDto =
-            SessionWalletRetrieveResponseDto()
-                .isFinalOutcome(true)
-                .walletId(walletId.toString())
-                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1)
-                .orderId(ORDER_ID)
-
-        /* test */
-        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
-            .expectNext(responseDto)
-            .verifyComplete()
-    }
-
-    @ParameterizedTest
-    @MethodSource("operationResultAuthError")
-    fun `find session should return response with final status true and outcome 1 GENERIC_ERROR`(
-        operationResult: OperationResult
-    ) {
-        /* preconditions */
-        val walletId = WALLET_UUID.value
-        val userId = USER_ID.id
-        val sessionId = "sessionId"
-        val sessionToken = "token"
-        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
-        val walletDocumentWithError =
-            walletDocumentWithError(
-                WalletNotificationRequestDto.OperationResultEnum.valueOf(operationResult.value)
-            )
-
-        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
-            .willReturn(Mono.just(walletDocumentWithError))
-        val responseDto =
-            SessionWalletRetrieveResponseDto()
-                .isFinalOutcome(true)
-                .walletId(walletId.toString())
-                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2)
-                .orderId(ORDER_ID)
-
-        /* test */
-        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
-            .expectNext(responseDto)
-            .verifyComplete()
-    }
-
-    @Test
     fun `notify wallet should set wallet status to ERROR for PAYPAL`() {
         /* preconditions */
         val orderId = "orderId"
@@ -2863,7 +2785,7 @@ class WalletServiceTest {
     @ParameterizedTest
     @MethodSource("declinedAuthErrorCodeTestSource")
     fun `find session should return response with final status true mapping DENIED error codes for card wallet`(
-        errorCode: String,
+        errorCode: String?,
         expectedOutcome: SessionWalletRetrieveResponseDto.OutcomeEnum
     ) {
         /* preconditions */
@@ -2906,7 +2828,7 @@ class WalletServiceTest {
     @ParameterizedTest
     @MethodSource("declinedAuthErrorCodeTestSource")
     fun `find session should return response with final status true mapping DENIED error codes for apm wallet`(
-        errorCode: String
+        errorCode: String?
     ) {
         /* preconditions */
         val walletId = WALLET_UUID.value
@@ -2919,6 +2841,115 @@ class WalletServiceTest {
             walletDocumentWithError(
                 operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.DECLINED,
                 errorCode = errorCode,
+                details = PayPalDetails(maskedEmail = "p*******@p*******.it", pspId = "pspId"),
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @ParameterizedTest
+    @MethodSource("operationResultErrorStatusMethodSource")
+    fun `find session should return response with final status true mapping NPG operation result for cards wallet`(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum,
+        expectedOutcome: SessionWalletRetrieveResponseDto.OutcomeEnum
+    ) {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocumentWithError(
+                operationResultEnum = operationResult,
+                errorCode = null,
+                details =
+                    CardDetails(
+                        WalletDetailsType.CARDS.name,
+                        bin = "12345678",
+                        maskedPan = "12345678" + "*".repeat(4) + "1234",
+                        expiryDate = "24/12",
+                        brand = "VISA",
+                        holder = ""
+                    ),
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(expectedOutcome)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @ParameterizedTest
+    @MethodSource("operationResultErrorStatusMethodSource")
+    fun `find session should return response with final status true mapping NPG operation result for apm wallet`(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum,
+        expectedOutcome: SessionWalletRetrieveResponseDto.OutcomeEnum
+    ) {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocumentWithError(
+                operationResultEnum = operationResult,
+                errorCode = null,
+                details = PayPalDetails(maskedEmail = "p*******@p*******.it", pspId = "pspId"),
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(expectedOutcome)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `find session should return response with final status true mapping NPG operation result for apm wallet with DECLINED operation result`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocumentWithError(
+                operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.DECLINED,
+                errorCode = null,
                 details = PayPalDetails(maskedEmail = "p*******@p*******.it", pspId = "pspId"),
             )
 
