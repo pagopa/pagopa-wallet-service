@@ -2880,11 +2880,11 @@ class WalletServiceTest {
                 details =
                     CardDetails(
                         WalletDetailsType.CARDS.name,
-                        "12345678",
-                        "12345678" + "*".repeat(4) + "1234",
-                        "24/12",
-                        "VISA",
-                        ""
+                        bin = "12345678",
+                        maskedPan = "12345678" + "*".repeat(4) + "1234",
+                        expiryDate = "24/12",
+                        brand = "VISA",
+                        holder = ""
                     ),
             )
 
