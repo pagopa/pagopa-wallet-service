@@ -3,8 +3,8 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.MigrationsApi
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmAssociationResponseDto
-import it.pagopa.generated.wallet.model.WalletStatusDto
-import java.util.*
+import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.services.MigrationService
 import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -15,16 +15,25 @@ import reactor.core.publisher.Mono
 @RestController
 @Slf4j
 @Validated
-class MigrationController : MigrationsApi {
+class MigrationController(private val migrationService: MigrationService) : MigrationsApi {
     override fun createWalletByPM(
-        walletPmAssociationRequestDto: Mono<WalletPmAssociationRequestDto>?,
+        walletPmAssociationRequestDto: Mono<WalletPmAssociationRequestDto>,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<WalletPmAssociationResponseDto>> {
-        return WalletPmAssociationResponseDto()
-            .walletIdPm(123)
-            .walletId(UUID.randomUUID())
-            .contractId("contractId")
-            .status(WalletStatusDto.CREATED)
-            .let { Mono.just(ResponseEntity.ofNullable(it)) }
-    }
+    ): Mono<ResponseEntity<WalletPmAssociationResponseDto>> =
+        walletPmAssociationRequestDto
+            .flatMap { request ->
+                migrationService
+                    .initializeWalletByPaymentManager(
+                        request.walletIdPm.toString(),
+                        UserId(request.userId)
+                    )
+                    .map {
+                        WalletPmAssociationResponseDto()
+                            .walletIdPm(request.walletIdPm)
+                            .walletId(it.id.value)
+                            .contractId(it.contractId!!.contractId)
+                            .status(it.status)
+                    }
+            }
+            .map { ResponseEntity.ok(it) }
 }
