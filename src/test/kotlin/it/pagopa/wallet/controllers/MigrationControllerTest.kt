@@ -43,6 +43,6 @@ class MigrationControllerTest {
 
     companion object {
         val REGISTER_WALLET_PM_REQUEST =
-            WalletPmAssociationRequestDto().walletIdPm(123).fiscalCode("ABCDEFG")
+            WalletPmAssociationRequestDto().walletIdPm(123).anonymizedFiscalCode("ABCDEFG")
     }
 }

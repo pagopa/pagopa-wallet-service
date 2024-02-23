@@ -1257,9 +1257,9 @@ components:
       properties:
         walletIdPm:
           $ref: '#/components/schemas/WalletIdPm'
-        fiscalCode:
+        anonymizedFiscalCode:
           type: string
-          description: User registered's fiscal code
+          description: User registered's anonymized fiscal code
       required:
         - walletIdPm
         - fiscalCode
