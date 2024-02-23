@@ -22,7 +22,8 @@ data class WalletNotificationEvent(
     val walletId: String,
     val validationOperationId: String,
     val validationOperationResult: String,
-    val validationOperationTimestamp: String
+    val validationOperationTimestamp: String,
+    val validationErrorCode: String?,
 ) : LoggingEvent()
 
 data class ServiceCreatedEvent(val serviceId: UUID, val serviceName: String) : LoggingEvent()

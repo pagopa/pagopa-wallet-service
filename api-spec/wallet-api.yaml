@@ -1063,6 +1063,9 @@ components:
             - VOIDED
             - REFUNDED
             - FAILED
+        errorCode:
+          type: string
+          description: Error code for the onboarding operation received by NPG
         details:
           description: Wallet notified payment method details
           type: object
@@ -1106,7 +1109,9 @@ components:
             - 0  # SUCCESS
             - 1  # GENERIC_ERROR
             - 2  # AUTH_ERROR
+            - 3  # INVALID_DATA
             - 4  # TIMEOUT
+            - 7  # INVALID_CARD
             - 8  # CANCELED_BY_USER
             - 14 # INVALID_SESSION
       required:

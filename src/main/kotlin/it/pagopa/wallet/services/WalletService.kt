@@ -65,6 +65,48 @@ class WalletService(
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
         const val CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA = "ITA"
+        val NPG_CARDS_ONBOARDING_ERROR_CODE_MAPPING =
+            mapOf(
+                "100" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "101" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_7,
+                "102" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "104" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "106" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "109" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "110" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "111" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_7,
+                "115" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "116" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "117" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "118" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "119" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "120" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "121" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "122" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "123" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "124" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "125" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "126" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "129" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "200" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "202" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "204" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "208" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "209" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "210" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
+                "413" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "888" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "902" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "903" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "904" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "906" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "907" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "908" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "909" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "911" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "913" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "999" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+            )
     }
 
     /*
@@ -123,6 +165,7 @@ class WalletService(
                     }
             }
     }
+
     fun createWalletForTransaction(
         userId: UUID,
         paymentMethodId: UUID,
@@ -581,6 +624,7 @@ class WalletService(
                                     status = newWalletStatus,
                                     validationOperationResult =
                                         walletNotificationRequestDto.operationResult,
+                                    validationErrorCode = walletNotificationRequestDto.errorCode,
                                     details = walletDetails
                                 )
                                 .toDocument()
@@ -593,7 +637,8 @@ class WalletService(
                                 walletId.value.toString(),
                                 walletNotificationRequestDto.operationId,
                                 walletNotificationRequestDto.operationResult.value,
-                                walletNotificationRequestDto.timestampOperation.toString()
+                                walletNotificationRequestDto.timestampOperation.toString(),
+                                walletNotificationRequestDto.errorCode?.toString()
                             )
                         )
                     }
@@ -655,7 +700,7 @@ class WalletService(
                 walletRepository
                     .findByIdAndUserId(walletId.value.toString(), xUserId.toString())
                     .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-                    .filter { wallet -> session.walletId == wallet.id.toString() }
+                    .filter { wallet -> session.walletId == wallet.id }
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
@@ -675,11 +720,15 @@ class WalletService(
                             .walletId(walletId.value.toString())
                             .isFinalOutcome(isFinalStatus)
                             .outcome(
-                                if (isFinalStatus)
-                                    wallet.validationOperationResult?.let {
-                                        retrieveFinalOutcome(it)
-                                    }
-                                else null
+                                if (isFinalStatus) {
+                                    retrieveFinalOutcome(
+                                        operationResult = wallet.validationOperationResult,
+                                        errorCode = wallet.validationErrorCode,
+                                        walletDetailType = wallet.details?.type
+                                    )
+                                } else {
+                                    null
+                                }
                             )
                     }
             }
@@ -846,26 +895,64 @@ class WalletService(
      * TIMEOUT NUMBER_8 -> CANCELED_BY_USER
      *
      * @param operationResult the operation result used for retrieve outcome
+     * @param errorCode the optional error code returned by NPG during onboarding status
+     *   notification
      * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
      */
     private fun retrieveFinalOutcome(
-        operationResult: WalletNotificationRequestDto.OperationResultEnum
+        operationResult: WalletNotificationRequestDto.OperationResultEnum?,
+        errorCode: String?,
+        walletDetailType: WalletDetailsType?
     ): SessionWalletRetrieveResponseDto.OutcomeEnum {
-        return when (operationResult) {
-            WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
-            WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
-            WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED,
-            WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
-            WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED,
-            WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-            WalletNotificationRequestDto.OperationResultEnum.PENDING ->
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_4
-            else -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-        }
+        val outcome =
+            when (operationResult) {
+                WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
+                    if (walletDetailType == WalletDetailsType.CARDS) {
+                        decodeCardsOnboardingNpgErrorCode(errorCode)
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                    }
+                WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+                WalletNotificationRequestDto.OperationResultEnum.PENDING ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
+                WalletNotificationRequestDto.OperationResultEnum.VOIDED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                WalletNotificationRequestDto.OperationResultEnum.REFUNDED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                WalletNotificationRequestDto.OperationResultEnum.FAILED ->
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+            }
+        logger.info(
+            "Npg notification gateway status: [{}], errorCode: [{}] for wallet type: [{}] decoded as IO outcome: [{}]",
+            operationResult,
+            errorCode,
+            walletDetailType,
+            outcome
+        )
+        return outcome
     }
+
+    private fun decodeCardsOnboardingNpgErrorCode(errorCode: String?) =
+        if (errorCode != null) {
+            NPG_CARDS_ONBOARDING_ERROR_CODE_MAPPING.getOrDefault(
+                errorCode,
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+            )
+        } else {
+            SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+        }
 
     private fun isWalletForTransactionWithContextualOnboard(
         application: it.pagopa.wallet.domain.wallets.Application?

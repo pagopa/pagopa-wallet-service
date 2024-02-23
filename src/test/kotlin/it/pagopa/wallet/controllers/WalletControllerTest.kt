@@ -540,10 +540,11 @@ class WalletControllerTest {
                     LoggedAction(
                         WALLET_DOMAIN,
                         WalletNotificationEvent(
-                            walletId.toString(),
-                            operationId,
-                            OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString()
+                            walletId = walletId.toString(),
+                            validationOperationId = operationId,
+                            validationOperationResult = OperationResultEnum.EXECUTED.value,
+                            validationErrorCode = null,
+                            validationOperationTimestamp = Instant.now().toString()
                         )
                     )
                 }
@@ -666,7 +667,8 @@ class WalletControllerTest {
                             walletId.toString(),
                             operationId,
                             OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString()
+                            Instant.now().toString(),
+                            null,
                         )
                     )
                 }
@@ -712,7 +714,8 @@ class WalletControllerTest {
                             walletId.toString(),
                             operationId,
                             OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString()
+                            Instant.now().toString(),
+                            null,
                         )
                     )
                 }
@@ -768,7 +771,8 @@ class WalletControllerTest {
                                 walletId.toString(),
                                 operationId,
                                 OperationResultEnum.EXECUTED.value,
-                                Instant.now().toString()
+                                Instant.now().toString(),
+                                null,
                             )
                         )
                     }
