@@ -1,6 +1,7 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
+import java.util.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
-import java.util.*
 
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
