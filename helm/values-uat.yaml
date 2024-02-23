@@ -83,9 +83,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -143,11 +143,12 @@ microservice-chart:
     REDIS_PASSWORD: redis-wallet-password
     ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
+    NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: { }
+  tolerations: [ ]
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
