@@ -43,13 +43,13 @@ class MigrationService(
         val now = Instant.now()
         return walletPaymentManagerRepository
             .findByWalletPmId(paymentManagerWalletId)
-            .switchIfEmptyDeferred { createMigrationMetadata(paymentManagerWalletId) }
-            .flatMap { createWalletByMigration(it, userId, cardPaymentMethodId, now) }
+            .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
+            .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
             .doOnError { logger.error(it.message) }
             .toMono()
     }
 
-    private fun createWalletByMigration(
+    private fun createWalletByPaymentManager(
         migration: WalletPaymentManager,
         userId: UserId,
         paymentMethodId: PaymentMethodId,
@@ -75,9 +75,7 @@ class MigrationService(
             }
     }
 
-    private fun createMigrationMetadata(
-        paymentManagerWalletId: String
-    ): Mono<WalletPaymentManager> {
+    private fun createMigrationData(paymentManagerWalletId: String): Mono<WalletPaymentManager> {
         return uniqueIdUtils
             .generateUniqueId()
             .map {
