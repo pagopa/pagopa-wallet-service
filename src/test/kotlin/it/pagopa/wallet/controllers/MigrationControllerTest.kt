@@ -26,10 +26,6 @@ class MigrationControllerTest {
 
     @MockBean private lateinit var migrationService: MigrationService
 
-    private val migrationController: MigrationController by lazy {
-        MigrationController(migrationService)
-    }
-
     @Autowired private lateinit var webClient: WebTestClient
 
     @Test
