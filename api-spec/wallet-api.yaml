@@ -1257,12 +1257,13 @@ components:
       properties:
         walletIdPm:
           $ref: '#/components/schemas/WalletIdPm'
-        anonymizedFiscalCode:
+        userId:
           type: string
+          format: uuid
           description: User registered's anonymized fiscal code
       required:
         - walletIdPm
-        - fiscalCode
+        - userId
     WalletPmAssociationResponse:
       type: object
       properties:

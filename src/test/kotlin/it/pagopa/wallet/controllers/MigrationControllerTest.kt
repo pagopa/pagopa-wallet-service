@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.util.*
 
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
@@ -43,6 +44,6 @@ class MigrationControllerTest {
 
     companion object {
         val REGISTER_WALLET_PM_REQUEST =
-            WalletPmAssociationRequestDto().walletIdPm(123).anonymizedFiscalCode("ABCDEFG")
+            WalletPmAssociationRequestDto().walletIdPm(123).userId(UUID.randomUUID())
     }
 }
