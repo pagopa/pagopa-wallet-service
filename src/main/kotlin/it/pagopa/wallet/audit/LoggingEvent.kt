@@ -1,6 +1,6 @@
 package it.pagopa.wallet.audit
 
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import java.time.Instant
 import java.util.*
 import org.springframework.data.mongodb.core.mapping.Document
@@ -26,11 +26,10 @@ data class WalletNotificationEvent(
     val validationErrorCode: String?,
 ) : LoggingEvent()
 
-data class ServiceCreatedEvent(val serviceId: UUID, val serviceName: String) : LoggingEvent()
+data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
 
-data class ServiceStatusChangedEvent(
-    val serviceId: UUID,
-    val serviceName: String,
-    val oldStatus: ServiceStatus,
-    val newStatus: ServiceStatus
+data class ApplicationStatusChangedEvent(
+    val serviceId: String,
+    val oldStatus: ApplicationStatus,
+    val newStatus: ApplicationStatus
 ) : LoggingEvent()
