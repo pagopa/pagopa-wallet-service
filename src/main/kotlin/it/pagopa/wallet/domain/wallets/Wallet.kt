@@ -28,7 +28,7 @@ import java.time.Instant
  *         ┌───────────VALIDATION_REQUESTED ────────────┐
  *         │                     │                      │
  *         ▼                     │                      ▼
- *  VALIDATION_ERROR             │               VALIDATION_EXPIRED
+ *       ERROR                   │               VALIDATION_EXPIRED
  *                               │
  *                               ▼
  *                           VALIDATED
