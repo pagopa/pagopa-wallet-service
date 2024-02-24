@@ -63,16 +63,15 @@ data class Wallet(
                 userId = this.userId.id.toString(),
                 status = this.status.name,
                 paymentMethodId = this.paymentMethodId.value.toString(),
-                paymentInstrumentId = null,
                 contractId = this.contractId?.contractId,
                 validationOperationResult = this.validationOperationResult?.value,
                 validationErrorCode = this.validationErrorCode,
                 applications =
                     this.applications.map { app ->
-                        it.pagopa.wallet.documents.wallets.Application(
+                        it.pagopa.wallet.documents.wallets.WalletApplication(
                             app.id.id.toString(),
-                            "",
                             app.status.name,
+                            app.creationDate.toString(),
                             app.lastUpdate.toString(),
                             app.metadata.data
                         )
