@@ -150,18 +150,21 @@ stages:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
+              TEST_DISPLAY_NAME: "Wallet cards tests"
               ENV_FILE: "api-tests/dev.cards.envs.json"
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
+              TEST_DISPLAY_NAME: "Wallet PayPal tests"
               ENV_FILE: "api-tests/dev.paypal.envs.json"
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
+              TEST_DISPLAY_NAME: "Wallet migration tests"
               ENV_FILE: "api-tests/wallet_local_migration.environment.json"
               API_TEST_FILE: "api-tests/wallet_local_migration.collection.tests.json"
               TEST_FILE_PREFIX: "wallet-api-test-migration"
