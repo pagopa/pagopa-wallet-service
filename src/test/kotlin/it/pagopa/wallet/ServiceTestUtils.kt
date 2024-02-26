@@ -1,22 +1,27 @@
 package it.pagopa.wallet
 
-import it.pagopa.generated.wallet.model.ServiceCreateRequestDto
-import it.pagopa.generated.wallet.model.ServicePatchRequestDto
-import it.pagopa.generated.wallet.model.ServiceStatusDto
-import it.pagopa.wallet.WalletTestUtils.SERVICE_ID
-import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
-import it.pagopa.wallet.domain.services.Service
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_ID
+import it.pagopa.wallet.domain.applications.Application
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import java.time.Instant
 
-class ServiceTestUtils {
+class ApplicationsTestUtils {
     companion object {
-        val DOMAIN_SERVICE =
-            Service(SERVICE_ID, SERVICE_NAME, ServiceStatus.DISABLED, Instant.now())
+        val DOMAIN_APPLICATION =
+            Application(
+                APPLICATION_ID,
+                APPLICATION_DESCRIPTION,
+                ApplicationStatus.DISABLED,
+                Instant.now(),
+                Instant.now()
+            )
 
-        val CREATE_SERVICE_REQUEST = ServiceCreateRequestDto().apply { name = SERVICE_NAME.name }
+        val CREATE_SERVICE_REQUEST =
+            ApplicationCreateRequestDto().apply { applicationId = APPLICATION_ID.id }
 
         val UPDATE_SERVICE_STATUS_REQUEST =
-            ServicePatchRequestDto().apply { status = ServiceStatusDto.INCOMING }
+            ApplicationPatchRequestDto().apply { status = ApplicationStatusDto.INCOMING }
     }
 }

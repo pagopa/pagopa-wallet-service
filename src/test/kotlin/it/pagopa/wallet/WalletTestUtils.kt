@@ -4,16 +4,13 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
-import it.pagopa.wallet.documents.service.Service
-import it.pagopa.wallet.documents.wallets.Application as WalletServiceDocument
 import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.services.ApplicationMetadata
-import it.pagopa.wallet.domain.services.ServiceId
-import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.applications.ApplicationDescription
+import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import java.time.Instant
@@ -28,17 +25,19 @@ object WalletTestUtils {
 
     val WALLET_UUID = WalletId(UUID.randomUUID())
 
-    val SERVICE_ID = ServiceId(UUID.randomUUID())
+    val APPLICATION_ID = ApplicationId("PAGOPA")
+
+    val APPLICATION_DESCRIPTION = ApplicationDescription("PAGOPA")
+
+    val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
 
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
 
     val PAYMENT_INSTRUMENT_ID = PaymentInstrumentId(UUID.randomUUID())
 
-    val SERVICE_NAME = ServiceName("PAGOPA")
-
     private val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
-    val APPLICATION_METADATA = ApplicationMetadata(APPLICATION_METADATA_HASHMAP)
+    val APPLICATION_METADATA = WalletApplicationMetadata(APPLICATION_METADATA_HASHMAP)
 
     val CONTRACT_ID = ContractId("TestContractId")
 
@@ -62,7 +61,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.INITIALIZED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -82,7 +80,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.INITIALIZED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = contractId.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -108,7 +105,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.VALIDATION_REQUESTED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -136,7 +132,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.VALIDATION_REQUESTED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -159,7 +154,6 @@ object WalletTestUtils {
             userId = USER_ID.id.toString(),
             status = WalletStatusDto.ERROR.name,
             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-            paymentInstrumentId = null,
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = operationResultEnum.value,
             validationErrorCode = errorCode,
@@ -178,7 +172,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.VALIDATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.toString(),
                 validationErrorCode = null,
@@ -201,7 +194,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.VALIDATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = operationResultEnum.value,
                 validationErrorCode = null,
@@ -221,7 +213,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = null,
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -241,7 +232,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -261,7 +251,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -281,7 +270,6 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = null,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
@@ -301,16 +289,15 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
                 applications =
                     listOf(
-                        WalletServiceDocument(
-                            SERVICE_ID.id.toString(),
-                            SERVICE_NAME.name,
-                            ServiceStatus.DISABLED.toString(),
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id.toString(),
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA.data
                         )
@@ -335,16 +322,15 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
                 applications =
                     listOf(
-                        WalletServiceDocument(
-                            SERVICE_ID.id.toString(),
-                            SERVICE_NAME.name,
-                            ServiceStatus.DISABLED.toString(),
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id.toString(),
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA_HASHMAP
                         )
@@ -372,16 +358,15 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
                 applications =
                     listOf(
-                        WalletServiceDocument(
-                            SERVICE_ID.id.toString(),
-                            SERVICE_NAME.name,
-                            ServiceStatus.DISABLED.toString(),
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id.toString(),
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA_HASHMAP
                         )
@@ -409,16 +394,15 @@ object WalletTestUtils {
                 userId = USER_ID.id.toString(),
                 status = WalletStatusDto.CREATED.name,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                paymentInstrumentId = PAYMENT_INSTRUMENT_ID.value.toString(),
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
                 applications =
                     listOf(
-                        WalletServiceDocument(
-                            SERVICE_ID.id.toString(),
-                            SERVICE_NAME.name,
-                            ServiceStatus.DISABLED.toString(),
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id.toString(),
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA_HASHMAP
                         )
@@ -437,13 +421,12 @@ object WalletTestUtils {
             userId = USER_ID,
             status = WalletStatusDto.CREATED,
             paymentMethodId = PAYMENT_METHOD_ID_CARDS,
-            paymentInstrumentId = PAYMENT_INSTRUMENT_ID,
             applications =
                 listOf(
-                    Application(
-                        SERVICE_ID,
-                        SERVICE_NAME,
-                        ServiceStatus.DISABLED,
+                    WalletApplication(
+                        WALLET_APPLICATION_ID,
+                        WalletApplicationStatus.DISABLED,
+                        TIMESTAMP,
                         TIMESTAMP,
                         APPLICATION_METADATA
                     )
@@ -464,7 +447,6 @@ object WalletTestUtils {
             userId = USER_ID.id.toString(),
             status = WalletStatusDto.CREATED.name,
             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-            paymentInstrumentId = null,
             contractId = null,
             validationOperationResult = null,
             validationErrorCode = null,
@@ -489,7 +471,6 @@ object WalletTestUtils {
                 userId = USER_ID,
                 status = WalletStatusDto.CREATED,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS,
-                paymentInstrumentId = null,
                 applications = listOf(),
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -510,7 +491,6 @@ object WalletTestUtils {
                 userId = USER_ID,
                 status = WalletStatusDto.CREATED,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS,
-                paymentInstrumentId = null,
                 applications = listOf(),
                 contractId = null,
                 validationOperationResult = null,
@@ -531,7 +511,6 @@ object WalletTestUtils {
                 userId = USER_ID,
                 status = WalletStatusDto.CREATED,
                 paymentMethodId = PAYMENT_METHOD_ID_CARDS,
-                paymentInstrumentId = null,
                 applications = listOf(),
                 contractId = CONTRACT_ID,
                 validationOperationResult = null,
@@ -589,12 +568,13 @@ object WalletTestUtils {
             .brand("PAYPAL")
             .paymentMethodData(WalletAuthAPMDataDto().paymentMethodType("apm"))
 
-    val SERVICE_DOCUMENT: Service =
-        Service(
-            SERVICE_ID.id.toString(),
-            SERVICE_NAME.name,
-            ServiceStatus.DISABLED.name,
-            TIMESTAMP.toString()
+    val APPLICATION_DOCUMENT: WalletApplicationDocument =
+        WalletApplicationDocument(
+            WALLET_APPLICATION_ID.id.toString(),
+            WalletApplicationStatus.DISABLED.name,
+            TIMESTAMP.toString(),
+            TIMESTAMP.toString(),
+            APPLICATION_METADATA.data
         )
 
     fun buildProblemJson(

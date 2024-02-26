@@ -1137,9 +1137,9 @@ components:
       type: object
       description: Application creation request
       properties:
-        name:
+        applicationId:
           type: string
-          description: Application name
+          description: Application id
         status:
           $ref: "#/components/schemas/ApplicationStatus"
       required:

@@ -6,6 +6,9 @@ import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_DOCUMENT
+import it.pagopa.wallet.WalletTestUtils.APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_METADATA
 import it.pagopa.wallet.WalletTestUtils.MASKED_EMAIL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
@@ -15,10 +18,8 @@ import it.pagopa.wallet.WalletTestUtils.ORDER_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.PSP_ID
-import it.pagopa.wallet.WalletTestUtils.SERVICE_DOCUMENT
-import it.pagopa.wallet.WalletTestUtils.SERVICE_ID
-import it.pagopa.wallet.WalletTestUtils.SERVICE_NAME
 import it.pagopa.wallet.WalletTestUtils.USER_ID
+import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
 import it.pagopa.wallet.WalletTestUtils.creationDate
 import it.pagopa.wallet.WalletTestUtils.getUniqueId
@@ -41,21 +42,18 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
-import it.pagopa.wallet.documents.service.Service as ServiceDocument
-import it.pagopa.wallet.documents.wallets.Application as ApplicationDocument
+import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
+import it.pagopa.wallet.domain.applications.Application
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.services.*
-import it.pagopa.wallet.domain.wallets.Application
-import it.pagopa.wallet.domain.wallets.ContractId
-import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.NpgSession
-import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
-import it.pagopa.wallet.repositories.ServiceRepository
-import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -82,7 +80,7 @@ import reactor.test.StepVerifier
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
-    private val serviceRepository: ServiceRepository = mock()
+    private val applicationRepository: ApplicationRepository = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
@@ -197,7 +195,7 @@ class WalletServiceTest {
     private val walletService: WalletService =
         WalletService(
             walletRepository,
-            serviceRepository,
+            applicationRepository,
             ecommercePaymentMethodsClient,
             npgClient,
             npgSessionRedisTemplate,
@@ -237,7 +235,7 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.createWallet(
-                            serviceList = listOf(SERVICE_NAME),
+                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value
                         )
@@ -271,24 +269,25 @@ class WalletServiceTest {
                         .copy(
                             applications =
                                 listOf(
-                                    ApplicationDocument(
+                                    WalletApplicationDocument(
                                         WALLET_UUID.value.toString(),
                                         ServiceNameDto.PAGOPA.value,
-                                        ServiceStatus.ENABLED.toString(),
+                                        WalletApplicationStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
                                             Pair(
-                                                ApplicationMetadata.Metadata
+                                                WalletApplicationMetadata.Metadata
                                                     .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                                     .value,
                                                 "true"
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                                                    .value,
                                                 TransactionId(transactionId).value().toString()
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
                                                 amount.toString()
                                             )
                                         )
@@ -348,24 +347,25 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value.toString(),
                             applications =
                                 listOf(
-                                    ApplicationDocument(
+                                    WalletApplicationDocument(
                                         WALLET_UUID.value.toString(),
                                         ServiceNameDto.PAGOPA.value,
-                                        ServiceStatus.ENABLED.toString(),
+                                        WalletApplicationStatus.ENABLED.toString(),
                                         creationDate.toString(),
                                         hashMapOf(
                                             Pair(
-                                                ApplicationMetadata.Metadata
+                                                WalletApplicationMetadata.Metadata
                                                     .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                                     .value,
                                                 "true"
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                                                    .value,
                                                 TransactionId(transactionId).value().toString()
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
                                                 amount.toString()
                                             )
                                         )
@@ -430,7 +430,7 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.createWallet(
-                            serviceList = listOf(SERVICE_NAME),
+                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value
                         )
@@ -671,24 +671,25 @@ class WalletServiceTest {
                         .copy(
                             applications =
                                 listOf(
-                                    ApplicationDocument(
+                                    WalletApplicationDocument(
                                         UUID.randomUUID().toString(),
                                         ServiceNameDto.PAGOPA.value,
-                                        ServiceStatus.ENABLED.name,
+                                        WalletApplicationStatus.ENABLED.name,
                                         Instant.now().toString(),
                                         hashMapOf(
                                             Pair(
-                                                ApplicationMetadata.Metadata
+                                                WalletApplicationMetadata.Metadata
                                                     .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                                     .value,
                                                 "true"
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                                                    .value,
                                                 transactionId
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
                                                 amount.toString()
                                             )
                                         )
@@ -701,24 +702,25 @@ class WalletServiceTest {
                         .copy(
                             applications =
                                 listOf(
-                                    ApplicationDocument(
+                                    WalletApplicationDocument(
                                         UUID.randomUUID().toString(),
                                         ServiceNameDto.PAGOPA.value,
-                                        ServiceStatus.ENABLED.name,
+                                        WalletApplicationStatus.ENABLED.name,
                                         Instant.now().toString(),
                                         hashMapOf(
                                             Pair(
-                                                ApplicationMetadata.Metadata
+                                                WalletApplicationMetadata.Metadata
                                                     .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                                     .value,
                                                 "true"
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                                                    .value,
                                                 transactionId
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
                                                 amount.toString()
                                             )
                                         )
@@ -1698,15 +1700,14 @@ class WalletServiceTest {
                         .walletId(UUID.fromString(wallet.id))
                         .status(WalletStatusDto.valueOf(wallet.status))
                         .paymentMethodId(wallet.paymentMethodId)
-                        .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.name))
-                                    .status(ServiceStatusDto.valueOf(application.status))
+                                    .name(ServiceNameDto.valueOf(application.id))
+                                    .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1746,15 +1747,13 @@ class WalletServiceTest {
                         .walletId(UUID.fromString(wallet.id))
                         .status(WalletStatusDto.valueOf(wallet.status))
                         .paymentMethodId(wallet.paymentMethodId)
-                        .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.name))
-                                    .status(ServiceStatusDto.valueOf(application.status))
+                                    .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1792,15 +1791,13 @@ class WalletServiceTest {
                         .walletId(UUID.fromString(wallet.id))
                         .status(WalletStatusDto.valueOf(wallet.status))
                         .paymentMethodId(wallet.paymentMethodId)
-                        .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.name))
-                                    .status(ServiceStatusDto.valueOf(application.status))
+                                    .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
@@ -1836,15 +1833,14 @@ class WalletServiceTest {
                         .walletId(UUID.fromString(wallet.id))
                         .status(WalletStatusDto.valueOf(wallet.status))
                         .paymentMethodId(wallet.paymentMethodId)
-                        .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .services(
                             wallet.applications.map { application ->
                                 ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.name))
-                                    .status(ServiceStatusDto.valueOf(application.status))
+                                    .name(ServiceNameDto.valueOf(application.id))
+                                    .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1946,7 +1942,7 @@ class WalletServiceTest {
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyServicesNullDetailsNoPaymentInstrument()
 
-                val newServiceStatus = ServiceStatus.ENABLED
+                val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletServiceUpdateData(
@@ -1955,10 +1951,10 @@ class WalletServiceTest {
                                     .copy(
                                         applications =
                                             listOf(
-                                                Application(
-                                                    SERVICE_ID,
-                                                    SERVICE_NAME,
-                                                    newServiceStatus,
+                                                WalletApplication(
+                                                    WALLET_APPLICATION_ID,
+                                                    newWalletApplicationStatus,
+                                                    mockedInstant,
                                                     mockedInstant,
                                                     APPLICATION_METADATA
                                                 )
@@ -1966,8 +1962,9 @@ class WalletServiceTest {
                                         updateDate = mockedInstant
                                     )
                                     .toDocument(),
-                            successfullyUpdatedServices = mapOf(SERVICE_NAME to newServiceStatus),
-                            servicesWithUpdateFailed = mapOf()
+                            successfullyUpdatedApplications =
+                                mapOf(WALLET_APPLICATION_ID to newWalletApplicationStatus),
+                            applicationsWithUpdateFailed = mapOf()
                         ),
                         WalletPatchEvent(WALLET_UUID.value.toString())
                     )
@@ -1982,9 +1979,11 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
-                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                        Mono.just(
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
+                        )
                     )
 
                 /* test */
@@ -1993,7 +1992,7 @@ class WalletServiceTest {
                 StepVerifier.create(
                         walletService.updateWalletServices(
                             WALLET_UUID.value,
-                            listOf(Pair(SERVICE_NAME, newServiceStatus))
+                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
                     )
                     .expectNext(expectedLoggedAction)
@@ -2006,7 +2005,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should patch wallet document editing service status with valid status`() {
+    fun `should patch wallet document editing application status with valid status`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -2015,7 +2014,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val newServiceStatus = ServiceStatus.ENABLED
+                val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
 
                 val expectedLoggedAction =
                     LoggedAction(
@@ -2025,10 +2024,10 @@ class WalletServiceTest {
                                     .copy(
                                         applications =
                                             listOf(
-                                                Application(
-                                                    SERVICE_ID,
-                                                    SERVICE_NAME,
-                                                    newServiceStatus,
+                                                WalletApplication(
+                                                    WALLET_APPLICATION_ID,
+                                                    newWalletApplicationStatus,
+                                                    mockedInstant,
                                                     mockedInstant,
                                                     APPLICATION_METADATA
                                                 )
@@ -2036,9 +2035,9 @@ class WalletServiceTest {
                                         updateDate = mockedInstant
                                     )
                                     .toDocument(),
-                            successfullyUpdatedServices =
-                                mapOf(SERVICE_NAME to ServiceStatus.ENABLED),
-                            servicesWithUpdateFailed = mapOf()
+                            successfullyUpdatedApplications =
+                                mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
+                            applicationsWithUpdateFailed = mapOf()
                         ),
                         WalletPatchEvent(WALLET_UUID.value.toString())
                     )
@@ -2051,23 +2050,25 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
-                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                        Mono.just(
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
+                        )
                     )
 
                 /* test */
                 assertEquals(walletDocument.applications.size, 1)
-                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocument.applications[0].id, APPLICATION_DOCUMENT.id)
                 assertEquals(
                     walletDocument.applications[0].status,
-                    ServiceStatus.DISABLED.toString()
+                    ApplicationStatus.DISABLED.toString()
                 )
 
                 StepVerifier.create(
                         walletService.updateWalletServices(
                             WALLET_UUID.value,
-                            listOf(Pair(SERVICE_NAME, newServiceStatus))
+                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
                     )
                     .expectNext(expectedLoggedAction)
@@ -2075,10 +2076,10 @@ class WalletServiceTest {
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(walletDocumentToSave.applications.size, 1)
-                assertEquals(walletDocumentToSave.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    ServiceStatus.ENABLED.toString()
+                    WalletApplicationStatus.ENABLED.toString()
                 )
             }
         }
@@ -2107,8 +2108,8 @@ class WalletServiceTest {
                                         updateDate = mockedInstant
                                     )
                                     .toDocument(),
-                            successfullyUpdatedServices = mapOf(),
-                            servicesWithUpdateFailed = mapOf()
+                            successfullyUpdatedApplications = mapOf(),
+                            applicationsWithUpdateFailed = mapOf()
                         ),
                         WalletPatchEvent(WALLET_UUID.value.toString())
                     )
@@ -2120,17 +2121,19 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
-                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                        Mono.just(
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
+                        )
                     )
 
                 /* test */
                 assertEquals(walletDocument.applications.size, 1)
-                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocument.applications[0].id, APPLICATION_ID.id)
                 assertEquals(
                     walletDocument.applications[0].status,
-                    ServiceStatus.DISABLED.toString()
+                    WalletApplicationStatus.DISABLED.toString()
                 )
 
                 StepVerifier.create(walletService.updateWalletServices(WALLET_UUID.value, listOf()))
@@ -2139,17 +2142,17 @@ class WalletServiceTest {
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(walletDocumentToSave.applications.size, 1)
-                assertEquals(walletDocumentToSave.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    ServiceStatus.DISABLED.toString()
+                    WalletApplicationStatus.DISABLED.toString()
                 )
             }
         }
     }
 
     @Test
-    fun `should patch wallet document editing service status and return services that could not be changed`() {
+    fun `should patch wallet document editing application status and return services that could not be changed`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -2158,14 +2161,15 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val newServiceStatus = ServiceStatus.ENABLED
+                val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
 
-                val disabledService =
-                    Service(
-                        ServiceId(UUID.randomUUID()),
-                        ServiceName("INCOMING_SERVICE"),
-                        ServiceStatus.INCOMING,
-                        Instant.now()
+                val disabledApplication =
+                    Application(
+                        APPLICATION_ID,
+                        APPLICATION_DESCRIPTION,
+                        ApplicationStatus.INCOMING,
+                        Instant.now(),
+                        Instant.now(),
                     )
 
                 val walletDocument = walletDocument()
@@ -2178,10 +2182,10 @@ class WalletServiceTest {
                                     .copy(
                                         applications =
                                             listOf(
-                                                Application(
-                                                    SERVICE_ID,
-                                                    SERVICE_NAME,
-                                                    newServiceStatus,
+                                                WalletApplication(
+                                                    WALLET_APPLICATION_ID,
+                                                    newWalletApplicationStatus,
+                                                    mockedInstant,
                                                     mockedInstant,
                                                     APPLICATION_METADATA
                                                 )
@@ -2189,10 +2193,10 @@ class WalletServiceTest {
                                         updateDate = mockedInstant
                                     )
                                     .toDocument(),
-                            successfullyUpdatedServices =
-                                mapOf(SERVICE_NAME to ServiceStatus.ENABLED),
-                            servicesWithUpdateFailed =
-                                mapOf(disabledService.name to ServiceStatus.INCOMING)
+                            successfullyUpdatedApplications =
+                                mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
+                            applicationsWithUpdateFailed =
+                                mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.INCOMING)
                         ),
                         WalletPatchEvent(WALLET_UUID.value.toString())
                     )
@@ -2205,28 +2209,33 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
-                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                        Mono.just(
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
+                        )
                     )
 
-                given { serviceRepository.findByName(disabledService.name.name) }
-                    .willReturn(Mono.just(ServiceDocument.fromDomain(disabledService)))
+                given { applicationRepository.findById(disabledApplication.id.id) }
+                    .willReturn(Mono.just(ApplicationDocument.fromDomain(disabledApplication)))
 
                 /* test */
                 assertEquals(walletDocument.applications.size, 1)
-                assertEquals(walletDocument.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocument.applications[0].id, WALLET_APPLICATION_ID)
                 assertEquals(
                     walletDocument.applications[0].status,
-                    ServiceStatus.DISABLED.toString()
+                    WalletApplicationStatus.DISABLED.toString()
                 )
 
                 StepVerifier.create(
                         walletService.updateWalletServices(
                             WALLET_UUID.value,
                             listOf(
-                                Pair(SERVICE_NAME, newServiceStatus),
-                                Pair(disabledService.name, newServiceStatus)
+                                Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
+                                Pair(
+                                    WalletApplicationId(disabledApplication.id.id),
+                                    newWalletApplicationStatus
+                                )
                             )
                         )
                     )
@@ -2235,17 +2244,17 @@ class WalletServiceTest {
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(walletDocumentToSave.applications.size, 1)
-                assertEquals(walletDocumentToSave.applications[0].name, SERVICE_NAME.name)
+                assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    ServiceStatus.ENABLED.toString()
+                    WalletApplicationStatus.ENABLED.toString()
                 )
             }
         }
     }
 
     @Test
-    fun `should throw error when trying to patch service status for unknown service`() {
+    fun `should throw error when trying to patch application status for unknown service`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -2254,14 +2263,15 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val newServiceStatus = ServiceStatus.ENABLED
+                val newApplicationStatus = WalletApplicationStatus.ENABLED
 
-                val unknownService =
-                    Service(
-                        ServiceId(UUID.randomUUID()),
-                        ServiceName("UNKNOWN_SERVICE"),
-                        ServiceStatus.INCOMING,
-                        Instant.now()
+                val unknownApplication =
+                    ApplicationDocument(
+                        APPLICATION_ID.id,
+                        APPLICATION_DESCRIPTION.description,
+                        ApplicationStatus.INCOMING.toString(),
+                        Instant.now().toString(),
+                        Instant.now().toString()
                     )
 
                 val walletDocument = walletDocument()
@@ -2269,12 +2279,14 @@ class WalletServiceTest {
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocument))
 
-                given { serviceRepository.findByName(SERVICE_NAME.name) }
+                given { applicationRepository.findByName(APPLICATION_ID.id) }
                     .willReturn(
-                        Mono.just(SERVICE_DOCUMENT.copy(status = ServiceStatus.ENABLED.name))
+                        Mono.just(
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
+                        )
                     )
 
-                given { serviceRepository.findByName(unknownService.name.name) }
+                given { applicationRepository.findByName(unknownApplication.id) }
                     .willReturn(Mono.empty())
 
                 /* test */
@@ -2283,8 +2295,11 @@ class WalletServiceTest {
                         walletService.updateWalletServices(
                             WALLET_UUID.value,
                             listOf(
-                                Pair(SERVICE_NAME, newServiceStatus),
-                                Pair(unknownService.name, newServiceStatus)
+                                Pair(WALLET_APPLICATION_ID, newApplicationStatus),
+                                Pair(
+                                    WalletApplicationId(unknownApplication.id),
+                                    newApplicationStatus
+                                )
                             )
                         )
                     )
@@ -2306,7 +2321,7 @@ class WalletServiceTest {
         StepVerifier.create(
                 walletService.updateWalletServices(
                     WALLET_UUID.value,
-                    listOf(Pair(SERVICE_NAME, ServiceStatus.ENABLED))
+                    listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
                 )
             )
             .expectError(WalletNotFoundException::class.java)
