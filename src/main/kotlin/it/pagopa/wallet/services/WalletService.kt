@@ -114,7 +114,7 @@ class WalletService(
     )
 
     fun createWallet(
-        serviceList: List<ServiceNameDto>,
+        walletApplicationList: List<WalletApplicationId>,
         userId: UUID,
         paymentMethodId: UUID
     ): Mono<Pair<LoggedAction<Wallet>, URI>> {
