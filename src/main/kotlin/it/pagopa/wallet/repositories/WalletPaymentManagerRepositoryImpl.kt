@@ -31,7 +31,7 @@ class WalletPaymentManagerRepositoryImpl(
             walletPmId = walletPmId,
             walletId = walletId.value.toString(),
             contractId = contractId.contractId,
-            createdAt = Instant.now()
+            creationDate = Instant.now()
         )
 
     private fun WalletPaymentManagerDocument.toDomain() =

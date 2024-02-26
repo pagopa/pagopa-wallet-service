@@ -10,5 +10,5 @@ data class WalletPaymentManagerDocument(
     @Id var walletPmId: String,
     var walletId: String,
     var contractId: String,
-    @CreatedDate var createdAt: Instant,
+    @CreatedDate var creationDate: Instant,
 )
