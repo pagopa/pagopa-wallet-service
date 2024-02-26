@@ -16,11 +16,13 @@
 							"pm.test(\"[Wallet PM Migration] New wallet created successfully with PUT /wallets/migrations\", function () {",
 							"    pm.response.to.have.status(200);",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
-							"    pm.expect(responseJson.walletIdPm).to.be.a(\"number\")",
-							"    pm.expect(responseJson.walletIdPm).to.be.eq(Number(pm.environment.get(\"WALLET_ID_PM\")))",
-							"    pm.expect(responseJson.contractId).to.be.a(\"string\")",
-							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\");",
+							"    pm.expect(responseJson.walletIdPm).to.be.a(\"number\");",
+							"    pm.expect(responseJson.walletIdPm).to.be.eq(Number(pm.environment.get(\"WALLET_ID_PM\")));",
+							"    pm.expect(responseJson.contractId).to.be.a(\"string\");",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\");",
+							"    const walletId = responseJson.walletId;",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -47,6 +49,52 @@
 					"path": [
 						"migrations",
 						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get migrated wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"USER_ID\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/:walletId",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						":walletId"
+					],
+					"variable": [
+						{
+							"key": "walletId",
+							"value": "{{WALLET_ID}}"
+						}
 					]
 				}
 			},
