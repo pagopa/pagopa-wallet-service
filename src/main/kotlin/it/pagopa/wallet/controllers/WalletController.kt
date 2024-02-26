@@ -201,7 +201,10 @@ class WalletController(
                 walletService.updateWalletServices(
                     walletId,
                     requestedServices.map {
-                        Pair(WalletApplicationId(it.name.name), WalletApplicationStatus.valueOf(it.status.value))
+                        Pair(
+                            WalletApplicationId(it.name.name),
+                            WalletApplicationStatus.valueOf(it.status.value)
+                        )
                     }
                 )
             }

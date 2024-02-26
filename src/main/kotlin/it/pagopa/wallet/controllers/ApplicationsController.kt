@@ -18,14 +18,14 @@ class ApplicationsController(
     @Autowired private val loggingEventRepository: LoggingEventRepository
 ) : ApplicationsApi {
     override fun createApplication(
-            serviceCreateRequestDto: Mono<ApplicationCreateRequestDto>,
-            exchange: ServerWebExchange
+        serviceCreateRequestDto: Mono<ApplicationCreateRequestDto>,
+        exchange: ServerWebExchange
     ): Mono<ResponseEntity<ApplicationCreateResponseDto>> {
         return serviceCreateRequestDto
             .flatMap {
                 applicationsService.createApplication(
                     it.name,
-                   it.status,
+                    it.status,
                 )
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
@@ -41,7 +41,7 @@ class ApplicationsController(
         return servicePatchRequestDto
             .flatMap {
                 applicationsService.setApplicationStatus(
-                        applicationId,
+                    applicationId,
                     ApplicationStatus.valueOf(it.status.toString())
                 )
             }
