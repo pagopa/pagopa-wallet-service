@@ -260,7 +260,7 @@ class WalletService(
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
                 val pagopaApplication =
                     wallet.applications.singleOrNull { application ->
-                        application.id.equals(WalletApplicationId(ServiceNameDto.PAGOPA.value)) &&
+                        application.id == WalletApplicationId(ServiceNameDto.PAGOPA.value) &&
                             application.status == WalletApplicationStatus.ENABLED
                     }
                 val isTransactionWithContextualOnboard =

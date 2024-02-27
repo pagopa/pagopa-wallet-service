@@ -22,7 +22,7 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
             it.pagopa.wallet.domain.applications.Application(
                 id = ApplicationId(applicationId),
                 description = ApplicationDescription(""), // TODO handle according API refactoring
-                status = ApplicationStatus.valueOf((status ?: ApplicationStatusDto.DISABLED).value),
+                status = ApplicationStatus.valueOf(status.value),
                 creationDate = Instant.now(),
                 lastUpdated = Instant.now()
             )
