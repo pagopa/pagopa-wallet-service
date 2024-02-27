@@ -742,7 +742,7 @@ class WalletService(
                 wallet.applications.map { application ->
                     ServiceDto()
                         .name(ServiceNameDto.valueOf(application.id))
-                        .status(ServiceStatusDto.valueOf(application.status))
+                        .status(ApplicationStatusDto.valueOf(application.status))
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
@@ -807,7 +807,7 @@ class WalletService(
                             .findById(applicationId.id)
                             .map { Triple(it, applicationId, requestedStatus) }
                             .switchIfEmpty(
-                                Mono.error(ServiceNameNotFoundException(applicationId.id))
+                                Mono.error(ApplicationNotFoundException(applicationId.id))
                             )
                     }
                     .reduce(
@@ -833,18 +833,17 @@ class WalletService(
                             )
                         ) {
                             updatedApplications[applicationId] =
-                                (walletApplication?.copy(
+                                walletApplication?.copy(
                                     lastUpdateDate = Instant.now().toString(),
                                     status = requestedStatus.name
                                 )
-                                    ?: WalletApplication(
-                                        id = applicationId,
-                                        status = requestedStatus,
-                                        creationDate = Instant.now(),
-                                        lastUpdate = Instant.now(),
-                                        metadata = WalletApplicationMetadata(hashMapOf())
-                                    ))
-                                    as it.pagopa.wallet.documents.wallets.WalletApplication
+                                    ?: it.pagopa.wallet.documents.wallets.WalletApplication(
+                                        id = applicationId.id,
+                                        status = requestedStatus.name,
+                                        creationDate = Instant.now().toString(),
+                                        lastUpdateDate = Instant.now().toString(),
+                                        metadata = hashMapOf()
+                                    )
                             servicesUpdatedSuccessfully[applicationId] = requestedStatus
                         } else {
                             servicesWithUpdateFailed[applicationId] = serviceGlobalStatus

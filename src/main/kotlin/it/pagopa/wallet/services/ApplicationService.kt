@@ -1,6 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.wallet.model.ServiceStatusDto
+import it.pagopa.generated.wallet.model.ApplicationStatusDto
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
@@ -16,13 +16,13 @@ import reactor.core.publisher.Mono
 class ApplicationService(@Autowired private val applicationRepository: ApplicationRepository) {
     fun createApplication(
         applicationId: String,
-        status: ServiceStatusDto
+        status: ApplicationStatusDto
     ): Mono<LoggedAction<it.pagopa.wallet.domain.applications.Application>> {
         val application =
             it.pagopa.wallet.domain.applications.Application(
                 id = ApplicationId(applicationId),
                 description = ApplicationDescription(""), // TODO handle according API refactoring
-                status = ApplicationStatus.valueOf((status ?: ServiceStatusDto.DISABLED).value),
+                status = ApplicationStatus.valueOf((status ?: ApplicationStatusDto.DISABLED).value),
                 creationDate = Instant.now(),
                 lastUpdated = Instant.now()
             )
@@ -34,14 +34,14 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
 
     fun setApplicationStatus(
         applicationId: String,
-        status: ServiceStatusDto
+        status: ApplicationStatusDto
     ): Mono<LoggedAction<it.pagopa.wallet.domain.applications.Application>> {
         return applicationRepository
             .findById(applicationId)
             .switchIfEmpty(Mono.error(ApplicationNotFoundException(applicationId)))
             .map {
                 it.copy(status = status.toString(), lastUpdated = Instant.now().toString()) to
-                    ApplicationStatus.valueOf((status ?: ServiceStatusDto.DISABLED).value)
+                    ApplicationStatus.valueOf(it.status)
             }
             .flatMap { (application, oldStatus) ->
                 applicationRepository.save(application).map { application to oldStatus }

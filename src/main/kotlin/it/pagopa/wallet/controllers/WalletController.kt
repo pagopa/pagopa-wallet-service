@@ -5,8 +5,8 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
-import it.pagopa.wallet.exception.WalletServiceStatusConflictException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
@@ -212,7 +212,7 @@ class WalletController(
             .flatMap {
                 if (it.applicationsWithUpdateFailed.isNotEmpty()) {
                     return@flatMap Mono.error(
-                        WalletServiceStatusConflictException(
+                        WalletApplicationStatusConflictException(
                             it.successfullyUpdatedApplications,
                             it.applicationsWithUpdateFailed
                         )

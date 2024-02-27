@@ -2,7 +2,6 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.ApplicationsApi
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.ApplicationService
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,8 +23,8 @@ class ApplicationsController(
         return serviceCreateRequestDto
             .flatMap {
                 applicationsService.createApplication(
-                    it.name,
-                    it.status,
+                    it.applicationId,
+                    ApplicationStatusDto.valueOf((it.status ?: ApplicationStatusDto.DISABLED).value)
                 )
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
@@ -42,7 +41,7 @@ class ApplicationsController(
             .flatMap {
                 applicationsService.setApplicationStatus(
                     applicationId,
-                    ApplicationStatus.valueOf(it.status.toString())
+                    ApplicationStatusDto.valueOf(it.status.toString())
                 )
             }
             .flatMap { it.saveEvents(loggingEventRepository) }

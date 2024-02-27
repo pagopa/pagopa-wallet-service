@@ -28,7 +28,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@WebFluxTest(ServicesController::class)
+@WebFluxTest(ApplicationsController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class ServicesControllerTest {
 
