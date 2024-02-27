@@ -210,15 +210,15 @@ class WalletController(
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .flatMap {
-                if (it.applicationsWithUpdateFailed.isNotEmpty()) {
-                    return@flatMap Mono.error(
+                return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
+                    Mono.error(
                         WalletApplicationStatusConflictException(
                             it.successfullyUpdatedApplications,
                             it.applicationsWithUpdateFailed
                         )
                     )
                 } else {
-                    return@flatMap Mono.just(it)
+                    Mono.just(it)
                 }
             }
             .map { ResponseEntity.noContent().build() }
