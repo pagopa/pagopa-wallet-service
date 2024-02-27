@@ -13,11 +13,12 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_1
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.applications.ApplicationId
+import it.pagopa.wallet.domain.wallets.WalletApplicationId
+import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.SecurityTokenMatchException
-import it.pagopa.wallet.exception.ServiceNameNotFoundException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
@@ -395,12 +396,14 @@ class WalletControllerTest {
                 mono {
                     LoggedAction(
                         WalletServiceUpdateData(
-                            successfullyUpdatedServices =
+                            successfullyUpdatedApplications =
                                 mapOf(
-                                    ServiceName(WALLET_SERVICE_1.name.name) to
-                                        ServiceStatus.valueOf(WALLET_SERVICE_1.status.name)
+                                    WalletApplicationId(WALLET_SERVICE_1.name.name) to
+                                        WalletApplicationStatus.valueOf(
+                                            WALLET_SERVICE_1.status.name
+                                        )
                                 ),
-                            servicesWithUpdateFailed = mapOf(),
+                            applicationsWithUpdateFailed = mapOf(),
                             updatedWallet = WALLET_DOMAIN.toDocument()
                         ),
                         WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
@@ -431,15 +434,15 @@ class WalletControllerTest {
             val walletId = WalletId(UUID.randomUUID())
             val walletServiceUpdateData =
                 WalletServiceUpdateData(
-                    successfullyUpdatedServices =
+                    successfullyUpdatedApplications =
                         mapOf(
-                            ServiceName("PAGOPA") to
-                                ServiceStatus.valueOf(WALLET_SERVICE_1.status.name)
+                            WalletApplicationId("PAGOPA") to
+                                WalletApplicationStatus.valueOf(WALLET_SERVICE_1.status.name)
                         ),
-                    servicesWithUpdateFailed =
+                    applicationsWithUpdateFailed =
                         mapOf(
-                            ServiceName("PAGOPA") to
-                                ServiceStatus.valueOf(WALLET_SERVICE_2.status.name)
+                            WalletApplicationId("PAGOPA") to
+                                WalletApplicationStatus.valueOf(WALLET_SERVICE_2.status.name)
                         ),
                     updatedWallet = WALLET_DOMAIN.toDocument()
                 )
@@ -460,16 +463,16 @@ class WalletControllerTest {
             val expectedResponse =
                 WalletServicesPartialUpdateDto().apply {
                     updatedServices =
-                        walletServiceUpdateData.successfullyUpdatedServices.map {
+                        walletServiceUpdateData.successfullyUpdatedApplications.map {
                             WalletServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .name(ServiceNameDto.valueOf(it.key.id))
                                 .status(WalletServiceStatusDto.valueOf(it.value.name))
                         }
                     failedServices =
-                        walletServiceUpdateData.servicesWithUpdateFailed.map {
+                        walletServiceUpdateData.applicationsWithUpdateFailed.map {
                             ServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.name))
-                                .status(ServiceStatusDto.valueOf(it.value.name))
+                                .name(ServiceNameDto.valueOf(it.key.id))
+                                .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
 
@@ -496,14 +499,14 @@ class WalletControllerTest {
             val walletId = WalletId(UUID.randomUUID())
 
             given { walletService.updateWalletServices(any(), any()) }
-                .willReturn(Mono.error(ServiceNameNotFoundException(ServiceName("UNKNOWN"))))
+                .willReturn(Mono.error(ApplicationNotFoundException(ApplicationId("UNKNOWN").id)))
 
             /* test */
             val expectedResponse =
                 ProblemJsonDto()
                     .status(404)
                     .title("Service not found")
-                    .detail("Service with name 'UNKNOWN' not found")
+                    .detail("Service with id 'UNKNOWN' not found")
 
             val walletUpdateRequest =
                 WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))

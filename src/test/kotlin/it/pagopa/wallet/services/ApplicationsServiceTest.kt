@@ -1,5 +1,6 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.wallet.model.ApplicationStatusDto
 import it.pagopa.wallet.ApplicationsTestUtils.Companion.DOMAIN_APPLICATION
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_ID
@@ -55,7 +56,12 @@ class ApplicationsServiceTest {
             given(applicationsRepository.save(any())).willAnswer { Mono.just(it.arguments[0]) }
 
             val actual =
-                applicationsService.createApplication(applicationId.id, applicationStatus).block()
+                applicationsService
+                    .createApplication(
+                        applicationId.id,
+                        ApplicationStatusDto.valueOf(applicationStatus.name)
+                    )
+                    .block()
             assertEquals(expected, actual)
         }
     }
@@ -87,7 +93,12 @@ class ApplicationsServiceTest {
             given(applicationsRepository.save(any())).willAnswer { Mono.just(it.arguments[0]) }
 
             val actual =
-                applicationsService.setApplicationStatus(application.id.id, newStatus).block()
+                applicationsService
+                    .setApplicationStatus(
+                        application.id.id,
+                        ApplicationStatusDto.valueOf(newStatus.name)
+                    )
+                    .block()
             assertEquals(expected, actual)
         }
     }
@@ -104,7 +115,12 @@ class ApplicationsServiceTest {
 
             given(applicationsRepository.findById(any<String>())).willReturn(Mono.empty())
 
-            StepVerifier.create(applicationsService.setApplicationStatus(service.id.id, newStatus))
+            StepVerifier.create(
+                    applicationsService.setApplicationStatus(
+                        service.id.id,
+                        ApplicationStatusDto.valueOf(newStatus.name)
+                    )
+                )
                 .expectError(ApplicationNotFoundException::class.java)
         }
     }

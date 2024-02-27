@@ -18,7 +18,7 @@ class ApplicationsTestUtils {
                 Instant.now()
             )
 
-        val CREATE_SERVICE_REQUEST =
+        val CREATE_APPLICATION_REQUEST =
             ApplicationCreateRequestDto().apply { applicationId = APPLICATION_ID.id }
 
         val UPDATE_SERVICE_STATUS_REQUEST =

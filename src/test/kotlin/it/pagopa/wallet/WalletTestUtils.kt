@@ -4,6 +4,7 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -11,6 +12,7 @@ import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetails
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import java.time.Instant
@@ -27,7 +29,7 @@ object WalletTestUtils {
 
     val APPLICATION_ID = ApplicationId("PAGOPA")
 
-    val APPLICATION_DESCRIPTION = ApplicationDescription("PAGOPA")
+    val APPLICATION_DESCRIPTION = ApplicationDescription("")
 
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
 
@@ -568,13 +570,13 @@ object WalletTestUtils {
             .brand("PAYPAL")
             .paymentMethodData(WalletAuthAPMDataDto().paymentMethodType("apm"))
 
-    val APPLICATION_DOCUMENT: WalletApplicationDocument =
-        WalletApplicationDocument(
-            WALLET_APPLICATION_ID.id.toString(),
-            WalletApplicationStatus.DISABLED.name,
+    val APPLICATION_DOCUMENT: Application =
+        Application(
+            APPLICATION_ID.id,
+            APPLICATION_DESCRIPTION.description,
+            ApplicationStatus.DISABLED.name,
             TIMESTAMP.toString(),
-            TIMESTAMP.toString(),
-            APPLICATION_METADATA.data
+            TIMESTAMP.toString()
         )
 
     fun buildProblemJson(
