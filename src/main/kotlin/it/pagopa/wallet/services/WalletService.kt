@@ -552,7 +552,7 @@ class WalletService(
                                 ),
                                 ExpiryDate(data.expiringDate.orEmpty()),
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
-                                CardHolderName("?")
+                                PaymentInstrumentGatewayId("?")
                             )
                     )
             }
@@ -753,7 +753,6 @@ class WalletService(
                 WalletCardDetailsDto()
                     .type(details.type)
                     .bin(details.bin)
-                    .holder(details.holder)
                     .expiryDate(details.expiryDate)
                     .maskedPan(details.maskedPan)
             is PayPalDetailsDocument ->

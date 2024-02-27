@@ -1716,7 +1716,6 @@ class WalletServiceTest {
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
-                                .holder((wallet.details as CardDetails).holder)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
@@ -1851,7 +1850,6 @@ class WalletServiceTest {
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
-                                .holder((wallet.details as CardDetails).holder)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
@@ -2832,7 +2830,7 @@ class WalletServiceTest {
                         maskedPan = "12345678" + "*".repeat(4) + "1234",
                         expiryDate = "24/12",
                         brand = "VISA",
-                        holder = ""
+                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),
             )
 
@@ -2909,7 +2907,7 @@ class WalletServiceTest {
                         maskedPan = "12345678" + "*".repeat(4) + "1234",
                         expiryDate = "24/12",
                         brand = "VISA",
-                        holder = ""
+                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),
             )
 

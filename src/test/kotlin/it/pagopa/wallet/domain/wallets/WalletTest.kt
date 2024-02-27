@@ -87,7 +87,7 @@ class WalletTest {
                         WalletTestUtils.MASKED_PAN,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
-                        WalletTestUtils.HOLDER_NAME
+                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
@@ -124,7 +124,7 @@ class WalletTest {
                         WalletTestUtils.MASKED_PAN,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
-                        WalletTestUtils.HOLDER_NAME
+                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
