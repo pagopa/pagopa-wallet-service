@@ -464,7 +464,6 @@ object WalletTestUtils {
             updateDate = creationDate
         )
     }
-
     fun newWalletDocumentSaved(): Wallet {
         return newWalletDocumentToBeSaved()
     }
