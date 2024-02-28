@@ -15,6 +15,7 @@ import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -55,6 +56,10 @@ object WalletTestUtils {
     val MASKED_EMAIL = MaskedEmail("maskedEmail")
 
     val creationDate: Instant = Instant.now()
+
+    const val TRANSACTION_ID = "0cbd232af3464a6985921cf437510e03"
+
+    const val AMOUNT = 100
 
     fun walletDocumentWithSessionWallet(): Wallet {
         val wallet =
@@ -461,8 +466,70 @@ object WalletTestUtils {
     }
 
     fun newWalletDocumentSaved(): Wallet {
-        val wallet = newWalletDocumentToBeSaved()
-        return wallet
+        return newWalletDocumentToBeSaved()
+    }
+
+    fun newWalletDocumentForCardPaymentWithContextualOnboardSaved(): Wallet {
+        return newWalletDocumentToBeSaved()
+            .copy(
+                applications =
+                    listOf(
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id,
+                            WalletApplicationStatus.ENABLED.toString(),
+                            creationDate.toString(),
+                            creationDate.toString(),
+                            hashMapOf(
+                                Pair(
+                                    WalletApplicationMetadata.Metadata
+                                        .PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                        .value,
+                                    true.toString()
+                                ),
+                                Pair(
+                                    WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                    TransactionId(TRANSACTION_ID).value().toString()
+                                ),
+                                Pair(
+                                    WalletApplicationMetadata.Metadata.AMOUNT.value,
+                                    AMOUNT.toString()
+                                )
+                            )
+                        )
+                    )
+            )
+    }
+
+    fun newWalletDocumentForAPMPaymentWithContextualOnboardSaved(): Wallet {
+        return newWalletDocumentToBeSaved()
+            .copy(
+                paymentMethodId = PAYMENT_METHOD_ID_APM.value.toString(),
+                applications =
+                    listOf(
+                        WalletApplicationDocument(
+                            WALLET_APPLICATION_ID.id,
+                            WalletApplicationStatus.ENABLED.toString(),
+                            creationDate.toString(),
+                            creationDate.toString(),
+                            hashMapOf(
+                                Pair(
+                                    WalletApplicationMetadata.Metadata
+                                        .PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                        .value,
+                                    true.toString()
+                                ),
+                                Pair(
+                                    WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                    TransactionId(TRANSACTION_ID).value().toString()
+                                ),
+                                Pair(
+                                    WalletApplicationMetadata.Metadata.AMOUNT.value,
+                                    AMOUNT.toString()
+                                )
+                            )
+                        )
+                    )
+            )
     }
 
     fun newWalletDomainSaved(): it.pagopa.wallet.domain.wallets.Wallet {

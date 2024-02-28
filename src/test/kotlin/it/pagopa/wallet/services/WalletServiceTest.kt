@@ -5,6 +5,7 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.AMOUNT
 import it.pagopa.wallet.WalletTestUtils.APM_SESSION_CREATE_REQUEST
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_DOCUMENT
@@ -19,6 +20,7 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.PSP_ID
 import it.pagopa.wallet.WalletTestUtils.TIMESTAMP
+import it.pagopa.wallet.WalletTestUtils.TRANSACTION_ID
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_UUID
@@ -27,6 +29,8 @@ import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument
+import it.pagopa.wallet.WalletTestUtils.newWalletDocumentForAPMPaymentWithContextualOnboardSaved
+import it.pagopa.wallet.WalletTestUtils.newWalletDocumentForCardPaymentWithContextualOnboardSaved
 import it.pagopa.wallet.WalletTestUtils.newWalletDocumentSaved
 import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentAPM
@@ -221,16 +225,20 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
+                val walletDocument = newWalletDocumentSaved()
                 val expectedLoggedAction =
                     LoggedAction(
-                        newWalletDocumentSaved().toDomain(),
+                        walletDocument.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
-                given { walletRepository.save(any()) }
-                    .willAnswer { Mono.just(newWalletDocumentSaved()) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { walletRepository.save(eq(walletDocument)) }
+                    .willAnswer { Mono.just(walletDocument) }
+                given {
+                        ecommercePaymentMethodsClient.getPaymentMethodById(
+                            eq(PAYMENT_METHOD_ID_CARDS.value.toString())
+                        )
+                    }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -252,9 +260,54 @@ class WalletServiceTest {
             }
         }
     }
-
     @Test
-    fun `should save wallet document for payment with contextual onboarding for CARDS payment method`() {
+    fun `should save wallet document for APM payment method`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
+            uuidMockStatic.`when`<Any> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockStatic ->
+                println("Mocked uuid: $mockedUUID")
+                println("Mocked instant: $mockedInstant")
+                instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val expectedLoggedAction =
+                        LoggedAction(
+                                initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument()
+                                        .copy(paymentMethodId = PAYMENT_METHOD_ID_APM),
+                                WalletAddedEvent(mockedUUID.toString())
+                        )
+
+                given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+                given {
+                    ecommercePaymentMethodsClient.getPaymentMethodById(
+                            eq(PAYMENT_METHOD_ID_APM.value.toString())
+                    )
+                }
+                        .willReturn { Mono.just(getValidAPMPaymentMethod()) }
+
+                /* test */
+
+                StepVerifier.create(
+                        walletService.createWallet(
+                                walletApplicationList = listOf(WALLET_APPLICATION_ID),
+                                userId = USER_ID.id,
+                                paymentMethodId = PAYMENT_METHOD_ID_APM.value
+                        )
+                )
+                        .assertNext { createWalletOutput ->
+                            assertEquals(
+                                    Pair(expectedLoggedAction, onboardingConfig.apmReturnUrl),
+                                    createWalletOutput
+                            )
+                        }
+                        .verifyComplete()
+            }
+        }
+    }
+    @Test
+    fun `should save wallet document for payment with contextual onboard for CARDS payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
@@ -264,46 +317,21 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = "0cbd232af3464a6985921cf437510e03"
-                val amount = 100
-                val walletDocument =
-                    newWalletDocumentSaved()
-                        .copy(
-                            applications =
-                                listOf(
-                                    WalletApplicationDocument(
-                                        WALLET_APPLICATION_ID.id,
-                                        WalletApplicationStatus.ENABLED.toString(),
-                                        creationDate.toString(),
-                                        creationDate.toString(),
-                                        hashMapOf(
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata
-                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                                    .value,
-                                                "true"
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
-                                                    .value,
-                                                TransactionId(transactionId).value().toString()
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                                amount.toString()
-                                            )
-                                        )
-                                    )
-                                )
-                        )
+                val walletDocumentForContextualOnboard =
+                    newWalletDocumentForCardPaymentWithContextualOnboardSaved()
                 val expectedLoggedAction =
                     LoggedAction(
-                        walletDocument.toDomain(),
+                        walletDocumentForContextualOnboard.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
-                given { walletRepository.save(any()) }.willAnswer { Mono.just(walletDocument) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { walletRepository.save(eq(walletDocumentForContextualOnboard)) }
+                    .willAnswer { Mono.just(walletDocumentForContextualOnboard) }
+                given {
+                        ecommercePaymentMethodsClient.getPaymentMethodById(
+                            eq(PAYMENT_METHOD_ID_CARDS.value.toString())
+                        )
+                    }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -312,8 +340,8 @@ class WalletServiceTest {
                         walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = TransactionId(transactionId),
-                            amount = amount
+                            transactionId = TransactionId(TRANSACTION_ID),
+                            amount = AMOUNT
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -331,7 +359,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should save wallet document for payment with contextual onboarding for APM payment method`() {
+    fun `should save wallet document for payment with contextual onboard for APM payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
@@ -341,47 +369,20 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val transactionId = "0cbd232af3464a6985921cf437510e03"
-                val amount = 100
-                val walletDocument =
-                    newWalletDocumentSaved()
-                        .copy(
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value.toString(),
-                            applications =
-                                listOf(
-                                    WalletApplicationDocument(
-                                        WALLET_APPLICATION_ID.id,
-                                        WalletApplicationStatus.ENABLED.toString(),
-                                        creationDate.toString(),
-                                        creationDate.toString(),
-                                        hashMapOf(
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata
-                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                                    .value,
-                                                "true"
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
-                                                    .value,
-                                                TransactionId(transactionId).value().toString()
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                                amount.toString()
-                                            )
-                                        )
-                                    )
-                                )
-                        )
+                val walletDocumentForContextualAPMOnboard = newWalletDocumentForAPMPaymentWithContextualOnboardSaved()
+
                 val expectedLoggedAction =
                     LoggedAction(
-                        walletDocument.toDomain(),
+                            walletDocumentForContextualAPMOnboard.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
 
-                given { walletRepository.save(any()) }.willAnswer { Mono.just(walletDocument) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { walletRepository.save(eq(walletDocumentForContextualAPMOnboard)) }.willAnswer { Mono.just(walletDocumentForContextualAPMOnboard) }
+                given {
+                        ecommercePaymentMethodsClient.getPaymentMethodById(
+                            eq(PAYMENT_METHOD_ID_APM.value.toString())
+                        )
+                    }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
                 /* test */
@@ -390,56 +391,13 @@ class WalletServiceTest {
                         walletService.createWalletForTransaction(
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            transactionId = TransactionId(transactionId),
-                            amount = 100
+                            transactionId = TransactionId(TRANSACTION_ID),
+                            amount = AMOUNT
                         )
                     )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, Optional.empty<URI>()),
-                            createWalletOutput
-                        )
-                    }
-                    .verifyComplete()
-            }
-        }
-    }
-
-    @Test
-    fun `should save wallet document for APM payment method`() {
-        /* preconditions */
-
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
-            uuidMockStatic.`when`<Any> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockStatic ->
-                println("Mocked uuid: $mockedUUID")
-                println("Mocked instant: $mockedInstant")
-                instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val expectedLoggedAction =
-                    LoggedAction(
-                        initializedWalletDomainEmptyServicesNullDetailsNoPaymentInstrument()
-                            .copy(paymentMethodId = PAYMENT_METHOD_ID_APM),
-                        WalletAddedEvent(mockedUUID.toString())
-                    )
-
-                given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willReturn { Mono.just(getValidAPMPaymentMethod()) }
-
-                /* test */
-
-                StepVerifier.create(
-                        walletService.createWallet(
-                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value
-                        )
-                    )
-                    .assertNext { createWalletOutput ->
-                        assertEquals(
-                            Pair(expectedLoggedAction, onboardingConfig.apmReturnUrl),
                             createWalletOutput
                         )
                     }
