@@ -8,6 +8,6 @@ data class WalletApplication(
     val id: WalletApplicationId,
     val status: WalletApplicationStatus,
     val creationDate: Instant,
-    val lastUpdate: Instant,
+    val updateDate: Instant,
     val metadata: WalletApplicationMetadata
 )

@@ -833,14 +833,14 @@ class WalletService(
                         ) {
                             updatedApplications[applicationId] =
                                 walletApplication?.copy(
-                                    lastUpdateDate = Instant.now().toString(),
+                                    updateDate = Instant.now().toString(),
                                     status = requestedStatus.name
                                 )
                                     ?: it.pagopa.wallet.documents.wallets.WalletApplication(
                                         id = applicationId.id,
                                         status = requestedStatus.name,
                                         creationDate = Instant.now().toString(),
-                                        lastUpdateDate = Instant.now().toString(),
+                                        updateDate = Instant.now().toString(),
                                         metadata = hashMapOf()
                                     )
                             servicesUpdatedSuccessfully[applicationId] = requestedStatus

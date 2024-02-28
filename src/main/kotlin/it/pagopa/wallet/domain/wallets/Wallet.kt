@@ -69,10 +69,10 @@ data class Wallet(
                 applications =
                     this.applications.map { app ->
                         it.pagopa.wallet.documents.wallets.WalletApplication(
-                            app.id.id.toString(),
+                            app.id.id,
                             app.status.name,
                             app.creationDate.toString(),
-                            app.lastUpdate.toString(),
+                            app.updateDate.toString(),
                             app.metadata.data
                         )
                     },

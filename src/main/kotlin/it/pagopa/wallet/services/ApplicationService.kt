@@ -24,7 +24,7 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
                 description = ApplicationDescription(""), // TODO handle according API refactoring
                 status = ApplicationStatus.valueOf(status.value),
                 creationDate = Instant.now(),
-                lastUpdated = Instant.now()
+                updateDate = Instant.now()
             )
 
         return applicationRepository
@@ -40,7 +40,7 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
             .findById(applicationId)
             .switchIfEmpty(Mono.error(ApplicationNotFoundException(applicationId)))
             .map {
-                it.copy(status = status.toString(), lastUpdated = Instant.now().toString()) to
+                it.copy(status = status.toString(), updateDate = Instant.now().toString()) to
                     ApplicationStatus.valueOf(it.status)
             }
             .flatMap { (application, oldStatus) ->
@@ -52,7 +52,7 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
                     ApplicationDescription(""),
                     ApplicationStatus.valueOf(application.status),
                     Instant.parse(application.creationDate),
-                    Instant.parse(application.lastUpdated)
+                    Instant.parse(application.updateDate)
                 ) to oldStatus
             }
             .map { (application, oldStatus) ->

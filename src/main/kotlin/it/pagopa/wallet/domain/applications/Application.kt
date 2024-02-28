@@ -7,5 +7,5 @@ data class Application(
     val description: ApplicationDescription,
     val status: ApplicationStatus,
     val creationDate: Instant,
-    val lastUpdated: Instant
+    val updateDate: Instant
 )

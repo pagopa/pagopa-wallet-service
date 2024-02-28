@@ -75,7 +75,7 @@ class ApplicationsServiceTest {
 
         val expected =
             LoggedAction(
-                application.copy(status = newStatus, lastUpdated = updatedDate),
+                application.copy(status = newStatus, updateDate = updatedDate),
                 ApplicationStatusChangedEvent(application.id.id, application.status, newStatus)
             )
 
