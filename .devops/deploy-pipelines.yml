@@ -168,7 +168,7 @@ stages:
               ENV_FILE: "api-tests/dev.migration.envs.json"
               API_TEST_FILE: "api-tests/wallet_migration_api.tests.json"
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-migration"
-              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+              WALLET_TOKEN_TEST: $(MIGRATION_WALLET_TOKEN_TEST_DEV)
               MIGRATION_API_KEY_TEST: $(MIGRATION_API_KEY_TEST_DEV)
   # --- END Deploy DEV --- #
 
