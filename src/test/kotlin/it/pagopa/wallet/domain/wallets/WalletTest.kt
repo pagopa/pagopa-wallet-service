@@ -88,7 +88,7 @@ class WalletTest {
                 details =
                     CardDetails(
                         WalletTestUtils.BIN,
-                        WalletTestUtils.MASKED_PAN,
+                        WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND
                     ),
@@ -125,7 +125,7 @@ class WalletTest {
                 details =
                     CardDetails(
                         WalletTestUtils.BIN,
-                        WalletTestUtils.MASKED_PAN,
+                        WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND
                     ),

@@ -1713,7 +1713,7 @@ class WalletServiceTest {
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .maskedPan((wallet.details as CardDetails).maskedPan)
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
 
                 given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
@@ -1850,7 +1850,7 @@ class WalletServiceTest {
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .maskedPan((wallet.details as CardDetails).maskedPan)
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
@@ -2798,7 +2798,7 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "1234",
+                        lastFourDigits = "1234",
                         expiryDate = "202412",
                         brand = "VISA"
                     ),
@@ -2874,7 +2874,7 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "1234",
+                        lastFourDigits = "1234",
                         expiryDate = "202412",
                         brand = "VISA"
                     ),

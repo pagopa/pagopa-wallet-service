@@ -782,7 +782,7 @@ components:
           minLength: 1
           maxLength: 6
           example: '123456'
-        maskedPan:
+        lastFourDigits:
           description: >-
             Card last four digits
           type: string
@@ -803,7 +803,7 @@ components:
       required:
         - type
         - bin
-        - maskedPan
+        - lastFourDigits
         - expiryDate
         - brand
     WalletPaypalDetails:
@@ -817,7 +817,7 @@ components:
           type: string
           description: PSP identifier for the PayPal wallet
         maskedEmail:
-          description: email masked pan
+          description: masked email
           type: string
           example: test***@***test.it
       required:

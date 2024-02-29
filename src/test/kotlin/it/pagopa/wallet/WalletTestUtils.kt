@@ -43,7 +43,7 @@ object WalletTestUtils {
     val CONTRACT_ID = ContractId("TestContractId")
 
     val BIN = Bin("42424242")
-    val MASKED_PAN = MaskedPan("5555")
+    val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     const val ORDER_ID = "WFHDJFIRUT48394832"
@@ -350,7 +350,7 @@ object WalletTestUtils {
                     CardDetails(
                         TYPE.toString(),
                         BIN.bin,
-                        MASKED_PAN.maskedPan,
+                        LAST_FOUR_DIGITS.lastFourDigits,
                         EXP_DATE.expDate,
                         BRAND.toString()
                     ),
@@ -386,7 +386,7 @@ object WalletTestUtils {
                     CardDetails(
                         TYPE.toString(),
                         BIN.bin,
-                        MASKED_PAN.maskedPan,
+                        LAST_FOUR_DIGITS.lastFourDigits,
                         EXP_DATE.expDate,
                         BRAND.toString()
                     ),
@@ -446,7 +446,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID,
             validationOperationResult = OperationResultEnum.EXECUTED,
             validationErrorCode = null,
-            details = CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND),
+            details = CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND),
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate
@@ -550,7 +550,7 @@ object WalletTestUtils {
             .services(listOf())
             .details(
                 WalletCardDetailsDto()
-                    .maskedPan(MASKED_PAN.maskedPan)
+                    .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
                     .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
                     .expiryDate(EXP_DATE.expDate)

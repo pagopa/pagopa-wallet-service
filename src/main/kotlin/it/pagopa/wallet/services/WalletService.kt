@@ -551,7 +551,7 @@ class WalletService(
                         details =
                             DomainCardDetails(
                                 Bin(data.bin.orEmpty()),
-                                MaskedPan(data.lastFourDigits.orEmpty()),
+                                LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(npgToEcommerceExpiryDate(data.expiringDate.orEmpty())),
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty())
                             )
@@ -760,7 +760,7 @@ class WalletService(
                     .type(details.type)
                     .bin(details.bin)
                     .expiryDate(details.expiryDate)
-                    .maskedPan(details.maskedPan)
+                    .lastFourDigits(details.lastFourDigits)
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
             else -> null
