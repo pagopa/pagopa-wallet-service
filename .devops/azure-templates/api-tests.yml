@@ -10,6 +10,9 @@ parameters:
     type: string
   - name: 'TEST_DISPLAY_NAME'
     type: string
+  - name: 'MIGRATION_API_KEY_TEST'
+    type: string
+    default: ""
 steps:
   - script: |
       yarn global add newman
