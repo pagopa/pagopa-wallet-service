@@ -1,12 +1,12 @@
 package it.pagopa.wallet.exception
 
-import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.WalletApplicationId
+import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 
-class WalletServiceStatusConflictException(
-    val updatedServices: Map<ServiceName, ServiceStatus>,
-    val failedServices: Map<ServiceName, ServiceStatus>
+class WalletApplicationStatusConflictException(
+    val updatedApplications: Map<WalletApplicationId, WalletApplicationStatus>,
+    val failedApplications: Map<WalletApplicationId, WalletApplicationStatus>
 ) :
     RuntimeException(
-        "Wallet services update failed, could not update services ${failedServices.keys}"
+        "Wallet application update failed, could not update applications ${failedApplications.keys}"
     )

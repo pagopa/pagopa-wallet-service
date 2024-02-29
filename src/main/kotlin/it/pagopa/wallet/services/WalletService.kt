@@ -7,23 +7,15 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
-import it.pagopa.wallet.documents.wallets.Application
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
-import it.pagopa.wallet.domain.services.ApplicationMetadata
-import it.pagopa.wallet.domain.services.ServiceId
-import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.services.ServiceStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.NpgSession
-import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
-import it.pagopa.wallet.repositories.ServiceRepository
-import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -49,7 +41,7 @@ import reactor.kotlin.core.publisher.toMono
 @Service
 class WalletService(
     @Autowired private val walletRepository: WalletRepository,
-    @Autowired private val serviceRepository: ServiceRepository,
+    @Autowired private val applicationRepository: ApplicationRepository,
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
@@ -122,7 +114,7 @@ class WalletService(
     )
 
     fun createWallet(
-        serviceList: List<ServiceName>,
+        walletApplicationList: List<WalletApplicationId>,
         userId: UUID,
         paymentMethodId: UUID
     ): Mono<Pair<LoggedAction<Wallet>, URI>> {
@@ -190,28 +182,29 @@ class WalletService(
                         updateDate = creationTime,
                         applications =
                             listOf(
-                                Application(
-                                    ServiceId(UUID.randomUUID()),
-                                    ServiceName(
+                                WalletApplication(
+                                    WalletApplicationId(
                                         ServiceNameDto.PAGOPA.value
-                                    ), // We enter a static value since these wallets will be
+                                    ), // TODO We enter a static value since these wallets will be
                                     // created only for pagopa payments
-                                    ServiceStatus.ENABLED,
+                                    WalletApplicationStatus.ENABLED,
                                     creationTime,
-                                    ApplicationMetadata(
+                                    creationTime,
+                                    WalletApplicationMetadata(
                                         hashMapOf(
                                             Pair(
-                                                ApplicationMetadata.Metadata
+                                                WalletApplicationMetadata.Metadata
                                                     .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                                     .value,
                                                 "true"
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                                                    .value,
                                                 transactionId.value().toString()
                                             ),
                                             Pair(
-                                                ApplicationMetadata.Metadata.AMOUNT.value,
+                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
                                                 amount.toString()
                                             )
                                         )
@@ -267,8 +260,8 @@ class WalletService(
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
                 val pagopaApplication =
                     wallet.applications.singleOrNull { application ->
-                        application.name.equals(ServiceName(ServiceNameDto.PAGOPA.value)) &&
-                            application.status == ServiceStatus.ENABLED
+                        application.id == WalletApplicationId(ServiceNameDto.PAGOPA.value) &&
+                            application.status == WalletApplicationStatus.ENABLED
                     }
                 val isTransactionWithContextualOnboard =
                     isWalletForTransactionWithContextualOnboard(pagopaApplication)
@@ -278,7 +271,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(ApplicationMetadata.Metadata.AMOUNT.value)
+                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT.value)
                     else null
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -293,7 +286,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(ApplicationMetadata.Metadata.TRANSACTION_ID.value)
+                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID.value)
                     )
 
                 npgClient
@@ -559,7 +552,7 @@ class WalletService(
                                 ),
                                 ExpiryDate(data.expiringDate.orEmpty()),
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
-                                CardHolderName("?")
+                                PaymentInstrumentGatewayId("?")
                             )
                     )
             }
@@ -742,15 +735,14 @@ class WalletService(
             .walletId(UUID.fromString(wallet.id))
             .status(WalletStatusDto.valueOf(wallet.status))
             .paymentMethodId(wallet.paymentMethodId)
-            .paymentInstrumentId(wallet.paymentInstrumentId.let { it.toString() })
             .userId(wallet.userId)
             .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
             .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .services(
                 wallet.applications.map { application ->
                     ServiceDto()
-                        .name(ServiceNameDto.valueOf(application.name))
-                        .status(ServiceStatusDto.valueOf(application.status))
+                        .name(ServiceNameDto.valueOf(application.id))
+                        .status(ApplicationStatusDto.valueOf(application.status))
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
@@ -761,7 +753,6 @@ class WalletService(
                 WalletCardDetailsDto()
                     .type(details.type)
                     .bin(details.bin)
-                    .holder(details.holder)
                     .expiryDate(details.expiryDate)
                     .maskedPan(details.maskedPan)
             is PayPalDetailsDocument ->
@@ -799,27 +790,29 @@ class WalletService(
 
     fun updateWalletServices(
         walletId: UUID,
-        servicesToUpdate: List<Pair<ServiceName, ServiceStatus>>
+        applicationsToUpdate: List<Pair<WalletApplicationId, WalletApplicationStatus>>
     ): Mono<LoggedAction<WalletServiceUpdateData>> {
         return walletRepository
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .flatMap { wallet ->
                 val walletApplications =
-                    wallet.applications.associateBy { ServiceName(it.name) }.toMap()
+                    wallet.applications.associateBy { WalletApplicationId(it.id) }.toMap()
 
-                servicesToUpdate
+                applicationsToUpdate
                     .toFlux()
-                    .flatMap { (serviceName, requestedStatus) ->
-                        serviceRepository
-                            .findByName(serviceName.name)
-                            .map { Triple(it, serviceName, requestedStatus) }
-                            .switchIfEmpty(Mono.error(ServiceNameNotFoundException(serviceName)))
+                    .flatMap { (applicationId, requestedStatus) ->
+                        applicationRepository
+                            .findById(applicationId.id)
+                            .map { Triple(it, applicationId, requestedStatus) }
+                            .switchIfEmpty(
+                                Mono.error(ApplicationNotFoundException(applicationId.id))
+                            )
                     }
                     .reduce(
                         Triple(
-                            mutableMapOf<ServiceName, ServiceStatus>(),
-                            mutableMapOf<ServiceName, ServiceStatus>(),
+                            mutableMapOf<WalletApplicationId, WalletApplicationStatus>(),
+                            mutableMapOf<WalletApplicationId, WalletApplicationStatus>(),
                             walletApplications.toMutableMap()
                         )
                     ) {
@@ -827,31 +820,32 @@ class WalletService(
                             servicesUpdatedSuccessfully,
                             servicesWithUpdateFailed,
                             updatedApplications),
-                        (service, serviceName, requestedStatus) ->
-                        val serviceGlobalStatus = ServiceStatus.valueOf(service.status)
-                        val walletApplication = walletApplications[serviceName]
+                        (application, applicationId, requestedStatus) ->
+                        val serviceGlobalStatus =
+                            WalletApplicationStatus.valueOf(application.status)
+                        val walletApplication = walletApplications[applicationId]
 
                         if (
-                            ServiceStatus.canChangeToStatus(
+                            WalletApplicationStatus.canChangeToStatus(
                                 requested = requestedStatus,
                                 global = serviceGlobalStatus
                             )
                         ) {
-                            updatedApplications[serviceName] =
+                            updatedApplications[applicationId] =
                                 walletApplication?.copy(
-                                    lastUpdateDate = Instant.now().toString(),
+                                    updateDate = Instant.now().toString(),
                                     status = requestedStatus.name
                                 )
-                                    ?: Application(
-                                        id = service.id,
-                                        name = serviceName.name,
-                                        lastUpdateDate = Instant.now().toString(),
+                                    ?: it.pagopa.wallet.documents.wallets.WalletApplication(
+                                        id = applicationId.id,
                                         status = requestedStatus.name,
+                                        creationDate = Instant.now().toString(),
+                                        updateDate = Instant.now().toString(),
                                         metadata = hashMapOf()
                                     )
-                            servicesUpdatedSuccessfully[serviceName] = requestedStatus
+                            servicesUpdatedSuccessfully[applicationId] = requestedStatus
                         } else {
-                            servicesWithUpdateFailed[serviceName] = serviceGlobalStatus
+                            servicesWithUpdateFailed[applicationId] = serviceGlobalStatus
                         }
 
                         Triple(
@@ -955,11 +949,11 @@ class WalletService(
         }
 
     private fun isWalletForTransactionWithContextualOnboard(
-        application: it.pagopa.wallet.domain.wallets.Application?
+        application: it.pagopa.wallet.domain.wallets.WalletApplication?
     ): Boolean {
         if (application != null) {
             return application.metadata.data[
-                    ApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
                 .toBoolean()
         }
         return false

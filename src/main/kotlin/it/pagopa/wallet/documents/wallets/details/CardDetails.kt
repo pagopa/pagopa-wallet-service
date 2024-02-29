@@ -2,9 +2,9 @@ package it.pagopa.wallet.documents.wallets.details
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.domain.wallets.details.Bin
-import it.pagopa.wallet.domain.wallets.details.CardHolderName
 import it.pagopa.wallet.domain.wallets.details.ExpiryDate
 import it.pagopa.wallet.domain.wallets.details.MaskedPan
+import it.pagopa.wallet.domain.wallets.details.PaymentInstrumentGatewayId
 
 data class CardDetails(
     val type: String,
@@ -12,7 +12,7 @@ data class CardDetails(
     val maskedPan: String,
     val expiryDate: String,
     val brand: String,
-    val holder: String
+    val paymentInstrumentGatewayId: String
 ) : WalletDetails<CardDetails> {
     override fun toDomain() =
         it.pagopa.wallet.domain.wallets.details.CardDetails(
@@ -20,6 +20,6 @@ data class CardDetails(
             MaskedPan(maskedPan),
             ExpiryDate(expiryDate),
             WalletCardDetailsDto.BrandEnum.valueOf(brand),
-            CardHolderName(holder)
+            PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
         )
 }

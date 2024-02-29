@@ -10,7 +10,7 @@ class CardDetailsTest {
     val validMaskedPan = "42424242****5555"
     val validExpiryDate = "12/30"
     val brand = BrandEnum.MASTERCARD
-    val holderName = "holderName"
+    val paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
     val invalidBin = "42424"
     val invalidMaskedPan = "4242425555"
     val invalidExpiryDate = "12-10"
@@ -24,7 +24,7 @@ class CardDetailsTest {
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = CardHolderName(holderName)
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
 
         assertEquals(validBin, cardDetails.bin.bin)
@@ -42,7 +42,7 @@ class CardDetailsTest {
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(invalidExpiryDate),
                 brand = brand,
-                holder = CardHolderName(holderName)
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }
     }
@@ -56,7 +56,7 @@ class CardDetailsTest {
                 maskedPan = MaskedPan(invalidMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = CardHolderName(holderName)
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }
     }
@@ -70,7 +70,7 @@ class CardDetailsTest {
                 maskedPan = MaskedPan(validMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
-                holder = CardHolderName(holderName)
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }
     }

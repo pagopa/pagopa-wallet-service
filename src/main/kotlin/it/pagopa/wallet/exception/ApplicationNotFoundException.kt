@@ -1,9 +1,8 @@
 package it.pagopa.wallet.exception
 
-import java.util.UUID
 import org.springframework.http.HttpStatus
 
-class ServiceNotFoundException(private val serviceId: UUID) :
+class ApplicationNotFoundException(private val serviceId: String) :
     ApiError("Service with id '${serviceId}' not found") {
     override fun toRestException(): RestApiException {
         return RestApiException(

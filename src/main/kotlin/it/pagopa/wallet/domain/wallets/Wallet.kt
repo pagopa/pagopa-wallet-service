@@ -17,21 +17,25 @@ import java.time.Instant
  *
  *  <pre>
  *     {@code
- *
- *          INITIALIZED
- *              │
- *              │
- *              │
- *              ▼
- *       VERIFY_REQUESTED
- *              │
- *              ├────────► EXPIRED ────────────────────────────────┐
- *              │                                                  │
- *              ▼                                                  │
- *       VERIFY_COMPLETED                                          │
- *              │                                                  │
- *              │                                                  │
- *              ├──────────► EXPIRED ──────────────────────────────┚
+ *                            CREATED
+ *                               │
+ *                               │
+ *                               ▼
+ *                          INITIALIZED
+ *                               │
+ *                               │
+ *                               ▼
+ *         ┌───────────VALIDATION_REQUESTED ────────────┐
+ *         │                     │                      │
+ *         ▼                     │                      ▼
+ *       ERROR                   │               VALIDATION_EXPIRED
+ *                               │
+ *                               ▼
+ *                           VALIDATED
+ *                               │
+ *                               │
+ *                               ▼
+ *                            DELETED
  *
  *         }
  *  </pre>
@@ -42,8 +46,7 @@ data class Wallet(
     val userId: UserId,
     var status: WalletStatusDto = WalletStatusDto.CREATED,
     val paymentMethodId: PaymentMethodId,
-    var paymentInstrumentId: PaymentInstrumentId? = null,
-    var applications: List<Application> = listOf(),
+    var applications: List<WalletApplication> = listOf(),
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
     var validationErrorCode: String? = null,
@@ -60,17 +63,16 @@ data class Wallet(
                 userId = this.userId.id.toString(),
                 status = this.status.name,
                 paymentMethodId = this.paymentMethodId.value.toString(),
-                paymentInstrumentId = this.paymentInstrumentId?.value?.toString(),
                 contractId = this.contractId?.contractId,
                 validationOperationResult = this.validationOperationResult?.value,
                 validationErrorCode = this.validationErrorCode,
                 applications =
                     this.applications.map { app ->
-                        it.pagopa.wallet.documents.wallets.Application(
-                            app.id.id.toString(),
-                            app.name.name,
+                        it.pagopa.wallet.documents.wallets.WalletApplication(
+                            app.id.id,
                             app.status.name,
-                            app.lastUpdate.toString(),
+                            app.creationDate.toString(),
+                            app.updateDate.toString(),
                             app.metadata.data
                         )
                     },

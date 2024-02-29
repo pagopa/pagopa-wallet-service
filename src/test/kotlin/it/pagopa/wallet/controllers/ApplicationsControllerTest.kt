@@ -1,15 +1,15 @@
 package it.pagopa.wallet.controllers
 
-import it.pagopa.wallet.ServiceTestUtils
-import it.pagopa.wallet.ServiceTestUtils.Companion.DOMAIN_SERVICE
+import it.pagopa.wallet.ApplicationsTestUtils
+import it.pagopa.wallet.ApplicationsTestUtils.Companion.DOMAIN_APPLICATION
+import it.pagopa.wallet.audit.ApplicationCreatedEvent
+import it.pagopa.wallet.audit.ApplicationStatusChangedEvent
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.LoggingEvent
-import it.pagopa.wallet.audit.ServiceCreatedEvent
-import it.pagopa.wallet.audit.ServiceStatusChangedEvent
-import it.pagopa.wallet.domain.services.ServiceStatus
-import it.pagopa.wallet.exception.ServiceNotFoundException
+import it.pagopa.wallet.domain.applications.ApplicationStatus
+import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
-import it.pagopa.wallet.services.ServicesService
+import it.pagopa.wallet.services.ApplicationService
 import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
@@ -28,33 +28,33 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@WebFluxTest(ServicesController::class)
+@WebFluxTest(ApplicationsController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
-class ServicesControllerTest {
+class ApplicationsControllerTest {
 
-    @MockBean private lateinit var servicesService: ServicesService
+    @MockBean private lateinit var applicationsService: ApplicationService
 
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
 
     @Autowired private lateinit var webClient: WebTestClient
 
-    private lateinit var servicesController: ServicesController
+    private lateinit var applicationsController: ApplicationsController
 
     @BeforeEach
     fun setupServicesController() {
-        servicesController = ServicesController(servicesService, loggingEventRepository)
+        applicationsController = ApplicationsController(applicationsService, loggingEventRepository)
     }
 
     @Test
-    fun `createService creates a new service`() = runTest {
+    fun `createApplication creates a new application`() = runTest {
         /* preconditions */
 
-        given { servicesService.createService(any(), any(), any()) }
+        given { applicationsService.createApplication(any(), any()) }
             .willReturn(
                 mono {
                     LoggedAction(
-                        DOMAIN_SERVICE,
-                        ServiceCreatedEvent(DOMAIN_SERVICE.id.id, DOMAIN_SERVICE.name.name)
+                        DOMAIN_APPLICATION,
+                        ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id)
                     )
                 }
             )
@@ -64,28 +64,27 @@ class ServicesControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/services")
+            .uri("/applications")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(ServiceTestUtils.CREATE_SERVICE_REQUEST)
+            .bodyValue(ApplicationsTestUtils.CREATE_APPLICATION_REQUEST)
             .exchange()
             .expectStatus()
             .isCreated
     }
 
     @Test
-    fun `setServiceStatus updates status on existing service`() = runTest {
+    fun `setServiceApplication updates status on existing application`() = runTest {
         /* preconditions */
 
-        given { servicesService.setServiceStatus(any(), any()) }
+        given { applicationsService.setApplicationStatus(any(), any()) }
             .willReturn(
                 mono {
                     LoggedAction(
-                        DOMAIN_SERVICE,
-                        ServiceStatusChangedEvent(
-                            DOMAIN_SERVICE.id.id,
-                            DOMAIN_SERVICE.name.name,
-                            DOMAIN_SERVICE.status,
-                            ServiceStatus.INCOMING
+                        DOMAIN_APPLICATION,
+                        ApplicationStatusChangedEvent(
+                            DOMAIN_APPLICATION.id.id,
+                            DOMAIN_APPLICATION.status,
+                            ApplicationStatus.INCOMING
                         )
                     )
                 }
@@ -96,28 +95,28 @@ class ServicesControllerTest {
         /* test */
         webClient
             .patch()
-            .uri("/services/${DOMAIN_SERVICE.id.id}")
+            .uri("/applications/${DOMAIN_APPLICATION.id.id}")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(ServiceTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .bodyValue(ApplicationsTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
             .exchange()
             .expectStatus()
             .isNoContent
     }
 
     @Test
-    fun `setServiceStatus returns 404 on non existing service`() = runTest {
+    fun `setApplicationStatus returns 404 on non existing application`() = runTest {
         /* preconditions */
-        val invalidId = UUID.randomUUID()
+        val invalidId = UUID.randomUUID().toString()
 
-        given { servicesService.setServiceStatus(any(), any()) }
-            .willReturn(Mono.error(ServiceNotFoundException(invalidId)))
+        given { applicationsService.setApplicationStatus(any(), any()) }
+            .willReturn(Mono.error(ApplicationNotFoundException(invalidId)))
 
         /* test */
         webClient
             .patch()
-            .uri("/services/${invalidId}")
+            .uri("/applications/${invalidId}")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(ServiceTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .bodyValue(ApplicationsTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
             .exchange()
             .expectStatus()
             .isNotFound

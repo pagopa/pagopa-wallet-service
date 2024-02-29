@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.RedisHash
 import org.springframework.lang.NonNull
 
 @RedisHash(value = "keys")
-class NpgSession
+data class NpgSession
 @PersistenceCreator
 constructor(
     @NonNull @Id val orderId: String,

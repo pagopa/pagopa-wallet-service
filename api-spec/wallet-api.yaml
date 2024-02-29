@@ -483,27 +483,27 @@ paths:
                 title: string
                 status: 500
                 detail: Internal server error
-  /services:
+  /applications:
     post:
       tags:
-        - services
-      summary: Create a new service
-      description: Creates a new service
-      operationId: createService
+        - applications
+      summary: Create a new application
+      description: Creates a new application
+      operationId: createApplication
       requestBody:
-        description: Create a new service
+        description: Create a new application
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ServiceCreateRequest'
+              $ref: '#/components/schemas/ApplicationCreateRequest'
         required: true
       responses:
         '201':
-          description: Service created successfully
+          description: Application created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServiceCreateResponse'
+                $ref: '#/components/schemas/ApplicationCreateResponse'
         '400':
           description: Formally invalid input
           content:
@@ -524,29 +524,29 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
-  /services/{serviceId}:
+  /applications/{applicationId}:
     patch:
       tags:
-        - services
-      summary: Set service status
-      description: Set service status
-      operationId: setServiceStatus
+        - applications
+      summary: Set application status
+      description: Set application status
+      operationId: setApplicationStatus
       requestBody:
-        description: Set service status
+        description: Set application status
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ServicePatchRequest'
+              $ref: '#/components/schemas/ApplicationPatchRequest'
       parameters:
-        - name: serviceId
+        - name: applicationId
           in: path
-          description: ID of service to return
+          description: ID of application to return
           required: true
           schema:
-            $ref: '#/components/schemas/ServiceId'
+            $ref: '#/components/schemas/ApplicationId'
       responses:
         '204':
-          description: Service updated successfully
+          description: Application updated successfully
         '400':
           description: Invalid input id
           content:
@@ -560,7 +560,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
-          description: Service not found
+          description: Application not found
         '504':
           description: Timeout serving request
   /wallets/{walletId}/auth-data:
@@ -730,15 +730,14 @@ components:
         name:
           $ref: '#/components/schemas/ServiceName'
         status:
-          $ref: '#/components/schemas/ServiceStatus'
+          $ref: '#/components/schemas/ApplicationStatus'
         updateDate:
           description: Service last update date
           type: string
           format: date-time
-    ServiceId:
-      description: Service identifier
+    ApplicationId:
+      description: Application identifier
       type: string
-      format: uuid
     WalletService:
       type: object
       properties:
@@ -752,7 +751,7 @@ components:
       enum:
         - ENABLED
         - DISABLED
-    ServiceStatus:
+    ApplicationStatus:
       type: string
       description: Enumeration of wallet statuses
       enum:
@@ -793,9 +792,6 @@ components:
           description: Credit card expiry date. The date format is `YYYYMM`
           pattern: ^\d{6}$
           example: '203012'
-        holder:
-          description: Holder of the card payment instrument
-          type: string
         brand:
           description: Payment instrument brand
           type: string
@@ -1134,31 +1130,31 @@ components:
           type: string
           format: uri
           example: https://<fe>/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264
-    ServiceCreateRequest:
+    ApplicationCreateRequest:
       type: object
-      description: Service creation request
+      description: Application creation request
       properties:
-        name:
+        applicationId:
           type: string
-          description: Service name
+          description: Application id
         status:
-          $ref: "#/components/schemas/ServiceStatus"
+          $ref: "#/components/schemas/ApplicationStatus"
       required:
         - name
-    ServiceCreateResponse:
+    ApplicationCreateResponse:
       type: object
-      description: Service creation response
+      description: Application creation response
       properties:
-        serviceId:
-          $ref: '#/components/schemas/ServiceId'
+        applicationId:
+          $ref: '#/components/schemas/ApplicationId'
       required:
-        - serviceId
-    ServicePatchRequest:
+        - applicationId
+    ApplicationPatchRequest:
       type: object
       description: Service updating request
       properties:
         status:
-          $ref: "#/components/schemas/ServiceStatus"
+          $ref: "#/components/schemas/ApplicationStatus"
       required:
         - status
     ProblemJson:

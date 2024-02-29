@@ -2,11 +2,11 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.domain.services.ServiceName
-import it.pagopa.wallet.domain.services.ServiceStatus
+import it.pagopa.wallet.domain.wallets.WalletApplicationId
+import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
-import it.pagopa.wallet.exception.WalletServiceStatusConflictException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
@@ -40,7 +40,7 @@ class WalletController(
             .flatMap { request ->
                 walletService
                     .createWallet(
-                        request.services.map { s -> ServiceName(s.name) },
+                        request.services.map { s -> WalletApplicationId(s.name) },
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId
                     )
@@ -201,21 +201,24 @@ class WalletController(
                 walletService.updateWalletServices(
                     walletId,
                     requestedServices.map {
-                        Pair(ServiceName(it.name.name), ServiceStatus.valueOf(it.status.value))
+                        Pair(
+                            WalletApplicationId(it.name.name),
+                            WalletApplicationStatus.valueOf(it.status.value)
+                        )
                     }
                 )
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .flatMap {
-                if (it.servicesWithUpdateFailed.isNotEmpty()) {
-                    return@flatMap Mono.error(
-                        WalletServiceStatusConflictException(
-                            it.successfullyUpdatedServices,
-                            it.servicesWithUpdateFailed
+                return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
+                    Mono.error(
+                        WalletApplicationStatusConflictException(
+                            it.successfullyUpdatedApplications,
+                            it.applicationsWithUpdateFailed
                         )
                     )
                 } else {
-                    return@flatMap Mono.just(it)
+                    Mono.just(it)
                 }
             }
             .map { ResponseEntity.noContent().build() }
