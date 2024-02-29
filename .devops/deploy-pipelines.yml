@@ -165,9 +165,9 @@ stages:
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet migration tests"
-              ENV_FILE: "api-tests/wallet_local_migration.environment.json"
-              API_TEST_FILE: "api-tests/wallet_local_migration.collection.tests.json"
-              TEST_FILE_PREFIX: "wallet-api-test-migration"
+              ENV_FILE: "api-tests/dev.migration.envs.json"
+              API_TEST_FILE: "api-tests/wallet_migration_api.tests.json"
+              TEST_FILE_PREFIX: "DEV-wallet-integration-test-migration"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
               MIGRATION_API_KEY_TEST: $(MIGRATION_API_KEY_TEST_DEV)
   # --- END Deploy DEV --- #
