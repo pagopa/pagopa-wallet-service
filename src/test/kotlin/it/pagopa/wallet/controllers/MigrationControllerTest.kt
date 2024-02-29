@@ -35,7 +35,7 @@ class MigrationControllerTest {
         given { migrationService.initializeWalletByPaymentManager(any(), any()) }
             .willAnswer {
                 Mono.just(
-                    WalletTestUtils.newWalletDocumentSaved()
+                    WalletTestUtils.walletDocument()
                         .copy(
                             userId = (it.arguments[1] as UserId).id.toString(),
                             contractId = WalletTestUtils.CONTRACT_ID.contractId

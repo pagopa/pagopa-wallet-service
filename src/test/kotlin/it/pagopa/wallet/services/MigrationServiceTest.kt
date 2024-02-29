@@ -137,7 +137,6 @@ class MigrationServiceTest {
                 updateDate = Instant.now(),
                 applications = emptyList(),
                 details = null,
-                paymentInstrumentId = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
                 version = 0
