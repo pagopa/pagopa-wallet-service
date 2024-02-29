@@ -1158,7 +1158,7 @@ class WalletServiceTest {
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("12345678")
-                        .expiringDate("12/30")
+                        .expiringDate("203012")
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
 
@@ -1196,7 +1196,7 @@ class WalletServiceTest {
                     walletDocumentVerifiedWithCardDetails(
                         "12345678",
                         "0000",
-                        "12/30",
+                        "203012",
                         "?",
                         WalletCardDetailsDto.BrandEnum.MASTERCARD
                     )
@@ -1242,7 +1242,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "12345678****0000", "12/30", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
                 )
             }
         }
@@ -2418,7 +2418,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails(
                 "12345678",
                 "0000",
-                "12/30",
+                "203012",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
@@ -2461,7 +2461,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails(
                 "12345678",
                 "0000",
-                "12/30",
+                "203012",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
@@ -2803,8 +2803,8 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "12345678" + "*".repeat(4) + "1234",
-                        expiryDate = "24/12",
+                        maskedPan = "1234",
+                        expiryDate = "202412",
                         brand = "VISA",
                         holder = ""
                     ),
@@ -2880,8 +2880,8 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "12345678" + "*".repeat(4) + "1234",
-                        expiryDate = "24/12",
+                        maskedPan = "1234",
+                        expiryDate = "202412",
                         brand = "VISA",
                         holder = ""
                     ),

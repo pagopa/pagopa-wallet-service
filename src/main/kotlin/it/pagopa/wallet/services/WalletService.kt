@@ -32,6 +32,8 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
@@ -113,6 +115,8 @@ class WalletService(
      * Logger instance
      */
     var logger: Logger = LoggerFactory.getLogger(this.javaClass)
+    val ecommerceExpiryDateFormatter = DateTimeFormatter.ofPattern("YYYYMM")
+    val npgExpiryDateFormatter = DateTimeFormatter.ofPattern("MM/YY")
 
     private data class SessionCreationData(
         val paymentGatewayResponse: Fields,
@@ -548,21 +552,21 @@ class WalletService(
                         details =
                             DomainCardDetails(
                                 Bin(data.bin.orEmpty()),
-                                MaskedPan(
-                                    data.bin.orEmpty() +
-                                        ("*".repeat(
-                                            16 -
-                                                data.bin.orEmpty().length -
-                                                data.lastFourDigits.orEmpty().length
-                                        )) +
-                                        data.lastFourDigits.orEmpty()
-                                ),
-                                ExpiryDate(data.expiringDate.orEmpty()),
+                                MaskedPan(data.lastFourDigits.orEmpty()),
+                                ExpiryDate(npgToEcommerceExpiryDate(data.expiringDate.orEmpty())),
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
                                 CardHolderName("?")
                             )
                     )
             }
+
+    private fun npgToEcommerceExpiryDate(expiryDate: String): String {
+        try {
+            return ecommerceExpiryDateFormatter.format(npgExpiryDateFormatter.parse(expiryDate))
+        } catch (dateTimeParseException: DateTimeParseException) {} finally {
+            return expiryDate
+        }
+    }
 
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
         return walletRepository

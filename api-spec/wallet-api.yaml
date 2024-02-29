@@ -784,10 +784,11 @@ components:
           example: '123456'
         maskedPan:
           description: >-
-            Card masked pan (first 6 digit and last 4 digit clear, other digit
-            obfuscated)
+            Card last four digits
           type: string
-          example: 123456******9876
+          minLength: 4
+          maxLength: 4
+          example: 9876
         expiryDate:
           type: string
           description: Credit card expiry date. The date format is `YYYYMM`

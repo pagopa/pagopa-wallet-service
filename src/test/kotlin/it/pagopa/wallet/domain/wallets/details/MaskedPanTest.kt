@@ -6,8 +6,9 @@ import org.junit.jupiter.api.assertThrows
 
 class MaskedPanTest {
 
-    private val validMaskedPan = "42424242****5555"
-    private val invalidMaskedPan = "4242425555"
+    private val validMaskedPan = "5555"
+    private val invalidMaskedPan = "42424242****5555"
+    private val invalidMaskedPan1 = "4242425555"
 
     @Test
     fun `can instantiate a MaskedPan from valid maskedPan`() {
@@ -18,5 +19,6 @@ class MaskedPanTest {
     @Test
     fun `can't instantiate a MaskedPan from valid maskedPan`() {
         assertThrows<IllegalArgumentException> { MaskedPan(invalidMaskedPan) }
+        assertThrows<IllegalArgumentException> { MaskedPan(invalidMaskedPan1) }
     }
 }

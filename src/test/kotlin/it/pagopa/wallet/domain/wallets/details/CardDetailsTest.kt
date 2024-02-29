@@ -7,8 +7,8 @@ import org.junit.jupiter.api.assertThrows
 
 class CardDetailsTest {
     private val validBin = "42424242"
-    val validMaskedPan = "42424242****5555"
-    val validExpiryDate = "12/30"
+    val validLastFourDigits = "5555"
+    val validExpiryDate = "203012"
     val brand = BrandEnum.MASTERCARD
     val holderName = "holderName"
     val invalidBin = "42424"
@@ -21,14 +21,14 @@ class CardDetailsTest {
         val cardDetails =
             CardDetails(
                 bin = Bin(validBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
                 holder = CardHolderName(holderName)
             )
 
         assertEquals(validBin, cardDetails.bin.bin)
-        assertEquals(validMaskedPan, cardDetails.maskedPan.maskedPan)
+        assertEquals(validLastFourDigits, cardDetails.maskedPan.maskedPan)
         assertEquals(validExpiryDate, cardDetails.expiryDate.expDate)
         assertEquals(cardDetails.type, WalletDetailsType.CARDS)
     }
@@ -39,7 +39,7 @@ class CardDetailsTest {
         assertThrows<IllegalArgumentException> {
             CardDetails(
                 bin = Bin(validBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(invalidExpiryDate),
                 brand = brand,
                 holder = CardHolderName(holderName)
@@ -67,7 +67,7 @@ class CardDetailsTest {
         assertThrows<IllegalArgumentException> {
             CardDetails(
                 bin = Bin(invalidBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
                 holder = CardHolderName(holderName)

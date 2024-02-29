@@ -6,8 +6,9 @@ import org.junit.jupiter.api.assertThrows
 
 class ExpiryDateTest {
 
-    private val validExpiryDate = "12/30"
+    private val invalidExpiryDate1 = "12/30"
     private val invalidExpiryDate = "12-10"
+    private val validExpiryDate = "201012"
 
     @Test
     fun `can instantiate a ExpiryDate from valid expiryDate`() {
@@ -18,5 +19,6 @@ class ExpiryDateTest {
     @Test
     fun `can't instantiate a ExpiryDate from valid expiryDate`() {
         assertThrows<IllegalArgumentException> { ExpiryDate(invalidExpiryDate) }
+        assertThrows<IllegalArgumentException> { ExpiryDate(invalidExpiryDate1) }
     }
 }
