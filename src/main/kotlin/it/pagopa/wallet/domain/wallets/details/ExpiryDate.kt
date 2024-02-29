@@ -1,7 +1,9 @@
 package it.pagopa.wallet.domain.wallets.details
 
+import java.time.format.DateTimeFormatter
+
 data class ExpiryDate(val expDate: String) {
     init {
-        require(Regex("^\\d{6}$").matchEntire(expDate) != null) { "Invalid expiry date format" }
+        require(runCatching { (DateTimeFormatter.ofPattern("YYYYMM").parse(expDate)) }.isSuccess)
     }
 }

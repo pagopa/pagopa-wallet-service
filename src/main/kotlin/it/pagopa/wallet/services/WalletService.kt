@@ -33,7 +33,6 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
@@ -554,18 +553,13 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 MaskedPan(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(npgToEcommerceExpiryDate(data.expiringDate.orEmpty())),
-                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
-                                CardHolderName("?")
+                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty())
                             )
                     )
             }
 
     private fun npgToEcommerceExpiryDate(expiryDate: String): String {
-        try {
-            return ecommerceExpiryDateFormatter.format(npgExpiryDateFormatter.parse(expiryDate))
-        } catch (dateTimeParseException: DateTimeParseException) {} finally {
-            return expiryDate
-        }
+        return ecommerceExpiryDateFormatter.format(npgExpiryDateFormatter.parse(expiryDate))
     }
 
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
@@ -765,7 +759,6 @@ class WalletService(
                 WalletCardDetailsDto()
                     .type(details.type)
                     .bin(details.bin)
-                    .holder(details.holder)
                     .expiryDate(details.expiryDate)
                     .maskedPan(details.maskedPan)
             is PayPalDetailsDocument ->

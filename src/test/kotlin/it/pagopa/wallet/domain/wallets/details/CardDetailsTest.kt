@@ -23,8 +23,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
-                holder = CardHolderName(holderName)
+                brand = brand
             )
 
         assertEquals(validBin, cardDetails.bin.bin)
@@ -41,8 +40,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(invalidExpiryDate),
-                brand = brand,
-                holder = CardHolderName(holderName)
+                brand = brand
             )
         }
     }
@@ -55,8 +53,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 maskedPan = MaskedPan(invalidMaskedPan),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
-                holder = CardHolderName(holderName)
+                brand = brand
             )
         }
     }
@@ -69,8 +66,7 @@ class CardDetailsTest {
                 bin = Bin(invalidBin),
                 maskedPan = MaskedPan(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
-                holder = CardHolderName(holderName)
+                brand = brand
             )
         }
     }

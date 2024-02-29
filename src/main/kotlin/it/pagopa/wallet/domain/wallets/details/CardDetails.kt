@@ -8,8 +8,7 @@ data class CardDetails(
     val bin: Bin,
     val maskedPan: MaskedPan,
     val expiryDate: ExpiryDate,
-    val brand: WalletCardDetailsDto.BrandEnum,
-    val holder: CardHolderName
+    val brand: WalletCardDetailsDto.BrandEnum
 ) : WalletDetails<CardDetails> {
     override val type: WalletDetailsType
         get() = WalletDetailsType.CARDS
@@ -20,7 +19,6 @@ data class CardDetails(
             this.bin.bin,
             this.maskedPan.maskedPan,
             this.expiryDate.expDate,
-            this.brand.name,
-            this.holder.holderName
+            this.brand.name
         )
 }

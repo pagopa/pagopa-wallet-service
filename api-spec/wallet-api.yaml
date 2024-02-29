@@ -794,9 +794,6 @@ components:
           description: Credit card expiry date. The date format is `YYYYMM`
           pattern: ^\d{6}$
           example: '203012'
-        holder:
-          description: Holder of the card payment instrument
-          type: string
         brand:
           description: Payment instrument brand
           type: string
@@ -808,7 +805,6 @@ components:
         - bin
         - maskedPan
         - expiryDate
-        - holder
         - brand
     WalletPaypalDetails:
       type: object

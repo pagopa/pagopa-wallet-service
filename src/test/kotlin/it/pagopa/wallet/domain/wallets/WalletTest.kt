@@ -90,8 +90,7 @@ class WalletTest {
                         WalletTestUtils.BIN,
                         WalletTestUtils.MASKED_PAN,
                         WalletTestUtils.EXP_DATE,
-                        WalletTestUtils.BRAND,
-                        WalletTestUtils.HOLDER_NAME
+                        WalletTestUtils.BRAND
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
@@ -128,8 +127,7 @@ class WalletTest {
                         WalletTestUtils.BIN,
                         WalletTestUtils.MASKED_PAN,
                         WalletTestUtils.EXP_DATE,
-                        WalletTestUtils.BRAND,
-                        WalletTestUtils.HOLDER_NAME
+                        WalletTestUtils.BRAND
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,

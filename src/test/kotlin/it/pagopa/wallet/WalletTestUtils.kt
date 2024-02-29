@@ -46,7 +46,6 @@ object WalletTestUtils {
     val MASKED_PAN = MaskedPan("5555")
     val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
-    val HOLDER_NAME = CardHolderName("holderName")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
     val TIMESTAMP: Instant = Instant.now()
@@ -99,7 +98,6 @@ object WalletTestUtils {
         bin: String,
         lastFourDigits: String,
         expiryDate: String,
-        holderName: String,
         brandEnum: WalletCardDetailsDto.BrandEnum
     ): Wallet {
         val wallet =
@@ -119,8 +117,7 @@ object WalletTestUtils {
                         bin,
                         lastFourDigits,
                         expiryDate,
-                        brandEnum.name,
-                        holderName
+                        brandEnum.name
                     ),
                 version = 0,
                 creationDate = creationDate,
@@ -355,8 +352,7 @@ object WalletTestUtils {
                         BIN.bin,
                         MASKED_PAN.maskedPan,
                         EXP_DATE.expDate,
-                        BRAND.toString(),
-                        HOLDER_NAME.holderName
+                        BRAND.toString()
                     ),
                 version = 0,
                 creationDate = creationDate,
@@ -392,8 +388,7 @@ object WalletTestUtils {
                         BIN.bin,
                         MASKED_PAN.maskedPan,
                         EXP_DATE.expDate,
-                        BRAND.toString(),
-                        HOLDER_NAME.holderName
+                        BRAND.toString()
                     ),
                 version = 0,
                 creationDate = creationDate,
@@ -451,7 +446,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID,
             validationOperationResult = OperationResultEnum.EXECUTED,
             validationErrorCode = null,
-            details = CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, HOLDER_NAME),
+            details = CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND),
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate
@@ -559,7 +554,6 @@ object WalletTestUtils {
                     .bin(BIN.bin)
                     .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
                     .expiryDate(EXP_DATE.expDate)
-                    .holder(HOLDER_NAME.holderName)
             )
 
     fun walletInfoDtoAPM() =

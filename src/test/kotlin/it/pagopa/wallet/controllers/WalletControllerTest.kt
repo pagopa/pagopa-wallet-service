@@ -222,7 +222,6 @@ class WalletControllerTest {
                 "12345678",
                 "0000",
                 "203012",
-                "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
         val response =

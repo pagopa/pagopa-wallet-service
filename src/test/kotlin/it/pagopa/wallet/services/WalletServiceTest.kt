@@ -1158,7 +1158,7 @@ class WalletServiceTest {
                 val npgGetCardDataResponse =
                     CardDataResponse()
                         .bin("12345678")
-                        .expiringDate("203012")
+                        .expiringDate("12/30")
                         .lastFourDigits("0000")
                         .circuit("MASTERCARD")
 
@@ -1197,7 +1197,6 @@ class WalletServiceTest {
                         "12345678",
                         "0000",
                         "203012",
-                        "?",
                         WalletCardDetailsDto.BrandEnum.MASTERCARD
                     )
 
@@ -1242,7 +1241,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD")
                 )
             }
         }
@@ -1713,7 +1712,6 @@ class WalletServiceTest {
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
-                                .holder((wallet.details as CardDetails).holder)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
@@ -1851,7 +1849,6 @@ class WalletServiceTest {
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
-                                .holder((wallet.details as CardDetails).holder)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
@@ -2419,7 +2416,6 @@ class WalletServiceTest {
                 "12345678",
                 "0000",
                 "203012",
-                "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
@@ -2462,7 +2458,6 @@ class WalletServiceTest {
                 "12345678",
                 "0000",
                 "203012",
-                "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
@@ -2805,8 +2800,7 @@ class WalletServiceTest {
                         bin = "12345678",
                         maskedPan = "1234",
                         expiryDate = "202412",
-                        brand = "VISA",
-                        holder = ""
+                        brand = "VISA"
                     ),
             )
 
@@ -2882,8 +2876,7 @@ class WalletServiceTest {
                         bin = "12345678",
                         maskedPan = "1234",
                         expiryDate = "202412",
-                        brand = "VISA",
-                        holder = ""
+                        brand = "VISA"
                     ),
             )
 
