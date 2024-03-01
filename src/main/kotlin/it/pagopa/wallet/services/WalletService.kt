@@ -15,7 +15,10 @@ import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.*
+import it.pagopa.wallet.repositories.ApplicationRepository
+import it.pagopa.wallet.repositories.NpgSession
+import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -546,7 +549,7 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(npgToEcommerceExpiryDate(data.expiringDate.orEmpty())),
-                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty())
+                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )

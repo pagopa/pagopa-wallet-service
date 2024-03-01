@@ -63,7 +63,10 @@ import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.*
+import it.pagopa.wallet.repositories.ApplicationRepository
+import it.pagopa.wallet.repositories.NpgSession
+import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -1096,6 +1099,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should execute validation for wallet CARD`() {
         /* preconditions */
@@ -1152,6 +1156,7 @@ class WalletServiceTest {
                         "12345678",
                         "0000",
                         "203012",
+                        "?",
                         WalletCardDetailsDto.BrandEnum.MASTERCARD
                     )
 
@@ -1189,7 +1194,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
@@ -1205,6 +1210,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation for wallet APM`() {
         /* preconditions */
@@ -1216,7 +1222,6 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
                 val orderId = Instant.now().toString() + "ABCDE"
 
                 val npgSession =
@@ -1225,8 +1230,6 @@ class WalletServiceTest {
                 // Inconsistent wallet type APM
                 val walletDocumentInitializedStatus =
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_APM)
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentInitializedStatus))
@@ -1251,6 +1254,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation SessionNotFoundException`() {
         /* preconditions */
@@ -1276,6 +1280,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletNotFoundException`() {
         /* preconditions */
@@ -1308,6 +1313,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletSessionMismatchException`() {
         /* preconditions */
@@ -1345,6 +1351,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletConflictStatusException`() {
         /* preconditions */
@@ -1456,6 +1463,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `validate should throws BadGatewayException with card data by fields null`() {
         /* preconditions */
@@ -1600,6 +1608,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `validate should throws BadGatewayException with card data by first field src null`() {
         /* preconditions */
@@ -1674,6 +1683,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with cards`() {
         /* preconditions */
@@ -1719,6 +1729,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with paypal with email`() {
         /* preconditions */
@@ -1760,6 +1771,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with paypal without email`() {
         /* preconditions */
@@ -1800,6 +1812,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document by userId`() {
         /* preconditions */
@@ -1851,6 +1864,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet auth data by ID with cards`() {
         /* preconditions */
@@ -2425,6 +2439,7 @@ class WalletServiceTest {
                 "12345678",
                 "0000",
                 "203012",
+                "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
@@ -2467,6 +2482,7 @@ class WalletServiceTest {
                 "12345678",
                 "0000",
                 "203012",
+                "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
@@ -2809,7 +2825,7 @@ class WalletServiceTest {
                         bin = "12345678",
                         lastFourDigits = "1234",
                         expiryDate = "202412",
-                        brand = "VISA"
+                        brand = "VISA",
                         paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),
             )
@@ -2886,7 +2902,7 @@ class WalletServiceTest {
                         bin = "12345678",
                         lastFourDigits = "1234",
                         expiryDate = "202412",
-                        brand = "VISA"
+                        brand = "VISA",
                         paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),
             )

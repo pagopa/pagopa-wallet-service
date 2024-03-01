@@ -7,13 +7,14 @@ import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationRe
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
-import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
@@ -139,10 +140,10 @@ object WalletTestUtils {
                 applications = listOf(),
                 details =
                     if (paymentMethodId == PAYMENT_METHOD_ID_CARDS) {
-                        CardDetails(
+                        CardDetailsDocument(
                             TYPE.toString(),
                             BIN.bin,
-                            MASKED_PAN.maskedPan,
+                            LAST_FOUR_DIGITS.lastFourDigits,
                             EXP_DATE.expDate,
                             BRAND.toString(),
                             PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
@@ -239,10 +240,10 @@ object WalletTestUtils {
                     )
                 ),
             details =
-                CardDetails(
+                CardDetailsDocument(
                     TYPE.toString(),
                     BIN.bin,
-                    MASKED_PAN.maskedPan,
+                    LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
                     BRAND.toString(),
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
@@ -297,7 +298,7 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details =
-                    CardDetails(
+                    CardDetailsDocument(
                         WalletDetailsType.CARDS.name,
                         bin,
                         lastFourDigits,
@@ -501,7 +502,7 @@ object WalletTestUtils {
                         )
                     ),
                 details =
-                    CardDetails(
+                    CardDetailsDocument(
                         TYPE.toString(),
                         BIN.bin,
                         LAST_FOUR_DIGITS.lastFourDigits,
@@ -535,7 +536,8 @@ object WalletTestUtils {
             contractId = CONTRACT_ID,
             validationOperationResult = OperationResultEnum.EXECUTED,
             validationErrorCode = null,
-            details = CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
+            details =
+                CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate

@@ -6,7 +6,6 @@ import it.pagopa.wallet.domain.wallets.details.ExpiryDate
 import it.pagopa.wallet.domain.wallets.details.LastFourDigits
 import it.pagopa.wallet.domain.wallets.details.PaymentInstrumentGatewayId
 
-
 data class CardDetails(
     val type: String,
     val bin: String,
