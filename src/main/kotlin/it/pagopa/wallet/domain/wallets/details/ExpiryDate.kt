@@ -4,6 +4,12 @@ import java.time.format.DateTimeFormatter
 
 data class ExpiryDate(val expDate: String) {
     init {
-        require(runCatching { (DateTimeFormatter.ofPattern("YYYYMM").parse(expDate)) }.isSuccess)
+         companion object {
+        val expiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMM")
+    }
+
+    init {
+        require(runCatching { (expiryDateFormatter.parse(expDate)) }.isSuccess)
+    }
     }
 }
