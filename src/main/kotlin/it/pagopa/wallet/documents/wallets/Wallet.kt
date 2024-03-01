@@ -19,11 +19,10 @@ data class Wallet(
     val userId: String,
     val status: String,
     val paymentMethodId: String,
-    val paymentInstrumentId: String?,
     val contractId: String?,
     val validationOperationResult: String?,
     var validationErrorCode: String?,
-    val applications: List<Application>,
+    val applications: List<WalletApplication>,
     val details: WalletDetails<*>?,
     @Version var version: Int,
     @CreatedDate var creationDate: Instant,
@@ -36,8 +35,6 @@ data class Wallet(
                 userId = UserId(UUID.fromString(this.userId)),
                 status = WalletStatusDto.valueOf(this.status),
                 paymentMethodId = PaymentMethodId(UUID.fromString(this.paymentMethodId)),
-                paymentInstrumentId =
-                    this.paymentInstrumentId?.let { PaymentInstrumentId(UUID.fromString(it)) },
                 applications = this.applications.map { application -> application.toDomain() },
                 contractId = this.contractId?.let { ContractId(it) },
                 validationOperationResult =

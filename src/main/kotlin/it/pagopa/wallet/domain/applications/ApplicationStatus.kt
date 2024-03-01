@@ -1,12 +1,12 @@
-package it.pagopa.wallet.domain.services
+package it.pagopa.wallet.domain.applications
 
-enum class ServiceStatus {
+enum class ApplicationStatus {
     ENABLED,
     INCOMING,
     DISABLED;
 
     companion object {
-        fun canChangeToStatus(requested: ServiceStatus, global: ServiceStatus): Boolean {
+        fun canChangeToStatus(requested: ApplicationStatus, global: ApplicationStatus): Boolean {
             /*
                 Truth table (E=ENABLED, D=DISABLED, I=INCOMING)
 

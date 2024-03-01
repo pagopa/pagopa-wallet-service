@@ -8,6 +8,6 @@ class ServiceTest {
 
     @Test
     fun `can build service document`() {
-        Assertions.assertNotNull(WalletTestUtils.SERVICE_DOCUMENT)
+        Assertions.assertNotNull(WalletTestUtils.APPLICATION_DOCUMENT)
     }
 }

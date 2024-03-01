@@ -3,9 +3,8 @@ package it.pagopa.wallet.exceptionhandler
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
-import it.pagopa.wallet.exception.WalletServiceStatusConflictException
+import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import jakarta.xml.bind.ValidationException
-import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -77,24 +76,24 @@ class ExceptionHandler {
             )
     }
 
-    @ExceptionHandler(WalletServiceStatusConflictException::class)
+    @ExceptionHandler(WalletApplicationStatusConflictException::class)
     fun walletServiceStatusConflictExceptionHandler(
-        exception: WalletServiceStatusConflictException
+        exception: WalletApplicationStatusConflictException
     ): ResponseEntity<WalletServicesPartialUpdateDto> {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(
                 WalletServicesPartialUpdateDto().apply {
                     updatedServices =
-                        exception.updatedServices.map {
+                        exception.updatedApplications.map {
                             WalletServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.name))
+                                .name(ServiceNameDto.valueOf(it.key.id))
                                 .status(WalletServiceStatusDto.valueOf(it.value.name))
                         }
                     failedServices =
-                        exception.failedServices.map {
+                        exception.failedApplications.map {
                             ServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.name))
-                                .status(ServiceStatusDto.valueOf(it.value.name))
+                                .name(ServiceNameDto.valueOf(it.key.id))
+                                .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
             )
