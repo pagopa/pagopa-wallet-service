@@ -45,7 +45,7 @@ class MigrationService(
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
             .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
-            .doOnError { logger.error(it.message) }
+            .doOnError { logger.error(it.message, it) }
             .toMono()
     }
 
