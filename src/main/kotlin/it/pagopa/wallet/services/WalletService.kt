@@ -27,6 +27,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -103,14 +104,14 @@ class WalletService(
                 "913" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
                 "999" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
             )
+        val walletExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMM")
+        val npgExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/yy")
     }
 
     /*
      * Logger instance
      */
     var logger: Logger = LoggerFactory.getLogger(this.javaClass)
-    val ecommerceExpiryDateFormatter = DateTimeFormatter.ofPattern("YYYYMM")
-    val npgExpiryDateFormatter = DateTimeFormatter.ofPattern("MM/YY")
 
     private data class SessionCreationData(
         val paymentGatewayResponse: Fields,
@@ -555,9 +556,8 @@ class WalletService(
                     )
             }
 
-    private fun npgToEcommerceExpiryDate(expiryDate: String): String {
-        return ecommerceExpiryDateFormatter.format(npgExpiryDateFormatter.parse(expiryDate))
-    }
+    private fun npgToEcommerceExpiryDate(expiryDate: String) =
+        YearMonth.parse(expiryDate, npgExpiryDateFormatter).format(walletExpiryDateFormatter)
 
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
         return walletRepository
