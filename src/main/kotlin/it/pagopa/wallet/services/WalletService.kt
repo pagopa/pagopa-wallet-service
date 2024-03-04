@@ -549,14 +549,14 @@ class WalletService(
                             DomainCardDetails(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
-                                ExpiryDate(npgToEcommerceExpiryDate(data.expiringDate.orEmpty())),
+                                ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
                                 WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )
             }
 
-    private fun npgToEcommerceExpiryDate(expiryDate: String) =
+    private fun gatewayToWalletExpiryDate(expiryDate: String) =
         YearMonth.parse(expiryDate, npgExpiryDateFormatter).format(walletExpiryDateFormatter)
 
     fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
