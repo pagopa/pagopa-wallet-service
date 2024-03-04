@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "99ec3ad7-39d3-4563-b5db-449d903ce79d",
+		"name": "Wallet CARDS Migration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32950386"
+	},
+	"item": [
+		{
+			"name": "Create new wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] New wallet created successfully with PUT /wallets/migrations\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\");",
+							"    pm.expect(responseJson.walletIdPm).to.be.a(\"number\");",
+							"    pm.expect(responseJson.walletIdPm).to.be.eq(Number(pm.environment.get(\"WALLET_ID_PM\")));",
+							"    pm.expect(responseJson.contractId).to.be.a(\"string\");",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\");",
+							"    const walletId = responseJson.walletId;",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"walletIdPm\": {{WALLET_ID_PM}},\n    \"userId\": \"{{USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get migrated wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"USER_ID\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/:walletId",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						":walletId"
+					],
+					"variable": [
+						{
+							"key": "walletId",
+							"value": "{{WALLET_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet with invalid userId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] New wallet creation request with error invalid userId\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"walletIdPm\": {{WALLET_ID_PM}},\n    \"userId\": \"{{WRONG_USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

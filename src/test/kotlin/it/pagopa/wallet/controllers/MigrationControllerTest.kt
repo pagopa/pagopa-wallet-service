@@ -1,49 +1,92 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
+import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.services.MigrationService
 import java.util.*
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.given
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Mono
 
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class MigrationControllerTest {
 
-    private lateinit var migrationController: MigrationController
+    @MockBean private lateinit var migrationService: MigrationService
 
     @Autowired private lateinit var webClient: WebTestClient
 
-    @BeforeEach
-    fun beforeTest() {
-        migrationController = MigrationController()
-    }
-
     @Test
-    fun testFakeResponse() {
+    fun `should create Wallet successfully`() {
+        val paymentManagerId = Random().nextLong()
+        val userId = UUID.randomUUID()
+        given { migrationService.initializeWalletByPaymentManager(any(), any()) }
+            .willAnswer {
+                Mono.just(
+                    WalletTestUtils.walletDocument()
+                        .copy(
+                            userId = (it.arguments[1] as UserId).id.toString(),
+                            contractId = WalletTestUtils.CONTRACT_ID.contractId
+                        )
+                        .toDomain()
+                )
+            }
         webClient
             .put()
             .uri("/migrations/wallets")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(REGISTER_WALLET_PM_REQUEST)
+            .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
             .exchange()
             .expectStatus()
             .isOk
             .expectBody()
-            .jsonPath("walletIdPm", 123)
+            .jsonPath("walletIdPm", paymentManagerId)
             .hasJsonPath()
-            .jsonPath("contractId")
+            .jsonPath("contractId", WalletTestUtils.CONTRACT_ID.contractId)
             .exists()
-            .jsonPath("walletId")
+            .jsonPath("walletId", WalletTestUtils.WALLET_UUID.value.toString())
             .exists()
+            .jsonPath("status", WalletStatusDto.CREATED)
+            .exists()
+
+        argumentCaptor<String> {
+            verify(migrationService).initializeWalletByPaymentManager(capture(), any())
+            assertEquals(lastValue, paymentManagerId.toString())
+        }
+    }
+
+    @Test
+    fun `should return bad request on malformed request`() {
+        webClient
+            .put()
+            .uri("/migrations/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(MALFORMED_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isBadRequest
     }
 
     companion object {
-        val REGISTER_WALLET_PM_REQUEST =
-            WalletPmAssociationRequestDto().walletIdPm(123).userId(UUID.randomUUID())
+        val MALFORMED_REQUEST =
+            """
+            {
+                "walletIdPm": "123",
+                "wrongField": "123"
+            }
+        """
+                .trimIndent()
     }
 }

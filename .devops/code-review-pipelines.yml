@@ -75,14 +75,23 @@ stages:
             displayName: 'Health check'
           - template: azure-templates/api-tests.yml
             parameters:
+              TEST_DISPLAY_NAME: "Wallet cards tests"
               ENV_FILE: "api-tests/wallet_local_cards.environment.json"
               API_TEST_FILE: "api-tests/wallet_local_cards.collection.tests.json"
               TEST_FILE_PREFIX: "wallet-api-test-cards"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
+              TEST_DISPLAY_NAME: "Wallet PayPal tests"
               ENV_FILE: "api-tests/wallet_local_paypal.environment.json"
               API_TEST_FILE: "api-tests/wallet_local_paypal.collection.tests.json"
               TEST_FILE_PREFIX: "wallet-api-test-paypal"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "Wallet migration tests"
+              ENV_FILE: "api-tests/wallet_local_migration.environment.json"
+              API_TEST_FILE: "api-tests/wallet_local_migration.collection.tests.json"
+              TEST_FILE_PREFIX: "wallet-api-test-migration"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
 

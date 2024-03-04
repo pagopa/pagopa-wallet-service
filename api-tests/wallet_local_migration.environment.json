@@ -1,0 +1,39 @@
+{
+	"id": "94d151f5-8c02-42d0-9554-012f8f9aac48",
+	"name": "Wallet Migration local env",
+	"values": [
+		{
+			"key": "HOSTNAME",
+			"value": "http://localhost:8200",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "USER_ID",
+			"value": "76143b23-0d6a-4b4c-85c4-1159a78a53eb",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "WALLET_ID_PM",
+			"value": "9016183135",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "WRONG_USER_ID",
+			"value": "ABC",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "PAYMENT_METHOD_ID",
+			"value": "e94b3abf-055c-4d5e-827f-64634453fb10",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2024-02-26T16:38:41.635Z",
+	"_postman_exported_using": "Postman/10.23.5"
+}

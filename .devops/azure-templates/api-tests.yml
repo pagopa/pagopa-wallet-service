@@ -8,13 +8,18 @@ parameters:
     type: string
   - name: "WALLET_TOKEN_TEST"
     type: string
+  - name: 'TEST_DISPLAY_NAME'
+    type: string
+  - name: 'MIGRATION_API_KEY_TEST'
+    type: string
+    default: ""
 steps:
   - script: |
       yarn global add newman
     displayName: 'Newman installation'
   - script: |
-      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var WALLET_TOKEN_TEST=${{ parameters.WALLET_TOKEN_TEST }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
-    displayName: 'Run api test'
+      newman run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var WALLET_TOKEN_TEST=${{ parameters.WALLET_TOKEN_TEST }} --env-var MIGRATION_API_KEY_TEST=${{ parameters.MIGRATION_API_KEY_TEST }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml
+    displayName: ${{ parameters.TEST_DISPLAY_NAME }}
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
