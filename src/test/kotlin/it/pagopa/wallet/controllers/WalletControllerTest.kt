@@ -398,7 +398,7 @@ class WalletControllerTest {
                         WalletApplicationUpdateData(
                             successfullyUpdatedApplications =
                                 mapOf(
-                                    WalletApplicationId(WALLET_SERVICE_1.name.name) to
+                                    WalletApplicationId(WALLET_SERVICE_1.name) to
                                         WalletApplicationStatus.valueOf(
                                             WALLET_SERVICE_1.status.name
                                         )
@@ -465,13 +465,13 @@ class WalletControllerTest {
                     updatedApplications =
                         walletApplicationUpdateData.successfullyUpdatedApplications.map {
                             WalletApplicationDto()
-                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .name(it.key.id)
                                 .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
                     failedApplications =
                         walletApplicationUpdateData.applicationsWithUpdateFailed.map {
                             ApplicationDto()
-                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .name(it.key.id)
                                 .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }

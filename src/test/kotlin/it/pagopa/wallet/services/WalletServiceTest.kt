@@ -1707,7 +1707,7 @@ class WalletServiceTest {
                         .applications(
                             wallet.applications.map { application ->
                                 ApplicationDto()
-                                    .name(ApplicationNameDto.valueOf(application.id))
+                                    .name(application.id)
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1753,7 +1753,7 @@ class WalletServiceTest {
                         .applications(
                             wallet.applications.map { application ->
                                 ApplicationDto()
-                                    .name(ApplicationNameDto.valueOf(application.id))
+                                    .name(application.id)
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1796,7 +1796,7 @@ class WalletServiceTest {
                         .applications(
                             wallet.applications.map { application ->
                                 ApplicationDto()
-                                    .name(ApplicationNameDto.valueOf(application.id))
+                                    .name(application.id)
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1839,7 +1839,7 @@ class WalletServiceTest {
                         .applications(
                             wallet.applications.map { application ->
                                 ApplicationDto()
-                                    .name(ApplicationNameDto.valueOf(application.id))
+                                    .name(application.id)
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )

@@ -191,7 +191,7 @@ class WalletService(
                             listOf(
                                 WalletApplication(
                                     WalletApplicationId(
-                                        ApplicationNameDto.PAGOPA.value
+                                        "PAGOPA"
                                     ), // TODO We enter a static value since these wallets will be
                                     // created only for pagopa payments
                                     WalletApplicationStatus.ENABLED,
@@ -267,7 +267,7 @@ class WalletService(
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
                 val pagopaApplication =
                     wallet.applications.singleOrNull { application ->
-                        application.id == WalletApplicationId(ApplicationNameDto.PAGOPA.value) &&
+                        application.id == WalletApplicationId("PAGOPA") &&
                             application.status == WalletApplicationStatus.ENABLED
                     }
                 val isTransactionWithContextualOnboard =
@@ -743,7 +743,7 @@ class WalletService(
             .applications(
                 wallet.applications.map { application ->
                     ApplicationDto()
-                        .name(ApplicationNameDto.valueOf(application.id))
+                        .name(application.id)
                         .status(ApplicationStatusDto.valueOf(application.status))
                 }
             )

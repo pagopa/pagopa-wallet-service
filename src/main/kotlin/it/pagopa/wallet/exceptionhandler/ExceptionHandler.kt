@@ -86,13 +86,13 @@ class ExceptionHandler {
                     updatedApplications =
                         exception.updatedApplications.map {
                             WalletApplicationDto()
-                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .name(it.key.id)
                                 .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
                     failedApplications =
                         exception.failedApplications.map {
                             ApplicationDto()
-                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .name(it.key.id)
                                 .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }

@@ -624,7 +624,7 @@ object WalletTestUtils {
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
         WalletCreateRequestDto()
-            .applications(listOf(ApplicationNameDto.PAGOPA))
+            .applications(listOf("PAGOPA"))
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
@@ -635,14 +635,10 @@ object WalletTestUtils {
             .amount(200)
 
     val WALLET_SERVICE_1: WalletApplicationDto =
-        WalletApplicationDto()
-            .name(ApplicationNameDto.PAGOPA)
-            .status(WalletApplicationStatusDto.DISABLED)
+        WalletApplicationDto().name("PAGOPA").status(WalletApplicationStatusDto.DISABLED)
 
     val WALLET_SERVICE_2: WalletApplicationDto =
-        WalletApplicationDto()
-            .name(ApplicationNameDto.PAGOPA)
-            .status(WalletApplicationStatusDto.ENABLED)
+        WalletApplicationDto().name("PAGOPA").status(WalletApplicationStatusDto.ENABLED)
 
     val UPDATE_SERVICES_BODY: WalletApplicationUpdateRequestDto =
         WalletApplicationUpdateRequestDto().applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))

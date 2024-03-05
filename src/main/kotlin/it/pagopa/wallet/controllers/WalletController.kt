@@ -40,7 +40,7 @@ class WalletController(
             .flatMap { request ->
                 walletService
                     .createWallet(
-                        request.applications.map { s -> WalletApplicationId(s.name) },
+                        request.applications.map { s -> WalletApplicationId(s) },
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId
                     )
@@ -202,7 +202,7 @@ class WalletController(
                     walletId,
                     requestedApplications.map {
                         Pair(
-                            WalletApplicationId(it.name.name),
+                            WalletApplicationId(it.name),
                             WalletApplicationStatus.valueOf(it.status.value)
                         )
                     }

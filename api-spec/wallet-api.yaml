@@ -719,16 +719,11 @@ components:
         failedApplications:
           - name: "PARI"
             status: "DISABLED"
-    ApplicationName:
-      type: string
-      description: Enumeration of applications
-      enum:
-        - PAGOPA
     Application:
       type: object
       properties:
         name:
-          $ref: '#/components/schemas/ApplicationName'
+          $ref: '#/components/schemas/ApplicationId'
         status:
           $ref: '#/components/schemas/ApplicationStatus'
         updateDate:
@@ -742,9 +737,12 @@ components:
       type: object
       properties:
         name:
-          $ref: '#/components/schemas/ApplicationName'
+          $ref: '#/components/schemas/WalletApplicationId'
         status:
           $ref: '#/components/schemas/WalletApplicationStatus'
+    WalletApplicationId:
+      type: string
+      description: id of the application associated to the wallet
     WalletApplicationStatus:
       type: string
       description: Enumeration of wallet statuses
@@ -840,7 +838,7 @@ components:
           type: array
           description: List of applications for which wallet is enabled
           items:
-            $ref: '#/components/schemas/ApplicationName'
+            $ref: '#/components/schemas/ApplicationId'
         useDiagnosticTracing:
           type: boolean
         paymentMethodId:
