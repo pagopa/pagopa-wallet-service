@@ -391,7 +391,7 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocumentEmptyServicesNullDetails(): Wallet {
+    fun walletDocumentEmptyApplicationsNullDetails(): Wallet {
         val wallet =
             Wallet(
                 id = WALLET_UUID.value.toString(),
@@ -571,7 +571,7 @@ object WalletTestUtils {
             .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value.toString())
             .userId(USER_ID.id.toString())
-            .services(listOf())
+            .applications(listOf())
             .details(
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
@@ -588,7 +588,7 @@ object WalletTestUtils {
             .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
             .paymentMethodId(PAYMENT_METHOD_ID_APM.value.toString())
             .userId(USER_ID.id.toString())
-            .services(listOf())
+            .applications(listOf())
             .details(
                 WalletPaypalDetailsDto().type("PAYPAL").maskedEmail("maskedEmail").pspId(PSP_ID)
             )
@@ -624,7 +624,7 @@ object WalletTestUtils {
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
         WalletCreateRequestDto()
-            .services(listOf(ServiceNameDto.PAGOPA))
+            .applications(listOf(ApplicationNameDto.PAGOPA))
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
@@ -634,14 +634,18 @@ object WalletTestUtils {
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
             .amount(200)
 
-    val WALLET_SERVICE_1: WalletServiceDto =
-        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.DISABLED)
+    val WALLET_SERVICE_1: WalletApplicationDto =
+        WalletApplicationDto()
+            .name(ApplicationNameDto.PAGOPA)
+            .status(WalletApplicationStatusDto.DISABLED)
 
-    val WALLET_SERVICE_2: WalletServiceDto =
-        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.ENABLED)
+    val WALLET_SERVICE_2: WalletApplicationDto =
+        WalletApplicationDto()
+            .name(ApplicationNameDto.PAGOPA)
+            .status(WalletApplicationStatusDto.ENABLED)
 
-    val UPDATE_SERVICES_BODY: WalletServiceUpdateRequestDto =
-        WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
+    val UPDATE_SERVICES_BODY: WalletApplicationUpdateRequestDto =
+        WalletApplicationUpdateRequestDto().applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
     val PSP_ID = UUID.randomUUID().toString()
 

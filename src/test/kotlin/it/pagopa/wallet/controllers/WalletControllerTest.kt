@@ -21,8 +21,8 @@ import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletService
-import it.pagopa.wallet.services.WalletServiceUpdateData
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
@@ -387,15 +387,15 @@ class WalletControllerTest {
     }
 
     @Test
-    fun `wallet services updated with valid statuses returns 204`() {
+    fun `wallet applications updated with valid statuses returns 204`() {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
 
-        given { walletService.updateWalletServices(any(), any()) }
+        given { walletService.updateWalletApplications(any(), any()) }
             .willReturn(
                 mono {
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             successfullyUpdatedApplications =
                                 mapOf(
                                     WalletApplicationId(WALLET_SERVICE_1.name.name) to
@@ -416,7 +416,7 @@ class WalletControllerTest {
         /* test */
         webClient
             .put()
-            .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+            .uri("/wallets/{walletId}/applications", mapOf("walletId" to walletId.value.toString()))
             .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
             .exchange()
             .expectStatus()
@@ -424,7 +424,7 @@ class WalletControllerTest {
     }
 
     @Test
-    fun `wallet services updated with errors returns 409 with both succeeded and failed services`() {
+    fun `wallet applications updated with errors returns 409 with both succeeded and failed applications`() {
         val mockedInstant = Instant.now()
 
         Mockito.mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -432,8 +432,8 @@ class WalletControllerTest {
 
             /* preconditions */
             val walletId = WalletId(UUID.randomUUID())
-            val walletServiceUpdateData =
-                WalletServiceUpdateData(
+            val walletApplicationUpdateData =
+                WalletApplicationUpdateData(
                     successfullyUpdatedApplications =
                         mapOf(
                             WalletApplicationId("PAGOPA") to
@@ -447,11 +447,11 @@ class WalletControllerTest {
                     updatedWallet = WALLET_DOMAIN.toDocument()
                 )
 
-            given { walletService.updateWalletServices(any(), any()) }
+            given { walletService.updateWalletApplications(any(), any()) }
                 .willReturn(
                     mono {
                         LoggedAction(
-                            walletServiceUpdateData,
+                            walletApplicationUpdateData,
                             WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
                         )
                     }
@@ -461,35 +461,38 @@ class WalletControllerTest {
 
             /* test */
             val expectedResponse =
-                WalletServicesPartialUpdateDto().apply {
-                    updatedServices =
-                        walletServiceUpdateData.successfullyUpdatedApplications.map {
-                            WalletServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
-                                .status(WalletServiceStatusDto.valueOf(it.value.name))
+                WalletApplicationsPartialUpdateDto().apply {
+                    updatedApplications =
+                        walletApplicationUpdateData.successfullyUpdatedApplications.map {
+                            WalletApplicationDto()
+                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
-                    failedServices =
-                        walletServiceUpdateData.applicationsWithUpdateFailed.map {
-                            ServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
+                    failedApplications =
+                        walletApplicationUpdateData.applicationsWithUpdateFailed.map {
+                            ApplicationDto()
+                                .name(ApplicationNameDto.valueOf(it.key.id))
                                 .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
 
             webClient
                 .put()
-                .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+                .uri(
+                    "/wallets/{walletId}/applications",
+                    mapOf("walletId" to walletId.value.toString())
+                )
                 .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.CONFLICT)
-                .expectBody(WalletServicesPartialUpdateDto::class.java)
+                .expectBody(WalletApplicationsPartialUpdateDto::class.java)
                 .isEqualTo(expectedResponse)
         }
     }
 
     @Test
-    fun `wallet services updated with unknown service returns 404`() {
+    fun `wallet applications updated with unknown application returns 404`() {
         val mockedInstant = Instant.now()
 
         Mockito.mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -498,7 +501,7 @@ class WalletControllerTest {
             /* preconditions */
             val walletId = WalletId(UUID.randomUUID())
 
-            given { walletService.updateWalletServices(any(), any()) }
+            given { walletService.updateWalletApplications(any(), any()) }
                 .willReturn(Mono.error(ApplicationNotFoundException(ApplicationId("UNKNOWN").id)))
 
             /* test */
@@ -509,11 +512,15 @@ class WalletControllerTest {
                     .detail("Service with id 'UNKNOWN' not found")
 
             val walletUpdateRequest =
-                WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
+                WalletApplicationUpdateRequestDto()
+                    .applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
             webClient
                 .put()
-                .uri("/wallets/{walletId}/services", mapOf("walletId" to walletId.value.toString()))
+                .uri(
+                    "/wallets/{walletId}/applications",
+                    mapOf("walletId" to walletId.value.toString())
+                )
                 .bodyValue(walletUpdateRequest)
                 .exchange()
                 .expectStatus()

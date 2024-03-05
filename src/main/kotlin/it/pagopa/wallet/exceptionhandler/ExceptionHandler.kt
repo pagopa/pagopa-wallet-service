@@ -77,22 +77,22 @@ class ExceptionHandler {
     }
 
     @ExceptionHandler(WalletApplicationStatusConflictException::class)
-    fun walletServiceStatusConflictExceptionHandler(
+    fun walletApplicationStatusConflictExceptionHandler(
         exception: WalletApplicationStatusConflictException
-    ): ResponseEntity<WalletServicesPartialUpdateDto> {
+    ): ResponseEntity<WalletApplicationsPartialUpdateDto> {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(
-                WalletServicesPartialUpdateDto().apply {
-                    updatedServices =
+                WalletApplicationsPartialUpdateDto().apply {
+                    updatedApplications =
                         exception.updatedApplications.map {
-                            WalletServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
-                                .status(WalletServiceStatusDto.valueOf(it.value.name))
+                            WalletApplicationDto()
+                                .name(ApplicationNameDto.valueOf(it.key.id))
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
-                    failedServices =
+                    failedApplications =
                         exception.failedApplications.map {
-                            ServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
+                            ApplicationDto()
+                                .name(ApplicationNameDto.valueOf(it.key.id))
                                 .status(ApplicationStatusDto.valueOf(it.value.name))
                         }
                 }

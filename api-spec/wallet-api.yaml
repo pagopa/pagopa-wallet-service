@@ -4,7 +4,7 @@ info:
   version: 0.0.1
   description: >-
     API to handle wallets PagoPA, where a wallet is triple between user
-    identifier, payment instrument and services (i.e pagoPA, bpd).
+    identifier, payment instrument and applications (i.e pagoPA, bpd).
   termsOfService: https://pagopa.it/terms/
 tags:
   - name: wallets
@@ -207,19 +207,19 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
-  /wallets/{walletId}/services:
+  /wallets/{walletId}/applications:
     put:
       tags:
         - wallets
-      summary: Update wallet services and their status
-      description: Update wallet services
-      operationId: updateWalletServicesById
+      summary: Update wallet applications and their status
+      description: Update wallet applications
+      operationId: updateWalletApplicationsById
       requestBody:
-        description: Update wallet services for the specified wallet
+        description: Update wallet applications for the specified wallet
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WalletServiceUpdateRequest'
+              $ref: '#/components/schemas/WalletApplicationUpdateRequest'
       parameters:
         - name: walletId
           in: path
@@ -232,12 +232,12 @@ paths:
           description: Wallet updated successfully
         '409':
           description: |
-            Wallet request is inconsistent with global service status
-            (e.g. the user requested a service to be enabled but the service has a global status of disabled)
+            Wallet request is inconsistent with global application status
+            (e.g. the user requested a application to be enabled but the application has a global status of disabled)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletServicesPartialUpdate"
+                $ref: "#/components/schemas/WalletApplicationsPartialUpdate"
         '400':
           description: Invalid input id
           content:
@@ -251,7 +251,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
-          description: Wallet not found or one of the requested services was not found
+          description: Wallet not found or one of the requested applications was not found
           content:
             application/json:
               schema:
@@ -700,52 +700,52 @@ components:
         redirectUrl:
           type: string
           description: redirect url in order to continue verify.
-    WalletServicesPartialUpdate:
+    WalletApplicationsPartialUpdate:
       type: object
-      description: Response for wallet services partial update due to status conflicts
+      description: Response for wallet applications partial update due to status conflicts
       properties:
-        updatedServices:
+        updatedApplications:
           type: array
           items:
-            $ref: "#/components/schemas/WalletService"
-        failedServices:
+            $ref: "#/components/schemas/WalletApplication"
+        failedApplications:
           type: array
           items:
-            $ref: "#/components/schemas/Service"
+            $ref: "#/components/schemas/Application"
       example:
-        updatedServices:
+        updatedApplications:
           - name: "PAGOPA"
             status: "ENABLED"
-        failedServices:
+        failedApplications:
           - name: "PARI"
             status: "DISABLED"
-    ServiceName:
+    ApplicationName:
       type: string
-      description: Enumeration of services
+      description: Enumeration of applications
       enum:
         - PAGOPA
-    Service:
+    Application:
       type: object
       properties:
         name:
-          $ref: '#/components/schemas/ServiceName'
+          $ref: '#/components/schemas/ApplicationName'
         status:
           $ref: '#/components/schemas/ApplicationStatus'
         updateDate:
-          description: Service last update date
+          description: Application last update date
           type: string
           format: date-time
     ApplicationId:
       description: Application identifier
       type: string
-    WalletService:
+    WalletApplication:
       type: object
       properties:
         name:
-          $ref: '#/components/schemas/ServiceName'
+          $ref: '#/components/schemas/ApplicationName'
         status:
-          $ref: '#/components/schemas/WalletServiceStatus'
-    WalletServiceStatus:
+          $ref: '#/components/schemas/WalletApplicationStatus'
+    WalletApplicationStatus:
       type: string
       description: Enumeration of wallet statuses
       enum:
@@ -823,31 +823,31 @@ components:
         - type
         - pspId
         - maskedEmail
-    WalletServiceUpdateRequest:
+    WalletApplicationUpdateRequest:
       type: object
       description: Wallet update request
       properties:
-        services:
+        applications:
           type: array
-          description: List of services to update
+          description: List of applications to update
           items:
-            $ref: '#/components/schemas/WalletService'
+            $ref: '#/components/schemas/WalletApplication'
     WalletCreateRequest:
       type: object
       description: Wallet creation request
       properties:
-        services:
+        applications:
           type: array
-          description: List of services for which wallet is enabled
+          description: List of applications for which wallet is enabled
           items:
-            $ref: '#/components/schemas/ServiceName'
+            $ref: '#/components/schemas/ApplicationName'
         useDiagnosticTracing:
           type: boolean
         paymentMethodId:
           type: string
           format: uuid
       required:
-        - services
+        - applications
         - useDiagnosticTracing
         - paymentMethodId
     WalletCreateResponse:
@@ -921,11 +921,11 @@ components:
           description: Wallet update date
           type: string
           format: date-time
-        services:
-          description: list of services for which this wallet is created for
+        applications:
+          description: list of applications for which this wallet is created for
           type: array
           items:
-            $ref: '#/components/schemas/Service'
+            $ref: '#/components/schemas/Application'
         details:
           description: >-
             details for the specific payment instrument. This field is
@@ -947,7 +947,7 @@ components:
         - creationDate
         - updateDate
         - type
-        - services
+        - applications
     Wallets:
       type: object
       description: Wallets information
@@ -1151,7 +1151,7 @@ components:
         - applicationId
     ApplicationPatchRequest:
       type: object
-      description: Service updating request
+      description: Application updating request
       properties:
         status:
           $ref: "#/components/schemas/ApplicationStatus"
@@ -1178,7 +1178,7 @@ components:
 
             for engineers (usually not suited for non technical stakeholders and
 
-            not localized); example: Service Unavailable
+            not localized); example: Application Unavailable
         status:
           $ref: '#/components/schemas/HttpStatusCode'
         detail:

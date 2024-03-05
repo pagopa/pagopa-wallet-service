@@ -1704,10 +1704,10 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
+                                ApplicationDto()
+                                    .name(ApplicationNameDto.valueOf(application.id))
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1750,10 +1750,10 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
+                                ApplicationDto()
+                                    .name(ApplicationNameDto.valueOf(application.id))
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1793,10 +1793,10 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
+                                ApplicationDto()
+                                    .name(ApplicationNameDto.valueOf(application.id))
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1836,10 +1836,10 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
+                                ApplicationDto()
+                                    .name(ApplicationNameDto.valueOf(application.id))
                                     .status(ApplicationStatusDto.valueOf(application.status))
                             }
                         )
@@ -1943,7 +1943,7 @@ class WalletServiceTest {
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 wallet
                                     .copy(
@@ -1988,7 +1988,7 @@ class WalletServiceTest {
                 assertTrue(wallet.applications.isEmpty())
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
@@ -2017,7 +2017,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2065,7 +2065,7 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
@@ -2098,7 +2098,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2135,7 +2135,9 @@ class WalletServiceTest {
                     WalletApplicationStatus.DISABLED.toString()
                 )
 
-                StepVerifier.create(walletService.updateWalletServices(WALLET_UUID.value, listOf()))
+                StepVerifier.create(
+                        walletService.updateWalletApplications(WALLET_UUID.value, listOf())
+                    )
                     .assertNext { assertEquals(expectedLoggedAction, it) }
                     .verifyComplete()
 
@@ -2179,7 +2181,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2233,7 +2235,7 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
@@ -2297,7 +2299,7 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newApplicationStatus),
@@ -2324,7 +2326,7 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.updateWalletServices(
+                walletService.updateWalletApplications(
                     WALLET_UUID.value,
                     listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
                 )

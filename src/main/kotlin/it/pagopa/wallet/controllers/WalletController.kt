@@ -40,7 +40,7 @@ class WalletController(
             .flatMap { request ->
                 walletService
                     .createWallet(
-                        request.services.map { s -> WalletApplicationId(s.name) },
+                        request.applications.map { s -> WalletApplicationId(s.name) },
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId
                     )
@@ -190,17 +190,17 @@ class WalletController(
      * @formatter:on
      */
     @SuppressWarnings("kotlin:S6508")
-    override fun updateWalletServicesById(
+    override fun updateWalletApplicationsById(
         walletId: UUID,
-        patchServiceDto: Mono<WalletServiceUpdateRequestDto>,
+        patchApplicationDto: Mono<WalletApplicationUpdateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
-        return patchServiceDto
-            .map { it.services }
-            .flatMap { requestedServices ->
-                walletService.updateWalletServices(
+        return patchApplicationDto
+            .map { it.applications }
+            .flatMap { requestedApplications ->
+                walletService.updateWalletApplications(
                     walletId,
-                    requestedServices.map {
+                    requestedApplications.map {
                         Pair(
                             WalletApplicationId(it.name.name),
                             WalletApplicationStatus.valueOf(it.status.value)

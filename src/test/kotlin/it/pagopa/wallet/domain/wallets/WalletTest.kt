@@ -60,7 +60,7 @@ class WalletTest {
     }
 
     @Test
-    fun `can construct wallet with services and card details`() {
+    fun `can construct wallet with applications and card details`() {
 
         assertDoesNotThrow {
             Wallet(
