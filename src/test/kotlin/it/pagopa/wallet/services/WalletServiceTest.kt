@@ -37,7 +37,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
-import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCARD
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidationRequestedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
@@ -1699,7 +1699,7 @@ class WalletServiceTest {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val wallet = walletDocumentStatusValidatedCARD()
+                val wallet = walletDocumentStatusValidatedCard()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -1831,7 +1831,7 @@ class WalletServiceTest {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val logoUri = "http://logoURI"
-                val wallet = walletDocumentStatusValidatedCARD()
+                val wallet = walletDocumentStatusValidatedCard()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -1874,7 +1874,7 @@ class WalletServiceTest {
     fun `should find wallet auth data by ID with cards`() {
         /* preconditions */
 
-        val wallet = walletDocumentStatusValidatedCARD()
+        val wallet = walletDocumentStatusValidatedCard()
         val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
@@ -1905,7 +1905,7 @@ class WalletServiceTest {
     fun `should throw exception if getAuthData is called with null details`() {
         /* preconditions */
 
-        val wallet = walletDocumentStatusValidatedCARD().copy(details = null)
+        val wallet = walletDocumentStatusValidatedCard().copy(details = null)
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
 
@@ -1919,7 +1919,7 @@ class WalletServiceTest {
     @Test
     fun `should throws wallet not found exception when retrieve auth data by ID`() {
         /* preconditions */
-        val wallet = walletDocumentStatusValidatedCARD()
+        val wallet = walletDocumentStatusValidatedCard()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.empty())
         /* test */

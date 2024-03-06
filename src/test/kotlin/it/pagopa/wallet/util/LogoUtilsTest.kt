@@ -25,7 +25,7 @@ class LogoUtilsTest {
         @JvmStatic
         fun `card wallet with all brands method source`() =
             WalletCardDetailsDto.BrandEnum.values().map {
-                WalletTestUtils.walletDocumentStatusValidatedCARD(it).toDomain()
+                WalletTestUtils.walletDocumentStatusValidatedCard(it).toDomain()
             }
     }
 

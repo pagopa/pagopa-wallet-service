@@ -220,10 +220,9 @@ object WalletTestUtils {
             )
     }
 
-    fun walletDocumentStatusValidatedCARD() =
-        WalletTestUtils.walletDocumentStatusValidatedCARD(BRAND)
+    fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
 
-    fun walletDocumentStatusValidatedCARD(brand: WalletCardDetailsDto.BrandEnum): Wallet {
+    fun walletDocumentStatusValidatedCard(brand: WalletCardDetailsDto.BrandEnum): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
