@@ -14,6 +14,7 @@ import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
@@ -219,7 +220,10 @@ object WalletTestUtils {
             )
     }
 
-    fun walletDocumentStatusValidatedCARD(): Wallet {
+    fun walletDocumentStatusValidatedCARD() =
+        WalletTestUtils.walletDocumentStatusValidatedCARD(BRAND)
+
+    fun walletDocumentStatusValidatedCARD(brand: WalletCardDetailsDto.BrandEnum): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -244,7 +248,7 @@ object WalletTestUtils {
                     BIN.bin,
                     MASKED_PAN.maskedPan,
                     EXP_DATE.expDate,
-                    BRAND.toString(),
+                    brand.toString(),
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                 ),
             version = 0,

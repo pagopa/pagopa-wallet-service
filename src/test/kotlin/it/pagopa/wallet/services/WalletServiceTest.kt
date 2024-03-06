@@ -65,6 +65,7 @@ import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.JwtTokenUtils
+import it.pagopa.wallet.util.LogoUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
@@ -110,6 +111,8 @@ class WalletServiceTest {
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}",
             "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
         )
+
+    private val logoUtils: LogoUtils = mock()
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
@@ -204,16 +207,17 @@ class WalletServiceTest {
 
     private val walletService: WalletService =
         WalletService(
-            walletRepository,
-            applicationRepository,
-            ecommercePaymentMethodsClient,
-            npgClient,
-            npgSessionRedisTemplate,
-            sessionUrlConfig,
-            uniqueIdUtils,
-            onboardingConfig,
-            jwtTokenUtils,
-            onboardingPaymentWalletCreditCardReturnUrl
+            walletRepository = walletRepository,
+            applicationRepository = applicationRepository,
+            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
+            npgClient = npgClient,
+            npgSessionRedisTemplate = npgSessionRedisTemplate,
+            sessionUrlConfig = sessionUrlConfig,
+            uniqueIdUtils = uniqueIdUtils,
+            onboardingConfig = onboardingConfig,
+            jwtTokenUtils = jwtTokenUtils,
+            walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
+            logoUtils = logoUtils
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
@@ -1096,6 +1100,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should execute validation for wallet CARD`() {
         /* preconditions */
@@ -1206,6 +1211,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation for wallet APM`() {
         /* preconditions */
@@ -1252,6 +1258,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation SessionNotFoundException`() {
         /* preconditions */
@@ -1277,6 +1284,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletNotFoundException`() {
         /* preconditions */
@@ -1309,6 +1317,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletSessionMismatchException`() {
         /* preconditions */
@@ -1346,6 +1355,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should throw error when execute validation WalletConflictStatusException`() {
         /* preconditions */
@@ -1457,6 +1467,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `validate should throws BadGatewayException with card data by fields null`() {
         /* preconditions */
@@ -1601,6 +1612,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `validate should throws BadGatewayException with card data by first field src null`() {
         /* preconditions */
@@ -1675,6 +1687,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with cards`() {
         /* preconditions */
@@ -1720,6 +1733,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with paypal with email`() {
         /* preconditions */
@@ -1761,6 +1775,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document with paypal without email`() {
         /* preconditions */
@@ -1801,6 +1816,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet document by userId`() {
         /* preconditions */
@@ -1814,7 +1830,7 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
+                val logoUri = "http://logoURI"
                 val wallet = walletDocumentStatusValidatedCARD()
                 val walletInfoDto =
                     WalletInfoDto()
@@ -1838,12 +1854,13 @@ class WalletServiceTest {
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
+                        .logoUrl(URI.create(logoUri))
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
                 given { walletRepository.findByUserId(USER_ID.id.toString()) }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
-
+                given(logoUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
                 StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
@@ -1852,6 +1869,7 @@ class WalletServiceTest {
             }
         }
     }
+
     @Test
     fun `should find wallet auth data by ID with cards`() {
         /* preconditions */

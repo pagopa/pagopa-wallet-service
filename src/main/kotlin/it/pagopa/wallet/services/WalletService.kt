@@ -17,6 +17,7 @@ import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.JwtTokenUtils
+import it.pagopa.wallet.util.LogoUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
@@ -49,7 +50,10 @@ class WalletService(
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
     @Autowired private val jwtTokenUtils: JwtTokenUtils,
-    @Autowired @Value("\${wallet.payment.cardReturnUrl}") private val walletPaymentReturnUrl: String
+    @Autowired
+    @Value("\${wallet.payment.cardReturnUrl}")
+    private val walletPaymentReturnUrl: String,
+    @Autowired private val logoUtils: LogoUtils
 ) {
 
     companion object {
@@ -753,6 +757,7 @@ class WalletService(
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
+            .logoUrl(logoUtils.getLogo(wallet.toDomain()))
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {

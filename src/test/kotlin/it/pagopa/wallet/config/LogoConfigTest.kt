@@ -1,17 +1,18 @@
 package it.pagopa.wallet.config
 
+import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.net.URI
 
 class LogoConfigTest {
 
-    val logoMapping: Map<String, URI> =
+    private val logoMapping: Map<String, URI> =
         mapOf(
             "VISA" to URI.create("http://visa"),
             "MASTERCARD" to URI.create("http://mastercard"),
-            "PAYPAL" to URI.create("http://paypal")
+            "PAYPAL" to URI.create("http://paypal"),
+            "UNKNOWN" to URI.create("http://unknown")
         )
 
     @Test
@@ -22,9 +23,13 @@ class LogoConfigTest {
 
     @Test
     fun `should throw exception for missing logo mapping`() {
-        val exception = assertThrows<IllegalStateException> {
-            LogoConfig().walletLogoMapping(logoMapping.filter { it.key != "VISA" }.mapValues { it.value.toString() })
-        }
+        val exception =
+            assertThrows<IllegalStateException> {
+                LogoConfig()
+                    .walletLogoMapping(
+                        logoMapping.filter { it.key != "VISA" }.mapValues { it.value.toString() }
+                    )
+            }
 
         assertEquals(
             "Invalid logo configuration map, missing logo entries for the following keys: [VISA]",
