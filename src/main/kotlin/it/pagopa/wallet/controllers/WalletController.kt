@@ -11,7 +11,6 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
-import kotlinx.coroutines.reactor.mono
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -93,8 +92,10 @@ class WalletController(
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
-        // TODO To be implemented
-        return mono { ResponseEntity.noContent().build() }
+        return walletService
+            .deleteWallet(WalletId(walletId))
+            .flatMap { it.saveEvents(loggingEventRepository) }
+            .map { ResponseEntity.noContent().build() }
     }
 
     override fun getSessionWallet(
