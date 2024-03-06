@@ -638,6 +638,13 @@ class WalletService(
             }
     }
 
+    fun deleteWallet(walletId: WalletId): Mono<LoggedAction<Unit>> =
+        walletRepository
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
+            .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
+
     private fun handleWalletNotification(
         wallet: Wallet,
         walletNotificationRequestDto: WalletNotificationRequestDto
