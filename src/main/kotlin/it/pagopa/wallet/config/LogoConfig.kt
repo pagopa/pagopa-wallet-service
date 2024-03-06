@@ -23,7 +23,7 @@ class LogoConfig {
                         .map { it.toString() } +
                     LogoUtils.UNKNOWN_LOGO_KEY)
                 .toSet()
-        val missingKeys = expectedKeys.filter { !transformedLogoMapping.containsKey(it) }
+        val missingKeys = expectedKeys - transformedLogoMapping.keys
         check(missingKeys.isEmpty()) {
             "Invalid logo configuration map, missing logo entries for the following keys: $missingKeys"
         }
