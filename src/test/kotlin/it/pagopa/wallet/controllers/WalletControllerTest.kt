@@ -261,9 +261,18 @@ class WalletControllerTest {
     }
 
     @Test
-    fun testDeleteWalletById() = runTest {
+    fun `deleteWalletById returns 204 when wallet is deleted successfully`() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+
+        given { walletService.deleteWallet(walletId) }
+            .willReturn(
+                Mono.just(LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())))
+            )
+
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+
         /* test */
         webClient
             .delete()
@@ -271,6 +280,37 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isNoContent
+    }
+
+    @Test
+    fun `deleteWalletById returns 400 on invalid wallet id`() = runTest {
+        /* preconditions */
+        val walletId = "invalidWalletId"
+
+        /* test */
+        webClient
+            .delete()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    @Test
+    fun `deleteWalletById returns 404 on missing wallet`() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+
+        given { walletService.deleteWallet(walletId) }
+            .willReturn(Mono.error(WalletNotFoundException(walletId)))
+
+        /* test */
+        webClient
+            .delete()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .exchange()
+            .expectStatus()
+            .isNotFound
     }
 
     @Test
