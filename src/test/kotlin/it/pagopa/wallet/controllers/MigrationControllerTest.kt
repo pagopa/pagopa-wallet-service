@@ -85,7 +85,7 @@ class MigrationControllerTest {
     fun `should return wallet id when update its details`() {
         val detailsRequest =
             WalletPmCardDetailsRequestDto()
-                .newContractIdentifier(UUID.randomUUID())
+                .newContractIdentifier(UUID.randomUUID().toString())
                 .originalContractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
                 .panTail("7890")
