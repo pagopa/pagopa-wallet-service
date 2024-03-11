@@ -1,6 +1,7 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
+import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.wallets.UserId
@@ -18,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Mono
 
 @WebFluxTest(MigrationController::class)
@@ -77,6 +79,28 @@ class MigrationControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
+    }
+
+    @Test
+    fun `should return wallet id when update its details`() {
+        val detailsRequest =
+            WalletPmCardDetailsRequestDto()
+                .newContractIdentifier(UUID.randomUUID())
+                .originalContractIdentifier(UUID.randomUUID().toString())
+                .cardBin("123456")
+                .panTail("7890")
+                .paymentCircuit("VISA")
+                .paymentGatewayCardId(UUID.randomUUID().toString())
+                .expireDate("12/25")
+        webClient
+            .put()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(detailsRequest)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<String>()
     }
 
     companion object {
