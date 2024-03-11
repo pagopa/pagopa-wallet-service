@@ -2,7 +2,7 @@ package it.pagopa.wallet.config
 
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
-import it.pagopa.wallet.util.LogoUtils
+import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -21,7 +21,7 @@ class LogoConfig {
                     WalletDetailsType.values()
                         .filter { it != WalletDetailsType.CARDS }
                         .map { it.toString() } +
-                    LogoUtils.UNKNOWN_LOGO_KEY)
+                    WalletUtils.UNKNOWN_LOGO_KEY)
                 .toSet()
         val missingKeys = expectedKeys - transformedLogoMapping.keys
         check(missingKeys.isEmpty()) {

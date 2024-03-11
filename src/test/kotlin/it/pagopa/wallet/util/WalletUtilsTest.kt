@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
-class LogoUtilsTest {
+class WalletUtilsTest {
 
     companion object {
         val logoMap =
@@ -19,7 +19,7 @@ class LogoUtilsTest {
                     WalletDetailsType.values()
                         .filter { it != WalletDetailsType.CARDS }
                         .map { it.toString() } +
-                    LogoUtils.UNKNOWN_LOGO_KEY)
+                    WalletUtils.UNKNOWN_LOGO_KEY)
                 .associateBy({ it }, { URI.create("http://logoUrl/$it") })
 
         @JvmStatic
@@ -29,26 +29,26 @@ class LogoUtilsTest {
             }
     }
 
-    private val logoUtils = LogoUtils(logoMap)
+    private val walletUtils = WalletUtils(logoMap)
 
     @ParameterizedTest
     @MethodSource("card wallet with all brands method source")
     fun `should retrieve logo for input card wallet successfully`(wallet: Wallet) {
-        val logoURI = logoUtils.getLogo(wallet)
+        val logoURI = walletUtils.getLogo(wallet)
         assertTrue(logoURI.toString().endsWith("/${(wallet.details as CardDetails).brand}"))
     }
 
     @Test
     fun `should retrieve logo for input apm wallet successfully`() {
         val wallet = WalletTestUtils.walletDocumentStatusValidatedAPM("test@test.it").toDomain()
-        val logoURI = logoUtils.getLogo(wallet)
+        val logoURI = walletUtils.getLogo(wallet)
         assertTrue(logoURI.toString().endsWith("/PAYPAL"))
     }
 
     @Test
     fun `should retrieve logo for input for a wallet without details`() {
         val wallet = WalletTestUtils.walletDocumentNullDetails().toDomain()
-        val logoURI = logoUtils.getLogo(wallet)
+        val logoURI = walletUtils.getLogo(wallet)
         assertTrue(logoURI.toString().endsWith("/UNKNOWN"))
     }
 }

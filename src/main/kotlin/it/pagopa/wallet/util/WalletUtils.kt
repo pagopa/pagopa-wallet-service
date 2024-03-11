@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class LogoUtils(@Autowired val logoMapping: Map<String, URI>) {
+class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {
 
     companion object {
         const val UNKNOWN_LOGO_KEY = "UNKNOWN"

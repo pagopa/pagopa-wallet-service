@@ -65,9 +65,9 @@ import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.JwtTokenUtils
-import it.pagopa.wallet.util.LogoUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
+import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -112,7 +112,7 @@ class WalletServiceTest {
             "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
         )
 
-    private val logoUtils: LogoUtils = mock()
+    private val walletUtils: WalletUtils = mock()
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
@@ -217,7 +217,7 @@ class WalletServiceTest {
             onboardingConfig = onboardingConfig,
             jwtTokenUtils = jwtTokenUtils,
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
-            logoUtils = logoUtils
+            walletUtils = walletUtils
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
@@ -1860,7 +1860,7 @@ class WalletServiceTest {
 
                 given { walletRepository.findByUserId(USER_ID.id.toString()) }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
-                given(logoUtils.getLogo(any())).willReturn(URI.create(logoUri))
+                given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
                 StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
