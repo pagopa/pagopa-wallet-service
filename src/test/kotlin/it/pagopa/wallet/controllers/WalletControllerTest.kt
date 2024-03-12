@@ -510,9 +510,9 @@ class WalletControllerTest {
                         }
                     failedApplications =
                         walletApplicationUpdateData.applicationsWithUpdateFailed.map {
-                            ApplicationDto()
+                            WalletApplicationDto()
                                 .name(it.key.id)
-                                .status(ApplicationStatusDto.valueOf(it.value.name))
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
 

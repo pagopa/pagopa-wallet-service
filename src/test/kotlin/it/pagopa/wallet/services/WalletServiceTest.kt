@@ -1706,9 +1706,9 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                ApplicationDto()
+                                WalletApplicationDto()
                                     .name(application.id)
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1752,9 +1752,9 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                ApplicationDto()
+                                WalletApplicationDto()
                                     .name(application.id)
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1795,9 +1795,9 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                ApplicationDto()
+                                WalletApplicationDto()
                                     .name(application.id)
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
@@ -1838,9 +1838,9 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                ApplicationDto()
+                                WalletApplicationDto()
                                     .name(application.id)
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(

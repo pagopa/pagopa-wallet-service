@@ -1,6 +1,9 @@
 package it.pagopa.wallet.exceptionhandler
 
-import it.pagopa.generated.wallet.model.*
+import it.pagopa.generated.wallet.model.ProblemJsonDto
+import it.pagopa.generated.wallet.model.WalletApplicationDto
+import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
+import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
@@ -91,9 +94,9 @@ class ExceptionHandler {
                         }
                     failedApplications =
                         exception.failedApplications.map {
-                            ApplicationDto()
+                            WalletApplicationDto()
                                 .name(it.key.id)
-                                .status(ApplicationStatusDto.valueOf(it.value.name))
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
             )

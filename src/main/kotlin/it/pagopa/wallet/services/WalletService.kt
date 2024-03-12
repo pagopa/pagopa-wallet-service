@@ -749,9 +749,9 @@ class WalletService(
             .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .applications(
                 wallet.applications.map { application ->
-                    ApplicationDto()
+                    WalletApplicationDto()
                         .name(application.id)
-                        .status(ApplicationStatusDto.valueOf(application.status))
+                        .status(WalletApplicationStatusDto.valueOf(application.status))
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
