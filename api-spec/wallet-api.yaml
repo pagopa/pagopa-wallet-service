@@ -711,7 +711,7 @@ components:
         failedApplications:
           type: array
           items:
-            $ref: "#/components/schemas/Application"
+            $ref: "#/components/schemas/WalletApplication"
       example:
         updatedApplications:
           - name: "PAGOPA"
