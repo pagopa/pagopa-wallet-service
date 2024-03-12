@@ -939,8 +939,8 @@ components:
             mapping:
               CARDS: '#/components/schemas/WalletCardDetails'
               PAYPAL: '#/components/schemas/WalletPaypalDetails'
-        logoUrl:
-          description: url for the logo associated to the wallet
+        paymentMethodAsset:
+          description: wallet asset
           type: string
           format: uri
       required:

@@ -757,7 +757,7 @@ class WalletService(
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
-            .logoUrl(walletUtils.getLogo(wallet.toDomain()))
+            .paymentMethodAsset(walletUtils.getLogo(wallet.toDomain()))
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {

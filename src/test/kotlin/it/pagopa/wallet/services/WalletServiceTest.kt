@@ -1854,7 +1854,7 @@ class WalletServiceTest {
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .maskedPan((wallet.details as CardDetails).maskedPan)
                         )
-                        .logoUrl(URI.create(logoUri))
+                        .paymentMethodAsset(URI.create(logoUri))
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
