@@ -4,6 +4,7 @@ import it.pagopa.generated.wallet.api.MigrationsApi
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmAssociationResponseDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
+import it.pagopa.generated.wallet.model.WalletPmCardDetailsResponseDto
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.services.MigrationService
 import java.util.*
@@ -43,7 +44,8 @@ class MigrationController(private val migrationService: MigrationService) : Migr
     override fun updateWalletDetailsByPM(
         walletPmCardDetailsRequestDto: Mono<WalletPmCardDetailsRequestDto>?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<UUID>> {
-        return ResponseEntity.ok(UUID.randomUUID()).toMono()
+    ): Mono<ResponseEntity<WalletPmCardDetailsResponseDto>> {
+        return ResponseEntity.ok(WalletPmCardDetailsResponseDto().walletId(UUID.randomUUID()))
+            .toMono()
     }
 }
