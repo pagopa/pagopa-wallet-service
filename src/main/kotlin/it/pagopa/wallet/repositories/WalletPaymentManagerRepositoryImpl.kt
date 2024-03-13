@@ -18,13 +18,14 @@ class WalletPaymentManagerRepositoryImpl(
     @Autowired private val delegate: MongoWalletMigrationRepository
 ) : WalletPaymentManagerRepository {
 
-    override fun findByWalletPmId(walletPmId: String): Flux<WalletPaymentManager> {
-        return delegate.findByWalletPmId(walletPmId).map { it.toDomain() }
-    }
+    override fun findByWalletPmId(walletPmId: String): Flux<WalletPaymentManager> =
+        delegate.findByWalletPmId(walletPmId).map { it.toDomain() }
 
-    override fun save(association: WalletPaymentManager): Mono<WalletPaymentManager> {
-        return delegate.save(association.toDocument()).map { it.toDomain() }
-    }
+    override fun findByContractId(contractId: ContractId): Flux<WalletPaymentManager> =
+        delegate.findByContractId(contractId.contractId).map { it.toDomain() }
+
+    override fun save(association: WalletPaymentManager): Mono<WalletPaymentManager> =
+        delegate.save(association.toDocument()).map { it.toDomain() }
 
     private fun WalletPaymentManager.toDocument() =
         WalletPaymentManagerDocument(
@@ -46,4 +47,5 @@ class WalletPaymentManagerRepositoryImpl(
 interface MongoWalletMigrationRepository :
     ReactiveCrudRepository<WalletPaymentManagerDocument, String> {
     fun findByWalletPmId(walletPmId: String): Flux<WalletPaymentManagerDocument>
+    fun findByContractId(contractId: String): Flux<WalletPaymentManagerDocument>
 }
