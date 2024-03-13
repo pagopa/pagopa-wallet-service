@@ -93,7 +93,7 @@ class MigrationControllerTest {
                 .paymentGatewayCardId(UUID.randomUUID().toString())
                 .expireDate("12/25")
         webClient
-            .put()
+            .post()
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(detailsRequest)

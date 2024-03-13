@@ -647,7 +647,7 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
 
   /migrations/wallets/updateDetails:
-    put:
+    post:
       tags:
         - migration
       summary: Update wallet details by Payment Manager.
