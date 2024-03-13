@@ -60,7 +60,7 @@ class WalletTest {
     }
 
     @Test
-    fun `can construct wallet with services and card details`() {
+    fun `can construct wallet with applications and card details`() {
 
         assertDoesNotThrow {
             Wallet(
@@ -84,7 +84,7 @@ class WalletTest {
                 details =
                     CardDetails(
                         WalletTestUtils.BIN,
-                        WalletTestUtils.MASKED_PAN,
+                        WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
                         WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
@@ -121,7 +121,7 @@ class WalletTest {
                 details =
                     CardDetails(
                         WalletTestUtils.BIN,
-                        WalletTestUtils.MASKED_PAN,
+                        WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
                         WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID

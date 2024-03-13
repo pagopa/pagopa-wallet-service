@@ -1,6 +1,9 @@
 package it.pagopa.wallet.exceptionhandler
 
-import it.pagopa.generated.wallet.model.*
+import it.pagopa.generated.wallet.model.ProblemJsonDto
+import it.pagopa.generated.wallet.model.WalletApplicationDto
+import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
+import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
@@ -77,23 +80,23 @@ class ExceptionHandler {
     }
 
     @ExceptionHandler(WalletApplicationStatusConflictException::class)
-    fun walletServiceStatusConflictExceptionHandler(
+    fun walletApplicationStatusConflictExceptionHandler(
         exception: WalletApplicationStatusConflictException
-    ): ResponseEntity<WalletServicesPartialUpdateDto> {
+    ): ResponseEntity<WalletApplicationsPartialUpdateDto> {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(
-                WalletServicesPartialUpdateDto().apply {
-                    updatedServices =
+                WalletApplicationsPartialUpdateDto().apply {
+                    updatedApplications =
                         exception.updatedApplications.map {
-                            WalletServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
-                                .status(WalletServiceStatusDto.valueOf(it.value.name))
+                            WalletApplicationDto()
+                                .name(it.key.id)
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
-                    failedServices =
+                    failedApplications =
                         exception.failedApplications.map {
-                            ServiceDto()
-                                .name(ServiceNameDto.valueOf(it.key.id))
-                                .status(ApplicationStatusDto.valueOf(it.value.name))
+                            WalletApplicationDto()
+                                .name(it.key.id)
+                                .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
                 }
             )
