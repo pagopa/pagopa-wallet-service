@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
 import it.pagopa.wallet.exception.ApiError
+import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import jakarta.xml.bind.ValidationException
@@ -101,4 +102,14 @@ class ExceptionHandler {
                 }
             )
     }
+
+    @ExceptionHandler(MigrationError::class)
+    fun handleMigrationError(e: MigrationError): ResponseEntity<ProblemJsonDto> =
+        when (e) {
+            is MigrationError.WalletContractIdNotFound ->
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("contractId is not found")
+                    .detail("The provided contractId is not found")
+        }.let { ResponseEntity.status(it.status).body(it) }
 }
