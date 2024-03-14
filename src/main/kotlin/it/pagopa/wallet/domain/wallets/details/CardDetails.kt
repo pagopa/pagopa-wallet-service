@@ -6,7 +6,7 @@ import it.pagopa.wallet.documents.wallets.details.CardDetails
 /** Data class that maps WalletDetails for CARD instrument type */
 data class CardDetails(
     val bin: Bin,
-    val maskedPan: MaskedPan,
+    val lastFourDigits: LastFourDigits,
     val expiryDate: ExpiryDate,
     val brand: WalletCardDetailsDto.BrandEnum,
     val paymentInstrumentGatewayId: PaymentInstrumentGatewayId
@@ -18,7 +18,7 @@ data class CardDetails(
         CardDetails(
             this.type.name,
             this.bin.bin,
-            this.maskedPan.maskedPan,
+            this.lastFourDigits.lastFourDigits,
             this.expiryDate.expDate,
             this.brand.name,
             this.paymentInstrumentGatewayId.paymentInstrumentGatewayId

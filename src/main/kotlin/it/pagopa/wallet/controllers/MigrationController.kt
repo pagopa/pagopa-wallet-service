@@ -3,14 +3,18 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.MigrationsApi
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmAssociationResponseDto
+import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
+import it.pagopa.generated.wallet.model.WalletPmCardDetailsResponseDto
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.services.MigrationService
+import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Slf4j
@@ -36,4 +40,12 @@ class MigrationController(private val migrationService: MigrationService) : Migr
                     }
             }
             .map { ResponseEntity.ok(it) }
+
+    override fun updateWalletDetailsByPM(
+        walletPmCardDetailsRequestDto: Mono<WalletPmCardDetailsRequestDto>?,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<WalletPmCardDetailsResponseDto>> {
+        return ResponseEntity.ok(WalletPmCardDetailsResponseDto().walletId(UUID.randomUUID()))
+            .toMono()
+    }
 }

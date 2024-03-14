@@ -8,7 +8,7 @@ class WalletTest {
 
     @Test
     fun `can build wallet document`() {
-        assertNotNull(WalletTestUtils.walletDocumentEmptyServicesNullDetails())
+        assertNotNull(WalletTestUtils.walletDocumentEmptyApplicationsNullDetails())
         assertNotNull(WalletTestUtils.walletDocumentNullDetails())
         assertNotNull(WalletTestUtils.walletDocument())
         assertNotNull(WalletTestUtils.walletDocumentEmptyContractId())

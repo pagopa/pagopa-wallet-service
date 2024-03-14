@@ -63,7 +63,10 @@ import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.*
+import it.pagopa.wallet.repositories.ApplicationRepository
+import it.pagopa.wallet.repositories.NpgSession
+import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -1156,7 +1159,7 @@ class WalletServiceTest {
                     walletDocumentVerifiedWithCardDetails(
                         "12345678",
                         "0000",
-                        "12/30",
+                        "203012",
                         "?",
                         WalletCardDetailsDto.BrandEnum.MASTERCARD
                     )
@@ -1195,7 +1198,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "12345678****0000", "12/30", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
@@ -1223,7 +1226,6 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
                 val orderId = Instant.now().toString() + "ABCDE"
 
                 val npgSession =
@@ -1232,8 +1234,6 @@ class WalletServiceTest {
                 // Inconsistent wallet type APM
                 val walletDocumentInitializedStatus =
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_APM)
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
                 given { walletRepository.findById(any<String>()) }
                     .willReturn(Mono.just(walletDocumentInitializedStatus))
@@ -1708,11 +1708,11 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                WalletApplicationDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1720,7 +1720,7 @@ class WalletServiceTest {
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .maskedPan((wallet.details as CardDetails).maskedPan)
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
 
                 given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
@@ -1754,11 +1754,11 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                WalletApplicationDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1797,11 +1797,11 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                WalletApplicationDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
@@ -1840,11 +1840,11 @@ class WalletServiceTest {
                         .userId(wallet.userId)
                         .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
-                        .services(
+                        .applications(
                             wallet.applications.map { application ->
-                                ServiceDto()
-                                    .name(ServiceNameDto.valueOf(application.id))
-                                    .status(ApplicationStatusDto.valueOf(application.status))
+                                WalletApplicationDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
                         )
                         .details(
@@ -1852,7 +1852,7 @@ class WalletServiceTest {
                                 .type((wallet.details as CardDetails).type)
                                 .bin((wallet.details as CardDetails).bin)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .maskedPan((wallet.details as CardDetails).maskedPan)
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
                         .paymentMethodAsset(URI.create(logoUri))
 
@@ -1948,7 +1948,7 @@ class WalletServiceTest {
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 wallet
                                     .copy(
@@ -1993,7 +1993,7 @@ class WalletServiceTest {
                 assertTrue(wallet.applications.isEmpty())
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
@@ -2022,7 +2022,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2070,7 +2070,7 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
@@ -2103,7 +2103,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2140,7 +2140,9 @@ class WalletServiceTest {
                     WalletApplicationStatus.DISABLED.toString()
                 )
 
-                StepVerifier.create(walletService.updateWalletServices(WALLET_UUID.value, listOf()))
+                StepVerifier.create(
+                        walletService.updateWalletApplications(WALLET_UUID.value, listOf())
+                    )
                     .assertNext { assertEquals(expectedLoggedAction, it) }
                     .verifyComplete()
 
@@ -2184,7 +2186,7 @@ class WalletServiceTest {
 
                 val expectedLoggedAction =
                     LoggedAction(
-                        WalletServiceUpdateData(
+                        WalletApplicationUpdateData(
                             updatedWallet =
                                 walletDomain()
                                     .copy(
@@ -2238,7 +2240,7 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
@@ -2302,7 +2304,7 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.updateWalletServices(
+                        walletService.updateWalletApplications(
                             WALLET_UUID.value,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newApplicationStatus),
@@ -2329,7 +2331,7 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.updateWalletServices(
+                walletService.updateWalletApplications(
                     WALLET_UUID.value,
                     listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
                 )
@@ -2443,7 +2445,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails(
                 "12345678",
                 "0000",
-                "12/30",
+                "203012",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
@@ -2486,7 +2488,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails(
                 "12345678",
                 "0000",
-                "12/30",
+                "203012",
                 "?",
                 WalletCardDetailsDto.BrandEnum.MASTERCARD
             )
@@ -2853,8 +2855,8 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "12345678" + "*".repeat(4) + "1234",
-                        expiryDate = "24/12",
+                        lastFourDigits = "1234",
+                        expiryDate = "202412",
                         brand = "VISA",
                         paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),
@@ -2930,8 +2932,8 @@ class WalletServiceTest {
                     CardDetails(
                         WalletDetailsType.CARDS.name,
                         bin = "12345678",
-                        maskedPan = "12345678" + "*".repeat(4) + "1234",
-                        expiryDate = "24/12",
+                        lastFourDigits = "1234",
+                        expiryDate = "202412",
                         brand = "VISA",
                         paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
                     ),

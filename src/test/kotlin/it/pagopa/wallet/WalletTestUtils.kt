@@ -7,7 +7,7 @@ import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationRe
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
-import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
@@ -36,8 +36,8 @@ object WalletTestUtils {
     val APPLICATION_METADATA = WalletApplicationMetadata(APPLICATION_METADATA_HASHMAP)
     val CONTRACT_ID = ContractId("W49357937935R869i")
     val BIN = Bin("42424242")
-    val MASKED_PAN = MaskedPan("42424242****5555")
-    val EXP_DATE = ExpiryDate("12/30")
+    val LAST_FOUR_DIGITS = LastFourDigits("5555")
+    val EXP_DATE = ExpiryDate("203012")
     val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
@@ -140,10 +140,10 @@ object WalletTestUtils {
                 applications = listOf(),
                 details =
                     if (paymentMethodId == PAYMENT_METHOD_ID_CARDS) {
-                        CardDetails(
+                        CardDetailsDocument(
                             TYPE.toString(),
                             BIN.bin,
-                            MASKED_PAN.maskedPan,
+                            LAST_FOUR_DIGITS.lastFourDigits,
                             EXP_DATE.expDate,
                             BRAND.toString(),
                             PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
@@ -242,10 +242,10 @@ object WalletTestUtils {
                     )
                 ),
             details =
-                CardDetails(
+                CardDetailsDocument(
                     TYPE.toString(),
                     BIN.bin,
-                    MASKED_PAN.maskedPan,
+                    LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
                     brand.toString(),
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
@@ -300,10 +300,10 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details =
-                    CardDetails(
+                    CardDetailsDocument(
                         WalletDetailsType.CARDS.name,
                         bin,
-                        bin + "*".repeat(4) + lastFourDigits,
+                        lastFourDigits,
                         expiryDate,
                         brandEnum.name,
                         paymentInstrumentGatewayId
@@ -393,7 +393,7 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocumentEmptyServicesNullDetails(): Wallet {
+    fun walletDocumentEmptyApplicationsNullDetails(): Wallet {
         val wallet =
             Wallet(
                 id = WALLET_UUID.value.toString(),
@@ -504,10 +504,10 @@ object WalletTestUtils {
                         )
                     ),
                 details =
-                    CardDetails(
+                    CardDetailsDocument(
                         TYPE.toString(),
                         BIN.bin,
-                        MASKED_PAN.maskedPan,
+                        LAST_FOUR_DIGITS.lastFourDigits,
                         EXP_DATE.expDate,
                         BRAND.toString(),
                         PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
@@ -538,7 +538,8 @@ object WalletTestUtils {
             contractId = CONTRACT_ID,
             validationOperationResult = OperationResultEnum.EXECUTED,
             validationErrorCode = null,
-            details = CardDetails(BIN, MASKED_PAN, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
+            details =
+                CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate
@@ -572,10 +573,10 @@ object WalletTestUtils {
             .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value.toString())
             .userId(USER_ID.id.toString())
-            .services(listOf())
+            .applications(listOf())
             .details(
                 WalletCardDetailsDto()
-                    .maskedPan(MASKED_PAN.maskedPan)
+                    .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
                     .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
                     .expiryDate(EXP_DATE.expDate)
@@ -589,7 +590,7 @@ object WalletTestUtils {
             .updateDate(OffsetDateTime.ofInstant(TIMESTAMP, ZoneId.systemDefault()))
             .paymentMethodId(PAYMENT_METHOD_ID_APM.value.toString())
             .userId(USER_ID.id.toString())
-            .services(listOf())
+            .applications(listOf())
             .details(
                 WalletPaypalDetailsDto().type("PAYPAL").maskedEmail("maskedEmail").pspId(PSP_ID)
             )
@@ -625,7 +626,7 @@ object WalletTestUtils {
 
     val CREATE_WALLET_REQUEST: WalletCreateRequestDto =
         WalletCreateRequestDto()
-            .services(listOf(ServiceNameDto.PAGOPA))
+            .applications(listOf("PAGOPA"))
             .useDiagnosticTracing(false)
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
 
@@ -635,14 +636,14 @@ object WalletTestUtils {
             .paymentMethodId(PAYMENT_METHOD_ID_CARDS.value)
             .amount(200)
 
-    val WALLET_SERVICE_1: WalletServiceDto =
-        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.DISABLED)
+    val WALLET_SERVICE_1: WalletApplicationDto =
+        WalletApplicationDto().name("PAGOPA").status(WalletApplicationStatusDto.DISABLED)
 
-    val WALLET_SERVICE_2: WalletServiceDto =
-        WalletServiceDto().name(ServiceNameDto.PAGOPA).status(WalletServiceStatusDto.ENABLED)
+    val WALLET_SERVICE_2: WalletApplicationDto =
+        WalletApplicationDto().name("PAGOPA").status(WalletApplicationStatusDto.ENABLED)
 
-    val UPDATE_SERVICES_BODY: WalletServiceUpdateRequestDto =
-        WalletServiceUpdateRequestDto().services(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
+    val UPDATE_SERVICES_BODY: WalletApplicationUpdateRequestDto =
+        WalletApplicationUpdateRequestDto().applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
     val PSP_ID = UUID.randomUUID().toString()
 

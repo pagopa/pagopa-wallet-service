@@ -7,39 +7,39 @@ import org.junit.jupiter.api.assertThrows
 
 class CardDetailsTest {
     private val validBin = "42424242"
-    val validMaskedPan = "42424242****5555"
-    val validExpiryDate = "12/30"
+    val validLastFourDigits = "5555"
+    val validExpiryDate = "203012"
     val brand = BrandEnum.MASTERCARD
     val paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
     val invalidBin = "42424"
-    val invalidMaskedPan = "4242425555"
+    val invalidLastFourDigits = "4242425555"
     val invalidExpiryDate = "12-10"
 
     @Test
-    fun `can instantiate a CardDetails from valid bin, maskedPan and expiryDate`() {
+    fun `can instantiate a CardDetails from valid bin, lastFourDigits and expiryDate`() {
 
         val cardDetails =
             CardDetails(
                 bin = Bin(validBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
 
         assertEquals(validBin, cardDetails.bin.bin)
-        assertEquals(validMaskedPan, cardDetails.maskedPan.maskedPan)
+        assertEquals(validLastFourDigits, cardDetails.lastFourDigits.lastFourDigits)
         assertEquals(validExpiryDate, cardDetails.expiryDate.expDate)
         assertEquals(cardDetails.type, WalletDetailsType.CARDS)
     }
 
     @Test
-    fun `can't instantiate a cardDetails from valid bin, maskedPan and invalid expiryDate`() {
+    fun `can't instantiate a cardDetails from valid bin, lastFourDigits and invalid expiryDate`() {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
                 bin = Bin(validBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(invalidExpiryDate),
                 brand = brand,
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
@@ -48,12 +48,12 @@ class CardDetailsTest {
     }
 
     @Test
-    fun `can't instantiate a cardDetails from valid bin, expiryDate and invalid maskedPan`() {
+    fun `can't instantiate a cardDetails from valid bin, expiryDate and invalid lastFourDigits`() {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
                 bin = Bin(validBin),
-                maskedPan = MaskedPan(invalidMaskedPan),
+                lastFourDigits = LastFourDigits(invalidLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
@@ -62,12 +62,12 @@ class CardDetailsTest {
     }
 
     @Test
-    fun `can't instantiate a cardDetails from valid maskedPan, expiryDate and invalid bin`() {
+    fun `can't instantiate a cardDetails from valid lastFourDigits, expiryDate and invalid bin`() {
 
         assertThrows<IllegalArgumentException> {
             CardDetails(
                 bin = Bin(invalidBin),
-                maskedPan = MaskedPan(validMaskedPan),
+                lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = brand,
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
