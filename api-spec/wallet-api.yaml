@@ -998,7 +998,7 @@ components:
         - creationDate
         - updateDate
         - type
-        - services
+        - applications
         - paymentMethodAsset
     Wallets:
       type: object
