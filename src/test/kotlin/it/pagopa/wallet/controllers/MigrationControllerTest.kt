@@ -5,9 +5,13 @@ import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.domain.wallets.Wallet
+import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.ExpiryDate
+import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.services.MigrationService
 import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -87,15 +91,7 @@ class MigrationControllerTest {
     fun `should return wallet id when update its details`() {
         given { migrationService.updateWalletCardDetails(any(), any()) }
             .willAnswer { WalletTestUtils.walletDocument().toDomain().toMono() }
-        val detailsRequest =
-            WalletPmCardDetailsRequestDto()
-                .newContractIdentifier(UUID.randomUUID().toString())
-                .originalContractIdentifier(UUID.randomUUID().toString())
-                .cardBin("123456")
-                .panTail("7890")
-                .paymentCircuit("VISA")
-                .paymentGatewayCardId(UUID.randomUUID().toString())
-                .expireDate("12/25")
+        val detailsRequest = createDetailRequest(ContractId(UUID.randomUUID().toString()))
         webClient
             .post()
             .uri("/migrations/wallets/updateDetails")
@@ -117,6 +113,42 @@ class MigrationControllerTest {
         }
     }
 
+    @Test
+    fun `should return not found when Wallets no existing for given contract id`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer { MigrationError.WalletContractIdNotFound(contractId).toMono<Wallet>() }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isNotFound
+    }
+
+    @Test
+    fun `should return bad request when trying to update Wallet from illegal state`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletIllegalStateTransition(
+                        WalletId.create(),
+                        WalletStatusDto.ERROR
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
     companion object {
         val MALFORMED_REQUEST =
             """
@@ -126,5 +158,15 @@ class MigrationControllerTest {
             }
         """
                 .trimIndent()
+
+        private fun createDetailRequest(contractId: ContractId): WalletPmCardDetailsRequestDto =
+            WalletPmCardDetailsRequestDto()
+                .newContractIdentifier(contractId.contractId)
+                .originalContractIdentifier(UUID.randomUUID().toString())
+                .cardBin("123456")
+                .panTail("7890")
+                .paymentCircuit("VISA")
+                .paymentGatewayCardId(UUID.randomUUID().toString())
+                .expireDate("12/25")
     }
 }

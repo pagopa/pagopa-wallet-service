@@ -15,12 +15,6 @@
 			"enabled": true
 		},
 		{
-			"key": "WALLET_ID_PM",
-			"value": "9016183135",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "WRONG_USER_ID",
 			"value": "ABC",
 			"type": "default",
@@ -28,12 +22,12 @@
 		},
 		{
 			"key": "PAYMENT_METHOD_ID",
-			"value": "e94b3abf-055c-4d5e-827f-64634453fb10",
+			"value": "148ff003-46a6-4790-9376-b0e057352e45",
 			"type": "default",
 			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2024-02-26T16:38:41.635Z",
-	"_postman_exported_using": "Postman/10.23.5"
+	"_postman_exported_at": "2024-03-15T10:43:11.709Z",
+	"_postman_exported_using": "Postman/10.23.8"
 }

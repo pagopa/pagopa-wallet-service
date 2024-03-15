@@ -168,6 +168,29 @@ class MigrationServiceTest {
         verify(loggingEventRepository, times(0)).saveAll(any<Iterable<LoggingEvent>>())
     }
 
+    @Test
+    fun `should throw invalid stat transition when update details for Wallet Error state`() {
+        val paymentManagerId = Random().nextLong().toString()
+        val cardDetails = generateCardDetails()
+        mockWalletMigration(paymentManagerId) { migrationDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(migrationDocument) }
+            given { walletRepository.findById(any<String>()) }
+                .willAnswer {
+                    Mono.just(migrationDocument.createWalletTest(USER_ID, WalletStatusDto.ERROR))
+                }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+            migrationService
+                .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
+                .test()
+                .expectError(MigrationError.WalletIllegalStateTransition::class.java)
+                .verify()
+
+            verify(walletRepository, times(0)).save(any())
+        }
+    }
+
     companion object {
 
         private fun mockWalletMigration(

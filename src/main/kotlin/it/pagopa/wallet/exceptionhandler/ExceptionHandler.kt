@@ -108,8 +108,13 @@ class ExceptionHandler {
         when (e) {
             is MigrationError.WalletContractIdNotFound ->
                 ProblemJsonDto()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .title("Cannot find wallet with given Contract Id")
+                    .detail("The contract id or associated wallet does not exist")
+            is MigrationError.WalletIllegalStateTransition ->
+                ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .title("contractId is not found")
-                    .detail("The provided contractId is not found")
+                    .title("Invalid request")
+                    .detail("Cannot update Wallet details while its status is ${e.status}")
         }.let { ResponseEntity.status(it.status).body(it) }
 }

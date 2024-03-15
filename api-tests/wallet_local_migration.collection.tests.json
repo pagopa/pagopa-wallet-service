@@ -22,8 +22,21 @@
 							"    pm.expect(responseJson.contractId).to.be.a(\"string\");",
 							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\");",
 							"    const walletId = responseJson.walletId;",
+							"    const contractId = responseJson.contractId;",
 							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"    pm.environment.set(\"NEW_CONTRACT_ID\", contractId);",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if(!pm.environment.get('WALLET_ID_PM')) {",
+							"    pm.environment.set('WALLET_ID_PM', Math.floor(Math.random() * 1_000_000))",
+							"}"
 						],
 						"type": "text/javascript"
 					}
@@ -135,6 +148,107 @@
 					"path": [
 						"migrations",
 						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update with card details",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Update card details /wallets/migrations/updateDetails\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"});",
+							"",
+							"pm.test(\"[Wallet PM Migration] Update card details must move Wallet to VALIDATED\", function(done) {",
+							"    pm.sendRequest({",
+							"        url: `${pm.environment.get(\"HOSTNAME\")}/wallets/${pm.environment.get(\"WALLET_ID\")}`,",
+							"        method: \"GET\",",
+							"    }, (err, resp) => {",
+							"        const responseJson = resp.json();",
+							"        pm.expect(resp.code).to.be.eq(200);",
+							"        pm.expect(responseJson.status).to.be.eq(\"VALIDATED\")",
+							"        pm.expect(responseJson.details.type).to.be.eq(\"CARDS\")",
+							"        pm.expect(responseJson.details.bin).to.be.eq(\"12345678\")",
+							"        pm.expect(responseJson.details.lastFourDigits).to.be.eq(\"7295\")",
+							"        pm.expect(responseJson.details.expiryDate).to.be.eq(\"202512\")",
+							"        done();",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"panTail\": \"7295\",\n  \"expireDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"123\",\n  \"newContractIdentifier\": \"{{NEW_CONTRACT_ID}}\",\n  \"originalContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets/updateDetails",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets",
+						"updateDetails"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update with card not found contractId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Update card details /wallets/migrations/updateDetails\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"panTail\": \"7295\",\n  \"expireDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"{{$guid}}\",\n  \"newContractIdentifier\": \"nonExistingContractId\",\n  \"originalContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets/updateDetails",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets",
+						"updateDetails"
 					]
 				}
 			},

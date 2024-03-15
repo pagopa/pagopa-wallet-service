@@ -59,6 +59,13 @@ class MigrationService(
             .flatMap { currentWallet ->
                 when (currentWallet.status) {
                     WalletStatusDto.VALIDATED -> Flux.just(currentWallet)
+                    WalletStatusDto.ERROR,
+                    WalletStatusDto.DELETED ->
+                        MigrationError.WalletIllegalStateTransition(
+                                currentWallet.id,
+                                currentWallet.status
+                            )
+                            .toMono()
                     else ->
                         currentWallet
                             .copy(
