@@ -220,7 +220,9 @@ object WalletTestUtils {
             )
     }
 
-    fun walletDocumentStatusValidatedCARD(): Wallet {
+    fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
+
+    fun walletDocumentStatusValidatedCard(brand: WalletCardDetailsDto.BrandEnum): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -245,7 +247,7 @@ object WalletTestUtils {
                     BIN.bin,
                     LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
-                    BRAND.toString(),
+                    brand.toString(),
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                 ),
             version = 0,

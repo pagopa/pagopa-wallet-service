@@ -37,7 +37,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
-import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCARD
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidationRequestedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
@@ -70,6 +70,7 @@ import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.JwtTokenUtils
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
+import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -113,6 +114,8 @@ class WalletServiceTest {
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}",
             "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
         )
+
+    private val walletUtils: WalletUtils = mock()
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
@@ -207,16 +210,17 @@ class WalletServiceTest {
 
     private val walletService: WalletService =
         WalletService(
-            walletRepository,
-            applicationRepository,
-            ecommercePaymentMethodsClient,
-            npgClient,
-            npgSessionRedisTemplate,
-            sessionUrlConfig,
-            uniqueIdUtils,
-            onboardingConfig,
-            jwtTokenUtils,
-            onboardingPaymentWalletCreditCardReturnUrl
+            walletRepository = walletRepository,
+            applicationRepository = applicationRepository,
+            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
+            npgClient = npgClient,
+            npgSessionRedisTemplate = npgSessionRedisTemplate,
+            sessionUrlConfig = sessionUrlConfig,
+            uniqueIdUtils = uniqueIdUtils,
+            onboardingConfig = onboardingConfig,
+            jwtTokenUtils = jwtTokenUtils,
+            walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
+            walletUtils = walletUtils
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
@@ -1695,7 +1699,7 @@ class WalletServiceTest {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-                val wallet = walletDocumentStatusValidatedCARD()
+                val wallet = walletDocumentStatusValidatedCard()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -1826,8 +1830,8 @@ class WalletServiceTest {
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val wallet = walletDocumentStatusValidatedCARD()
+                val logoUri = "http://logoURI"
+                val wallet = walletDocumentStatusValidatedCard()
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -1850,12 +1854,13 @@ class WalletServiceTest {
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
+                        .paymentMethodAsset(URI.create(logoUri))
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
                 given { walletRepository.findByUserId(USER_ID.id.toString()) }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
-
+                given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
                 StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
@@ -1869,7 +1874,7 @@ class WalletServiceTest {
     fun `should find wallet auth data by ID with cards`() {
         /* preconditions */
 
-        val wallet = walletDocumentStatusValidatedCARD()
+        val wallet = walletDocumentStatusValidatedCard()
         val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
@@ -1900,7 +1905,7 @@ class WalletServiceTest {
     fun `should throw exception if getAuthData is called with null details`() {
         /* preconditions */
 
-        val wallet = walletDocumentStatusValidatedCARD().copy(details = null)
+        val wallet = walletDocumentStatusValidatedCard().copy(details = null)
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
 
@@ -1914,7 +1919,7 @@ class WalletServiceTest {
     @Test
     fun `should throws wallet not found exception when retrieve auth data by ID`() {
         /* preconditions */
-        val wallet = walletDocumentStatusValidatedCARD()
+        val wallet = walletDocumentStatusValidatedCard()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.empty())
         /* test */

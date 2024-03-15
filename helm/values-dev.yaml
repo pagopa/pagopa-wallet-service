@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopawalletservice
-    tag: "0.5.0"
+    tag: "0.6.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -90,6 +90,9 @@ microservice-chart:
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
     WALLET_MIGRATION_CARD_PAYMENT_METHOD_ID: "148ff003-46a6-4790-9376-b0e057352e45"
+    WALLET_LOGO_MAPPING: >
+      { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png' }
+
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key

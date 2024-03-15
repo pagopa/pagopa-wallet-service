@@ -986,6 +986,10 @@ components:
             mapping:
               CARDS: '#/components/schemas/WalletCardDetails'
               PAYPAL: '#/components/schemas/WalletPaypalDetails'
+        paymentMethodAsset:
+          description: wallet asset
+          type: string
+          format: uri
       required:
         - walletId
         - paymentMethodId
@@ -995,6 +999,7 @@ components:
         - updateDate
         - type
         - applications
+        - paymentMethodAsset
     Wallets:
       type: object
       description: Wallets information
