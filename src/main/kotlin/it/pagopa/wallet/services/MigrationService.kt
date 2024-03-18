@@ -49,7 +49,7 @@ class MigrationService(
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
             .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
-            .doOnError { logger.error(it.message, it) }
+            .doOnError { logger.error("Failure during wallet's initialization", it) }
             .toMono()
     }
 
@@ -57,36 +57,39 @@ class MigrationService(
         logger.info("Updating wallet details for ${cardDetails.lastFourDigits}")
         val now = Instant.now()
         return findWalletByContractId(contractId)
-            .flatMap { currentWallet ->
-                when (currentWallet.status) {
-                    WalletStatusDto.VALIDATED -> Flux.just(currentWallet)
-                    WalletStatusDto.ERROR,
-                    WalletStatusDto.DELETED ->
-                        MigrationError.WalletIllegalStateTransition(
-                                currentWallet.id,
-                                currentWallet.status
-                            )
-                            .toMono()
-                    else ->
-                        currentWallet
-                            .copy(
-                                details = cardDetails,
-                                status = WalletStatusDto.VALIDATED,
-                                updateDate = now,
-                            )
-                            .toDocument()
-                            .let(walletRepository::save)
-                            .map { LoggedAction(it.toDomain(), WalletDetailsAddedEvent(it.id)) }
-                            .flatMap { it.saveEvents(loggingEventRepository) }
-                }
-            }
+            .flatMap { currentWallet -> updateWalletCardDetails(currentWallet, cardDetails, now) }
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .doOnComplete {
                 logger.info("Wallet details updated for ${cardDetails.lastFourDigits}")
             }
-            .doOnError { logger.error(it.message, it) }
+            .doOnError { logger.error("Failure during wallet's card details update", it) }
             .toMono()
     }
+
+    private fun updateWalletCardDetails(
+        wallet: Wallet,
+        cardDetails: CardDetails,
+        updateTime: Instant
+    ): Mono<Wallet> =
+        when (wallet.status) {
+            WalletStatusDto.VALIDATED ->
+                if (wallet.details?.equals(cardDetails) == true) wallet.toMono()
+                else MigrationError.WalletIllegalStateTransition(wallet.id, wallet.status).toMono()
+            WalletStatusDto.ERROR,
+            WalletStatusDto.DELETED ->
+                MigrationError.WalletIllegalStateTransition(wallet.id, wallet.status).toMono()
+            else ->
+                wallet
+                    .copy(
+                        details = cardDetails,
+                        status = WalletStatusDto.VALIDATED,
+                        updateDate = updateTime,
+                    )
+                    .toDocument()
+                    .let(walletRepository::save)
+                    .map { LoggedAction(it.toDomain(), WalletDetailsAddedEvent(it.id)) }
+                    .flatMap { it.saveEvents(loggingEventRepository) }
+        }
 
     private fun findWalletByContractId(contractId: ContractId): Flux<Wallet> =
         walletPaymentManagerRepository
@@ -120,8 +123,8 @@ class MigrationService(
             }
     }
 
-    private fun createMigrationData(paymentManagerWalletId: String): Mono<WalletPaymentManager> {
-        return uniqueIdUtils
+    private fun createMigrationData(paymentManagerWalletId: String): Mono<WalletPaymentManager> =
+        uniqueIdUtils
             .generateUniqueId()
             .map {
                 WalletPaymentManager(
@@ -131,5 +134,4 @@ class MigrationService(
                 )
             }
             .flatMap { walletPaymentManagerRepository.save(it) }
-    }
 }

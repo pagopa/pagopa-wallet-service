@@ -18,7 +18,6 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.MongoWalletMigrationRepository
 import it.pagopa.wallet.repositories.WalletPaymentManagerRepositoryImpl
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.services.MigrationServiceTest.Companion.createWalletTest
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.time.Instant
 import java.util.*
@@ -156,7 +155,7 @@ class MigrationServiceTest {
     }
 
     @Test
-    fun `should return existing Wallet when updating details of existing one`() {
+    fun `should return existing Wallet when retry to updating details of a validated Wallet`() {
         val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
 
@@ -166,7 +165,7 @@ class MigrationServiceTest {
             given { walletRepository.findById(any<String>()) }
                 .willAnswer {
                     walletPmDocument
-                        .createWalletTest(USER_ID, WalletStatusDto.CREATED)
+                        .createWalletTest(USER_ID, WalletStatusDto.VALIDATED)
                         .copy(details = cardDetails.toDocument())
                         .toMono()
                 }
@@ -220,31 +219,55 @@ class MigrationServiceTest {
         }
     }
 
+    @Test
+    fun `should throw invalid state transition when updating a validate Wallet with different details`() {
+        val paymentManagerId = Random().nextLong().toString()
+        val cardDetails = generateCardDetails()
+
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }
+                .willAnswer {
+                    walletPmDocument
+                        .createWalletTest(USER_ID, WalletStatusDto.VALIDATED)
+                        .copy(details = cardDetails.toDocument())
+                        .toMono()
+                }
+
+            val differentCardDetails = cardDetails.copy(bin = Bin("456789"))
+            migrationService
+                .updateWalletCardDetails(contractId, differentCardDetails)
+                .test()
+                .expectError(MigrationError.WalletIllegalStateTransition::class.java)
+                .verify()
+
+            verify(walletRepository, times(0)).save(any())
+        }
+    }
+
     companion object {
 
         private fun mockWalletMigration(
             paymentManagerId: String,
             receiver: (WalletPaymentManagerDocument, ContractId) -> Unit
-        ) {
-            val contractId = ContractId(UUID.randomUUID().toString())
-            val walletPmDocument =
-                generateWalletPaymentManagerDocument(paymentManagerId, contractId)
-            receiver(walletPmDocument, contractId)
-        }
+        ) =
+            ContractId(UUID.randomUUID().toString()).let {
+                receiver(generateWalletPaymentManagerDocument(paymentManagerId, it), it)
+            }
 
         private fun generateWalletPaymentManagerDocument(
             paymentManagerId: String,
             contractId: ContractId
-        ): WalletPaymentManagerDocument {
-            return WalletPaymentManagerDocument(
+        ) =
+            WalletPaymentManagerDocument(
                 walletPmId = paymentManagerId,
                 walletId = UUID.randomUUID().toString(),
                 contractId = contractId.contractId,
                 creationDate = Instant.now()
             )
-        }
 
-        private fun generateCardDetails(): CardDetails =
+        private fun generateCardDetails() =
             CardDetails(
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
@@ -256,8 +279,8 @@ class MigrationServiceTest {
         private fun WalletPaymentManagerDocument.createWalletTest(
             userId: UserId,
             status: WalletStatusDto
-        ): Wallet {
-            return Wallet(
+        ) =
+            Wallet(
                 id = walletId,
                 contractId = contractId,
                 userId = userId.id.toString(),
@@ -271,6 +294,5 @@ class MigrationServiceTest {
                 validationErrorCode = null,
                 version = 0
             )
-        }
     }
 }
