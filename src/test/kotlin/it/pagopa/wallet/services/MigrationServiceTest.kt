@@ -18,6 +18,7 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.MongoWalletMigrationRepository
 import it.pagopa.wallet.repositories.WalletPaymentManagerRepositoryImpl
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.services.MigrationServiceTest.Companion.createWalletTest
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.time.Instant
 import java.util.*
@@ -29,6 +30,7 @@ import org.mockito.kotlin.*
 import org.springframework.dao.DuplicateKeyException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 
 class MigrationServiceTest {
@@ -157,7 +159,27 @@ class MigrationServiceTest {
     fun `should return existing Wallet when updating details of existing one`() {
         val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId -> }
+
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }
+                .willAnswer {
+                    walletPmDocument
+                        .createWalletTest(USER_ID, WalletStatusDto.CREATED)
+                        .copy(details = cardDetails.toDocument())
+                        .toMono()
+                }
+
+            migrationService.updateWalletCardDetails(contractId, cardDetails).test().assertNext {
+                wallet ->
+                assertEquals(WalletStatusDto.VALIDATED, wallet.status)
+                assertEquals(wallet.contractId, contractId)
+            }
+
+            verify(loggingEventRepository, times(0)).saveAll(any<Iterable<LoggingEvent>>())
+            verify(walletRepository, times(0)).save(any())
+        }
     }
 
     @Test
