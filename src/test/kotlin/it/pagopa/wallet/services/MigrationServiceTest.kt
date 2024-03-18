@@ -154,6 +154,13 @@ class MigrationServiceTest {
     }
 
     @Test
+    fun `should return existing Wallet when updating details of existing one`() {
+        val paymentManagerId = Random().nextLong().toString()
+        val cardDetails = generateCardDetails()
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId -> }
+    }
+
+    @Test
     fun `should throw not found when update details for non existing contract id`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { mongoWalletMigrationRepository.findByContractId(any()) }
@@ -169,7 +176,7 @@ class MigrationServiceTest {
     }
 
     @Test
-    fun `should throw invalid stat transition when update details for Wallet Error state`() {
+    fun `should throw invalid state transition when update details for Wallet Error state`() {
         val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
         mockWalletMigration(paymentManagerId) { migrationDocument, contractId ->

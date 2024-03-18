@@ -54,6 +54,7 @@ class MigrationService(
     }
 
     fun updateWalletCardDetails(contractId: ContractId, cardDetails: CardDetails): Mono<Wallet> {
+        logger.info("Updating wallet details for ${cardDetails.lastFourDigits}")
         val now = Instant.now()
         return findWalletByContractId(contractId)
             .flatMap { currentWallet ->
@@ -80,7 +81,10 @@ class MigrationService(
                 }
             }
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
-            .doOnComplete { logger.info("Validated wallet") }
+            .doOnComplete {
+                logger.info("Wallet details updated for ${cardDetails.lastFourDigits}")
+            }
+            .doOnError { logger.error(it.message, it) }
             .toMono()
     }
 
