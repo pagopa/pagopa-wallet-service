@@ -164,9 +164,9 @@ class MigrationControllerTest {
                 .newContractIdentifier(contractId.contractId)
                 .originalContractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
-                .panTail("7890")
+                .lastFourDigits("7890")
                 .paymentCircuit("VISA")
                 .paymentGatewayCardId(UUID.randomUUID().toString())
-                .expireDate("12/25")
+                .expiryDate("12/25")
     }
 }
