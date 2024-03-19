@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
@@ -63,6 +64,21 @@ class MigrationService(
                 logger.info("Wallet details updated for ${cardDetails.lastFourDigits}")
             }
             .doOnError { logger.error("Failure during wallet's card details update", it) }
+            .toMono()
+    }
+
+    fun deleteWallet(contractId: ContractId): Mono<Wallet> {
+        logger.info("Deleting wallet")
+        val now = Instant.now()
+        return findWalletByContractId(contractId)
+            .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
+            .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
+            .flatMap { walletRepository.save(it.toDocument()) }
+            .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
+            .flatMap { it.saveEvents(loggingEventRepository) }
+            .map { it.toDomain() }
+            .doOnComplete { logger.info("Deleted wallet successfully") }
+            .doOnError { logger.error("Failure during wallet delete", it) }
             .toMono()
     }
 

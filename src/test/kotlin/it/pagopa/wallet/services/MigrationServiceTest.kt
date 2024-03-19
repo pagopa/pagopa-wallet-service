@@ -6,10 +6,12 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
@@ -25,6 +27,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.*
 import org.springframework.dao.DuplicateKeyException
 import reactor.core.publisher.Flux
@@ -49,6 +53,7 @@ class MigrationServiceTest {
 
     @BeforeEach
     fun setupTest() {
+        given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
         given(loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
             Flux.fromIterable(it.arguments[0] as Iterable<*>)
         }
@@ -64,7 +69,6 @@ class MigrationServiceTest {
                 .willAnswer { Flux.empty<WalletPaymentManagerDocument>() }
             given { mongoWalletMigrationRepository.save(any()) }
                 .willAnswer { Mono.just(walletPmDocument) }
-            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
                 .initializeWalletByPaymentManager(paymentManagerId, USER_ID)
@@ -115,16 +119,14 @@ class MigrationServiceTest {
 
     @Test
     fun `should update card details for existing Wallet migration`() {
-        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+        mockWalletMigration { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
                 .willAnswer {
                     Mono.just(walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED))
                 }
-            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
@@ -156,10 +158,8 @@ class MigrationServiceTest {
 
     @Test
     fun `should return existing Wallet when retry to updating details of a validated Wallet`() {
-        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-
-        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+        mockWalletMigration { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
@@ -196,18 +196,21 @@ class MigrationServiceTest {
         verify(loggingEventRepository, times(0)).saveAll(any<Iterable<LoggingEvent>>())
     }
 
-    @Test
-    fun `should throw invalid state transition when update details for Wallet Error state`() {
-        val paymentManagerId = Random().nextLong().toString()
+    @ParameterizedTest
+    @EnumSource(
+        WalletStatusDto::class,
+        names = ["ERROR", "DELETED"],
+        mode = EnumSource.Mode.INCLUDE
+    )
+    fun `should throw invalid state transition when update Wallet from an illegal status`(
+        walletStatus: WalletStatusDto
+    ) {
         val cardDetails = generateCardDetails()
-        mockWalletMigration(paymentManagerId) { migrationDocument, contractId ->
+        mockWalletMigration { migrationDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(migrationDocument) }
             given { walletRepository.findById(any<String>()) }
-                .willAnswer {
-                    Mono.just(migrationDocument.createWalletTest(USER_ID, WalletStatusDto.ERROR))
-                }
-            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+                .willAnswer { Mono.just(migrationDocument.createWalletTest(USER_ID, walletStatus)) }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
@@ -221,10 +224,8 @@ class MigrationServiceTest {
 
     @Test
     fun `should throw invalid state transition when updating a validate Wallet with different details`() {
-        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-
-        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+        mockWalletMigration { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
@@ -246,14 +247,85 @@ class MigrationServiceTest {
         }
     }
 
+    @ParameterizedTest
+    @EnumSource(WalletStatusDto::class)
+    fun `should delete Wallet from any state when Wallet with ContractId exists`(
+        walletStatus: WalletStatusDto
+    ) {
+        val cardDetails = generateCardDetails()
+        mockWalletMigration { walletPmDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }
+                .willAnswer {
+                    walletPmDocument
+                        .createWalletTest(USER_ID, walletStatus)
+                        .copy(details = cardDetails.toDocument())
+                        .toMono()
+                }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .assertNext {
+                    assertEquals(it.contractId, contractId)
+                    assertEquals(it.status, WalletStatusDto.DELETED)
+                    argumentCaptor<Iterable<LoggingEvent>> {
+                        verify(loggingEventRepository, times(1)).saveAll(capture())
+                        assertInstanceOf(WalletDeletedEvent::class.java, lastValue.firstOrNull())
+                    }
+                }
+                .verifyComplete()
+        }
+    }
+
+    @Test
+    fun `should thrown ContractIdNotFound when ContractId doesn't exists`() {
+        mockWalletMigration { _, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.empty<WalletPaymentManager>() }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .expectErrorMatches {
+                    it is MigrationError.WalletContractIdNotFound && it.contractId == contractId
+                }
+                .verify()
+        }
+    }
+
+    @Test
+    fun `should thrown ContractIdNotFound when ContractId exist but associated Wallet doesn't`() {
+        mockWalletMigration { walletPmDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willReturn(Flux.just(walletPmDocument))
+            given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .expectErrorMatches {
+                    it is MigrationError.WalletContractIdNotFound && it.contractId == contractId
+                }
+                .verify()
+        }
+    }
+
     companion object {
 
         private fun mockWalletMigration(
-            paymentManagerId: String,
+            paymentManagerId: String? = null,
             receiver: (WalletPaymentManagerDocument, ContractId) -> Unit
         ) =
             ContractId(UUID.randomUUID().toString()).let {
-                receiver(generateWalletPaymentManagerDocument(paymentManagerId, it), it)
+                receiver(
+                    generateWalletPaymentManagerDocument(
+                        paymentManagerId ?: Random().nextLong().toString(),
+                        it
+                    ),
+                    it
+                )
             }
 
         private fun generateWalletPaymentManagerDocument(
