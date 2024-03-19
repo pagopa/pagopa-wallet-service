@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
+import it.pagopa.generated.wallet.model.WalletPmDeleteRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.wallets.ContractId
@@ -147,6 +148,20 @@ class MigrationControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
+    }
+
+    @Test
+    fun `should return empty body with ok status when delete an existing Wallet`() {
+        webClient
+            .post()
+            .uri("/migrations/wallets/delete")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(
+                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
+            )
+            .exchange()
+            .expectStatus()
+            .isOk
     }
 
     companion object {
