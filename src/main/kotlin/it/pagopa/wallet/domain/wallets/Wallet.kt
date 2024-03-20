@@ -73,7 +73,7 @@ data class Wallet(
                             app.status.name,
                             app.creationDate.toString(),
                             app.updateDate.toString(),
-                            app.metadata.data
+                            app.metadata.data.mapKeys { it.key.value }
                         )
                     },
                 details = this.details?.toDocument(),

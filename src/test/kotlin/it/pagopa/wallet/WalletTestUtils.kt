@@ -33,7 +33,12 @@ object WalletTestUtils {
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
-    val APPLICATION_METADATA = WalletApplicationMetadata(APPLICATION_METADATA_HASHMAP)
+    val APPLICATION_METADATA =
+        WalletApplicationMetadata(
+            APPLICATION_METADATA_HASHMAP.mapKeys {
+                WalletApplicationMetadata.Metadata.valueOf(it.key)
+            }
+        )
     val CONTRACT_ID = ContractId("W49357937935R869i")
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
@@ -491,11 +496,11 @@ object WalletTestUtils {
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id.toString(),
+                            WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.DISABLED.toString(),
                             TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
-                            APPLICATION_METADATA.data
+                            APPLICATION_METADATA.data.mapKeys { it.key.value }
                         )
                     ),
                 details = null,

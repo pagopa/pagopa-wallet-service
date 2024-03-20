@@ -223,15 +223,14 @@ class WalletService(
                     WalletApplicationMetadata(
                         hashMapOf(
                             Pair(
-                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                    .value,
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD,
                                 "true"
                             ),
                             Pair(
-                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID,
                                 transactionId.value().toString()
                             ),
-                            Pair(WalletApplicationMetadata.Metadata.AMOUNT.value, amount.toString())
+                            Pair(WalletApplicationMetadata.Metadata.AMOUNT, amount.toString())
                         )
                     )
                 )
@@ -309,7 +308,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT.value)
+                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT)
                     else null
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -324,7 +323,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID.value)
+                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID)
                     )
 
                 npgClient
@@ -996,7 +995,7 @@ class WalletService(
     ): Boolean {
         if (application != null) {
             return application.metadata.data[
-                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
                 .toBoolean()
         }
         return false

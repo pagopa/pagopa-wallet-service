@@ -19,6 +19,8 @@ data class WalletApplication(
             WalletApplicationStatus.valueOf(status),
             Instant.parse(creationDate),
             Instant.parse(updateDate),
-            WalletApplicationMetadata(metadata)
+            WalletApplicationMetadata(
+                metadata.mapKeys { WalletApplicationMetadata.Metadata.fromMetadataValue(it.key) }
+            )
         )
 }
