@@ -67,7 +67,7 @@ class MigrationController(private val migrationService: MigrationService) : Migr
     override fun removeWalletByPM(
         walletPmDeleteRequestDto: Mono<WalletPmDeleteRequestDto>?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void>> = ResponseEntity.ok().build<Void>().toMono()
+    ): Mono<ResponseEntity<Void>> = ResponseEntity.noContent().build<Void>().toMono()
 
     private fun parseExpiryDateMMYY(expiryDate: String): ExpiryDate =
         ExpiryDate.fromYearMonth(YearMonth.parse(expiryDate, DateTimeFormatter.ofPattern("MM/yy")))

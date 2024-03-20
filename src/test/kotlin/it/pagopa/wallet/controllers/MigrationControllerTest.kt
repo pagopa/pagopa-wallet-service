@@ -160,7 +160,7 @@ class MigrationControllerTest {
             )
             .exchange()
             .expectStatus()
-            .isOk
+            .isNoContent
     }
 
     companion object {

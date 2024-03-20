@@ -713,7 +713,7 @@ paths:
         required: true
 
       responses:
-        '200':
+        '204':
           description: "Wallet deleted successfully"
         '400':
           description: Formally invalid input
