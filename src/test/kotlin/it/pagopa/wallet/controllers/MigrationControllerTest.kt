@@ -27,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.test.web.reactive.server.expectBody
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
