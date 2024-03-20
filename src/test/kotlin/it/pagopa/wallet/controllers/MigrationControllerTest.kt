@@ -1,6 +1,6 @@
 package it.pagopa.wallet.controllers
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
+import it.pagopa.generated.wallet.model.CardBrandDto
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
@@ -108,7 +108,7 @@ class MigrationControllerTest {
             verify(migrationService).updateWalletCardDetails(any(), capture())
             assertEquals(lastValue.bin.bin, "123456")
             assertEquals(lastValue.expiryDate, ExpiryDate("202512"))
-            assertEquals(lastValue.brand, BrandEnum.VISA)
+            assertEquals(lastValue.brand, CardBrandDto.VISA)
             assertEquals(lastValue.lastFourDigits.lastFourDigits, "7890")
         }
     }
@@ -165,7 +165,7 @@ class MigrationControllerTest {
                 .originalContractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
                 .lastFourDigits("7890")
-                .paymentCircuit("VISA")
+                .paymentCircuit(CardBrandDto.VISA)
                 .paymentGatewayCardId(UUID.randomUUID().toString())
                 .expiryDate("12/25")
     }

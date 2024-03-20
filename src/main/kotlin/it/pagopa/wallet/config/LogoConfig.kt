@@ -1,6 +1,6 @@
 package it.pagopa.wallet.config
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
+import it.pagopa.generated.wallet.model.CardBrandDto
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
@@ -17,7 +17,7 @@ class LogoConfig {
     ): Map<String, URI> {
         val transformedLogoMapping = logoMapping.mapValues { URI.create(it.value) }
         val expectedKeys =
-            (WalletCardDetailsDto.BrandEnum.values().map { it.toString() } +
+            (CardBrandDto.values().map { it.toString() } +
                     WalletDetailsType.values()
                         .filter { it != WalletDetailsType.CARDS }
                         .map { it.toString() } +

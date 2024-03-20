@@ -841,11 +841,7 @@ components:
           pattern: ^\d{6}$
           example: '203012'
         brand:
-          description: Payment instrument brand
-          type: string
-          enum:
-            - MASTERCARD
-            - VISA
+          $ref: '#/components/schemas/CardBrand'
       required:
         - type
         - bin
@@ -1302,6 +1298,13 @@ components:
           type: string
       required:
         - paymentMethodType
+    CardBrand:
+      description: Payment instrument brand
+      type: string
+      enum:
+        - MASTERCARD
+        - VISA
+        - AMEX
     WalletIdPm:
       type: integer
       format: int64
@@ -1359,9 +1362,7 @@ components:
         paymentGatewayCardId:
           type: string
         paymentCircuit:
-          type: string
-          example: "VISA"
-          description: "Card payment's circuit"
+          $ref: '#/components/schemas/CardBrand'
         originalContractIdentifier:
           type: string
           description: "The old PM contract Id"

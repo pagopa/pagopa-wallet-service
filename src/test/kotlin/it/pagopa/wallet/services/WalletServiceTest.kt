@@ -1161,7 +1161,7 @@ class WalletServiceTest {
                         "0000",
                         "203012",
                         "?",
-                        WalletCardDetailsDto.BrandEnum.MASTERCARD
+                        CardBrandDto.MASTERCARD
                     )
 
                 val expectedLoggedAction =
@@ -2447,7 +2447,7 @@ class WalletServiceTest {
                 "0000",
                 "203012",
                 "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
+                CardBrandDto.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -2490,7 +2490,7 @@ class WalletServiceTest {
                 "0000",
                 "203012",
                 "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
+                CardBrandDto.MASTERCARD
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())

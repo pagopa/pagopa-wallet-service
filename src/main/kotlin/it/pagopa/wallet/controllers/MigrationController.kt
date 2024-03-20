@@ -53,8 +53,7 @@ class MigrationController(private val migrationService: MigrationService) : Migr
                             bin = Bin(request.cardBin),
                             lastFourDigits = LastFourDigits(request.lastFourDigits),
                             expiryDate = parseExpiryDateMMYY(request.expiryDate),
-                            brand =
-                                WalletCardDetailsDto.BrandEnum.fromValue(request.paymentCircuit),
+                            brand = request.paymentCircuit,
                             paymentInstrumentGatewayId =
                                 PaymentInstrumentGatewayId(request.paymentGatewayCardId)
                         )

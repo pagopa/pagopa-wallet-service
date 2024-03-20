@@ -1,6 +1,6 @@
 package it.pagopa.wallet.domain.wallets.details
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
+import it.pagopa.generated.wallet.model.CardBrandDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -9,7 +9,7 @@ class CardDetailsTest {
     private val validBin = "42424242"
     val validLastFourDigits = "5555"
     val validExpiryDate = "203012"
-    val brand = BrandEnum.MASTERCARD
+    val brand = CardBrandDto.MASTERCARD
     val paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
     val invalidBin = "42424"
     val invalidLastFourDigits = "4242425555"

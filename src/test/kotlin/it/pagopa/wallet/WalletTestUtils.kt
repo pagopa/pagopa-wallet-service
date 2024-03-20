@@ -38,7 +38,7 @@ object WalletTestUtils {
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
-    val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
+    val BRAND = CardBrandDto.MASTERCARD
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
@@ -222,7 +222,7 @@ object WalletTestUtils {
 
     fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
 
-    fun walletDocumentStatusValidatedCard(brand: WalletCardDetailsDto.BrandEnum): Wallet {
+    fun walletDocumentStatusValidatedCard(brand: CardBrandDto): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -287,7 +287,7 @@ object WalletTestUtils {
         lastFourDigits: String,
         expiryDate: String,
         paymentInstrumentGatewayId: String,
-        brandEnum: WalletCardDetailsDto.BrandEnum
+        brand: CardBrandDto
     ): Wallet {
         val wallet =
             Wallet(
@@ -305,7 +305,7 @@ object WalletTestUtils {
                         bin,
                         lastFourDigits,
                         expiryDate,
-                        brandEnum.name,
+                        brand.name,
                         paymentInstrumentGatewayId
                     ),
                 version = 0,
@@ -578,7 +578,7 @@ object WalletTestUtils {
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
-                    .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                    .brand(CardBrandDto.MASTERCARD)
                     .expiryDate(EXP_DATE.expDate)
             )
 

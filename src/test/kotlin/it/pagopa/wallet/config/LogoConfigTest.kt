@@ -12,6 +12,7 @@ class LogoConfigTest {
             "VISA" to URI.create("http://visa"),
             "MASTERCARD" to URI.create("http://mastercard"),
             "PAYPAL" to URI.create("http://paypal"),
+            "AMEX" to URI.create("http://amex"),
             "UNKNOWN" to URI.create("http://unknown")
         )
 
