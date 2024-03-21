@@ -88,15 +88,16 @@ object WalletTestUtils {
     }
 
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-        paymentMethodId: PaymentMethodId
+        paymentMethodId: PaymentMethodId,
+        application: Application
     ): Wallet {
         return newWalletDocumentToBeSaved(paymentMethodId)
             .copy(
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.ENABLED.toString(),
+                            application.id,
+                            application.status,
                             creationDate.toString(),
                             creationDate.toString(),
                             hashMapOf(

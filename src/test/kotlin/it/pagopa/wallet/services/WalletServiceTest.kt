@@ -372,15 +372,29 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val expectedPagoPAApplication =
+                    it.pagopa.wallet.documents.applications.Application(
+                        "PAGOPA",
+                        "",
+                        ApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString()
+                    )
+
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
                     newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-                        PAYMENT_METHOD_ID_CARDS
+                        PAYMENT_METHOD_ID_CARDS,
+                        expectedPagoPAApplication
                     )
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
+
+                given { applicationRepository.findById("PAGOPA") }
+                    .willAnswer { Mono.just(expectedPagoPAApplication) }
 
                 given { walletRepository.save(any()) }
                     .willAnswer {
@@ -428,14 +442,30 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+                val expectedPagoPAApplication =
+                    it.pagopa.wallet.documents.applications.Application(
+                        "PAGOPA",
+                        "",
+                        ApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString()
+                    )
+
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
-                    newWalletDocumentForPaymentWithContextualOnboardToBeSaved(PAYMENT_METHOD_ID_APM)
+                    newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
+                        PAYMENT_METHOD_ID_APM,
+                        expectedPagoPAApplication
+                    )
 
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
+
+                given { applicationRepository.findById("PAGOPA") }
+                    .willAnswer { Mono.just(expectedPagoPAApplication) }
 
                 given { walletRepository.save(any()) }
                     .willAnswer {

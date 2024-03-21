@@ -206,53 +206,51 @@ class WalletService(
         logger.info(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
         )
-        return ecommercePaymentMethodsClient
-            .getPaymentMethodById(paymentMethodId.toString())
-            .map {
-                val creationTime = Instant.now()
-                return@map Pair(
-                    Wallet(
-                        id = WalletId(UUID.randomUUID()),
-                        userId = UserId(userId),
-                        status = WalletStatusDto.CREATED,
-                        paymentMethodId = PaymentMethodId(paymentMethodId),
-                        version = 0,
-                        creationDate = creationTime,
-                        updateDate = creationTime,
-                        applications =
-                            listOf(
-                                WalletApplication(
-                                    WalletApplicationId(
-                                        "PAGOPA"
-                                    ), // TODO We enter a static value since these wallets will be
-                                    // created only for pagopa payments
-                                    WalletApplicationStatus.ENABLED,
-                                    creationTime,
-                                    creationTime,
-                                    WalletApplicationMetadata(
-                                        hashMapOf(
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata
-                                                    .PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                                    .value,
-                                                "true"
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.TRANSACTION_ID
-                                                    .value,
-                                                transactionId.value().toString()
-                                            ),
-                                            Pair(
-                                                WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                                amount.toString()
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                    ),
-                    it
+        val creationTime = Instant.now()
+        return applicationRepository
+            .findById("PAGOPA")
+            .switchIfEmpty(Mono.error(ApplicationNotFoundException("PAGOPA")))
+            .map { application ->
+                WalletApplication(
+                    WalletApplicationId(
+                        "PAGOPA"
+                    ), // TODO We enter a static value since these wallets will be
+                    // created only for pagopa payments
+                    WalletApplicationStatus.ENABLED,
+                    creationTime,
+                    creationTime,
+                    WalletApplicationMetadata(
+                        hashMapOf(
+                            Pair(
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                    .value,
+                                "true"
+                            ),
+                            Pair(
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                transactionId.value().toString()
+                            ),
+                            Pair(WalletApplicationMetadata.Metadata.AMOUNT.value, amount.toString())
+                        )
+                    )
                 )
+            }
+            .flatMap { walletApplication ->
+                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
+                    return@map Pair(
+                        Wallet(
+                            id = WalletId(UUID.randomUUID()),
+                            userId = UserId(userId),
+                            status = WalletStatusDto.CREATED,
+                            paymentMethodId = PaymentMethodId(paymentMethodId),
+                            version = 0,
+                            creationDate = creationTime,
+                            updateDate = creationTime,
+                            applications = listOf(walletApplication)
+                        ),
+                        it
+                    )
+                }
             }
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
