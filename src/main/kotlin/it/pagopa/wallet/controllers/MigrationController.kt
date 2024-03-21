@@ -63,6 +63,15 @@ class MigrationController(private val migrationService: MigrationService) : Migr
             .map { ResponseEntity.ok(WalletPmCardDetailsResponseDto().walletId(it.id.value)) }
     }
 
+    @SuppressWarnings("kotlin:S6508")
+    override fun removeWalletByPM(
+        walletPmDeleteRequestDto: Mono<WalletPmDeleteRequestDto>,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<Void>> =
+        walletPmDeleteRequestDto
+            .flatMap { migrationService.deleteWallet(ContractId(it.newContractIdentifier)) }
+            .map { ResponseEntity.noContent().build() }
+
     private fun parseExpiryDateMMYY(expiryDate: String): ExpiryDate =
         ExpiryDate.fromYearMonth(YearMonth.parse(expiryDate, DateTimeFormatter.ofPattern("MM/yy")))
 }

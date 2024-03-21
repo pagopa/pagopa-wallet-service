@@ -57,7 +57,7 @@ microservice-chart:
         NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopawalletservice
-    tag: "0.6.0"
+    tag: "0.6.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -87,9 +87,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: ""
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -156,8 +156,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
-  tolerations: [ ]
+  nodeSelector: {}
+  tolerations: []
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

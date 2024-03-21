@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
+import it.pagopa.generated.wallet.model.WalletPmDeleteRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.wallets.ContractId
@@ -26,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.test.web.reactive.server.expectBody
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
@@ -147,6 +147,20 @@ class MigrationControllerTest {
             .exchange()
             .expectStatus()
             .isBadRequest
+    }
+
+    @Test
+    fun `should return empty body with ok status when delete an existing Wallet`() {
+        webClient
+            .post()
+            .uri("/migrations/wallets/delete")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(
+                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
+            )
+            .exchange()
+            .expectStatus()
+            .isNoContent
     }
 
     companion object {

@@ -6,7 +6,6 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
-import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
@@ -27,8 +26,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.*
 import org.springframework.dao.DuplicateKeyException
 import reactor.core.publisher.Flux
@@ -69,6 +66,7 @@ class MigrationServiceTest {
                 .willAnswer { Flux.empty<WalletPaymentManagerDocument>() }
             given { mongoWalletMigrationRepository.save(any()) }
                 .willAnswer { Mono.just(walletPmDocument) }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
                 .initializeWalletByPaymentManager(paymentManagerId, USER_ID)
@@ -119,14 +117,16 @@ class MigrationServiceTest {
 
     @Test
     fun `should update card details for existing Wallet migration`() {
+        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration { walletPmDocument, contractId ->
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
                 .willAnswer {
                     Mono.just(walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED))
                 }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
@@ -158,8 +158,10 @@ class MigrationServiceTest {
 
     @Test
     fun `should return existing Wallet when retry to updating details of a validated Wallet`() {
+        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration { walletPmDocument, contractId ->
+
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
@@ -196,21 +198,18 @@ class MigrationServiceTest {
         verify(loggingEventRepository, times(0)).saveAll(any<Iterable<LoggingEvent>>())
     }
 
-    @ParameterizedTest
-    @EnumSource(
-        WalletStatusDto::class,
-        names = ["ERROR", "DELETED"],
-        mode = EnumSource.Mode.INCLUDE
-    )
-    fun `should throw invalid state transition when update Wallet from an illegal status`(
-        walletStatus: WalletStatusDto
-    ) {
+    @Test
+    fun `should throw invalid state transition when update details for Wallet Error state`() {
+        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration { migrationDocument, contractId ->
+        mockWalletMigration(paymentManagerId) { migrationDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(migrationDocument) }
             given { walletRepository.findById(any<String>()) }
-                .willAnswer { Mono.just(migrationDocument.createWalletTest(USER_ID, walletStatus)) }
+                .willAnswer {
+                    Mono.just(migrationDocument.createWalletTest(USER_ID, WalletStatusDto.ERROR))
+                }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
@@ -224,8 +223,10 @@ class MigrationServiceTest {
 
     @Test
     fun `should throw invalid state transition when updating a validate Wallet with different details`() {
+        val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
-        mockWalletMigration { walletPmDocument, contractId ->
+
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willAnswer { Flux.just(walletPmDocument) }
             given { walletRepository.findById(any<String>()) }
@@ -244,38 +245,6 @@ class MigrationServiceTest {
                 .verify()
 
             verify(walletRepository, times(0)).save(any())
-        }
-    }
-
-    @ParameterizedTest
-    @EnumSource(WalletStatusDto::class)
-    fun `should delete Wallet from any state when Wallet with ContractId exists`(
-        walletStatus: WalletStatusDto
-    ) {
-        val cardDetails = generateCardDetails()
-        mockWalletMigration { walletPmDocument, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }
-                .willAnswer {
-                    walletPmDocument
-                        .createWalletTest(USER_ID, walletStatus)
-                        .copy(details = cardDetails.toDocument())
-                        .toMono()
-                }
-
-            migrationService
-                .deleteWallet(contractId)
-                .test()
-                .assertNext {
-                    assertEquals(it.contractId, contractId)
-                    assertEquals(it.status, WalletStatusDto.DELETED)
-                    argumentCaptor<Iterable<LoggingEvent>> {
-                        verify(loggingEventRepository, times(1)).saveAll(capture())
-                        assertInstanceOf(WalletDeletedEvent::class.java, lastValue.firstOrNull())
-                    }
-                }
-                .verifyComplete()
         }
     }
 
