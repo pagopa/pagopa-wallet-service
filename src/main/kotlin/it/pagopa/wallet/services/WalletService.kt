@@ -134,18 +134,20 @@ class WalletService(
 
         return walletApplicationList
             .toFlux()
-            .flatMap { w ->
+            .flatMap { requestedApplication ->
                 applicationRepository
-                    .findById(w.id)
-                    .switchIfEmpty(Mono.error(ApplicationNotFoundException(w.id)))
+                    .findById(requestedApplication.id)
+                    .switchIfEmpty(
+                        Mono.error(ApplicationNotFoundException(requestedApplication.id))
+                    )
             }
-            .map { app ->
+            .map { application ->
                 WalletApplication(
-                    WalletApplicationId(app.id),
-                    parseWalletApplicationStatus(ApplicationStatus.valueOf(app.status)),
+                    WalletApplicationId(application.id),
+                    parseWalletApplicationStatus(ApplicationStatus.valueOf(application.status)),
                     Instant.now(),
                     Instant.now(),
-                    WalletApplicationMetadata(mapOf())
+                    WalletApplicationMetadata(hashMapOf())
                 )
             }
             .collectList()
