@@ -85,6 +85,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
+import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
@@ -236,13 +237,35 @@ class WalletServiceTest {
                 println("Mocked uuid: $mockedUUID")
                 println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val newWalletDocumentToBeSaved = newWalletDocumentToBeSaved(PAYMENT_METHOD_ID_CARDS)
+
+                val applicationFound =
+                    ApplicationDocument(
+                        "test",
+                        "testDescription",
+                        ApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString()
+                    )
+                val walletApplicationSaved =
+                    it.pagopa.wallet.documents.wallets.WalletApplication(
+                        "test",
+                        WalletApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString(),
+                        mapOf()
+                    )
+                val newWalletDocumentToBeSaved =
+                    newWalletDocumentToBeSaved(
+                        PAYMENT_METHOD_ID_CARDS,
+                        listOf(walletApplicationSaved)
+                    )
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentToBeSaved.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString())
                     )
-
+                given { applicationRepository.findById(anyString()) }
+                    .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }
                     .willAnswer { Mono.just(newWalletDocumentToBeSaved) }
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
@@ -281,13 +304,35 @@ class WalletServiceTest {
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockStatic ->
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val newWalletDocumentToBeSaved = newWalletDocumentToBeSaved(PAYMENT_METHOD_ID_APM)
+
+                val applicationFound =
+                    ApplicationDocument(
+                        "test",
+                        "testDescription",
+                        ApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString()
+                    )
+                val walletApplicationSaved =
+                    it.pagopa.wallet.documents.wallets.WalletApplication(
+                        "test",
+                        WalletApplicationStatus.ENABLED.name,
+                        Instant.now().toString(),
+                        Instant.now().toString(),
+                        mapOf()
+                    )
+                val newWalletDocumentToBeSaved =
+                    newWalletDocumentToBeSaved(
+                        PAYMENT_METHOD_ID_APM,
+                        listOf(walletApplicationSaved)
+                    )
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentToBeSaved.toDomain(),
                         WalletAddedEvent(mockedUUID.toString())
                     )
-
+                given { applicationRepository.findById(anyString()) }
+                    .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
                 given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                     .willReturn { Mono.just(getValidAPMPaymentMethod()) }

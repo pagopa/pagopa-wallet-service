@@ -66,6 +66,27 @@ object WalletTestUtils {
         )
     }
 
+    fun newWalletDocumentToBeSaved(
+        paymentMethodId: PaymentMethodId,
+        applications: List<WalletApplicationDocument>
+    ): Wallet {
+
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = paymentMethodId.value.toString(),
+            contractId = null,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            applications,
+            details = null,
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate
+        )
+    }
+
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
         paymentMethodId: PaymentMethodId
     ): Wallet {

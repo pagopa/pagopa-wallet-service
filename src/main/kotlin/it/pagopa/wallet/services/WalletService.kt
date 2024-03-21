@@ -10,6 +10,7 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
@@ -130,22 +131,41 @@ class WalletService(
         paymentMethodId: UUID
     ): Mono<Pair<LoggedAction<Wallet>, URI>> {
         logger.info("Create wallet with payment methodId: $paymentMethodId and userId: $userId")
-        return ecommercePaymentMethodsClient
-            .getPaymentMethodById(paymentMethodId.toString())
-            .map {
-                val creationTime = Instant.now()
-                return@map Pair(
-                    Wallet(
-                        id = WalletId(UUID.randomUUID()),
-                        userId = UserId(userId),
-                        status = WalletStatusDto.CREATED,
-                        paymentMethodId = PaymentMethodId(paymentMethodId),
-                        version = 0,
-                        creationDate = creationTime,
-                        updateDate = creationTime
-                    ),
-                    it
+
+        return walletApplicationList
+            .toFlux()
+            .flatMap { w ->
+                applicationRepository
+                    .findById(w.id)
+                    .switchIfEmpty(Mono.error(ApplicationNotFoundException(w.id)))
+            }
+            .map { app ->
+                WalletApplication(
+                    WalletApplicationId(app.id),
+                    parseWalletApplicationStatus(ApplicationStatus.valueOf(app.status)),
+                    Instant.now(),
+                    Instant.now(),
+                    WalletApplicationMetadata(mapOf())
                 )
+            }
+            .collectList()
+            .flatMap { apps ->
+                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
+                    val creationTime = Instant.now()
+                    return@map Pair(
+                        Wallet(
+                            id = WalletId(UUID.randomUUID()),
+                            userId = UserId(userId),
+                            status = WalletStatusDto.CREATED,
+                            paymentMethodId = PaymentMethodId(paymentMethodId),
+                            applications = apps,
+                            version = 0,
+                            creationDate = creationTime,
+                            updateDate = creationTime
+                        ),
+                        it
+                    )
+                }
             }
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
@@ -168,6 +188,12 @@ class WalletService(
                     }
             }
     }
+
+    private fun parseWalletApplicationStatus(status: ApplicationStatus) =
+        when (status) {
+            ApplicationStatus.ENABLED -> WalletApplicationStatus.ENABLED
+            else -> WalletApplicationStatus.DISABLED
+        }
 
     fun createWalletForTransaction(
         userId: UUID,
