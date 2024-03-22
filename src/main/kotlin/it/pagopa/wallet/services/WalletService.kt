@@ -207,16 +207,17 @@ class WalletService(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
         )
         val creationTime = Instant.now()
+        val applicationIdForPayments = "PAGOPA"
         return applicationRepository
-            .findById("PAGOPA")
-            .switchIfEmpty(Mono.error(ApplicationNotFoundException("PAGOPA")))
+            .findById(applicationIdForPayments)
+            .switchIfEmpty(Mono.error(ApplicationNotFoundException(applicationIdForPayments)))
             .map { application ->
                 WalletApplication(
                     WalletApplicationId(
-                        "PAGOPA"
-                    ), // TODO We enter a static value since these wallets will be
-                    // created only for pagopa payments
-                    WalletApplicationStatus.ENABLED,
+                        application.id
+                    ), // We enter a static value since these wallets will be created only for
+                    // pagopa payments
+                    parseWalletApplicationStatus(ApplicationStatus.valueOf(application.status)),
                     creationTime,
                     creationTime,
                     WalletApplicationMetadata(
