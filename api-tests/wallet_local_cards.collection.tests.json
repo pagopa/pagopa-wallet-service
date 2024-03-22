@@ -1,179 +1,45 @@
 {
   "info": {
-    "_postman_id": "c70a2a7c-3637-4661-8b78-a33905375714",
-    "name": "Wallet CARDS onboarding",
+    "_postman_id": "45ec3d27-63c1-4be6-ba5c-ddd6032cacb2",
+    "name": "pagoPA Payment Wallet API - CARDS",
+    "description": "API to handle payment wallets PagoPA for App IO, where a wallet is triple between user identifier, payment instrument and services (i.e pagoPA, bpd).\n\nThe wallet onboarding outcome and walletId are returned as query params to the app IO, for example \n/wallets/{walletId}/outcomes?outcome=0&walletId=123. The possible outcome are:\n- SUCCESS(0)\n- GENERIC_ERROR(1)\n- AUTH_ERROR(2)\n- TIMEOUT(4)\n- CANCELED_BY_USER(8)\n- INVALID_SESSION(14)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "23963988"
+    "_exporter_id": "23305473"
   },
   "item": [
     {
-      "name": "Create new wallet",
+      "name": "Create a new application",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet created successfully with POST /wallets\", function () {",
+              "pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
               "    pm.response.to.have.status(201);",
-              "    const redirectUrl = pm.response.json().redirectUrl;",
-              "    pm.expect(redirectUrl).to.be.a(\"string\");",
-              "    pm.expect(redirectUrl).to.be.include(\"creditcard#\");",
-              "    const fragment = redirectUrl.split(\"#\")[1];",
-              "    const fragmentSplits = fragment.split(\"&\");",
-              "    const walletId = fragmentSplits[0].split(\"=\")[1];",
-              "    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
-              "    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
-              "    pm.expect(walletId).to.be.not.null;",
-              "    pm.expect(useDiagnosticTracing).to.be.not.null;",
-              "    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
-              "    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
-              "    pm.environment.set(\"WALLET_ID\", walletId);",
+              "    const applicationId = pm.response.json().applicationId;",
+              "    pm.expect(applicationId).to.be.a(\"string\");",
+              "    pm.expect(applicationId).to.equals(\"PAGOPA\");",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {}
           }
         }
       ],
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [
           {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet payment method id not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error invalid payment method id\", function () {",
-              "    pm.response.to.have.status(502);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
+            "key": "Content-Type",
+            "value": "application/json"
+          },
           {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{INVALID_PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet invalid service name PAGOPA",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error invalid service name PAGOA\", function () {",
-              "    pm.response.to.have.status(400);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"services\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet x-user-id header not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error x-user-id header not found\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
+            "key": "Accept",
+            "value": "application/json"
+          },
           {
             "key": "",
             "value": "",
@@ -183,36 +49,52 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+          "raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
           "options": {
             "raw": {
+              "headerFamily": "json",
               "language": "json"
             }
           }
         },
         "url": {
-          "raw": "{{HOSTNAME}}/wallets",
+          "raw": "{{HOSTNAME}}/applications",
           "host": [
             "{{HOSTNAME}}"
           ],
           "path": [
-            "wallets"
+            "applications"
           ]
-        }
+        },
+        "description": "Creates a new wallet"
       },
       "response": []
     },
     {
-      "name": "Create new wallet x-user-id header invalid format",
+      "name": "Create a new wallet",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet creation request with error x-user-id invalid format\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+              "pm.test(\"[Wallet for onboarding - CARDS] New wallet created successfully with POST /wallets\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    const redirectUrl = pm.response.json().redirectUrl;",
+              "    pm.expect(redirectUrl).to.be.a(\"string\");",
+              "    pm.expect(redirectUrl).to.be.include(\"creditcard#\");",
+              "    const fragment = redirectUrl.split(\"#\")[1];",
+              "    const fragmentSplits = fragment.split(\"&\");",
+              "    pm.expect(fragmentSplits.length).to.be.equals(4);",
+              "    const walletId = fragmentSplits[0].split(\"=\")[1];",
+              "    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+              "    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
+              "    const sessionToken = fragmentSplits[3].split(\"=\")[1];",
+              "    pm.expect(walletId).to.be.not.null;",
+              "    pm.expect(useDiagnosticTracing).to.be.not.null;",
+              "    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+              "    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+              "    pm.environment.set(\"WALLET_ID\", walletId);",
+              "    pm.environment.set(\"SESSION_TOKEN\", sessionToken);",
               "});"
             ],
             "type": "text/javascript"
@@ -220,19 +102,38 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{WALLET_TOKEN_TEST}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
             "key": "x-user-id",
-            "value": "invalidUserId",
+            "value": "{{x-user-id}}",
             "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+          "raw": "{\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\",\n  \"services\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": \"{{USE_DIAGNOSTIC_TRACING}}\"\n}",
           "options": {
             "raw": {
+              "headerFamily": "json",
               "language": "json"
             }
           }
@@ -245,7 +146,8 @@
           "path": [
             "wallets"
           ]
-        }
+        },
+        "description": "Creates a new wallet"
       },
       "response": []
     },
@@ -256,17 +158,10 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Get wallet by id with GET /wallets/:idWallet\", function () {",
+              "pm.test(\"[Wallet for onboarding - CARDS] Wallet retrieved successfully by it's id with GET /wallets/{walletId}\", function () {",
               "    pm.response.to.have.status(200);",
-              "    const responseJson = pm.response.json();",
-              "    pm.expect(responseJson.walletId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.userId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.status).to.be.a(\"string\")",
-              "    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
-              "    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-              "    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-              "    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+              "    const userId = pm.response.json().userId;",
+              "    pm.environment.set(\"x-user-id\", userId);",
               "});"
             ],
             "type": "text/javascript"
@@ -274,8 +169,23 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{WALLET_TOKEN_TEST}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
         "url": {
           "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
           "host": [
@@ -285,19 +195,22 @@
             "wallets",
             "{{WALLET_ID}}"
           ]
-        }
+        },
+        "description": "Returns a single wallet"
       },
       "response": []
     },
     {
-      "name": "Get wallet by id not found",
+      "name": "Get wallet by user identifier",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Get wallet by id return 404 not found for GET /wallets/:idWallet\", function () {",
-              "    pm.response.to.have.status(404);",
+              "pm.test(\"[Wallet for onboarding - CARDS] Wallet retrieved successfully by it's user id with GET /wallets\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var wallets = pm.response.json().wallets;",
+              "    pm.expect(wallets.length).to.be.greaterThan(0);",
               "});"
             ],
             "type": "text/javascript"
@@ -305,52 +218,22 @@
         }
       ],
       "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{INVALID_WALLET_ID}}"
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{WALLET_TOKEN_TEST}}",
+              "type": "string"
+            }
           ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get wallet by x-user-id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.wallets).to.be.not.null;",
-              "    const createdWallet = response.wallets[0];",
-              "    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.userId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.status).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.status).to.be.eq(\"CREATED\")",
-              "    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-              "    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-              "    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-              "});",
-              "",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
+        },
         "method": "GET",
         "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
           {
             "key": "x-user-id",
             "value": "{{x-user-id}}",
@@ -365,51 +248,13 @@
           "path": [
             "wallets"
           ]
-        }
+        },
+        "description": "Returns a of wallets related to user"
       },
       "response": []
     },
     {
-      "name": "Get wallet invalid x-user-id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id with error invalid format\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-              "});",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{invalid-x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Post sessions",
+      "name": "Create a new session wallet",
       "event": [
         {
           "listen": "test",
@@ -417,12 +262,10 @@
             "exec": [
               "const sdk = require('postman-collection');",
               "",
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet session created successfully with POST /wallets/:idWallet/sessions\", function () {",
-              "    pm.response.to.have.status(200);",
-              "",
+              "pm.test(\"[Wallet for onboarding - CARDS] New wallet session created successfully with POST /wallets/{walletId}/sessions\", function () {",
               "    const response = pm.response.json();",
               "    const sessionData = response.sessionData;",
-              "    pm.expect(sessionData.paymentMethodType).to.be.eq(\"cards\");",
+              "     pm.expect(sessionData.paymentMethodType).to.be.eq(\"cards\");",
               "    const cardFormFieldsDataWithoutSrc = sessionData.cardFormFields.map(form => {",
               "        const { src, ...rest } = form;",
               "        return rest;",
@@ -450,28 +293,55 @@
               "                \"id\": \"CARDHOLDER_NAME\"",
               "            }",
               "        ];",
+              "    saveNpgData(response);",
               "    pm.expect(expectedCardFormFieldsDataWithoutSrc).eql(cardFormFieldsDataWithoutSrc);",
               "    pm.expect(response.orderId).to.be.a(\"string\");",
-              "    pm.environment.set(\"ORDER_ID\", response.orderId);",
               " ",
               "});",
               "",
+              "function saveNpgData(response){",
+              "    console.log(\"Read NPG response data...\");",
+              "    const orderId = response.orderId;",
+              "    const fieldUrl = response.sessionData.cardFormFields[0].src;",
+              "    ",
+              "    const parsedUrl = new sdk.Url(fieldUrl).toJSON();",
+              "    const correlationId = parsedUrl.query.find((queryParam) =>queryParam.key==\"correlationid\").value;",
+              "    const sessionId= parsedUrl.query.find((queryParam) =>queryParam.key==\"sessionid\").value.replaceAll(\"%2F\",\"/\").replaceAll(\"%2B\",\"+\").replaceAll(\"%3D\",\"=\");",
+              "    const fieldId= parsedUrl.query.find((queryParam) =>queryParam.key==\"id\").value;",
+              "    console.log(`Order id: [${orderId}]`);",
+              "    console.log(`Field url: [${fieldUrl}]`);",
+              "    console.log(`correlation id: [${correlationId}]`);",
+              "    console.log(`session id: [${sessionId}]`);",
+              "    console.log(`field id: [${fieldId}]`);",
+              "    pm.environment.set(\"ORDER_ID\", orderId);",
+              "    pm.environment.set(\"NPG_IFRAME_FIELD_URL\", fieldUrl);",
+              "    pm.environment.set(\"NPG_CORRELATION_ID\", correlationId);",
+              "    pm.environment.set(\"NPG_SESSION_ID\", sessionId);",
+              "    pm.environment.set(\"NPG_IFRAME_FIELD_ID\", fieldId);",
+              "}",
+              "",
               ""
             ],
             "type": "text/javascript"
           }
         }
       ],
-      "protocolProfileBehavior": {
-        "disabledSystemHeaders": {}
-      },
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{SESSION_TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
+            "key": "Accept",
+            "value": "application/json"
           }
         ],
         "body": {
@@ -484,35 +354,27 @@
           }
         },
         "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+          "raw": "{{HOSTNAME_WEBVIEW}}/wallets/{{WALLET_ID}}/sessions",
           "host": [
-            "{{HOSTNAME}}"
+            "{{HOSTNAME_WEBVIEW}}"
           ],
           "path": [
             "wallets",
             "{{WALLET_ID}}",
             "sessions"
           ]
-        }
+        },
+        "description": "This endpoint returns an object containing data on how a frontend can build a html form to allow direct exchanging of payment information to the payment gateway without `wallet` having to store PCI data (or other sensitive data tied to the payment method).The returned data is tied to a session on the payment gateway identified by the field `orderId`."
       },
       "response": []
     },
     {
-      "name": "Post sessions Wallet not found",
+      "name": "Get NPG field (populate NPG cookies)",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "const sdk = require('postman-collection');",
-              "",
-              "pm.test(\"[Wallet for onboarding CARDS] New wallet session faild with 404 POST /wallets/:idWallet/sessions\", function () {",
-              "    pm.response.to.have.status(404);",
-              "",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.title).to.equals(\"Wallet not found\")",
-              "})",
-              "",
               ""
             ],
             "type": "text/javascript"
@@ -520,16 +382,216 @@
         }
       ],
       "protocolProfileBehavior": {
-        "disabledSystemHeaders": {}
+        "disableBodyPruning": true,
+        "disabledSystemHeaders": {
+          "user-agent": true,
+          "accept": true,
+          "accept-encoding": true,
+          "connection": true
+        }
       },
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Dest",
+            "value": "empty",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Mode",
+            "value": "cors",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Site",
+            "value": "same-origin",
+            "type": "text"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          },
+          {
+            "key": "Correlation-Id",
+            "value": "{{NPG_CORRELATION_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "session",
+            "value": "{{NPG_SESSION_ID}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stg-ta.nexigroup.com/fe/build/field_settings/{{NPG_IFRAME_FIELD_ID}}?lang=ITA",
+          "protocol": "https",
+          "host": [
+            "stg-ta",
+            "nexigroup",
+            "com"
+          ],
+          "path": [
+            "fe",
+            "build",
+            "field_settings",
+            "{{NPG_IFRAME_FIELD_ID}}"
+          ],
+          "query": [
+            {
+              "key": "lang",
+              "value": "ITA"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fill NPG text data (populate iframe card data fields)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "user-agent": true,
+          "accept": true,
+          "accept-encoding": true,
+          "connection": true
+        }
+      },
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [
           {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text",
-            "disabled": true
+            "key": "Content-Type",
+            "value": "application/json; charset=utf-8",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Dest",
+            "value": "empty",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Mode",
+            "value": "cors",
+            "type": "text"
+          },
+          {
+            "key": "Sec-Fetch-Site",
+            "value": "same-origin",
+            "type": "text"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          },
+          {
+            "key": "Correlation-Id",
+            "value": "{{NPG_CORRELATION_ID}}",
+            "type": "text"
+          },
+          {
+            "key": "session",
+            "value": "{{NPG_SESSION_ID}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"fieldValues\": [\n        {\n            \"id\": \"EXPIRATION_DATE\",\n            \"value\": \"{{NPG_EXP_DATE}}\"\n        },\n        {\n            \"id\": \"CARD_NUMBER\",\n            \"value\": \"{{NPG_CARD_NUMBER}}\"\n        },\n        {\n            \"id\": \"SECURITY_CODE\",\n            \"value\": \"{{NPG_CARD_CVV}}\"\n        },\n        {\n            \"id\": \"CARDHOLDER_NAME\",\n            \"value\": \"{{NPG_CARD_HOLDER_NAME}}\"\n        }\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stg-ta.nexigroup.com/fe/build/text/",
+          "protocol": "https",
+          "host": [
+            "stg-ta",
+            "nexigroup",
+            "com"
+          ],
+          "path": [
+            "fe",
+            "build",
+            "text",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create new validation requests given a initialized wallet",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding - CARDS] Session wallet validated successfully with POST /wallets/{walletId}/sessions/{orderId}/validations\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    const response = pm.response.json();",
+              "    const orderId = response.orderId;",
+              "    const details = response.details",
+              "    pm.expect(orderId).to.be.equals(pm.environment.get(\"ORDER_ID\"));",
+              "    pm.expect(details.type).to.be.equals(\"CARDS\");",
+              "    pm.expect(details.iframeUrl).to.be.not.null",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{SESSION_TOKEN}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
           }
         ],
         "body": {
@@ -542,163 +604,9 @@
           }
         },
         "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}/sessions",
+          "raw": "{{HOSTNAME_WEBVIEW}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/validations",
           "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{INVALID_WALLET_ID}}",
-            "sessions"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Validate wallet session wallet id not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Session wallet validate fails for invalid wallet id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
-              "    pm.response.to.have.status(404);",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.title).to.equals(\"Wallet not found\")",
-              "})",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}/sessions/{{ORDER_ID}}/validations",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{INVALID_WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "validations"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Validate wallet session orderId not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Session wallet validate fails for invalid order id with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
-              "    pm.response.to.have.status(404);",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.title).to.equals(\"Session not found\")",
-              "})"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{INVALID_ORDER_ID}}/validations",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{INVALID_ORDER_ID}}",
-            "validations"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Validate wallet session",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Session wallet validated successfully with POST /wallets/:idWallet/sessions/:idOrder/validations\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.orderId).to.be.a(\"string\");",
-              "    pm.expect(response.details.type).to.be.equals(\"CARDS\")",
-              "    pm.expect(response.details.iframeUrl).to.be.a(\"string\")",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/validations",
-          "host": [
-            "{{HOSTNAME}}"
+            "{{HOSTNAME_WEBVIEW}}"
           ],
           "path": [
             "wallets",
@@ -707,19 +615,20 @@
             "{{ORDER_ID}}",
             "validations"
           ]
-        }
+        },
+        "description": "This endpoint returns an object with a url to which to redirect in case of APM or a url on which to build an iframe for GDI check."
       },
       "response": []
     },
     {
-      "name": "Notify wallet",
+      "name": "Delete wallet by id",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
-              "    pm.response.to.have.status(200);",
+              "pm.test(\"[Wallet for onboarding - CARDS] Wallet deleted successfully by it's id with DELETE /wallets/{walletId}\", function () {",
+              "    pm.response.to.have.status(204);",
               "});"
             ],
             "type": "text/javascript"
@@ -727,262 +636,42 @@
         }
       ],
       "request": {
-        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{WALLET_TOKEN_TEST}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
         "header": [
           {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
+            "key": "Accept",
+            "value": "application/json"
           }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
         "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
           "host": [
             "{{HOSTNAME}}"
           ],
           "path": [
             "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
+            "{{WALLET_ID}}"
           ]
-        }
+        },
+        "description": "Returns a single wallet"
       },
       "response": []
-    },
+    }
+  ],
+  "variable": [
     {
-      "name": "Notify wallet invalid security token",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid security token\", function () {",
-              "    pm.response.to.have.status(401);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{INVALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet missing security token",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with missing security token\", function () {",
-              "    pm.response.to.have.status(401);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet invalid wallet status",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid current status\", function () {",
-              "    pm.response.to.have.status(409);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet session invalid orderId",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding CARDS] Nofity wallet with invalid orderId\", function () {",
-              "    pm.response.to.have.status(404);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{INVALID_ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{INVALID_ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
+      "key": "baseUrl",
+      "value": "https://${{hostname}}"
     }
   ]
 }
