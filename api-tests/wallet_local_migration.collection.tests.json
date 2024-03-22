@@ -253,6 +253,104 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Delete wallet by ContractId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Delete Wallet by ContractId /wallets/migrations/delete\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							"pm.test(\"[Wallet PM Migration] Delete Wallet by ContractId must move Wallet to DELETED\", function(done) {",
+							"    pm.sendRequest({",
+							"        url: `${pm.environment.get(\"HOSTNAME\")}/wallets/${pm.environment.get(\"WALLET_ID\")}`,",
+							"        method: \"GET\",",
+							"    }, (err, resp) => {",
+							"        const responseJson = resp.json();",
+							"        pm.expect(resp.code).to.be.eq(200);",
+							"        pm.expect(responseJson.status).to.be.eq(\"DELETED\")",
+							"        pm.expect(responseJson.details.type).to.be.eq(\"CARDS\")",
+							"        pm.expect(responseJson.details.bin).to.be.eq(\"12345678\")",
+							"        pm.expect(responseJson.details.lastFourDigits).to.be.eq(\"7295\")",
+							"        pm.expect(responseJson.details.expiryDate).to.be.eq(\"202512\")",
+							"        done();",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"newContractIdentifier\": \"{{NEW_CONTRACT_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets/delete",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete wallet with non existing ContractId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Delete Wallet with non existing ContractId /wallets/migrations/delete\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"newContractIdentifier\": \"123\" // non existing contractId\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets/delete",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets",
+						"delete"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
