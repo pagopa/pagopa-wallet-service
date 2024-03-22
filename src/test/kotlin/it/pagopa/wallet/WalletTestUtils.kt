@@ -97,7 +97,7 @@ object WalletTestUtils {
                     listOf(
                         WalletApplicationDocument(
                             application.id,
-                            application.status,
+                            status = parseWalletApplicationStatus(application.status),
                             creationDate.toString(),
                             creationDate.toString(),
                             hashMapOf(
@@ -120,6 +120,12 @@ object WalletTestUtils {
                     )
             )
     }
+
+    private fun parseWalletApplicationStatus(status: String): String =
+        when (status) {
+            ApplicationStatus.ENABLED.name -> WalletApplicationStatus.ENABLED.name
+            else -> WalletApplicationStatus.DISABLED.name
+        }
 
     fun walletDocumentCreatedStatus(paymentMethodId: PaymentMethodId): Wallet {
         return Wallet(
