@@ -7,6 +7,69 @@
   },
   "item": [
     {
+      "name": "Create a new application",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    const applicationId = pm.response.json().applicationId;",
+              "    pm.expect(applicationId).to.be.a(\"string\");",
+              "    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
+          "options": {
+            "raw": {
+              "headerFamily": "json",
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/applications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "applications"
+          ]
+        },
+        "description": "Creates a new application"
+      },
+      "response": []
+    },
+    {
       "name": "Create new wallet",
       "event": [
         {
@@ -110,13 +173,13 @@
       "response": []
     },
     {
-      "name": "Create new wallet invalid service name PAGOPA",
+      "name": "Create new wallet invalid application name PAGOPA",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid service name PAGOA\", function () {",
+              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid application name PAGOA\", function () {",
               "    pm.response.to.have.status(400);",
               "});"
             ],
@@ -135,7 +198,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"services\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+          "raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
           "options": {
             "raw": {
               "language": "json"

@@ -128,13 +128,13 @@
       "response": []
     },
     {
-      "name": "Create new wallet with invalid service name PAGOPA",
+      "name": "Create new wallet with invalid application name PAGOPA",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid service name PAGOA\", function () {",
+              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid application name PAGOA\", function () {",
               "    pm.response.to.have.status(404);",
               "    const jsonResponse = pm.response.json();",
               "    const title = jsonResponse.title;",
