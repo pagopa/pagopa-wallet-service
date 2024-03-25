@@ -9,7 +9,7 @@ class CardDetailsTest {
     private val validBin = "42424242"
     val validLastFourDigits = "5555"
     val validExpiryDate = "203012"
-    val brand = CardBrandDto.MASTERCARD
+    val brand = CardBrandDto.MC
     val paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
     val invalidBin = "42424"
     val invalidLastFourDigits = "4242425555"

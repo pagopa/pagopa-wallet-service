@@ -224,7 +224,7 @@ class WalletControllerTest {
                 "0000",
                 "203012",
                 "?",
-                CardBrandDto.MASTERCARD
+                CardBrandDto.MC
             )
         val response =
             WalletVerifyRequestsResponseDto()

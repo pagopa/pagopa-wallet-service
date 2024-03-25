@@ -1122,7 +1122,7 @@ class WalletServiceTest {
                         .bin("12345678")
                         .expiringDate("12/30")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
 
                 val npgStateResponse =
                     StateResponse()
@@ -1161,7 +1161,7 @@ class WalletServiceTest {
                         "0000",
                         "203012",
                         "?",
-                        CardBrandDto.MASTERCARD
+                        CardBrandDto.MC
                     )
 
                 val expectedLoggedAction =
@@ -1198,7 +1198,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MC", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
@@ -1416,7 +1416,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse().state(WorkflowState.READY_FOR_PAYMENT).url("http://state.url")
 
@@ -1486,7 +1486,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse = StateResponse().state(WorkflowState.GDI_VERIFICATION)
 
                 val npgSession =
@@ -1556,7 +1556,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse()
                         .state(WorkflowState.GDI_VERIFICATION)
@@ -1631,7 +1631,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse()
                         .state(WorkflowState.GDI_VERIFICATION)
@@ -2447,7 +2447,7 @@ class WalletServiceTest {
                 "0000",
                 "203012",
                 "?",
-                CardBrandDto.MASTERCARD
+                CardBrandDto.MC
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -2490,7 +2490,7 @@ class WalletServiceTest {
                 "0000",
                 "203012",
                 "?",
-                CardBrandDto.MASTERCARD
+                CardBrandDto.MC
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())

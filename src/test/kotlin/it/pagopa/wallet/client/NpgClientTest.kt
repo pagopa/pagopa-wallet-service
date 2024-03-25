@@ -136,7 +136,7 @@ class NpgClientTest {
                 .bin("123456")
                 .lastFourDigits("0000")
                 .expiringDate("122030")
-                .circuit(CardBrandDto.MASTERCARD.name)
+                .circuit(CardBrandDto.MC.name)
 
         // prerequisite
         given(cardsServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))

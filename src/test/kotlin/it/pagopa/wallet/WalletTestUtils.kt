@@ -38,7 +38,7 @@ object WalletTestUtils {
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
-    val BRAND = CardBrandDto.MASTERCARD
+    val BRAND = CardBrandDto.MC
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
@@ -578,7 +578,7 @@ object WalletTestUtils {
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
-                    .brand(CardBrandDto.MASTERCARD)
+                    .brand(CardBrandDto.MC)
                     .expiryDate(EXP_DATE.expDate)
             )
 
