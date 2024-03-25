@@ -10,6 +10,7 @@ import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
@@ -49,6 +50,7 @@ class MigrationServiceTest {
 
     @BeforeEach
     fun setupTest() {
+        given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
         given(loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
             Flux.fromIterable(it.arguments[0] as Iterable<*>)
         }
@@ -246,14 +248,53 @@ class MigrationServiceTest {
         }
     }
 
+    @Test
+    fun `should thrown ContractIdNotFound when ContractId doesn't exists`() {
+        mockWalletMigration { _, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.empty<WalletPaymentManager>() }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .expectErrorMatches {
+                    it is MigrationError.WalletContractIdNotFound && it.contractId == contractId
+                }
+                .verify()
+        }
+    }
+
+    @Test
+    fun `should thrown ContractIdNotFound when ContractId exist but associated Wallet doesn't`() {
+        mockWalletMigration { walletPmDocument, contractId ->
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willReturn(Flux.just(walletPmDocument))
+            given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .expectErrorMatches {
+                    it is MigrationError.WalletContractIdNotFound && it.contractId == contractId
+                }
+                .verify()
+        }
+    }
+
     companion object {
 
         private fun mockWalletMigration(
-            paymentManagerId: String,
+            paymentManagerId: String? = null,
             receiver: (WalletPaymentManagerDocument, ContractId) -> Unit
         ) =
             ContractId(UUID.randomUUID().toString()).let {
-                receiver(generateWalletPaymentManagerDocument(paymentManagerId, it), it)
+                receiver(
+                    generateWalletPaymentManagerDocument(
+                        paymentManagerId ?: Random().nextLong().toString(),
+                        it
+                    ),
+                    it
+                )
             }
 
         private fun generateWalletPaymentManagerDocument(

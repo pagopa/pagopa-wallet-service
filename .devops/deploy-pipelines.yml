@@ -145,7 +145,8 @@ stages:
     displayName: 'Running API test on dev app'
     dependsOn: Deploy_for_DEV
     jobs:
-      - job: newman_api_test
+      - job: newman_api_test_cards
+        displayName: 'API Tests: Wallet Cards'
         steps:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
@@ -155,6 +156,10 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+      - job: newman_api_test_paypal
+        displayName: "API Test: Wallet PayPal"
+        steps:
+          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet PayPal tests"
@@ -162,6 +167,10 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+      - job: newman_api_test_migration
+        displayName: "API Test: Wallet Migration"
+        steps:
+          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet migration tests"
