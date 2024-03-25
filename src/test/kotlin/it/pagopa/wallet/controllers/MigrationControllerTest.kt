@@ -14,7 +14,6 @@ import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.ExpiryDate
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.services.MigrationService
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -27,47 +26,51 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import java.util.*
 
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class MigrationControllerTest {
 
-    @MockBean private lateinit var migrationService: MigrationService
+    @MockBean
+    private lateinit var migrationService: MigrationService
 
-    @Autowired private lateinit var webClient: WebTestClient
+    @Autowired
+    private lateinit var webClient: WebTestClient
 
     @Test
     fun `should create Wallet successfully`() {
         val paymentManagerId = Random().nextLong()
         val userId = UUID.randomUUID()
         given { migrationService.initializeWalletByPaymentManager(any(), any()) }
-            .willAnswer {
-                WalletTestUtils.walletDocument()
-                    .copy(
-                        userId = (it.arguments[1] as UserId).id.toString(),
-                        contractId = WalletTestUtils.CONTRACT_ID.contractId
-                    )
-                    .toDomain()
-                    .toMono()
-            }
+                .willAnswer {
+                    WalletTestUtils.walletDocument()
+                            .copy(
+                                    userId = (it.arguments[1] as UserId).id.toString(),
+                                    contractId = WalletTestUtils.CONTRACT_ID.contractId
+                            )
+                            .toDomain()
+                            .toMono()
+                }
         webClient
-            .put()
-            .uri("/migrations/wallets")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("walletIdPm", paymentManagerId)
-            .hasJsonPath()
-            .jsonPath("contractId", WalletTestUtils.CONTRACT_ID.contractId)
-            .exists()
-            .jsonPath("walletId", WalletTestUtils.WALLET_UUID.value.toString())
-            .exists()
-            .jsonPath("status", WalletStatusDto.CREATED)
-            .exists()
+                .put()
+                .uri("/migrations/wallets")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .jsonPath("walletIdPm", paymentManagerId)
+                .hasJsonPath()
+                .jsonPath("contractId", WalletTestUtils.CONTRACT_ID.contractId)
+                .exists()
+                .jsonPath("walletId", WalletTestUtils.WALLET_UUID.value.toString())
+                .exists()
+                .jsonPath("status", WalletStatusDto.CREATED)
+                .exists()
 
         argumentCaptor<String> {
             verify(migrationService).initializeWalletByPaymentManager(capture(), any())
@@ -78,31 +81,31 @@ class MigrationControllerTest {
     @Test
     fun `should return bad request on malformed request`() {
         webClient
-            .put()
-            .uri("/migrations/wallets")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(MALFORMED_REQUEST)
-            .exchange()
-            .expectStatus()
-            .isBadRequest
+                .put()
+                .uri("/migrations/wallets")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(MALFORMED_REQUEST)
+                .exchange()
+                .expectStatus()
+                .isBadRequest
     }
 
     @Test
     fun `should return wallet id when update its details`() {
         given { migrationService.updateWalletCardDetails(any(), any()) }
-            .willAnswer { WalletTestUtils.walletDocument().toDomain().toMono() }
+                .willAnswer { WalletTestUtils.walletDocument().toDomain().toMono() }
         val detailsRequest = createDetailRequest(ContractId(UUID.randomUUID().toString()))
         webClient
-            .post()
-            .uri("/migrations/wallets/updateDetails")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(detailsRequest)
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("walletId", WalletTestUtils.WALLET_UUID.value.toString())
-            .exists()
+                .post()
+                .uri("/migrations/wallets/updateDetails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(detailsRequest)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .jsonPath("walletId", WalletTestUtils.WALLET_UUID.value.toString())
+                .exists()
 
         argumentCaptor<CardDetails> {
             verify(migrationService).updateWalletCardDetails(any(), capture())
@@ -117,70 +120,72 @@ class MigrationControllerTest {
     fun `should return not found when Wallets no existing for given contract id`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { migrationService.updateWalletCardDetails(any(), any()) }
-            .willAnswer { MigrationError.WalletContractIdNotFound(contractId).toMono<Wallet>() }
+                .willAnswer { MigrationError.WalletContractIdNotFound(contractId).toMono<Wallet>() }
         webClient
-            .post()
-            .uri("/migrations/wallets/updateDetails")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createDetailRequest(contractId))
-            .exchange()
-            .expectStatus()
-            .isNotFound
+                .post()
+                .uri("/migrations/wallets/updateDetails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(createDetailRequest(contractId))
+                .exchange()
+                .expectStatus()
+                .isNotFound
     }
 
     @Test
     fun `should return bad request when trying to update Wallet from illegal state`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { migrationService.updateWalletCardDetails(any(), any()) }
-            .willAnswer {
-                MigrationError.WalletIllegalStateTransition(
-                        WalletId.create(),
-                        WalletStatusDto.ERROR
+                .willAnswer {
+                    MigrationError.WalletIllegalStateTransition(
+                            WalletId.create(),
+                            WalletStatusDto.ERROR
                     )
-                    .toMono<Wallet>()
-            }
+                            .toMono<Wallet>()
+                }
         webClient
-            .post()
-            .uri("/migrations/wallets/updateDetails")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(createDetailRequest(contractId))
-            .exchange()
-            .expectStatus()
-            .isBadRequest
+                .post()
+                .uri("/migrations/wallets/updateDetails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(createDetailRequest(contractId))
+                .exchange()
+                .expectStatus()
+                .isBadRequest
     }
 
     @Test
     fun `should return empty body with ok status when delete an existing Wallet`() {
+        given { migrationService.deleteWallet(any()) }
+                .willAnswer { Mono.just(WalletTestUtils.walletDocument().toDomain()) }
         webClient
-            .post()
-            .uri("/migrations/wallets/delete")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(
-                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
-            )
-            .exchange()
-            .expectStatus()
-            .isNoContent
+                .post()
+                .uri("/migrations/wallets/delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(
+                        WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
+                )
+                .exchange()
+                .expectStatus()
+                .isNoContent
     }
 
     companion object {
         val MALFORMED_REQUEST =
-            """
+                """
             {
                 "walletIdPm": "123",
                 "wrongField": "123"
             }
         """
-                .trimIndent()
+                        .trimIndent()
 
         private fun createDetailRequest(contractId: ContractId): WalletPmCardDetailsRequestDto =
-            WalletPmCardDetailsRequestDto()
-                .newContractIdentifier(contractId.contractId)
-                .originalContractIdentifier(UUID.randomUUID().toString())
-                .cardBin("123456")
-                .lastFourDigits("7890")
-                .paymentCircuit("VISA")
-                .paymentGatewayCardId(UUID.randomUUID().toString())
-                .expiryDate("12/25")
+                WalletPmCardDetailsRequestDto()
+                        .newContractIdentifier(contractId.contractId)
+                        .originalContractIdentifier(UUID.randomUUID().toString())
+                        .cardBin("123456")
+                        .lastFourDigits("7890")
+                        .paymentCircuit("VISA")
+                        .paymentGatewayCardId(UUID.randomUUID().toString())
+                        .expiryDate("12/25")
     }
 }
