@@ -1,11 +1,74 @@
 {
   "info": {
-    "_postman_id": "c70a2a7c-3637-4661-8b78-a33905375714",
+    "_postman_id": "89818afd-bca6-4a1a-b055-ac1b390eded4",
     "name": "Wallet CARDS onboarding",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "23963988"
+    "_exporter_id": "23305473"
   },
   "item": [
+    {
+      "name": "Create a new application",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    const applicationId = pm.response.json().applicationId;",
+              "    pm.expect(applicationId).to.be.a(\"string\");",
+              "    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
+          "options": {
+            "raw": {
+              "headerFamily": "json",
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/applications",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "applications"
+          ]
+        },
+        "description": "Creates a new application"
+      },
+      "response": []
+    },
     {
       "name": "Create new wallet",
       "event": [
@@ -46,6 +109,57 @@
         "body": {
           "mode": "raw",
           "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOSTNAME}}/wallets",
+          "host": [
+            "{{HOSTNAME}}"
+          ],
+          "path": [
+            "wallets"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create new wallet with invalid service name PAGOPA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid service name PAGOA\", function () {",
+              "    pm.response.to.have.status(404);",
+              "    const jsonResponse = pm.response.json();",
+              "    const title = jsonResponse.title;",
+              "    const detail = jsonResponse.detail;",
+              "    pm.expect(title).to.equals(\"Application not found\");",
+              "    pm.expect(detail).to.equals(\"Application with id 'PAGOA' not found\");",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-user-id",
+            "value": "{{x-user-id}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
           "options": {
             "raw": {
               "language": "json"
