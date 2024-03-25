@@ -27,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
@@ -151,6 +152,8 @@ class MigrationControllerTest {
 
     @Test
     fun `should return empty body with ok status when delete an existing Wallet`() {
+        given { migrationService.deleteWallet(any()) }
+            .willAnswer { Mono.just(WalletTestUtils.walletDocument().toDomain()) }
         webClient
             .post()
             .uri("/migrations/wallets/delete")

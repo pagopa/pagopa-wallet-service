@@ -1351,6 +1351,9 @@ components:
         - MASTERCARD
         - VISA
         - AMEX
+        - MAESTRO
+        - MC
+        - DINERS
     WalletIdPm:
       type: integer
       format: int64
