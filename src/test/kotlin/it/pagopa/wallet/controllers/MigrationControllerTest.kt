@@ -27,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
@@ -151,13 +152,13 @@ class MigrationControllerTest {
 
     @Test
     fun `should return empty body with ok status when delete an existing Wallet`() {
+        given { migrationService.deleteWallet(any()) }
+            .willAnswer { Mono.just(WalletTestUtils.walletDocument().toDomain()) }
         webClient
             .post()
             .uri("/migrations/wallets/delete")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(
-                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
-            )
+            .bodyValue(WalletPmDeleteRequestDto().contractIdentifier(UUID.randomUUID().toString()))
             .exchange()
             .expectStatus()
             .isNoContent
@@ -176,7 +177,7 @@ class MigrationControllerTest {
         private fun createDetailRequest(contractId: ContractId): WalletPmCardDetailsRequestDto =
             WalletPmCardDetailsRequestDto()
                 .newContractIdentifier(contractId.contractId)
-                .originalContractIdentifier(UUID.randomUUID().toString())
+                .contractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
                 .lastFourDigits("7890")
                 .paymentCircuit("VISA")
