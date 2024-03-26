@@ -1,890 +1,1595 @@
 {
-  "info": {
-    "_postman_id": "2c059121-9c61-42e2-8cda-e1a1c742a00e",
-    "name": "Wallet PAYPAL onboarding",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "23963988"
-  },
-  "item": [
-    {
-      "name": "Create new wallet",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
-              "    pm.response.to.have.status(201);",
-              "    const redirectUrl = pm.response.json().redirectUrl;",
-              "    pm.expect(redirectUrl).to.be.a(\"string\");",
-              "    pm.expect(redirectUrl).to.be.include(\"apm#\");",
-              "    const fragment = redirectUrl.split(\"#\")[1];",
-              "    const fragmentSplits = fragment.split(\"&\");",
-              "    const walletId = fragmentSplits[0].split(\"=\")[1];",
-              "    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
-              "    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
-              "    pm.expect(walletId).to.be.not.null;",
-              "    pm.expect(useDiagnosticTracing).to.be.not.null;",
-              "    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
-              "     pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
-              "    pm.environment.set(\"WALLET_ID\", walletId);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet payment method id not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid payment method id\", function () {",
-              "    pm.response.to.have.status(502);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{INVALID_PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet x-user-id header not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error x-user-id header not found\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "",
-            "value": "",
-            "type": "text",
-            "disabled": true
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create new wallet x-user-id header invalid format",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error x-user-id invalid format\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "invalidUserId",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get wallet by id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    const responseJson = pm.response.json();",
-              "    pm.expect(responseJson.walletId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.userId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
-              "    pm.expect(responseJson.status).to.be.a(\"string\")",
-              "    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
-              "    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-              "    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-              "    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get wallet by id not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id return 404 not found for GET /wallets/:idWallet\", function () {",
-              "    pm.response.to.have.status(404);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{INVALID_WALLET_ID}}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get wallet by x-user-id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
-              "    pm.response.to.have.status(200);",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.wallets).to.be.not.null;",
-              "    const createdWallet = response.wallets[0];",
-              "    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.userId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.status).to.be.a(\"string\")",
-              "    pm.expect(createdWallet.status).to.be.eq(\"CREATED\")",
-              "    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-              "    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-              "    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-              "});",
-              "",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get wallet invalid x-user-id",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id with error invalid format\", function () {",
-              "    pm.response.to.have.status(400);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-              "});",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{invalid-x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Post sessions",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const sdk = require('postman-collection');",
-              "",
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet session created successfully with POST /wallets/:idWallet/sessions\", function () {",
-              "    pm.response.to.have.status(200);",
-              "",
-              "    const response = pm.response.json();",
-              "    const sessionData = response.sessionData;",
-              "    pm.expect(sessionData.paymentMethodType).to.be.eq(\"apm\");",
-              "    pm.expect(sessionData.redirectUrl).to.be.a(\"string\");",
-              "    pm.expect(response.orderId).to.be.a(\"string\");",
-              "    pm.environment.set(\"ORDER_ID\", response.orderId);",
-              "});",
-              "",
-              "",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "disabledSystemHeaders": {}
-      },
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Post sessions Wallet not found",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const sdk = require('postman-collection');",
-              "",
-              "pm.test(\"[Wallet for onboarding PAYPAL] New wallet session faild with 404 POST /wallets/:idWallet/sessions\", function () {",
-              "    pm.response.to.have.status(404);",
-              "",
-              "    const response = pm.response.json();",
-              "    pm.expect(response.title).to.equals(\"Wallet not found\")",
-              "})",
-              "",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "protocolProfileBehavior": {
-        "disabledSystemHeaders": {}
-      },
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text",
-            "disabled": true
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}/sessions",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{INVALID_WALLET_ID}}",
-            "sessions"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet invalid security token",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid security token\", function () {",
-              "    pm.response.to.have.status(401);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{INVALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet missing security token",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with missing security token\", function () {",
-              "    pm.response.to.have.status(401);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet invalid wallet status",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid current status\", function () {",
-              "    pm.response.to.have.status(409);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet session invalid orderId",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid orderId\", function () {",
-              "    pm.response.to.have.status(404);",
-              "    const detailErrorField = pm.response.json().detail;",
-              "    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{INVALID_ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{INVALID_ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Notify wallet error for missing details",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"[Wallet for onboarding PAYPAL] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
-              "    pm.response.to.have.status(400);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        },
-        {
-          "listen": "prerequest",
-          "script": {
-            "exec": [
-              "const paymentMethodId = pm.environment.get(\"PAYMENT_METHOD_ID\");",
-              "const useDiagnosticSettings = pm.environment.get(\"USE_DIAGNOSTIC_TRACING\");",
-              "",
-              "const createWalletRequestBody = {",
-              "  \"applications\": [",
-              "    \"PAGOPA\"",
-              "  ],",
-              "  \"useDiagnosticTracing\": useDiagnosticSettings,",
-              "  \"paymentMethodId\": paymentMethodId",
-              "};",
-              "",
-              "",
-              "const createWalletRequestObject = {",
-              "  url: pm.environment.get(\"HOSTNAME\") + \"/wallets\",",
-              "  method: 'POST',",
-              "  header: {",
-              "    'Content-Type': 'application/json',",
-              "    'x-user-id': `${pm.environment.get(\"x-user-id\")}`",
-              "  },",
-              "  body: {",
-              "    mode: 'raw',",
-              "    raw: JSON.stringify(createWalletRequestBody)",
-              "  }",
-              "};",
-              "",
-              "pm.sendRequest(createWalletRequestObject, (error, response) => {",
-              "  if (error) {",
-              "    throw error;",
-              "  } else {",
-              "    const responseBody = response.json();",
-              "    postSession(responseBody.walletId);",
-              "  }",
-              "});",
-              "",
-              "",
-              "function postSession(walletId) {",
-              "  if (walletId) {",
-              "    const postSessionRequest = {",
-              "      \"paymentMethodType\": \"paypal\",",
-              "      \"pspId\": \"pspId\"",
-              "    };",
-              "    const postSessionRequestObject = {",
-              "      url: pm.environment.get(\"HOSTNAME\") + `/wallets/${walletId}/sessions`,",
-              "      method: 'POST',",
-              "      header: {",
-              "        'Content-Type': 'application/json',",
-              "      },",
-              "      body: {",
-              "        mode: 'raw',",
-              "        raw: JSON.stringify(postSessionRequest)",
-              "      }",
-              "    };",
-              "",
-              "    pm.sendRequest(postSessionRequestObject, (error, response) => {",
-              "      if (error) {",
-              "        throw error;",
-              "      } else {",
-              "        const responseBody = response.json();",
-              "        orderId = responseBody.orderId;",
-              "        pm.environment.set(\"WALLET_ID\", walletId);",
-              "        pm.environment.set(\"ORDER_ID\", orderId);",
-              "      }",
-              "    });",
-              "  } else {",
-              "    throw new Error(`Cannot perform post session for wallet id: ${walletId}`);",
-              "  }",
-              "}",
-              ""
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "x-user-id",
-            "value": "{{x-user-id}}",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{VALID_SECURITY_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
-          "host": [
-            "{{HOSTNAME}}"
-          ],
-          "path": [
-            "wallets",
-            "{{WALLET_ID}}",
-            "sessions",
-            "{{ORDER_ID}}",
-            "notifications"
-          ]
-        }
-      },
-      "response": []
-    }
-  ]
+	"info": {
+		"_postman_id": "9c2bffc2-684f-4aa9-be1b-6f61766e7bdb",
+		"name": "Wallet PAYPAL onboarding",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23305473"
+	},
+	"item": [
+		{
+			"name": "Create a new application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding - PAYPAL] New application created successfully with POST /applications\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const applicationId = pm.response.json().applicationId;",
+							"    pm.expect(applicationId).to.be.a(\"string\");",
+							"    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"applications"
+					]
+				},
+				"description": "Creates a new application"
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const redirectUrl = pm.response.json().redirectUrl;",
+							"    pm.expect(redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(redirectUrl).to.be.include(\"apm#\");",
+							"    const fragment = redirectUrl.split(\"#\")[1];",
+							"    const fragmentSplits = fragment.split(\"&\");",
+							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
+							"    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+							"    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
+							"    pm.expect(walletId).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+							"    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet payment method id not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid payment method id\", function () {",
+							"    pm.response.to.have.status(502);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{INVALID_PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet invalid application name PAGOPA",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error invalid application name PAGOA\", function () {",
+							"    pm.response.to.have.status(404);",
+							"    const jsonResponse = pm.response.json();",
+							"    const title = jsonResponse.title;",
+							"    const detail = jsonResponse.detail;",
+							"    pm.expect(title).to.equals(\"Application not found\");",
+							"    pm.expect(detail).to.equals(\"Application with id 'PAGOA' not found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet x-user-id header not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error x-user-id header not found\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet x-user-id header invalid format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error x-user-id invalid format\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "invalidUserId",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by id not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id return 404 not found for GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{INVALID_WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by x-user-id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.wallets).to.be.not.null;",
+							"    const createdWallet = response.wallets[0];",
+							"    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.userId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet invalid x-user-id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id with error invalid format\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{invalid-x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post sessions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet session created successfully with POST /wallets/:idWallet/sessions\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    const response = pm.response.json();",
+							"    const sessionData = response.sessionData;",
+							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"apm\");",
+							"    pm.expect(sessionData.redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(response.orderId).to.be.a(\"string\");",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post sessions Wallet not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet session faild with 404 POST /wallets/:idWallet/sessions\", function () {",
+							"    pm.response.to.have.status(404);",
+							"",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.title).to.equals(\"Wallet not found\")",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{INVALID_WALLET_ID}}",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet invalid security token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid security token\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{INVALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet missing security token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with missing security token\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet invalid wallet status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid current status\", function () {",
+							"    pm.response.to.have.status(409);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet session invalid orderId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid orderId\", function () {",
+							"    pm.response.to.have.status(404);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"PAYPAL\",\n        \"maskedEmail\": \"te****@te*****.it\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{INVALID_ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{INVALID_ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notify wallet error for missing details",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Session wallet notified successfully with POST /wallets/:idWallet/sessions/:idOrder/notifications\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const paymentMethodId = pm.environment.get(\"PAYMENT_METHOD_ID\");",
+							"const useDiagnosticSettings = pm.environment.get(\"USE_DIAGNOSTIC_TRACING\");",
+							"",
+							"const createWalletRequestBody = {",
+							"  \"applications\": [",
+							"    \"PAGOPA\"",
+							"  ],",
+							"  \"useDiagnosticTracing\": useDiagnosticSettings,",
+							"  \"paymentMethodId\": paymentMethodId",
+							"};",
+							"",
+							"",
+							"const createWalletRequestObject = {",
+							"  url: pm.environment.get(\"HOSTNAME\") + \"/wallets\",",
+							"  method: 'POST',",
+							"  header: {",
+							"    'Content-Type': 'application/json',",
+							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`",
+							"  },",
+							"  body: {",
+							"    mode: 'raw',",
+							"    raw: JSON.stringify(createWalletRequestBody)",
+							"  }",
+							"};",
+							"",
+							"pm.sendRequest(createWalletRequestObject, (error, response) => {",
+							"  if (error) {",
+							"    throw error;",
+							"  } else {",
+							"    const responseBody = response.json();",
+							"    postSession(responseBody.walletId);",
+							"  }",
+							"});",
+							"",
+							"",
+							"function postSession(walletId) {",
+							"  if (walletId) {",
+							"    const postSessionRequest = {",
+							"      \"paymentMethodType\": \"paypal\",",
+							"      \"pspId\": \"pspId\"",
+							"    };",
+							"    const postSessionRequestObject = {",
+							"      url: pm.environment.get(\"HOSTNAME\") + `/wallets/${walletId}/sessions`,",
+							"      method: 'POST',",
+							"      header: {",
+							"        'Content-Type': 'application/json',",
+							"      },",
+							"      body: {",
+							"        mode: 'raw',",
+							"        raw: JSON.stringify(postSessionRequest)",
+							"      }",
+							"    };",
+							"",
+							"    pm.sendRequest(postSessionRequestObject, (error, response) => {",
+							"      if (error) {",
+							"        throw error;",
+							"      } else {",
+							"        const responseBody = response.json();",
+							"        orderId = responseBody.orderId;",
+							"        pm.environment.set(\"WALLET_ID\", walletId);",
+							"        pm.environment.set(\"ORDER_ID\", orderId);",
+							"      }",
+							"    });",
+							"  } else {",
+							"    throw new Error(`Cannot perform post session for wallet id: ${walletId}`);",
+							"  }",
+							"}",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions/{{ORDER_ID}}/notifications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions",
+						"{{ORDER_ID}}",
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet without applications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"        pm.response.to.have.status(201);",
+							"    const redirectUrl = pm.response.json().redirectUrl;",
+							"    pm.expect(redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(redirectUrl).to.be.include(\"apm#\");",
+							"    const fragment = redirectUrl.split(\"#\")[1];",
+							"    const fragmentSplits = fragment.split(\"&\");",
+							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
+							"    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+							"    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
+							"    pm.expect(walletId).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+							"    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet without application by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"      const applications = responseJson.applications;",
+							"    pm.expect(applications.length).to.equals(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add application to the wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    {\n      \"name\": \"PAGOPA\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by id verify put applications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"    const applications = responseJson.applications;",
+							"    pm.expect(applications.length).to.equals(1);",
+							"    pm.expect(applications[0].name).to.be.a(\"string\");",
+							"    pm.expect(applications[0].name).equals(\"PAGOPA\");",
+							"    pm.expect(applications[0].status).to.be.a(\"string\");",
+							"    pm.expect(applications[0].status).equals(\"ENABLED\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new application 'TESTPA'",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding - PAYPAL] New application created successfully with POST /applications\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const applicationId = pm.response.json().applicationId;",
+							"    pm.expect(applicationId).to.be.a(\"string\");",
+							"    pm.expect(applicationId).to.equals(\"TESTPA\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applicationId\": \"TESTPA\",\n  \"status\": \"DISABLED\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"applications"
+					]
+				},
+				"description": "Creates a new application"
+			},
+			"response": []
+		},
+		{
+			"name": "Add application to the wallet with conflict status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"    pm.response.to.have.status(409);",
+							"    const updatedApplications = pm.response.json().updatedApplications;",
+							"    const failedApplications = pm.response.json().failedApplications;",
+							"    pm.expect(updatedApplications.length).to.equals(0);",
+							"    pm.expect(failedApplications.length).to.equals(1);",
+							"    pm.expect(failedApplications[0].name).to.be.a(\"string\");",
+							"    pm.expect(failedApplications[0].status).to.be.a(\"string\");",
+							"    pm.expect(failedApplications[0].name).to.equals(\"TESTPA\");",
+							"    pm.expect(failedApplications[0].status).to.equals(\"DISABLED\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    {\n      \"name\": \"TESTPA\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet with disabled application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const redirectUrl = pm.response.json().redirectUrl;",
+							"    pm.expect(redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(redirectUrl).to.be.include(\"apm#\");",
+							"    const fragment = redirectUrl.split(\"#\")[1];",
+							"    const fragmentSplits = fragment.split(\"&\");",
+							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
+							"    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+							"    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
+							"    pm.expect(walletId).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+							"    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"TESTPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by id verify disabled applications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"    const applications = responseJson.applications;",
+							"    pm.expect(applications.length).to.equals(1);",
+							"    pm.expect(applications[0].name).to.be.a(\"string\");",
+							"    pm.expect(applications[0].name).equals(\"TESTPA\");",
+							"    pm.expect(applications[0].status).to.be.a(\"string\");",
+							"    pm.expect(applications[0].status).equals(\"DISABLED\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new application 'TEST2PA' Incoming",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding - PAYPAL] New application created successfully with POST /applications\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const applicationId = pm.response.json().applicationId;",
+							"    pm.expect(applicationId).to.be.a(\"string\");",
+							"    pm.expect(applicationId).to.equals(\"TEST2PA\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applicationId\": \"TEST2PA\",\n  \"status\": \"INCOMING\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"applications"
+					]
+				},
+				"description": "Creates a new application"
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet with incoming application Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet created successfully with POST /wallets\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const redirectUrl = pm.response.json().redirectUrl;",
+							"    pm.expect(redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(redirectUrl).to.be.include(\"apm#\");",
+							"    const fragment = redirectUrl.split(\"#\")[1];",
+							"    const fragmentSplits = fragment.split(\"&\");",
+							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
+							"    const useDiagnosticTracing = fragmentSplits[1].split(\"=\")[1];",
+							"    const paymentMethodId = fragmentSplits[2].split(\"=\")[1];",
+							"    pm.expect(walletId).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
+							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+							"    pm.expect(paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"));",
+							"    pm.environment.set(\"WALLET_ID\", walletId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"TEST2PA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by id verify disabled applications incoming application status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"    const applications = responseJson.applications;",
+							"    pm.expect(applications.length).to.equals(1);",
+							"    pm.expect(applications[0].name).to.be.a(\"string\");",
+							"    pm.expect(applications[0].name).equals(\"TEST2PA\");",
+							"    pm.expect(applications[0].status).to.be.a(\"string\");",
+							"    pm.expect(applications[0].status).equals(\"DISABLED\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
 }

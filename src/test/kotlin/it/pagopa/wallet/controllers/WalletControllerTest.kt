@@ -548,8 +548,8 @@ class WalletControllerTest {
             val expectedResponse =
                 ProblemJsonDto()
                     .status(404)
-                    .title("Service not found")
-                    .detail("Service with id 'UNKNOWN' not found")
+                    .title("Application not found")
+                    .detail("Application with id 'UNKNOWN' not found")
 
             val walletUpdateRequest =
                 WalletApplicationUpdateRequestDto()
