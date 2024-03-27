@@ -66,16 +66,38 @@ object WalletTestUtils {
         )
     }
 
+    fun newWalletDocumentToBeSaved(
+        paymentMethodId: PaymentMethodId,
+        applications: List<WalletApplicationDocument>
+    ): Wallet {
+
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = paymentMethodId.value.toString(),
+            contractId = null,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            applications,
+            details = null,
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate
+        )
+    }
+
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-        paymentMethodId: PaymentMethodId
+        paymentMethodId: PaymentMethodId,
+        application: Application
     ): Wallet {
         return newWalletDocumentToBeSaved(paymentMethodId)
             .copy(
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.ENABLED.toString(),
+                            application.id,
+                            status = parseWalletApplicationStatus(application.status),
                             creationDate.toString(),
                             creationDate.toString(),
                             hashMapOf(
@@ -98,6 +120,12 @@ object WalletTestUtils {
                     )
             )
     }
+
+    private fun parseWalletApplicationStatus(status: String): String =
+        when (status) {
+            ApplicationStatus.ENABLED.name -> WalletApplicationStatus.ENABLED.name
+            else -> WalletApplicationStatus.DISABLED.name
+        }
 
     fun walletDocumentCreatedStatus(paymentMethodId: PaymentMethodId): Wallet {
         return Wallet(
