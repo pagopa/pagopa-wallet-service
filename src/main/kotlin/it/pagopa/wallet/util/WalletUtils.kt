@@ -1,5 +1,6 @@
 package it.pagopa.wallet.util
 
+import it.pagopa.wallet.domain.wallets.OnboardingChannel
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
@@ -12,6 +13,7 @@ class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {
 
     companion object {
         const val UNKNOWN_LOGO_KEY = "UNKNOWN"
+        val VALID_ONBOARDING_CHANNEL = OnboardingChannel.values().map { it.toString() }.toSet()
     }
 
     fun getLogo(wallet: Wallet): URI =

@@ -102,7 +102,7 @@ class WalletControllerTest {
             .uri("/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
+            .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
             .exchange()
             .expectStatus()

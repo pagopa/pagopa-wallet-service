@@ -1,6 +1,5 @@
 package it.pagopa.wallet.documents.wallets
 
-import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
@@ -48,7 +47,7 @@ data class Wallet(
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,
-                onboardingChannel = OnboardingChannelDto.valueOf(this.onboardingChannel)
+                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel)
             )
         return wallet
     }

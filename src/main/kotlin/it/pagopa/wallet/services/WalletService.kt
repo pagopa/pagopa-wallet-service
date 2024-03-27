@@ -129,7 +129,7 @@ class WalletService(
         walletApplicationList: List<WalletApplicationId>,
         userId: UUID,
         paymentMethodId: UUID,
-        onboardingChannel: OnboardingChannelDto
+        onboardingChannel: OnboardingChannel
     ): Mono<Pair<LoggedAction<Wallet>, URI>> {
         logger.info("Create wallet with payment methodId: $paymentMethodId and userId: $userId")
 
@@ -204,7 +204,7 @@ class WalletService(
         paymentMethodId: UUID,
         transactionId: TransactionId,
         amount: Int,
-        onboardingChannel: OnboardingChannelDto
+        onboardingChannel: OnboardingChannel
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"

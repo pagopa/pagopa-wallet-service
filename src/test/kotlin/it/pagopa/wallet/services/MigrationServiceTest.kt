@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
@@ -13,6 +12,7 @@ import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
+import it.pagopa.wallet.domain.wallets.OnboardingChannel
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
@@ -335,7 +335,7 @@ class MigrationServiceTest {
                 validationOperationResult = null,
                 validationErrorCode = null,
                 version = 0,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
     }
 }

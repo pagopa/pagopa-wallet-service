@@ -63,7 +63,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -85,7 +85,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -143,7 +143,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -161,7 +161,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -285,7 +285,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -312,7 +312,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -345,7 +345,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -365,7 +365,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -388,7 +388,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO.toString()
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -407,7 +407,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -427,7 +427,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -447,7 +447,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -467,7 +467,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -487,7 +487,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -516,7 +516,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -558,7 +558,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO.toString()
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -587,7 +587,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannelDto.IO
+            onboardingChannel = OnboardingChannel.IO
         )
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
@@ -606,7 +606,7 @@ object WalletTestUtils {
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
-                onboardingChannel = OnboardingChannelDto.IO
+                onboardingChannel = OnboardingChannel.IO
             )
         return wallet
     }

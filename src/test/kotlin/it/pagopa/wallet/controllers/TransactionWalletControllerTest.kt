@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.audit.LoggedAction
@@ -79,7 +78,7 @@ class TransactionWalletControllerTest {
             .uri("/transactions/${transactionId}/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
+            .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()
@@ -120,7 +119,7 @@ class TransactionWalletControllerTest {
             .uri("/transactions/${transactionId}/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
+            .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()
