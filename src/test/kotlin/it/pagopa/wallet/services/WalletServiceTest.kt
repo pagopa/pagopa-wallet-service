@@ -244,7 +244,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value
+                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .expectError(ApplicationNotFoundException::class.java)
@@ -307,7 +308,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value
+                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -373,7 +375,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value
+                            paymentMethodId = PAYMENT_METHOD_ID_APM.value,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -412,7 +415,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .expectError(ApplicationNotFoundException::class.java)
@@ -472,7 +476,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -542,7 +547,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -612,7 +618,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -683,7 +690,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannelDto.IO
                         )
                     )
                     .assertNext { createWalletOutput ->

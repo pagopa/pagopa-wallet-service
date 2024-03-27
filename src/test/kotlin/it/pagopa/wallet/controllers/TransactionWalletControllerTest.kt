@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.audit.LoggedAction
@@ -58,7 +59,7 @@ class TransactionWalletControllerTest {
     fun testCreateWalletPaymentCardsMethod() = runTest {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -78,6 +79,7 @@ class TransactionWalletControllerTest {
             .uri("/transactions/${transactionId}/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()
@@ -98,7 +100,7 @@ class TransactionWalletControllerTest {
     fun testCreateWalletPaymentAPMMethod() = runTest {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -118,6 +120,7 @@ class TransactionWalletControllerTest {
             .uri("/transactions/${transactionId}/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .exchange()
             .expectStatus()

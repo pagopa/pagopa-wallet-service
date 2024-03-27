@@ -82,7 +82,7 @@ class WalletControllerTest {
     fun testCreateWallet() = runTest {
         /* preconditions */
 
-        given { walletService.createWallet(any(), any(), any()) }
+        given { walletService.createWallet(any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -102,6 +102,7 @@ class WalletControllerTest {
             .uri("/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-onboarding-channel", OnboardingChannelDto.IO.toString())
             .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
             .exchange()
             .expectStatus()

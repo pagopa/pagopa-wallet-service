@@ -1,5 +1,6 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
@@ -333,7 +334,8 @@ class MigrationServiceTest {
                 details = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
-                version = 0
+                version = 0,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
     }
 }

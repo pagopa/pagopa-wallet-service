@@ -1,5 +1,6 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
@@ -129,6 +130,7 @@ class MigrationService(
                 creationDate = creationTime,
                 updateDate = creationTime,
                 version = 0,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         return walletRepository
             .save(newWallet.toDocument())

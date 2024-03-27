@@ -1,6 +1,7 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.TransactionsApi
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -28,6 +29,7 @@ class TransactionWalletController(
 
     override fun createWalletForTransaction(
         xUserId: UUID,
+        xOnboardingChannelDto: OnboardingChannelDto,
         transactionId: String,
         walletTransactionCreateRequestDto: Mono<WalletTransactionCreateRequestDto>,
         exchange: ServerWebExchange?
@@ -39,7 +41,8 @@ class TransactionWalletController(
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
-                        amount = request.amount
+                        amount = request.amount,
+                        onboardingChannel = xOnboardingChannelDto
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {

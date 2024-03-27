@@ -62,7 +62,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -83,7 +84,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -140,7 +142,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -157,7 +160,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -280,7 +284,8 @@ object WalletTestUtils {
                 ),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -306,7 +311,8 @@ object WalletTestUtils {
             details = PayPalDetailsDocument(maskedEmail = paypalEmail, pspId = PSP_ID),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -338,7 +344,8 @@ object WalletTestUtils {
                     ),
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -357,7 +364,8 @@ object WalletTestUtils {
                 details = details,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -379,7 +387,8 @@ object WalletTestUtils {
             details = details,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO.toString()
         )
     }
 
@@ -397,7 +406,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -416,7 +426,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -435,7 +446,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -454,7 +466,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -473,7 +486,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -501,7 +515,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
@@ -542,13 +557,14 @@ object WalletTestUtils {
                     ),
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO.toString()
             )
         return wallet
     }
 
     val WALLET_DOMAIN =
-        Wallet(
+        it.pagopa.wallet.domain.wallets.Wallet(
             id = WALLET_UUID,
             userId = USER_ID,
             status = WalletStatusDto.CREATED,
@@ -570,13 +586,14 @@ object WalletTestUtils {
                 CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannelDto.IO
         )
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
         val wallet =
-            Wallet(
+            it.pagopa.wallet.domain.wallets.Wallet(
                 id = WALLET_UUID,
                 userId = USER_ID,
                 status = WalletStatusDto.CREATED,
@@ -588,7 +605,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         return wallet
     }

@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
@@ -25,7 +26,8 @@ class WalletTest {
                 details = null,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         }
     }
@@ -54,7 +56,8 @@ class WalletTest {
                 details = null,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         }
     }
@@ -91,7 +94,8 @@ class WalletTest {
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         }
     }
@@ -128,7 +132,8 @@ class WalletTest {
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannelDto.IO
             )
         }
         assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDocument().toDomain())

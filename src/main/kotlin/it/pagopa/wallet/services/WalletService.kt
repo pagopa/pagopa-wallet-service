@@ -128,7 +128,8 @@ class WalletService(
     fun createWallet(
         walletApplicationList: List<WalletApplicationId>,
         userId: UUID,
-        paymentMethodId: UUID
+        paymentMethodId: UUID,
+        onboardingChannel: OnboardingChannelDto
     ): Mono<Pair<LoggedAction<Wallet>, URI>> {
         logger.info("Create wallet with payment methodId: $paymentMethodId and userId: $userId")
 
@@ -163,7 +164,8 @@ class WalletService(
                             applications = apps,
                             version = 0,
                             creationDate = creationTime,
-                            updateDate = creationTime
+                            updateDate = creationTime,
+                            onboardingChannel = onboardingChannel
                         ),
                         it
                     )
@@ -201,7 +203,8 @@ class WalletService(
         userId: UUID,
         paymentMethodId: UUID,
         transactionId: TransactionId,
-        amount: Int
+        amount: Int,
+        onboardingChannel: OnboardingChannelDto
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId"
@@ -247,7 +250,8 @@ class WalletService(
                             version = 0,
                             creationDate = creationTime,
                             updateDate = creationTime,
-                            applications = listOf(walletApplication)
+                            applications = listOf(walletApplication),
+                            onboardingChannel = onboardingChannel
                         ),
                         it
                     )

@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.generated.wallet.model.OnboardingChannelDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
@@ -53,7 +54,8 @@ data class Wallet(
     var details: WalletDetails<*>? = null,
     val version: Int,
     val creationDate: Instant,
-    val updateDate: Instant
+    val updateDate: Instant,
+    val onboardingChannel: OnboardingChannelDto
 ) {
 
     fun toDocument(): Wallet {
@@ -79,7 +81,8 @@ data class Wallet(
                 details = this.details?.toDocument(),
                 version = this.version,
                 creationDate = this.creationDate,
-                updateDate = this.updateDate
+                updateDate = this.updateDate,
+                onboardingChannel = this.onboardingChannel.toString()
             )
 
         return wallet

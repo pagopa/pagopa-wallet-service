@@ -31,6 +31,7 @@ class WalletController(
 
     override fun createWallet(
         xUserId: UUID,
+        xOnboardingChannel: OnboardingChannelDto,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
@@ -41,7 +42,8 @@ class WalletController(
                     .createWallet(
                         request.applications.map { s -> WalletApplicationId(s) },
                         userId = xUserId,
-                        paymentMethodId = request.paymentMethodId
+                        paymentMethodId = request.paymentMethodId,
+                        onboardingChannel = xOnboardingChannel
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {
