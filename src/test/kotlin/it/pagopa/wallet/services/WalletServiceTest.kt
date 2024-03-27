@@ -1016,14 +1016,16 @@ class WalletServiceTest {
 
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
+
+                val result =
+                    walletService
+                        .createSessionWallet(
                             WALLET_UUID.value,
-                            SessionInputCardDataDto()
+                            SessionInputCardDataDto(),
                         )
-                    )
-                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
-                    .verifyComplete()
+                        .block()
+
+                assertEquals(Pair(sessionResponseDto, expectedLoggedAction), result)
 
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())

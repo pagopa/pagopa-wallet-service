@@ -27,6 +27,7 @@ object WalletTestUtils {
 
     val USER_ID = UserId(UUID.randomUUID())
     val WALLET_UUID = WalletId(UUID.randomUUID())
+    val CLIENT_ID = ClientIdDto.CHECKOUT
     val APPLICATION_ID = ApplicationId("PAGOPA")
     val APPLICATION_DESCRIPTION = ApplicationDescription("")
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
@@ -36,7 +37,7 @@ object WalletTestUtils {
     val APPLICATION_METADATA =
         WalletApplicationMetadata(
             APPLICATION_METADATA_HASHMAP.mapKeys {
-                WalletApplicationMetadata.Metadata.valueOf(it.key)
+                WalletApplicationMetadata.Metadata.fromMetadataValue(it.key)
             }
         )
     val CONTRACT_ID = ContractId("W49357937935R869i")
@@ -230,8 +231,8 @@ object WalletTestUtils {
                         WalletApplicationDocument(
                             WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.ENABLED.toString(),
-                            creationDate.toString(),
-                            creationDate.toString(),
+                            this.creationDate.toString(),
+                            this.creationDate.toString(),
                             hashMapOf(
                                 Pair(
                                     WalletApplicationMetadata.Metadata

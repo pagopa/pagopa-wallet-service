@@ -275,7 +275,7 @@ class WalletService(
 
     fun createSessionWallet(
         walletId: UUID,
-        sessionInputDataDto: SessionInputDataDto
+        sessionInputDataDto: SessionInputDataDto,
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
@@ -389,11 +389,12 @@ class WalletService(
                             } else {
                                 WalletStatusDto.INITIALIZED
                             }
+
                         val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
                                 status = newStatus,
-                                details = newDetails
+                                details = newDetails,
                             )
                         SessionCreationData(
                             hostedOrderResponse,
@@ -521,6 +522,20 @@ class WalletService(
                     }
             }
     }
+
+    fun updateWalletUsage(
+        walletId: UUID,
+        clientId: ClientIdDto
+    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
+        walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .map { it.toDomain() }
+            .filter { it.status == WalletStatusDto.VALIDATED }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap {
+                walletRepository.save(it.updateUsageForClient(clientId, Instant.now()).toDocument())
+            }
 
     private fun confirmPaymentCard(
         sessionId: String,

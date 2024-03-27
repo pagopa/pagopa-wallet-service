@@ -11,7 +11,7 @@ data class WalletApplication(
     val status: String,
     val creationDate: String,
     val updateDate: String,
-    val metadata: Map<String, String>
+    val metadata: Map<String, String?>
 ) {
     fun toDomain() =
         WalletApplication(

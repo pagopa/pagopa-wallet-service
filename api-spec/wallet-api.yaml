@@ -577,6 +577,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/WalletId'
+        - name: X-Client-Id
+          in: header
+          description: Client that initiated a wallet session
+          required: false
+          schema:
+            $ref: '#/components/schemas/ClientId'
       responses:
         '200':
           description: Wallet retrieved successfully
@@ -755,6 +761,12 @@ components:
     OrderId:
       description: Order session payment gateway identifier
       type: string
+    ClientId:
+      description: Clients that can initiate a wallet session
+      type: string
+      enum:
+        - CHECKOUT
+        - IO
     WalletVerifyRequestsResponse:
       type: object
       description: Data to perform a wallet verify with payment gateway
