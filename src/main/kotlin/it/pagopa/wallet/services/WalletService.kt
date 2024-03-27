@@ -643,7 +643,7 @@ class WalletService(
                 val previousStatus = wallet.status
                 if (isWalletAlreadyOnboarded) {
                     logger.warn(
-                        "Already onboarded CARD for userId [${wallet.userId}] and walletId [${walletId}] - [${Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE}], Updating from status: [${previousStatus}] to [${wallet.status}]"
+                        "Wallet already onboarded for userId [${wallet.userId}] and walletId [${walletId}] - [${Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE}], Updating from status: [${previousStatus}] to [${wallet.status}]"
                     )
                     walletRepository.save(
                         wallet
@@ -656,7 +656,7 @@ class WalletService(
                     )
                 } else {
                     logger.debug(
-                        "CARD not onboarded for userId [${wallet.userId}] and walletId [${ wallet.id.value}], Updating from status: [${previousStatus}] to [${wallet.status}]"
+                        "Wallet not onboarded for userId [${wallet.userId}] and walletId [${ wallet.id.value}], Updating from status: [${previousStatus}] to [${wallet.status}]"
                     )
                     val (newWalletStatus, walletDetails) =
                         handleWalletNotification(
