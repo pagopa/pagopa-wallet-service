@@ -1167,6 +1167,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1617,7 +1622,7 @@
 			"response": []
 		},
 		{
-			"name": "Create new wallet with incoming application Copy",
+			"name": "Create new wallet with incoming application",
 			"event": [
 				{
 					"listen": "test",
@@ -1651,6 +1656,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
 						"type": "text"
 					}
 				],
