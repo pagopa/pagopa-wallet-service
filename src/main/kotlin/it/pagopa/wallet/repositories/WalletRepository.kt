@@ -11,4 +11,8 @@ interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
 
     fun findByUserId(userId: String): Flux<Wallet>
     fun findByIdAndUserId(id: String, userId: String): Mono<Wallet>
+    fun findByUserIdAndDetails_paymentInstrumentGatewayId(
+        userId: String,
+        paymentInstrumentGatewayId: String
+    ): Mono<Wallet>
 }

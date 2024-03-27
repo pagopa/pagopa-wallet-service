@@ -19,10 +19,7 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.JwtTokenUtils
-import it.pagopa.wallet.util.TransactionId
-import it.pagopa.wallet.util.UniqueIdUtils
-import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.*
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -602,45 +599,64 @@ class WalletService(
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
-                    .map { walletDocument -> walletDocument.toDomain() }
-                    .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
-                    .flatMap { wallet ->
-                        val (newWalletStatus, walletDetails) =
-                            handleWalletNotification(
-                                wallet = wallet,
-                                walletNotificationRequestDto = walletNotificationRequestDto
+            }
+            .map { walletDocument -> walletDocument.toDomain() }
+            .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap { wallet ->
+                isWalletAlreadyOnboardedForUserId(wallet.id, wallet.userId, wallet.details).map {
+                    Pair(wallet, it)
+                }
+            }
+            .flatMap { (wallet, isWalletAlreadyOnboarded) ->
+                val previousStatus = wallet.status
+                if (isWalletAlreadyOnboarded) {
+                    logger.warn(
+                        "Already onboarded CARD for userId [${wallet.userId}] and walletId [${walletId}] - [${Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE}], Updating from status: [${previousStatus}] to [${wallet.status}]"
+                    )
+                    walletRepository.save(
+                        wallet
+                            .copy(
+                                status = WalletStatusDto.ERROR,
+                                validationErrorCode =
+                                    Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
                             )
-                        logger.info(
-                            "Updating wallet [{}] from status: [{}] to [{}]",
-                            wallet.id.value,
-                            wallet.status,
-                            newWalletStatus
+                            .toDocument()
+                    )
+                } else {
+                    logger.debug(
+                        "CARD not onboarded for userId [${wallet.userId}] and walletId [${ wallet.id.value}], Updating from status: [${previousStatus}] to [${wallet.status}]"
+                    )
+                    val (newWalletStatus, walletDetails) =
+                        handleWalletNotification(
+                            wallet = wallet,
+                            walletNotificationRequestDto = walletNotificationRequestDto
                         )
-                        walletRepository.save(
-                            wallet
-                                .copy(
-                                    status = newWalletStatus,
-                                    validationOperationResult =
-                                        walletNotificationRequestDto.operationResult,
-                                    validationErrorCode = walletNotificationRequestDto.errorCode,
-                                    details = walletDetails
-                                )
-                                .toDocument()
-                        )
-                    }
-                    .map { wallet ->
-                        LoggedAction(
-                            wallet.toDomain(),
-                            WalletNotificationEvent(
-                                walletId.value.toString(),
-                                walletNotificationRequestDto.operationId,
-                                walletNotificationRequestDto.operationResult.value,
-                                walletNotificationRequestDto.timestampOperation.toString(),
-                                walletNotificationRequestDto.errorCode?.toString()
+
+                    walletRepository.save(
+                        wallet
+                            .copy(
+                                status = newWalletStatus,
+                                validationOperationResult =
+                                    walletNotificationRequestDto.operationResult,
+                                validationErrorCode = walletNotificationRequestDto.errorCode,
+                                details = walletDetails
                             )
-                        )
-                    }
+                            .toDocument()
+                    )
+                }
+            }
+            .map { wallet ->
+                LoggedAction(
+                    wallet.toDomain(),
+                    WalletNotificationEvent(
+                        walletId.value.toString(),
+                        walletNotificationRequestDto.operationId,
+                        walletNotificationRequestDto.operationResult.value,
+                        walletNotificationRequestDto.timestampOperation.toString(),
+                        walletNotificationRequestDto.errorCode?.toString()
+                    )
+                )
             }
     }
 
@@ -666,7 +682,22 @@ class WalletService(
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
-                    Pair(WalletStatusDto.VALIDATED, walletDetails)
+                    if (operationDetails is WalletNotificationRequestCardDetailsDto) {
+                        Pair(
+                            WalletStatusDto.VALIDATED,
+                            walletDetails.copy(
+                                paymentInstrumentGatewayId =
+                                    PaymentInstrumentGatewayId(
+                                        operationDetails.paymentInstrumentGatewayId
+                                    )
+                            )
+                        )
+                    } else {
+                        logger.error(
+                            "No details received for Card wallet, cannot retrieve paymentInstrumentGatewayId for [${wallet.id.value}]"
+                        )
+                        Pair(WalletStatusDto.ERROR, walletDetails)
+                    }
                 } else {
                     Pair(WalletStatusDto.ERROR, walletDetails)
                 }
@@ -1008,4 +1039,44 @@ class WalletService(
                 )
         }
     }
+
+    /**
+     * The method is used to check if a wallet is already onboard given a userId. A wallet CARD is
+     * already onboarded if there is already a wallet for a given user with the same
+     * paymentInstrumentGatewayId. This check is disabled for wallet PAYPAL
+     *
+     * @param walletId wallet identifier
+     * @param userId user identifier
+     * @param walletDetails it.pagopa.wallet.domain.wallets.details.WalletDetails<*>
+     * @return Mono<Boolean>: true if already onboarded, false otherwise
+     */
+    private fun isWalletAlreadyOnboardedForUserId(
+        walletId: WalletId,
+        userId: UserId,
+        walletDetails: it.pagopa.wallet.domain.wallets.details.WalletDetails<*>?
+    ): Mono<Boolean> =
+        when (walletDetails) {
+            is it.pagopa.wallet.domain.wallets.details.CardDetails -> {
+                logger.debug(
+                    "Already onboard check CARD wallet for userId [${userId}] and walletId [${walletId}]"
+                )
+                walletRepository
+                    .findByUserIdAndDetails_paymentInstrumentGatewayId(
+                        userId.id.toString(),
+                        walletDetails.paymentInstrumentGatewayId.paymentInstrumentGatewayId
+                    )
+                    .hasElement()
+            }
+            is PayPalDetails -> {
+                logger.debug(
+                    "Already onboard check DISABLED for PAYPAL for userId [${userId}] and walletId [${walletId}]"
+                )
+                mono { false }
+            }
+            else -> {
+                val errorDescription =
+                    "Unhandled already onboard check for userId [${userId}] and walletId [${walletId}]"
+                throw InvalidRequestException(errorDescription)
+            }
+        }
 }
