@@ -31,6 +31,7 @@ object WalletTestUtils {
     val APPLICATION_ID = ApplicationId("PAGOPA")
     val APPLICATION_DESCRIPTION = ApplicationDescription("")
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
+    val OTHER_WALLET_APPLICATION_ID = WalletApplicationId("PARI")
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
@@ -530,11 +531,18 @@ object WalletTestUtils {
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id.toString(),
+                            WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.DISABLED.toString(),
                             TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA_HASHMAP
+                        ),
+                        WalletApplicationDocument(
+                            OTHER_WALLET_APPLICATION_ID.id,
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
+                            TIMESTAMP.toString(),
+                            mapOf()
                         )
                     ),
                 details =
@@ -567,6 +575,13 @@ object WalletTestUtils {
                         TIMESTAMP,
                         TIMESTAMP,
                         APPLICATION_METADATA
+                    ),
+                    WalletApplication(
+                        OTHER_WALLET_APPLICATION_ID,
+                        WalletApplicationStatus.DISABLED,
+                        TIMESTAMP,
+                        TIMESTAMP,
+                        WalletApplicationMetadata(mapOf())
                     )
                 ),
             contractId = CONTRACT_ID,

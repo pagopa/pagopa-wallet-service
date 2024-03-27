@@ -161,10 +161,16 @@ class WalletTest {
     fun `updateUsageForClient updates only relevant client for wallet never used`(
         clientId: ClientIdDto
     ) {
+        val walletBeforeUpdate = WalletTestUtils.walletDomain()
         val updateTime = Instant.now()
-        val wallet = WalletTestUtils.walletDomain().updateUsageForClient(clientId, updateTime)
+        val otherApplications =
+            walletBeforeUpdate.applications.filter { it.id != WalletApplicationId("PAGOPA") }
+
+        val wallet = walletBeforeUpdate.updateUsageForClient(clientId, updateTime)
         val pagopaApplication =
             wallet.applications.find { it.id == WalletApplicationId("PAGOPA") }!!
+        val nonUpdatedApplications =
+            wallet.applications.filter { it.id != WalletApplicationId("PAGOPA") }
 
         val usageFieldMap =
             mapOf(
@@ -175,6 +181,12 @@ class WalletTest {
         assertEquals(
             updateTime.toString(),
             pagopaApplication.metadata.data[usageFieldMap[clientId]]
+        )
+
+        assertEquals(
+            otherApplications,
+            nonUpdatedApplications,
+            "`Wallet#updateUsageForClient` updated non-PAGOPA application!"
         )
 
         val otherClients = usageFieldMap.keys - clientId
