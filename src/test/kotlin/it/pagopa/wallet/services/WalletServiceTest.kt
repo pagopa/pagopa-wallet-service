@@ -2730,6 +2730,14 @@ class WalletServiceTest {
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given {
+                walletRepository.findByUserIdAndDetails_paymentInstrumentGatewayId(
+                    any<String>(),
+                    any<String>()
+                )
+            }
+            .willReturn(Mono.empty())
+
         val walletDocumentWithError = walletDocumentWithError(notifyRequestDto.operationResult)
 
         given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentWithError))
@@ -2773,6 +2781,13 @@ class WalletServiceTest {
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given {
+                walletRepository.findByUserIdAndDetails_paymentInstrumentGatewayId(
+                    any<String>(),
+                    any<String>()
+                )
+            }
+            .willReturn(Mono.empty())
 
         val walletDocumentValidated =
             walletDocument.copy(status = WalletStatusDto.VALIDATED.toString())
