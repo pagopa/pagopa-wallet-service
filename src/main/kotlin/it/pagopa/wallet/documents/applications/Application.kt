@@ -14,7 +14,7 @@ data class Application(
         fun fromDomain(application: it.pagopa.wallet.domain.applications.Application): Application =
             Application(
                 application.id.id,
-                application.description.toString(),
+                application.description.description,
                 application.status.name,
                 application.creationDate.toString(),
                 application.updateDate.toString()

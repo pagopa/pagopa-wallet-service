@@ -93,7 +93,14 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/pdf",
+						"type": "text",
+						"disabled": true
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/:walletId",
 					"host": [
@@ -192,7 +199,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"123\",\n  \"newContractIdentifier\": \"{{NEW_CONTRACT_ID}}\",\n  \"originalContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"123\",\n  \"contractIdentifier\": \"{{NEW_CONTRACT_ID}}\",\n  \"newContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -233,7 +240,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"{{$guid}}\",\n  \"newContractIdentifier\": \"nonExistingContractId\",\n  \"originalContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"{{$guid}}\",\n  \"contractIdentifier\": \"nonExistingContractId\",\n  \"newContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -290,7 +297,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"newContractIdentifier\": \"{{NEW_CONTRACT_ID}}\"\n}",
+					"raw": "{\n    \"contractIdentifier\": \"{{NEW_CONTRACT_ID}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -331,7 +338,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"newContractIdentifier\": \"123\" // non existing contractId\n}",
+					"raw": "{\n    \"contractIdentifier\": \"123\" // non existing contractId\n}",
 					"options": {
 						"raw": {
 							"language": "json"

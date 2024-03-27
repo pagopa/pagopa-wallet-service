@@ -158,9 +158,7 @@ class MigrationControllerTest {
             .post()
             .uri("/migrations/wallets/delete")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(
-                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
-            )
+            .bodyValue(WalletPmDeleteRequestDto().contractIdentifier(UUID.randomUUID().toString()))
             .exchange()
             .expectStatus()
             .isNoContent
@@ -179,7 +177,7 @@ class MigrationControllerTest {
         private fun createDetailRequest(contractId: ContractId): WalletPmCardDetailsRequestDto =
             WalletPmCardDetailsRequestDto()
                 .newContractIdentifier(contractId.contractId)
-                .originalContractIdentifier(UUID.randomUUID().toString())
+                .contractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
                 .lastFourDigits("7890")
                 .paymentCircuit(CardBrandDto.VISA)
