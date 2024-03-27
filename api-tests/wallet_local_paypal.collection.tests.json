@@ -952,7 +952,8 @@
 							"    pm.response.to.have.status(400);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				},
 				{
@@ -976,7 +977,9 @@
 							"  method: 'POST',",
 							"  header: {",
 							"    'Content-Type': 'application/json',",
-							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`",
+							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`,",
+							"    'x-client-id': 'IO'",
+							"",
 							"  },",
 							"  body: {",
 							"    mode: 'raw',",
@@ -1028,7 +1031,8 @@
 							"}",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
