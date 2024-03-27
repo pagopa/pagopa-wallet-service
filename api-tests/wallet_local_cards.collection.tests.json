@@ -1488,6 +1488,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
 					}
 				],
 				"body": {
