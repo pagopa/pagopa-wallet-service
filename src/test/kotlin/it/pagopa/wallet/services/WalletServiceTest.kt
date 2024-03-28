@@ -16,6 +16,7 @@ import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESUL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
+import it.pagopa.wallet.WalletTestUtils.OTHER_WALLET_APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.PSP_ID
@@ -1023,14 +1024,16 @@ class WalletServiceTest {
 
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
+
+                val result =
+                    walletService
+                        .createSessionWallet(
                             WALLET_UUID.value,
-                            SessionInputCardDataDto()
+                            SessionInputCardDataDto(),
                         )
-                    )
-                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
-                    .verifyComplete()
+                        .block()
+
+                assertEquals(Pair(sessionResponseDto, expectedLoggedAction), result)
 
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
@@ -2322,6 +2325,13 @@ class WalletServiceTest {
                                                     applicationCreationDate,
                                                     mockedInstant,
                                                     APPLICATION_METADATA
+                                                ),
+                                                WalletApplication(
+                                                    OTHER_WALLET_APPLICATION_ID,
+                                                    WalletApplicationStatus.DISABLED,
+                                                    TIMESTAMP,
+                                                    TIMESTAMP,
+                                                    WalletApplicationMetadata(mapOf())
                                                 )
                                             ),
                                         updateDate = mockedInstant
@@ -2350,7 +2360,7 @@ class WalletServiceTest {
                     )
 
                 /* test */
-                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(2, walletDocument.applications.size)
                 assertEquals(walletDocument.applications[0].id, APPLICATION_DOCUMENT.id)
                 assertEquals(
                     walletDocument.applications[0].status,
@@ -2367,7 +2377,7 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.applications.size, 1)
+                assertEquals(2, walletDocumentToSave.applications.size)
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
@@ -2421,7 +2431,7 @@ class WalletServiceTest {
                     )
 
                 /* test */
-                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(2, walletDocument.applications.size)
                 assertEquals(walletDocument.applications[0].id, APPLICATION_ID.id)
                 assertEquals(
                     walletDocument.applications[0].status,
@@ -2435,7 +2445,7 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.applications.size, 1)
+                assertEquals(walletDocumentToSave.applications.size, 2)
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
@@ -2486,6 +2496,13 @@ class WalletServiceTest {
                                                     applicationCreationDate,
                                                     mockedInstant,
                                                     APPLICATION_METADATA
+                                                ),
+                                                WalletApplication(
+                                                    OTHER_WALLET_APPLICATION_ID,
+                                                    WalletApplicationStatus.DISABLED,
+                                                    TIMESTAMP,
+                                                    TIMESTAMP,
+                                                    WalletApplicationMetadata(mapOf())
                                                 )
                                             ),
                                         updateDate = mockedInstant
@@ -2520,7 +2537,7 @@ class WalletServiceTest {
                     .willReturn(Mono.just(ApplicationDocument.fromDomain(disabledApplication)))
 
                 /* test */
-                assertEquals(walletDocument.applications.size, 1)
+                assertEquals(2, walletDocument.applications.size)
                 assertEquals(walletDocument.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocument.applications[0].status,
@@ -2543,7 +2560,7 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.applications.size, 1)
+                assertEquals(2, walletDocumentToSave.applications.size)
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,

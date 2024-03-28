@@ -225,15 +225,14 @@ class WalletService(
                     WalletApplicationMetadata(
                         hashMapOf(
                             Pair(
-                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                    .value,
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD,
                                 "true"
                             ),
                             Pair(
-                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID,
                                 transactionId.value().toString()
                             ),
-                            Pair(WalletApplicationMetadata.Metadata.AMOUNT.value, amount.toString())
+                            Pair(WalletApplicationMetadata.Metadata.AMOUNT, amount.toString())
                         )
                     )
                 )
@@ -279,7 +278,7 @@ class WalletService(
 
     fun createSessionWallet(
         walletId: UUID,
-        sessionInputDataDto: SessionInputDataDto
+        sessionInputDataDto: SessionInputDataDto,
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
@@ -312,7 +311,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT.value)
+                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT)
                     else null
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -327,7 +326,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID.value)
+                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID)
                     )
 
                 npgClient
@@ -393,11 +392,12 @@ class WalletService(
                             } else {
                                 WalletStatusDto.INITIALIZED
                             }
+
                         val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
                                 status = newStatus,
-                                details = newDetails
+                                details = newDetails,
                             )
                         SessionCreationData(
                             hostedOrderResponse,
@@ -522,6 +522,20 @@ class WalletService(
                     }
             }
     }
+
+    fun updateWalletUsage(
+        walletId: UUID,
+        clientId: ClientIdDto
+    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
+        walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .map { it.toDomain() }
+            .filter { it.status == WalletStatusDto.VALIDATED }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap {
+                walletRepository.save(it.updateUsageForClient(clientId, Instant.now()).toDocument())
+            }
 
     private fun confirmPaymentCard(
         sessionId: String,
@@ -996,7 +1010,7 @@ class WalletService(
     ): Boolean {
         if (application != null) {
             return application.metadata.data[
-                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
                 .toBoolean()
         }
         return false

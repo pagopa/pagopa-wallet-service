@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets
 
+import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
@@ -56,6 +57,41 @@ data class Wallet(
     val updateDate: Instant,
     val onboardingChannel: OnboardingChannel
 ) {
+    fun updateUsageForClient(
+        clientId: ClientIdDto,
+        usageTime: Instant
+    ): it.pagopa.wallet.domain.wallets.Wallet {
+        val newApplications =
+            this.applications.map {
+                if (it.id == WalletApplicationId("PAGOPA")) {
+                    val newMetadata = it.metadata.data.toMutableMap()
+                    val lastUsedKeys =
+                        setOf(
+                            WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT,
+                            WalletApplicationMetadata.Metadata.LAST_USED_IO
+                        )
+                    val clientLastUsedKey =
+                        when (clientId) {
+                            ClientIdDto.CHECKOUT ->
+                                WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT
+                            ClientIdDto.IO -> WalletApplicationMetadata.Metadata.LAST_USED_IO
+                        }
+                    newMetadata[clientLastUsedKey] = usageTime.toString()
+
+                    for (key in lastUsedKeys - clientLastUsedKey) {
+                        if (!newMetadata.containsKey(key)) {
+                            newMetadata[key] = null
+                        }
+                    }
+
+                    it.copy(metadata = WalletApplicationMetadata(newMetadata))
+                } else {
+                    it
+                }
+            }
+
+        return this.copy(applications = newApplications)
+    }
 
     fun toDocument(): Wallet {
         val wallet =
@@ -74,7 +110,7 @@ data class Wallet(
                             app.status.name,
                             app.creationDate.toString(),
                             app.updateDate.toString(),
-                            app.metadata.data
+                            app.metadata.data.mapKeys { it.key.value }
                         )
                     },
                 details = this.details?.toDocument(),
