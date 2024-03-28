@@ -10,4 +10,7 @@ data class WalletApplication(
     val creationDate: Instant,
     val updateDate: Instant,
     val metadata: WalletApplicationMetadata
-)
+) {
+    fun addMetadata(key: WalletApplicationMetadata.Metadata, value: String): WalletApplication =
+        copy(metadata = metadata + (key to value))
+}

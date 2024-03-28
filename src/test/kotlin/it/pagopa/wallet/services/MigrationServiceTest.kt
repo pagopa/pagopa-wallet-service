@@ -15,11 +15,16 @@ import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.domain.wallets.WalletApplicationMetadata
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
+import java.time.Instant
+import java.util.*
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.hasKey
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
@@ -30,8 +35,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
-import java.time.Instant
-import java.util.*
 
 class MigrationServiceTest {
     private val applicationRepository: ApplicationRepository = mock()
@@ -89,6 +92,34 @@ class MigrationServiceTest {
                         verify(loggingEventRepository, times(1)).saveAll(capture())
                         assertInstanceOf(WalletAddedEvent::class.java, lastValue.firstOrNull())
                     }
+                }
+                .verifyComplete()
+        }
+    }
+
+    @Test
+    fun `should enable a default application and set metadata when creating Wallet by migration`() {
+        val paymentManagerId = Random().nextLong().toString()
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+            given { uniqueIdUtils.generateUniqueId() }
+                .willAnswer { Mono.just(contractId.contractId) }
+            given { mongoWalletMigrationRepository.findByWalletPmId(any()) }
+                .willAnswer { Flux.empty<WalletPaymentManagerDocument>() }
+            given { mongoWalletMigrationRepository.save(any()) }
+                .willAnswer { Mono.just(walletPmDocument) }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+            migrationService
+                .initializeWalletByPaymentManager(paymentManagerId, USER_ID)
+                .test()
+                .assertNext {
+                    val defaultApplication =
+                        it.applications.first { app -> app.id == WALLET_APPLICATION_PAGOPA_ID }
+                    assertEquals(defaultApplication.status, WalletApplicationStatus.ENABLED)
+                    assertThat(
+                        defaultApplication.metadata.data,
+                        hasKey(WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION.value)
+                    )
                 }
                 .verifyComplete()
         }
