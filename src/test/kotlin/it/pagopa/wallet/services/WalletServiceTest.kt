@@ -2773,21 +2773,9 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val validatedWalletdDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "99345678",
-                "00550",
-                "203012",
-                CARD_ID_4,
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+            walletDocumentVerifiedWithCardDetails("99345678", "00550", "203012", CARD_ID_4, "MC")
 
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -2883,13 +2871,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
