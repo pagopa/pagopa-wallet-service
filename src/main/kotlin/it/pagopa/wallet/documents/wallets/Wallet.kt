@@ -13,7 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 
-@Document("wallets")
+@Document("payment-wallets")
 data class Wallet(
     @Id var id: String,
     val userId: String,
