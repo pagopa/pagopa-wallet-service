@@ -85,9 +85,11 @@
 							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
 							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"USER_ID\"))",
 							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"    pm.expect(responseJson.applications).to.be.length.above(0)",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
