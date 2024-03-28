@@ -18,6 +18,8 @@ import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
+import java.time.Instant
+import java.util.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasKey
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,8 +32,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
-import java.time.Instant
-import java.util.*
 
 class MigrationServiceTest {
     private val applicationRepository: ApplicationRepository = mock()
