@@ -26,7 +26,6 @@ import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
-import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -415,10 +414,7 @@ class WalletService(
                     .save(
                         NpgSession(
                             orderId,
-                            URLDecoder.decode(
-                                hostedOrderResponse.sessionId,
-                                StandardCharsets.UTF_8
-                            ),
+                            hostedOrderResponse.sessionId!!,
                             hostedOrderResponse.securityToken.toString(),
                             wallet.id.value.toString()
                         )
