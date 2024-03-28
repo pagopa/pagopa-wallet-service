@@ -722,6 +722,11 @@ object WalletTestUtils {
             .operationResult(OperationResultEnum.EXECUTED)
             .timestampOperation(OffsetDateTime.now())
             .operationId("validationOperationId")
+            .details(
+                WalletNotificationRequestCardDetailsDto()
+                    .type("CARD")
+                    .paymentInstrumentGatewayId(UUID.randomUUID().toString())
+            )
 
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS:
         WalletNotificationRequestDto =
