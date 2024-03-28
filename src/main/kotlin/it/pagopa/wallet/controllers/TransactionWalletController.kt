@@ -1,11 +1,13 @@
 package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.TransactionsApi
+import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.TransactionId
+import it.pagopa.wallet.util.toOnboardingChannel
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
@@ -28,6 +30,7 @@ class TransactionWalletController(
 
     override fun createWalletForTransaction(
         xUserId: UUID,
+        xClientIdDto: ClientIdDto,
         transactionId: String,
         walletTransactionCreateRequestDto: Mono<WalletTransactionCreateRequestDto>,
         exchange: ServerWebExchange?
@@ -39,7 +42,8 @@ class TransactionWalletController(
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
-                        amount = request.amount
+                        amount = request.amount,
+                        onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {

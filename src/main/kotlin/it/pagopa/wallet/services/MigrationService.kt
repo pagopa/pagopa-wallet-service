@@ -15,6 +15,8 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
+import java.time.Instant
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -23,8 +25,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
-import java.time.Instant
-import java.util.*
 
 @Service
 class MigrationService(
@@ -153,6 +153,7 @@ class MigrationService(
                         ),
                     creationDate = creationTime,
                     updateDate = creationTime,
+                    onboardingChannel = OnboardingChannel.IO,
                     version = 0,
                 )
             }

@@ -25,7 +25,8 @@ class WalletTest {
                 details = null,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannel.IO
             )
         }
     }
@@ -54,7 +55,8 @@ class WalletTest {
                 details = null,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannel.IO
             )
         }
     }
@@ -91,7 +93,8 @@ class WalletTest {
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannel.IO
             )
         }
     }
@@ -128,7 +131,8 @@ class WalletTest {
                     ),
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
-                updateDate = WalletTestUtils.creationDate
+                updateDate = WalletTestUtils.creationDate,
+                onboardingChannel = OnboardingChannel.IO
             )
         }
         assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDocument().toDomain())

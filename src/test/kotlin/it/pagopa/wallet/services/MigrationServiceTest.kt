@@ -13,16 +13,11 @@ import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
-import it.pagopa.wallet.domain.wallets.ContractId
-import it.pagopa.wallet.domain.wallets.UserId
-import it.pagopa.wallet.domain.wallets.WalletApplicationMetadata
-import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
+import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Instant
-import java.util.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasKey
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,6 +30,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
+import java.time.Instant
+import java.util.*
 
 class MigrationServiceTest {
     private val applicationRepository: ApplicationRepository = mock()
@@ -85,6 +82,7 @@ class MigrationServiceTest {
                     assertEquals(USER_ID, it.userId)
                     assertEquals(contractId, it.contractId)
                     assertEquals(PAYMENT_METHOD_ID_CARDS, it.paymentMethodId)
+                    assertEquals(OnboardingChannel.IO, it.onboardingChannel)
                     it.applications
                         .first { app -> app.id == WALLET_APPLICATION_PAGOPA_ID }
                         .let { app -> assertEquals(app.status, WalletApplicationStatus.ENABLED) }
@@ -374,7 +372,8 @@ class MigrationServiceTest {
                 details = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
-                version = 0
+                version = 0,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
     }
 }
