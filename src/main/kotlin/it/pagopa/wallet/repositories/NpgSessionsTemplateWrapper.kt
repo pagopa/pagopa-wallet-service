@@ -12,5 +12,5 @@ class NpgSessionsTemplateWrapper
  */
 (redisTemplate: RedisTemplate<String, NpgSession>, ttl: Duration) :
     RedisTemplateWrapper<NpgSession>(redisTemplate = redisTemplate, "keys", ttl) {
-    override fun getKeyFromEntity(value: NpgSession): String = "${value.orderId}"
+    override fun getKeyFromEntity(value: NpgSession): String = value.orderId
 }
