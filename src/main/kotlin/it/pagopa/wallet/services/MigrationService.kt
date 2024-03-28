@@ -10,13 +10,12 @@ import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.migration.WalletPaymentManagerRepository
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails
+import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Instant
-import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -25,6 +24,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 @Service
 class MigrationService(
@@ -33,7 +35,7 @@ class MigrationService(
     private val applicationRepository: ApplicationRepository,
     private val loggingEventRepository: LoggingEventRepository,
     private val uniqueIdUtils: UniqueIdUtils,
-    walletMigrationConfig: WalletMigrationConfig
+    private val walletMigrationConfig: WalletMigrationConfig
 ) {
 
     private val cardPaymentMethodId =
@@ -52,7 +54,11 @@ class MigrationService(
                     WalletApplicationMetadata.empty()
                 )
             }
-            .cache()
+            .cache(
+                { _ -> Duration.ofDays(1) }, // ttl value
+                { _ -> Duration.ZERO }, // ttl error
+                { Duration.ZERO } // ttl empty
+            )
     }
 
     fun initializeWalletByPaymentManager(
@@ -60,7 +66,7 @@ class MigrationService(
         userId: UserId
     ): Mono<Wallet> {
         logger.info(
-            "Initialize wallet for PaymentManager Id $paymentManagerWalletId and userId: $userId"
+            "Initialize wallet for PaymentManager Id $paymentManagerWalletId and userId: ${userId.id}"
         )
         val now = Instant.now()
         return walletPaymentManagerRepository
@@ -157,6 +163,9 @@ class MigrationService(
                     version = 0,
                 )
             }
+            .switchIfEmpty(
+                Mono.error(ApplicationNotFoundException(walletMigrationConfig.defaultApplicationId))
+            )
             .flatMap { walletRepository.save(it.toDocument()) }
             .map { LoggedAction(it.toDomain(), WalletAddedEvent(it.id)) }
             .flatMap { it.saveEvents(loggingEventRepository) }

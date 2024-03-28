@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  pagopa-wallet:
-    container_name: pagopa-wallet
-    build:
-      dockerfile: Dockerfile
-      context: .
-    env_file:
-      - ./.env
-    ports:
-      - "8200:8080"
-    depends_on:
-      - mongo
-    networks:
-      - pagopa-wallet-net
-
   mongo:
     container_name: pagopa-wallet-mongo
     image: mongo

@@ -15,6 +15,7 @@ import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -120,6 +121,26 @@ class MigrationServiceTest {
                     )
                 }
                 .verifyComplete()
+        }
+    }
+
+    @Test
+    fun `should throw Application not found when creating Wallet and default application doesn't exists`() {
+        val paymentManagerId = Random().nextLong().toString()
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+            given { uniqueIdUtils.generateUniqueId() }
+                .willAnswer { Mono.just(contractId.contractId) }
+            given { mongoWalletMigrationRepository.findByWalletPmId(any()) }
+                .willAnswer { Flux.empty<WalletPaymentManagerDocument>() }
+            given { mongoWalletMigrationRepository.save(any()) }
+                .willAnswer { Mono.just(walletPmDocument) }
+            given { applicationRepository.findById(any<String>()) }
+                .willAnswer { Mono.empty<Application>() }
+
+            migrationService
+                .initializeWalletByPaymentManager(paymentManagerId, USER_ID)
+                .test()
+                .expectError(ApplicationNotFoundException::class.java)
         }
     }
 
