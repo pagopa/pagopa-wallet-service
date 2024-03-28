@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.wallet.model.CardBrandDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -313,7 +312,7 @@ class MigrationServiceTest {
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
-                brand = CardBrandDto.VISA,
+                brand = "VISA",
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
             )
 

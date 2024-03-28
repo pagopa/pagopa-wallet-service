@@ -581,7 +581,7 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
-                                CardBrandDto.valueOf(data.circuit.orEmpty()),
+                                data.circuit.orEmpty(),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )

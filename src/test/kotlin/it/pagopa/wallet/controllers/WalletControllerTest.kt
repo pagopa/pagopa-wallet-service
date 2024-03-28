@@ -218,14 +218,7 @@ class WalletControllerTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
         val orderId = Instant.now().toString() + "ABCDE"
-        val wallet =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                CardBrandDto.MC
-            )
+        val wallet = walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val response =
             WalletVerifyRequestsResponseDto()
                 .orderId(orderId)

@@ -1433,13 +1433,7 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
                 val walletDocumentWithCardDetails =
-                    walletDocumentVerifiedWithCardDetails(
-                        "12345678",
-                        "0000",
-                        "203012",
-                        "?",
-                        CardBrandDto.MC
-                    )
+                    walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
 
                 val expectedLoggedAction =
                     LoggedAction(
@@ -2719,13 +2713,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                CardBrandDto.MC
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
@@ -2762,13 +2750,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                CardBrandDto.MC
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)

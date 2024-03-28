@@ -38,7 +38,7 @@ object WalletTestUtils {
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
-    val BRAND = CardBrandDto.MC
+    const val BRAND = "MC"
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
@@ -250,7 +250,7 @@ object WalletTestUtils {
 
     fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
 
-    fun walletDocumentStatusValidatedCard(brand: CardBrandDto): Wallet {
+    fun walletDocumentStatusValidatedCard(brand: String): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -315,7 +315,7 @@ object WalletTestUtils {
         lastFourDigits: String,
         expiryDate: String,
         paymentInstrumentGatewayId: String,
-        brand: CardBrandDto
+        brand: String
     ): Wallet {
         val wallet =
             Wallet(
@@ -333,7 +333,7 @@ object WalletTestUtils {
                         bin,
                         lastFourDigits,
                         expiryDate,
-                        brand.name,
+                        brand,
                         paymentInstrumentGatewayId
                     ),
                 version = 0,
@@ -606,7 +606,7 @@ object WalletTestUtils {
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
-                    .brand(CardBrandDto.MC)
+                    .brand("MC")
                     .expiryDate(EXP_DATE.expDate)
             )
 
@@ -627,7 +627,7 @@ object WalletTestUtils {
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
-            .brand(BRAND.value)
+            .brand(BRAND)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
 
     fun walletAPMAuthDataDto() =
