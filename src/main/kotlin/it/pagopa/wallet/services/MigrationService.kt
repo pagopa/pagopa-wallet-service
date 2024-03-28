@@ -11,6 +11,7 @@ import it.pagopa.wallet.domain.migration.WalletPaymentManagerRepository
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.exception.MigrationError
+import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
@@ -29,6 +30,7 @@ import reactor.kotlin.core.publisher.toMono
 class MigrationService(
     private val walletPaymentManagerRepository: WalletPaymentManagerRepository,
     private val walletRepository: WalletRepository,
+    private val applicationRepository: ApplicationRepository,
     private val loggingEventRepository: LoggingEventRepository,
     private val uniqueIdUtils: UniqueIdUtils,
     walletMigrationConfig: WalletMigrationConfig
@@ -37,6 +39,21 @@ class MigrationService(
     private val cardPaymentMethodId =
         PaymentMethodId(UUID.fromString(walletMigrationConfig.cardPaymentMethodId))
     private val logger: Logger = LoggerFactory.getLogger(this.javaClass)
+
+    private val pagoPaApplication by lazy {
+        applicationRepository
+            .findById(walletMigrationConfig.defaultApplicationId)
+            .map {
+                WalletApplication(
+                    WalletApplicationId(it.id),
+                    WalletApplicationStatus.ENABLED,
+                    Instant.now(),
+                    Instant.now(),
+                    WalletApplicationMetadata(hashMapOf())
+                )
+            }
+            .cache()
+    }
 
     fun initializeWalletByPaymentManager(
         paymentManagerWalletId: String,
@@ -119,19 +136,21 @@ class MigrationService(
         paymentMethodId: PaymentMethodId,
         creationTime: Instant
     ): Mono<Wallet> {
-        val newWallet =
-            Wallet(
-                id = migration.walletId,
-                userId = userId,
-                contractId = migration.contractId,
-                status = WalletStatusDto.CREATED,
-                paymentMethodId = paymentMethodId,
-                creationDate = creationTime,
-                updateDate = creationTime,
-                version = 0,
-            )
-        return walletRepository
-            .save(newWallet.toDocument())
+        return pagoPaApplication
+            .map { application ->
+                Wallet(
+                    id = migration.walletId,
+                    userId = userId,
+                    contractId = migration.contractId,
+                    status = WalletStatusDto.CREATED,
+                    paymentMethodId = paymentMethodId,
+                    applications = listOf(application),
+                    creationDate = creationTime,
+                    updateDate = creationTime,
+                    version = 0,
+                )
+            }
+            .flatMap { walletRepository.save(it.toDocument()) }
             .map { LoggedAction(it.toDomain(), WalletAddedEvent(it.id)) }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .onErrorResume(DuplicateKeyException::class.java) {
