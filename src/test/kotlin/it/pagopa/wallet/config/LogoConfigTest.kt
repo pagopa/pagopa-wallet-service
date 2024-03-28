@@ -11,7 +11,11 @@ class LogoConfigTest {
         mapOf(
             "VISA" to URI.create("http://visa"),
             "MASTERCARD" to URI.create("http://mastercard"),
+            "MC" to URI.create("http://mastercard"),
             "PAYPAL" to URI.create("http://paypal"),
+            "AMEX" to URI.create("http://amex"),
+            "MAESTRO" to URI.create("http://maestro"),
+            "DINERS" to URI.create("http://diners"),
             "UNKNOWN" to URI.create("http://unknown")
         )
 

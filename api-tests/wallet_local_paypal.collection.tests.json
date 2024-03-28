@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "9c2bffc2-684f-4aa9-be1b-6f61766e7bdb",
+		"_postman_id": "a47da677-6d8f-4cc2-b1c4-a325be4af8fd",
 		"name": "Wallet PAYPAL onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23305473"
+		"_exporter_id": "23963988"
 	},
 	"item": [
 		{
@@ -105,6 +105,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -139,7 +144,8 @@
 							"    pm.response.to.have.status(502);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -149,6 +155,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
 						"type": "text"
 					}
 				],
@@ -189,7 +200,8 @@
 							"    pm.expect(detail).to.equals(\"Application with id 'PAGOA' not found\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -199,6 +211,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
 						"type": "text"
 					}
 				],
@@ -236,7 +253,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -244,10 +262,9 @@
 				"method": "POST",
 				"header": [
 					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -284,7 +301,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -294,6 +312,59 @@
 					{
 						"key": "x-user-id",
 						"value": "invalidUserId",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create new wallet x-client-id not valued",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet creation request with error x-client-id not present\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
 						"type": "text"
 					}
 				],
@@ -881,7 +952,8 @@
 							"    pm.response.to.have.status(400);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				},
 				{
@@ -905,7 +977,9 @@
 							"  method: 'POST',",
 							"  header: {",
 							"    'Content-Type': 'application/json',",
-							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`",
+							"    'x-user-id': `${pm.environment.get(\"x-user-id\")}`,",
+							"    'x-client-id': 'IO'",
+							"",
 							"  },",
 							"  body: {",
 							"    mode: 'raw',",
@@ -957,7 +1031,8 @@
 							"}",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -1035,6 +1110,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
 						"type": "text"
 					}
 				],
@@ -1352,6 +1432,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1486,7 +1571,7 @@
 			"response": []
 		},
 		{
-			"name": "Create new wallet with incoming application Copy",
+			"name": "Create new wallet with incoming application",
 			"event": [
 				{
 					"listen": "test",
@@ -1520,6 +1605,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-client-id",
+						"value": "IO",
 						"type": "text"
 					}
 				],

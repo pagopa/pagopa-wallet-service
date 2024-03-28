@@ -1,6 +1,5 @@
 package it.pagopa.wallet.domain.wallets.details
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 
 /** Data class that maps WalletDetails for CARD instrument type */
@@ -8,7 +7,7 @@ data class CardDetails(
     val bin: Bin,
     val lastFourDigits: LastFourDigits,
     val expiryDate: ExpiryDate,
-    val brand: WalletCardDetailsDto.BrandEnum,
+    val brand: String,
     val paymentInstrumentGatewayId: PaymentInstrumentGatewayId
 ) : WalletDetails<CardDetails> {
     override val type: WalletDetailsType
@@ -20,7 +19,7 @@ data class CardDetails(
             this.bin.bin,
             this.lastFourDigits.lastFourDigits,
             this.expiryDate.expDate,
-            this.brand.name,
+            this.brand,
             this.paymentInstrumentGatewayId.paymentInstrumentGatewayId
         )
 }

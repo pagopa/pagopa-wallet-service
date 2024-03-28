@@ -38,7 +38,7 @@ object WalletTestUtils {
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
-    val BRAND = WalletCardDetailsDto.BrandEnum.MASTERCARD
+    const val BRAND = "MC"
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
@@ -62,7 +62,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -83,7 +84,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -140,7 +142,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -157,7 +160,8 @@ object WalletTestUtils {
             details = null,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -250,7 +254,7 @@ object WalletTestUtils {
 
     fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
 
-    fun walletDocumentStatusValidatedCard(brand: WalletCardDetailsDto.BrandEnum): Wallet {
+    fun walletDocumentStatusValidatedCard(brand: String): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -280,7 +284,8 @@ object WalletTestUtils {
                 ),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -306,7 +311,8 @@ object WalletTestUtils {
             details = PayPalDetailsDocument(maskedEmail = paypalEmail, pspId = PSP_ID),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -315,7 +321,7 @@ object WalletTestUtils {
         lastFourDigits: String,
         expiryDate: String,
         paymentInstrumentGatewayId: String,
-        brandEnum: WalletCardDetailsDto.BrandEnum
+        brand: String
     ): Wallet {
         val wallet =
             Wallet(
@@ -333,12 +339,13 @@ object WalletTestUtils {
                         bin,
                         lastFourDigits,
                         expiryDate,
-                        brandEnum.name,
+                        brand,
                         paymentInstrumentGatewayId
                     ),
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -357,7 +364,8 @@ object WalletTestUtils {
                 details = details,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -379,7 +387,8 @@ object WalletTestUtils {
             details = details,
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
         )
     }
 
@@ -397,7 +406,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -416,7 +426,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -435,7 +446,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -454,7 +466,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -473,7 +486,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -501,7 +515,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
@@ -542,13 +557,14 @@ object WalletTestUtils {
                     ),
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
         return wallet
     }
 
     val WALLET_DOMAIN =
-        Wallet(
+        it.pagopa.wallet.domain.wallets.Wallet(
             id = WALLET_UUID,
             userId = USER_ID,
             status = WalletStatusDto.CREATED,
@@ -570,13 +586,14 @@ object WalletTestUtils {
                 CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
             version = 0,
             creationDate = creationDate,
-            updateDate = creationDate
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO
         )
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
         val wallet =
-            Wallet(
+            it.pagopa.wallet.domain.wallets.Wallet(
                 id = WALLET_UUID,
                 userId = USER_ID,
                 status = WalletStatusDto.CREATED,
@@ -588,7 +605,8 @@ object WalletTestUtils {
                 details = null,
                 version = 0,
                 creationDate = creationDate,
-                updateDate = creationDate
+                updateDate = creationDate,
+                onboardingChannel = OnboardingChannel.IO
             )
         return wallet
     }
@@ -606,7 +624,7 @@ object WalletTestUtils {
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .bin(BIN.bin)
-                    .brand(WalletCardDetailsDto.BrandEnum.MASTERCARD)
+                    .brand("MC")
                     .expiryDate(EXP_DATE.expDate)
             )
 
@@ -627,7 +645,7 @@ object WalletTestUtils {
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
-            .brand(BRAND.value)
+            .brand(BRAND)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
 
     fun walletAPMAuthDataDto() =

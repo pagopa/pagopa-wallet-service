@@ -53,7 +53,8 @@ data class Wallet(
     var details: WalletDetails<*>? = null,
     val version: Int,
     val creationDate: Instant,
-    val updateDate: Instant
+    val updateDate: Instant,
+    val onboardingChannel: OnboardingChannel
 ) {
 
     fun toDocument(): Wallet {
@@ -79,7 +80,8 @@ data class Wallet(
                 details = this.details?.toDocument(),
                 version = this.version,
                 creationDate = this.creationDate,
-                updateDate = this.updateDate
+                updateDate = this.updateDate,
+                onboardingChannel = this.onboardingChannel.toString()
             )
 
         return wallet
