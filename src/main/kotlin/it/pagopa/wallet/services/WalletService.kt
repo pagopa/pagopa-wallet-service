@@ -577,11 +577,19 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
-                                WalletCardDetailsDto.BrandEnum.valueOf(data.circuit.orEmpty()),
+                                circuitToCardBrand(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )
             }
+
+    private fun circuitToCardBrand(circuit: String): WalletCardDetailsDto.BrandEnum {
+        return if (circuit == "MC") {
+            WalletCardDetailsDto.BrandEnum.MASTERCARD
+        } else {
+            WalletCardDetailsDto.BrandEnum.valueOf(circuit)
+        }
+    }
 
     private fun gatewayToWalletExpiryDate(expiryDate: String) =
         YearMonth.parse(expiryDate, npgExpiryDateFormatter).format(walletExpiryDateFormatter)
