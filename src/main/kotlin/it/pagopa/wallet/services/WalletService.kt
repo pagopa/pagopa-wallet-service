@@ -681,7 +681,7 @@ class WalletService(
                         walletNotificationRequestDto.operationId,
                         walletNotificationRequestDto.operationResult.value,
                         walletNotificationRequestDto.timestampOperation.toString(),
-                        walletNotificationRequestDto.errorCode?.toString()
+                        wallet.validationErrorCode
                     )
                 )
             }

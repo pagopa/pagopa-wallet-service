@@ -11,6 +11,7 @@ import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_METADATA
+import it.pagopa.wallet.WalletTestUtils.CARD_ID_4
 import it.pagopa.wallet.WalletTestUtils.MASKED_EMAIL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
@@ -67,10 +68,7 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.JwtTokenUtils
-import it.pagopa.wallet.util.TransactionId
-import it.pagopa.wallet.util.UniqueIdUtils
-import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.*
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -2751,6 +2749,70 @@ class WalletServiceTest {
                     OperationResult.DECLINED.value,
                     notifyRequestDto.timestampOperation.toString(),
                     null
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .expectNext(expectedLoggedAction)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to ERROR for CARDS due to WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "12345678",
+                "0000",
+                "203012",
+                "?",
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
+        val validatedWalletdDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "99345678",
+                "00550",
+                "203012",
+                CARD_ID_4,
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
+
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given {
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                    any<String>(),
+                    any<String>()
+                )
+            }
+            .willReturn(mono { validatedWalletdDocument.id })
+
+        val walletDocumentWithError =
+            walletDocument.copy(
+                status = "ERROR",
+                validationErrorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE
+            )
+
+        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentWithError))
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentWithError.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.EXECUTED.value,
+                    notifyRequestDto.timestampOperation.toString(),
+                    Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE
                 )
             )
 
