@@ -1092,7 +1092,7 @@ class WalletService(
                     "Already onboard check CARD wallet for userId [${userId}] and walletId [${walletId}]"
                 )
                 walletRepository
-                    .findByUserIdAndDetails_paymentInstrumentGatewayId(
+                    .findByUserIdAndDetailsPaymentInstrumentGatewayId(
                         userId.id.toString(),
                         walletDetails.paymentInstrumentGatewayId.paymentInstrumentGatewayId
                     )

@@ -2731,7 +2731,7 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetails_paymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
                     any<String>(),
                     any<String>()
                 )
@@ -2782,7 +2782,7 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetails_paymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
                     any<String>(),
                     any<String>()
                 )
