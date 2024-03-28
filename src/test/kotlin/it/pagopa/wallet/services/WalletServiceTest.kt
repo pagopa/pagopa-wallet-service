@@ -714,7 +714,7 @@ class WalletServiceTest {
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = UUID.randomUUID().toString()
+                val sessionId = UUID.randomUUID().toString() + "%20"
                 val npgFields =
                     Fields()
                         .sessionId(sessionId)
