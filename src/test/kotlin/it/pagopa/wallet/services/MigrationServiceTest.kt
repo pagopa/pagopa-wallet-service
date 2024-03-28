@@ -1,26 +1,25 @@
 package it.pagopa.wallet.services
 
 import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.ApplicationsTestUtils.Companion.DOMAIN_APPLICATION
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
+import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
+import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
-import it.pagopa.wallet.repositories.LoggingEventRepository
-import it.pagopa.wallet.repositories.MongoWalletMigrationRepository
-import it.pagopa.wallet.repositories.WalletPaymentManagerRepositoryImpl
-import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Instant
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
@@ -31,8 +30,11 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
+import java.time.Instant
+import java.util.*
 
 class MigrationServiceTest {
+    private val applicationRepository: ApplicationRepository = mock()
     private val loggingEventRepository: LoggingEventRepository = mock()
     private val walletRepository: WalletRepository = mock()
     private val mongoWalletMigrationRepository: MongoWalletMigrationRepository = mock()
@@ -42,13 +44,19 @@ class MigrationServiceTest {
         MigrationService(
             WalletPaymentManagerRepositoryImpl(mongoWalletMigrationRepository),
             walletRepository,
+            applicationRepository,
             loggingEventRepository,
             uniqueIdUtils,
-            WalletMigrationConfig(PAYMENT_METHOD_ID_CARDS.value.toString()),
+            WalletMigrationConfig(
+                cardPaymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+                defaultApplicationId = WALLET_APPLICATION_PAGOPA_ID.id
+            ),
         )
 
     @BeforeEach
     fun setupTest() {
+        given { applicationRepository.findById(any<String>()) }
+            .willAnswer { Application.fromDomain(DOMAIN_APPLICATION).toMono() }
         given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
         given(loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
             Flux.fromIterable(it.arguments[0] as Iterable<*>)
@@ -74,6 +82,9 @@ class MigrationServiceTest {
                     assertEquals(USER_ID, it.userId)
                     assertEquals(contractId, it.contractId)
                     assertEquals(PAYMENT_METHOD_ID_CARDS, it.paymentMethodId)
+                    it.applications
+                        .first { app -> app.id == WALLET_APPLICATION_PAGOPA_ID }
+                        .let { app -> assertEquals(app.status, WalletApplicationStatus.ENABLED) }
                     argumentCaptor<Iterable<LoggingEvent>> {
                         verify(loggingEventRepository, times(1)).saveAll(capture())
                         assertInstanceOf(WalletAddedEvent::class.java, lastValue.firstOrNull())
