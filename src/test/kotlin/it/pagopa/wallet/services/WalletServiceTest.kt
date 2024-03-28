@@ -91,6 +91,8 @@ import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.test.expectError
+import reactor.kotlin.test.test
 import reactor.test.StepVerifier
 
 class WalletServiceTest {
@@ -1484,6 +1486,16 @@ class WalletServiceTest {
                     )
             }
         }
+    }
+
+    @Test
+    fun `should throw error when try to validate Wallet and session is not found`() {
+        val orderId = UUID.randomUUID().toString()
+        given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { null }
+        walletService
+            .validateWalletSession(orderId, WALLET_UUID.value)
+            .test()
+            .expectError(SessionNotFoundException::class.java)
     }
 
     @Test
