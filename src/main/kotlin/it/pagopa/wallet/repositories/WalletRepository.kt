@@ -12,7 +12,10 @@ interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
 
     fun findByUserId(userId: String): Flux<Wallet>
     fun findByIdAndUserId(id: String, userId: String): Mono<Wallet>
-    @Query(value = "{ 'details.paymentInstrumentGatewayId' : ?0}", fields = "{ '_id' : 1 }")
+    @Query(
+        value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1}",
+        fields = "{ '_id' : 1 }"
+    )
     fun findByUserIdAndDetailsPaymentInstrumentGatewayId(
         userId: String,
         paymentInstrumentGatewayId: String

@@ -1165,6 +1165,7 @@ components:
           type: object
           oneOf:
             - $ref: '#/components/schemas/WalletNotificationRequestPaypalDetails'
+            - $ref: '#/components/schemas/WalletNotificationRequestCardDetails'
           discriminator:
             propertyName: type
             mapping:

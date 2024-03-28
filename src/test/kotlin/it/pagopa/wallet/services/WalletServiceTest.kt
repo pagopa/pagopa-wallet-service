@@ -2815,6 +2815,58 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `notify wallet should set wallet status to ERROR with ALREADY_WALLET_ONBOARDED for CARDS`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "12345678",
+                "0000",
+                "203012",
+                "?",
+                WalletCardDetailsDto.BrandEnum.MASTERCARD
+            )
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given {
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                    any<String>(),
+                    any<String>()
+                )
+            }
+            .willReturn(Mono.empty())
+
+        val walletDocumentValidated =
+            walletDocument.copy(status = WalletStatusDto.VALIDATED.toString())
+
+        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
+
+        val expectedLoggedAction =
+            LoggedAction(
+                walletDocumentValidated.toDomain(),
+                WalletNotificationEvent(
+                    WALLET_UUID.value.toString(),
+                    operationId,
+                    OperationResult.EXECUTED.value,
+                    notifyRequestDto.timestampOperation.toString(),
+                    null,
+                )
+            )
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+            )
+            .expectNext(expectedLoggedAction)
+            .verifyComplete()
+    }
+
+    @Test
     fun `find session should throws session not found exception`() {
         /* preconditions */
         given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
