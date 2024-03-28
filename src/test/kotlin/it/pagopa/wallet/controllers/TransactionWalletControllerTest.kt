@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.ClientIdDto
-import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.audit.LoggedAction
@@ -18,9 +17,10 @@ import java.net.URI
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
@@ -32,7 +32,6 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 @WebFluxTest(TransactionWalletController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
@@ -148,24 +147,23 @@ class TransactionWalletControllerTest {
             val mockClientId: ClientIdDto = mock()
             given(mockClientId.toString()).willReturn("INVALID")
             /* test */
-            StepVerifier.create(
-                    transactionWalletController.createWalletForTransaction(
-                        xUserId = UUID.randomUUID(),
-                        xClientIdDto = mockClientId,
-                        transactionId = "",
-                        walletTransactionCreateRequestDto =
-                            Mono.just(WalletTransactionCreateRequestDto()),
-                        exchange = mock()
-                    )
-                )
-                .expectErrorMatches {
-                    Assertions.assertTrue(it is InvalidRequestException)
-                    Assertions.assertEquals(
-                        "Input xClientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
-                        it.message
-                    )
-                    true
+            val exception =
+                assertThrows<InvalidRequestException> {
+                    transactionWalletController
+                        .createWalletForTransaction(
+                            xUserId = UUID.randomUUID(),
+                            xClientIdDto = mockClientId,
+                            transactionId = "",
+                            walletTransactionCreateRequestDto =
+                                Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
+                            exchange = mock()
+                        )
+                        .block()
                 }
-                .verify()
+
+            assertEquals(
+                "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
+                exception.message
+            )
         }
 }

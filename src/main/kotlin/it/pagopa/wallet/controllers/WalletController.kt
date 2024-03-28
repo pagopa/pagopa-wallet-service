@@ -2,16 +2,14 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
-import it.pagopa.wallet.domain.wallets.OnboardingChannel
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.InvalidRequestException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
-import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.toOnboardingChannel
 import java.net.URI
 import java.util.*
 import lombok.extern.slf4j.Slf4j
@@ -38,13 +36,7 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-        if (!WalletUtils.VALID_ONBOARDING_CHANNEL.contains(xClientIdDto.toString())) {
-            return Mono.error(
-                InvalidRequestException(
-                    "Input xClientId: [$xClientIdDto] is unknown. Handled onboarding channels: ${WalletUtils.VALID_ONBOARDING_CHANNEL}"
-                )
-            )
-        }
+
         return walletCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -52,7 +44,7 @@ class WalletController(
                         request.applications.map { s -> WalletApplicationId(s) },
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
-                        onboardingChannel = OnboardingChannel.valueOf(xClientIdDto.toString())
+                        onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {

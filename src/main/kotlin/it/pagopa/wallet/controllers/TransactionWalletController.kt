@@ -4,12 +4,10 @@ import it.pagopa.generated.wallet.api.TransactionsApi
 import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
-import it.pagopa.wallet.domain.wallets.OnboardingChannel
-import it.pagopa.wallet.exception.InvalidRequestException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.TransactionId
-import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.toOnboardingChannel
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
@@ -37,13 +35,6 @@ class TransactionWalletController(
         walletTransactionCreateRequestDto: Mono<WalletTransactionCreateRequestDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<WalletTransactionCreateResponseDto>> {
-        if (!WalletUtils.VALID_ONBOARDING_CHANNEL.contains(xClientIdDto.toString())) {
-            return Mono.error(
-                InvalidRequestException(
-                    "Input xClientId: [$xClientIdDto] is unknown. Handled onboarding channels: ${WalletUtils.VALID_ONBOARDING_CHANNEL}"
-                )
-            )
-        }
         return walletTransactionCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -52,7 +43,7 @@ class TransactionWalletController(
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
                         amount = request.amount,
-                        onboardingChannel = OnboardingChannel.valueOf(xClientIdDto.toString())
+                        onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {

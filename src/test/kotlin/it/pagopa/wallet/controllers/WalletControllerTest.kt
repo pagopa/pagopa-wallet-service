@@ -32,9 +32,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -50,7 +50,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -850,22 +849,22 @@ class WalletControllerTest {
             val mockClientId: ClientIdDto = mock()
             given(mockClientId.toString()).willReturn("INVALID")
             /* test */
-            StepVerifier.create(
-                    walletController.createWallet(
-                        xUserId = UUID.randomUUID(),
-                        xClientIdDto = mockClientId,
-                        walletCreateRequestDto = Mono.just(WalletCreateRequestDto()),
-                        exchange = mock()
-                    )
-                )
-                .expectErrorMatches {
-                    assertTrue(it is InvalidRequestException)
-                    assertEquals(
-                        "Input xClientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
-                        it.message
-                    )
-                    true
+            val exception =
+                assertThrows<InvalidRequestException> {
+                    walletController
+                        .createWallet(
+                            xUserId = UUID.randomUUID(),
+                            xClientIdDto = mockClientId,
+                            walletCreateRequestDto =
+                                Mono.just(WalletTestUtils.CREATE_WALLET_REQUEST),
+                            exchange = mock()
+                        )
+                        .block()
                 }
-                .verify()
+
+            assertEquals(
+                "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
+                exception.message
+            )
         }
 }
