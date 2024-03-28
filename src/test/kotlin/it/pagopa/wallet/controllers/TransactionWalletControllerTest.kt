@@ -16,7 +16,6 @@ import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
 import kotlinx.coroutines.reactor.mono
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,7 +60,7 @@ class TransactionWalletControllerTest {
     }
 
     @Test
-    fun testCreateWalletPaymentCardsMethod() = runTest {
+    fun testCreateWalletPaymentCardsMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
         given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
@@ -102,7 +101,7 @@ class TransactionWalletControllerTest {
     }
 
     @Test
-    fun testCreateWalletPaymentAPMMethod() = runTest {
+    fun testCreateWalletPaymentAPMMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
         given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
@@ -141,29 +140,28 @@ class TransactionWalletControllerTest {
     }
 
     @Test
-    fun `should throw InvalidRequestException creating wallet for unmanaged OnboardingChannel`() =
-        runTest {
-            /* preconditions */
-            val mockClientId: ClientIdDto = mock()
-            given(mockClientId.toString()).willReturn("INVALID")
-            /* test */
-            val exception =
-                assertThrows<InvalidRequestException> {
-                    transactionWalletController
-                        .createWalletForTransaction(
-                            xUserId = UUID.randomUUID(),
-                            xClientIdDto = mockClientId,
-                            transactionId = "",
-                            walletTransactionCreateRequestDto =
-                                Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
-                            exchange = mock()
-                        )
-                        .block()
-                }
+    fun `should throw InvalidRequestException creating wallet for unmanaged OnboardingChannel`() {
+        /* preconditions */
+        val mockClientId: ClientIdDto = mock()
+        given(mockClientId.toString()).willReturn("INVALID")
+        /* test */
+        val exception =
+            assertThrows<InvalidRequestException> {
+                transactionWalletController
+                    .createWalletForTransaction(
+                        xUserId = UUID.randomUUID(),
+                        xClientIdDto = mockClientId,
+                        transactionId = "",
+                        walletTransactionCreateRequestDto =
+                            Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
+                        exchange = mock()
+                    )
+                    .block()
+            }
 
-            assertEquals(
-                "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
-                exception.message
-            )
-        }
+        assertEquals(
+            "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
+            exception.message
+        )
+    }
 }
