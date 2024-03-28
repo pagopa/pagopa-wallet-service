@@ -91,7 +91,7 @@ microservice-chart:
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
     WALLET_MIGRATION_CARD_PAYMENT_METHOD_ID: "148ff003-46a6-4790-9376-b0e057352e45"
     WALLET_LOGO_MAPPING: >
-      { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png' }
+      { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password

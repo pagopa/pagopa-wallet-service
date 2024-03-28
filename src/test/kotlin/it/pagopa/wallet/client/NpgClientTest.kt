@@ -2,7 +2,6 @@ package it.pagopa.wallet.client
 
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.services.WalletService
@@ -136,7 +135,7 @@ class NpgClientTest {
                 .bin("123456")
                 .lastFourDigits("0000")
                 .expiringDate("122030")
-                .circuit(BrandEnum.MASTERCARD.name)
+                .circuit("MC")
 
         // prerequisite
         given(cardsServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
