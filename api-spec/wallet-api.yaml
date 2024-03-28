@@ -1234,6 +1234,7 @@ components:
             - 7  # INVALID_CARD
             - 8  # CANCELED_BY_USER
             - 14 # INVALID_SESSION
+            - 15 # ALREADY_ONBOARDED
       required:
         - orderId
         - walletId

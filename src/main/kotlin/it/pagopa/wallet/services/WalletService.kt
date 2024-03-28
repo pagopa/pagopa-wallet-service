@@ -979,7 +979,11 @@ class WalletService(
         val outcome =
             when (operationResult) {
                 WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    }
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
