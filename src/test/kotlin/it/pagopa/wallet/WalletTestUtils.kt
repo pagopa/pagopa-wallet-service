@@ -30,6 +30,7 @@ object WalletTestUtils {
     val APPLICATION_ID = ApplicationId("PAGOPA")
     val APPLICATION_DESCRIPTION = ApplicationDescription("")
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
+    val WALLET_APPLICATION_PAGOPA_ID = WalletApplicationId("PAGOPA")
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
