@@ -752,8 +752,10 @@ class WalletService(
         )
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
-                if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
-                    if (operationDetails is WalletNotificationRequestCardDetailsDto) {
+                if (operationDetails is WalletNotificationRequestCardDetailsDto) {
+                    if (
+                        operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED
+                    ) {
 
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
@@ -767,16 +769,26 @@ class WalletService(
                             errorCode = walletNotificationRequestDto.errorCode
                         )
                     } else {
-                        logger.error(
-                            "No details received for Card wallet, cannot retrieve paymentInstrumentGatewayId for [${wallet.id.value}]"
-                        )
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.ERROR,
-                            walletDetails = walletDetails,
-                            errorCode = walletNotificationRequestDto.errorCode
+                            walletDetails =
+                                if (operationDetails.paymentInstrumentGatewayId != null) {
+                                    walletDetails.copy(
+                                        paymentInstrumentGatewayId =
+                                            PaymentInstrumentGatewayId(
+                                                operationDetails.paymentInstrumentGatewayId
+                                            )
+                                    )
+                                } else {
+                                    walletDetails
+                                },
+                            errorCode = walletNotificationRequestDto.errorCode,
                         )
                     }
                 } else {
+                    logger.error(
+                        "No details received for Card wallet, cannot retrieve paymentInstrumentGatewayId for [${wallet.id.value}]"
+                    )
                     WalletNotificationProcessingResult(
                         newWalletStatus = WalletStatusDto.ERROR,
                         walletDetails = walletDetails,
