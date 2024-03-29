@@ -86,7 +86,6 @@ import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.test.expectError
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
 
@@ -2734,9 +2733,10 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
                     any<String>(),
-                    any<String>()
+                    any<String>(),
+                    any()
                 )
             }
             .willReturn(Mono.empty())
@@ -2782,9 +2782,10 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
                     any<String>(),
-                    any<String>()
+                    any<String>(),
+                    any()
                 )
             }
             .willReturn(mono { validatedWalletdDocument.id })
@@ -2831,9 +2832,10 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
                     any<String>(),
-                    any<String>()
+                    any<String>(),
+                    any()
                 )
             }
             .willReturn(Mono.empty())
@@ -2877,9 +2879,10 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayId(
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
                     any<String>(),
-                    any<String>()
+                    any<String>(),
+                    any()
                 )
             }
             .willReturn(Mono.empty())
