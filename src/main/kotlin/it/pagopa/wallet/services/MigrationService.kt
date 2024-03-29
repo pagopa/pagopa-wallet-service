@@ -45,15 +45,6 @@ class MigrationService(
     private val pagoPaApplication by lazy {
         applicationRepository
             .findById(walletMigrationConfig.defaultApplicationId)
-            .map {
-                WalletApplication(
-                    WalletApplicationId(it.id),
-                    WalletApplicationStatus.ENABLED,
-                    Instant.now(),
-                    Instant.now(),
-                    WalletApplicationMetadata.empty()
-                )
-            }
             .cache(
                 { _ -> Duration.ofDays(1) }, // ttl value
                 { _ -> Duration.ZERO }, // ttl error
@@ -143,6 +134,18 @@ class MigrationService(
         creationTime: Instant
     ): Mono<Wallet> {
         return pagoPaApplication
+            .map {
+                WalletApplication(
+                    WalletApplicationId(it.id),
+                    WalletApplicationStatus.ENABLED,
+                    creationTime,
+                    creationTime,
+                    WalletApplicationMetadata.of(
+                        WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION to
+                            creationTime.toString()
+                    )
+                )
+            }
             .map { application ->
                 Wallet(
                     id = migration.walletId,
@@ -150,13 +153,7 @@ class MigrationService(
                     contractId = migration.contractId,
                     status = WalletStatusDto.CREATED,
                     paymentMethodId = paymentMethodId,
-                    applications =
-                        listOf(
-                            application.addMetadata(
-                                WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION,
-                                creationTime.toString()
-                            )
-                        ),
+                    applications = listOf(application),
                     creationDate = creationTime,
                     updateDate = creationTime,
                     onboardingChannel = OnboardingChannel.IO,
