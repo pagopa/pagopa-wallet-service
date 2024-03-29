@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -12,6 +11,7 @@ import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.wallets.ContractId
+import it.pagopa.wallet.domain.wallets.OnboardingChannel
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.exception.MigrationError
@@ -313,7 +313,7 @@ class MigrationServiceTest {
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
-                brand = WalletCardDetailsDto.BrandEnum.VISA,
+                brand = "VISA",
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
             )
 
@@ -333,7 +333,8 @@ class MigrationServiceTest {
                 details = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
-                version = 0
+                version = 0,
+                onboardingChannel = OnboardingChannel.IO.toString()
             )
     }
 }

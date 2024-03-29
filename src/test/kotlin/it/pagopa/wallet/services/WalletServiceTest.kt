@@ -57,10 +57,7 @@ import it.pagopa.wallet.documents.wallets.details.PayPalDetails
 import it.pagopa.wallet.domain.applications.Application
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
-import it.pagopa.wallet.domain.wallets.WalletApplication
-import it.pagopa.wallet.domain.wallets.WalletApplicationId
-import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
-import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
@@ -91,6 +88,8 @@ import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.test.expectError
+import reactor.kotlin.test.test
 import reactor.test.StepVerifier
 
 class WalletServiceTest {
@@ -244,7 +243,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value
+                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .expectError(ApplicationNotFoundException::class.java)
@@ -307,7 +307,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value
+                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -373,7 +374,8 @@ class WalletServiceTest {
                         walletService.createWallet(
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value
+                            paymentMethodId = PAYMENT_METHOD_ID_APM.value,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -412,7 +414,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .expectError(ApplicationNotFoundException::class.java)
@@ -472,7 +475,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -542,7 +546,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -612,7 +617,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -683,7 +689,8 @@ class WalletServiceTest {
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
                             transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT
+                            amount = AMOUNT,
+                            onboardingChannel = OnboardingChannel.IO
                         )
                     )
                     .assertNext { createWalletOutput ->
@@ -1399,7 +1406,7 @@ class WalletServiceTest {
                         .bin("12345678")
                         .expiringDate("12/30")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
 
                 val npgStateResponse =
                     StateResponse()
@@ -1433,13 +1440,7 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
                 val walletDocumentWithCardDetails =
-                    walletDocumentVerifiedWithCardDetails(
-                        "12345678",
-                        "0000",
-                        "203012",
-                        "?",
-                        WalletCardDetailsDto.BrandEnum.MASTERCARD
-                    )
+                    walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
 
                 val expectedLoggedAction =
                     LoggedAction(
@@ -1475,7 +1476,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MC", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
@@ -1490,6 +1491,16 @@ class WalletServiceTest {
                     )
             }
         }
+    }
+
+    @Test
+    fun `should throw error when try to validate Wallet and session is not found`() {
+        val orderId = UUID.randomUUID().toString()
+        given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { null }
+        walletService
+            .validateWalletSession(orderId, WALLET_UUID.value)
+            .test()
+            .expectError(SessionNotFoundException::class.java)
     }
 
     @Test
@@ -1693,7 +1704,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse().state(WorkflowState.READY_FOR_PAYMENT).url("http://state.url")
 
@@ -1763,7 +1774,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse = StateResponse().state(WorkflowState.GDI_VERIFICATION)
 
                 val npgSession =
@@ -1833,7 +1844,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse()
                         .state(WorkflowState.GDI_VERIFICATION)
@@ -1908,7 +1919,7 @@ class WalletServiceTest {
                         .bin("123456")
                         .expiringDate("122030")
                         .lastFourDigits("0000")
-                        .circuit("MASTERCARD")
+                        .circuit("MC")
                 val npgStateResponse =
                     StateResponse()
                         .state(WorkflowState.GDI_VERIFICATION)
@@ -2719,13 +2730,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
@@ -2762,13 +2767,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val operationId = "validationOperationId"
         val walletDocument =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)

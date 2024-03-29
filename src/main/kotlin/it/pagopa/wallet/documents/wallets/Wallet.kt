@@ -26,7 +26,8 @@ data class Wallet(
     val details: WalletDetails<*>?,
     @Version var version: Int,
     @CreatedDate var creationDate: Instant,
-    @LastModifiedDate var updateDate: Instant
+    @LastModifiedDate var updateDate: Instant,
+    val onboardingChannel: String
 ) {
     fun toDomain(): Wallet {
         val wallet =
@@ -45,7 +46,8 @@ data class Wallet(
                 details = this.details?.toDomain(),
                 version = this.version,
                 creationDate = this.creationDate,
-                updateDate = this.updateDate
+                updateDate = this.updateDate,
+                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel)
             )
         return wallet
     }

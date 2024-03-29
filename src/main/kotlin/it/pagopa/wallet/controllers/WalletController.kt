@@ -9,6 +9,7 @@ import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.util.toOnboardingChannel
 import java.net.URI
 import java.util.*
 import lombok.extern.slf4j.Slf4j
@@ -31,6 +32,7 @@ class WalletController(
 
     override fun createWallet(
         xUserId: UUID,
+        xClientIdDto: ClientIdDto,
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
@@ -41,7 +43,8 @@ class WalletController(
                     .createWallet(
                         request.applications.map { s -> WalletApplicationId(s) },
                         userId = xUserId,
-                        paymentMethodId = request.paymentMethodId
+                        paymentMethodId = request.paymentMethodId,
+                        onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {

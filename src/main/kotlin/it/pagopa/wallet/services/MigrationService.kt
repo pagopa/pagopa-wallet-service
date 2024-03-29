@@ -129,6 +129,7 @@ class MigrationService(
                 creationDate = creationTime,
                 updateDate = creationTime,
                 version = 0,
+                onboardingChannel = OnboardingChannel.IO
             )
         return walletRepository
             .save(newWallet.toDocument())
