@@ -58,7 +58,7 @@ microservice-chart:
         NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
   image:
     repository: pagopaucommonacr.azurecr.io/pagopawalletservice
-    tag: "0.7.2"
+    tag: "0.7.3"
     pullPolicy: Always
   livenessProbe:
     httpGet:
