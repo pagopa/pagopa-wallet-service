@@ -1174,10 +1174,12 @@ components:
           type: object
           oneOf:
             - $ref: '#/components/schemas/WalletNotificationRequestPaypalDetails'
+            - $ref: '#/components/schemas/WalletNotificationRequestCardDetails'
           discriminator:
             propertyName: type
             mapping:
               PAYPAL: '#/components/schemas/WalletNotificationRequestPaypalDetails'
+              CARD: '#/components/schemas/WalletNotificationRequestCardDetails'
       required:
         - timestampOperation
         - operationResult
@@ -1196,6 +1198,21 @@ components:
       example:
         type: PAYPAL
         maskedEmail: t***@t***.it
+    WalletNotificationRequestCardDetails:
+      type: object
+      description: Card wallet notification details for onboarding
+      properties:
+        type:
+          type: string
+          description: discriminator field, fixed value `CARD`
+        paymentInstrumentGatewayId:
+          type: string
+      required:
+        - type
+        - paymentInstrumentGatewayId
+      example:
+        type: CARD
+        paymentInstrumentGatewayId: c2402dcc-ef9d-4c68-8067-e4b6268a2e62
     SessionWalletRetrieveResponse:
       type: object
       description: Data related to session wallet
@@ -1217,6 +1234,7 @@ components:
             - 7  # INVALID_CARD
             - 8  # CANCELED_BY_USER
             - 14 # INVALID_SESSION
+            - 15 # ALREADY_ONBOARDED
       required:
         - orderId
         - walletId

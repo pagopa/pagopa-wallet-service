@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7f35b7e9-9769-421d-87c9-1ea0343f15e5",
+		"_postman_id": "de2c1345-7029-410e-b808-df6e8984b243",
 		"name": "Wallet CARDS onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "23963988"
@@ -869,7 +869,8 @@
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -889,7 +890,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -925,7 +926,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Cannot match Security token\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -945,7 +947,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -981,7 +983,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Unauthorised\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -996,7 +999,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1032,7 +1035,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -1052,7 +1056,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1088,7 +1092,8 @@
 							"    pm.expect(detailErrorField).to.be.contain(\"Cannot find session with orderId\");",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -1108,7 +1113,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\"\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

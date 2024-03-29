@@ -736,11 +736,18 @@ object WalletTestUtils {
         return "W49357937935R869i"
     }
 
+    val CARD_ID_4 = UUID.randomUUID().toString()
+
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
             .timestampOperation(OffsetDateTime.now())
             .operationId("validationOperationId")
+            .details(
+                WalletNotificationRequestCardDetailsDto()
+                    .type("CARD")
+                    .paymentInstrumentGatewayId(CARD_ID_4)
+            )
 
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS:
         WalletNotificationRequestDto =
