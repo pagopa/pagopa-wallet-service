@@ -8,11 +8,9 @@ data class WalletApplicationMetadata(val data: Map<String, String>) {
         ONBOARD_BY_MIGRATION("onboardByMigration")
     }
 
-    operator fun plus(entry: Pair<Metadata, String>) =
-        WalletApplicationMetadata(this.data + (entry.first.value to entry.second))
-
     companion object {
         fun empty() = of()
-        fun of(vararg data: Pair<String, String>) = WalletApplicationMetadata(data.toMap())
+        fun of(vararg data: Pair<Metadata, String>) =
+            WalletApplicationMetadata(data.associate { it.first.value to it.second })
     }
 }
