@@ -25,6 +25,7 @@ import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
+import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -530,7 +531,7 @@ class WalletService(
         wallet: Wallet
     ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
         npgClient
-            .getCardData(sessionId, correlationId)
+            .getCardData(URLDecoder.decode(sessionId, StandardCharsets.UTF_8), correlationId)
             .flatMap {
                 npgClient
                     .confirmPayment(
