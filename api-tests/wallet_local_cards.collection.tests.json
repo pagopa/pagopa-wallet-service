@@ -890,7 +890,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": {{guid}}\n    }\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -947,7 +947,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": {{guid}}\n    }\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -999,7 +999,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": {{guid}}\n    }\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1056,7 +1056,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": {{guid}}\n    }\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1113,7 +1113,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": {{guid}}\n    }\n}",
+					"raw": "{\n    \"timestampOperation\" : \"2023-11-24T09:16:15.913748361Z\",\n    \"operationResult\": \"EXECUTED\",\n    \"operationId\": \"operationId\",\n    \"details\": {\n        \"type\": \"CARD\",\n        \"paymentInstrumentGatewayId\": \"{{guid}}\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
