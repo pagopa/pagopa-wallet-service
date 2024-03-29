@@ -74,9 +74,7 @@ class MigrationService(
         return findWalletByContractId(contractId)
             .flatMap { currentWallet -> updateWalletCardDetails(currentWallet, cardDetails, now) }
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
-            .doOnComplete {
-                logger.info("Wallet details updated for ${cardDetails.lastFourDigits}")
-            }
+            .doOnNext { logger.info("Wallet details updated for ${cardDetails.lastFourDigits}") }
             .doOnError { logger.error("Failure during wallet's card details update", it) }
             .toMono()
     }
@@ -91,7 +89,7 @@ class MigrationService(
             .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map { it.toDomain() }
-            .doOnComplete { logger.info("Deleted wallet successfully") }
+            .doOnNext { logger.info("Deleted wallet successfully") }
             .doOnError { logger.error("Failure during wallet delete", it) }
             .toMono()
     }
