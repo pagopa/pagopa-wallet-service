@@ -3406,4 +3406,34 @@ class WalletServiceTest {
             .expectNext(responseDto)
             .verifyComplete()
     }
+
+    @Test
+    fun `find session should return response with final status true mapping WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE error `() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        val walletDocumentWithError =
+            walletDocumentWithError(
+                operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
+                errorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
+            )
+
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocumentWithError))
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15)
+                .orderId(ORDER_ID)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
 }
