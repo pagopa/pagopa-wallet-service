@@ -88,9 +88,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -137,7 +137,7 @@ microservice-chart:
     SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"
-    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
@@ -158,8 +158,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: { }
+  tolerations: [ ]
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
