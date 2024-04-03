@@ -75,6 +75,13 @@ microservice-chart:
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     ECS_SERVICE_NAME: "pagopa-wallet-service"
     ECS_SERVICE_ENVIRONMENT: "dev"
+    OTEL_SERVICE_NAME: "pagopa-wallet-service"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=dev"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_METRICS_EXPORTER: otlp
+    OTEL_LOGS_EXPORTER: none
+    OTEL_TRACES_SAMPLER: "always_on"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WALLET_ONBOARDING_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/creditcard
@@ -101,6 +108,7 @@ microservice-chart:
     ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
+    OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
