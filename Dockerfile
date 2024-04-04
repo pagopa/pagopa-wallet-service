@@ -1,4 +1,4 @@
-FROM amazoncorretto:17-alpine as build
+FROM amazoncorretto:17-alpine AS build
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -24,6 +24,9 @@ WORKDIR /app/
 
 ARG EXTRACTED=/workspace/app/build/extracted
 
+#ELK Agent
+ADD --chown=user https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.2.0/opentelemetry-javaagent.jar .
+
 COPY --from=build --chown=user ${EXTRACTED}/dependencies/ ./
 RUN true
 COPY --from=build --chown=user ${EXTRACTED}/spring-boot-loader/ ./
@@ -33,5 +36,6 @@ RUN true
 COPY --from=build --chown=user ${EXTRACTED}/application/ ./
 RUN true
 
-ENTRYPOINT ["java","--enable-preview","org.springframework.boot.loader.JarLauncher"]
+
+ENTRYPOINT ["java","-javaagent:opentelemetry-javaagent.jar", "--enable-preview","org.springframework.boot.loader.JarLauncher"]
 

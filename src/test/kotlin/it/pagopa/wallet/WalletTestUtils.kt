@@ -624,7 +624,7 @@ object WalletTestUtils {
             .details(
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
-                    .bin(BIN.bin)
+                    .type("CARDS")
                     .brand("MC")
                     .expiryDate(EXP_DATE.expDate)
             )
