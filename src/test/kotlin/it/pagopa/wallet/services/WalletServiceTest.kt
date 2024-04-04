@@ -2003,7 +2003,7 @@ class WalletServiceTest {
                         .details(
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
-                                .bin((wallet.details as CardDetails).bin)
+                                .brand((wallet.details as CardDetails).brand)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
@@ -2135,7 +2135,7 @@ class WalletServiceTest {
                         .details(
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
-                                .bin((wallet.details as CardDetails).bin)
+                                .brand((wallet.details as CardDetails).brand)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )

@@ -902,9 +902,9 @@ class WalletService(
             is CardDetails ->
                 WalletCardDetailsDto()
                     .type(details.type)
-                    .bin(details.bin)
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
+                    .brand(details.brand)
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
             else -> null
