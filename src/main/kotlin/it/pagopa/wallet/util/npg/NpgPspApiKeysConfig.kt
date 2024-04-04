@@ -7,7 +7,7 @@ import io.vavr.control.Either
 import it.pagopa.wallet.exception.NpgApiKeyConfigurationException
 import it.pagopa.wallet.exception.NpgApiKeyMissingPspRequestedException
 
-/** This class take cares of parse NPG per PSP api key configuration json */
+/** This class takes care of parsing NPG per-PSP API keys from the JSON configuration */
 class NpgPspApiKeysConfig
 internal constructor(private val configuration: Map<String, String>, val defaultApiKey: String) {
 
