@@ -6,7 +6,12 @@ module.exports = function (req, res, next) {
   }
   const requestPath = req.path.toString();
   const requestBody = req.body;
-  console.log(`Received request to path : ${requestPath} with body ${JSON.stringify(requestBody)}`)
+  console.log(`${new Date().toISOString()} - Received request: ${req.method} ${req.path}
+     Headers:
+     ${JSON.stringify(req.headers)}
+     Body:
+     ${JSON.stringify(req.body)}
+     `);
   if (requestPath.includes("build")) {
     //handle build data request changing response based on input paymentService
     const paymentService = requestBody.paymentSession.paymentService;
