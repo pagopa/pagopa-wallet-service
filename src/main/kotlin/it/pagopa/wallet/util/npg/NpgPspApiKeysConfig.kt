@@ -7,13 +7,9 @@ import io.vavr.control.Either
 import it.pagopa.wallet.exception.NpgApiKeyConfigurationException
 import it.pagopa.wallet.exception.NpgApiKeyMissingPspRequestedException
 
-/**
- * This class take cares of parse NPG per PSP api key configuration json
- */
-class NpgPspApiKeysConfig internal constructor(
-    private val configuration: Map<String, String>,
-    val defaultApiKey: String
-) {
+/** This class take cares of parse NPG per PSP api key configuration json */
+class NpgPspApiKeysConfig
+internal constructor(private val configuration: Map<String, String>, val defaultApiKey: String) {
 
     /**
      * Retrieves an API key for a specific PSP
@@ -25,12 +21,7 @@ class NpgPspApiKeysConfig internal constructor(
         return if (configuration.containsKey(psp)) {
             Either.right(configuration[psp])
         } else {
-            Either.left(
-                NpgApiKeyMissingPspRequestedException(
-                    psp,
-                    configuration.keys
-                )
-            )
+            Either.left(NpgApiKeyMissingPspRequestedException(psp, configuration.keys))
         }
     }
 
@@ -39,8 +30,8 @@ class NpgPspApiKeysConfig internal constructor(
          * Return a map where valued with each psp id - api keys entries
          *
          * @param jsonSecretConfiguration - secret configuration json representation
-         * @param pspToHandle             - psp expected to be present into configuration json
-         * @param objectMapper            - [ObjectMapper] used to parse input JSON
+         * @param pspToHandle - psp expected to be present into configuration json
+         * @param objectMapper - [ObjectMapper] used to parse input JSON
          * @param defaultApiKey - the default api key
          * @return either the parsed map or the related parsing exception
          */
@@ -51,10 +42,11 @@ class NpgPspApiKeysConfig internal constructor(
             defaultApiKey: String
         ): Either<NpgApiKeyConfigurationException, NpgPspApiKeysConfig> {
             return try {
-                val apiKeys: Map<String, String> = objectMapper
-                    .readValue(
+                val apiKeys: Map<String, String> =
+                    objectMapper.readValue(
                         jsonSecretConfiguration,
-                        object : TypeReference<HashMap<String, String>>() {})
+                        object : TypeReference<HashMap<String, String>>() {}
+                    )
                 val missingKeys = pspToHandle - apiKeys.keys
                 if (missingKeys.isNotEmpty()) {
                     Either.left(
@@ -66,11 +58,7 @@ class NpgPspApiKeysConfig internal constructor(
             } catch (_: JacksonException) {
                 // exception here is ignored on purpose in order to avoid secret configuration
                 // logging in case of wrong configured json string object
-                Either.left(
-                    NpgApiKeyConfigurationException(
-                        "Invalid json configuration map"
-                    )
-                )
+                Either.left(NpgApiKeyConfigurationException("Invalid json configuration map"))
             }
         }
     }

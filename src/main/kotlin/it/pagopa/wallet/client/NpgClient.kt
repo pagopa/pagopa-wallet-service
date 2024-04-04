@@ -3,9 +3,9 @@ package it.pagopa.wallet.client
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
-import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
+import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -14,13 +14,11 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
-import java.util.*
 
 /** NPG API client service class */
 @Component
 class NpgClient(
-    @Autowired @Qualifier("npgWebClient") private val cardsServicesApi: PaymentServicesApi,
-    @Autowired @Qualifier("npgPaypalWebClient") private val paypalServicesApi: PaymentServicesApi,
+    @Autowired @Qualifier("npgWebClient") private val npgWebClient: PaymentServicesApi,
     @Autowired private val npgPaypalPspApiKeysConfig: NpgPspApiKeysConfig
 ) {
 
@@ -31,26 +29,11 @@ class NpgClient(
         createHostedOrderRequest: CreateHostedOrderRequest,
         pspId: String?
     ): Mono<Fields> {
-        val apiKey = if (pspId == null) {
-            Either.right(npgPaypalPspApiKeysConfig.defaultApiKey)
-        } else {
-            npgPaypalPspApiKeysConfig[pspId]
-        }
-        val client =
-            when (createHostedOrderRequest.paymentSession?.paymentService) {
-                WalletDetailsType.CARDS.name -> {
-                    cardsServicesApi
-                }
-
-                WalletDetailsType.PAYPAL.name -> {
-                    paypalServicesApi
-                }
-
-                else ->
-                    throw NpgClientException(
-                        "Invalid /order/build request: unhandled `paymentSession.paymentService` (value is ${createHostedOrderRequest.paymentSession?.paymentService})",
-                        HttpStatus.BAD_GATEWAY
-                    )
+        val apiKey =
+            if (pspId == null) {
+                Either.right(npgPaypalPspApiKeysConfig.defaultApiKey)
+            } else {
+                npgPaypalPspApiKeysConfig[pspId]
             }
 
         val response: Mono<Fields> =
@@ -58,9 +41,14 @@ class NpgClient(
                 logger.info("Sending orderBuild with correlationId: $correlationId")
                 apiKey.fold(
                     { Mono.error(it) },
-                    { client.pspApiV1OrdersBuildPost(correlationId, it, createHostedOrderRequest) }
+                    {
+                        npgWebClient.pspApiV1OrdersBuildPost(
+                            correlationId,
+                            it,
+                            createHostedOrderRequest
+                        )
+                    }
                 )
-
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -77,7 +65,7 @@ class NpgClient(
         val response: Mono<CardDataResponse> =
             try {
                 logger.info("getCardData with correlationId: $correlationId")
-                cardsServicesApi.pspApiV1BuildCardDataGet(
+                npgWebClient.pspApiV1BuildCardDataGet(
                     correlationId,
                     npgPaypalPspApiKeysConfig.defaultApiKey,
                     sessionId
@@ -101,7 +89,7 @@ class NpgClient(
         val response: Mono<StateResponse> =
             try {
                 logger.info("confirmPayment with correlationId: $correlationId")
-                cardsServicesApi.pspApiV1BuildConfirmPaymentPost(
+                npgWebClient.pspApiV1BuildConfirmPaymentPost(
                     correlationId,
                     npgPaypalPspApiKeysConfig.defaultApiKey,
                     confirmPaymentRequest,
@@ -125,19 +113,16 @@ class NpgClient(
                     description = "Bad request",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                 )
-
             HttpStatus.UNAUTHORIZED ->
                 NpgClientException(
                     description = "Misconfigured NPG api key",
                     httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                 )
-
             HttpStatus.INTERNAL_SERVER_ERROR ->
                 NpgClientException(
                     description = "NPG internal server error",
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
                 )
-
             else ->
                 NpgClientException(
                     description = "NPG server error: $statusCode",

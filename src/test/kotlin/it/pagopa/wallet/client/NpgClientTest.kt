@@ -1,17 +1,20 @@
 package it.pagopa.wallet.client
 
+import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.services.WalletService
+import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
 import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
 import org.springframework.http.HttpHeaders
@@ -20,12 +23,14 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.test.StepVerifier
 
 class NpgClientTest {
-    private val cardsServicesApi: PaymentServicesApi = mock()
-    private val paypalServicesApi: PaymentServicesApi = mock()
-    private val npgClient = NpgClient(cardsServicesApi, paypalServicesApi)
+    private val npgWebClient: PaymentServicesApi = mock()
+    private val npgPspApiKeysConfig: NpgPspApiKeysConfig = mock()
+    private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig)
 
     private val correlationId = UUID.randomUUID()
     private val sessionId = "sessionId"
+    private val defaultApiKey = "defaultApiKey"
+    private val pspApiKey = "pspApiKey"
 
     private fun orderBuildRequest(paymentService: WalletDetailsType) =
         CreateHostedOrderRequest()
@@ -77,20 +82,23 @@ class NpgClientTest {
 
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
-            .willReturn(mono { fields })
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any())).willReturn(mono { fields })
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectNext(fields)
             .verifyComplete()
-
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
     }
 
     @Test
     fun `Should create payment order build successfully with PayPal`() {
+        val pspId = "pspId"
         val fields =
             Fields().apply {
                 sessionId = UUID.randomUUID().toString()
@@ -116,16 +124,19 @@ class NpgClientTest {
 
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.PAYPAL)
-        given(paypalServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig[any()]).willReturn(Either.right(pspApiKey))
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), anyOrNull()))
             .willReturn(mono { fields })
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, pspId)
+            )
             .expectNext(fields)
             .verifyComplete()
-
-        Mockito.verify(cardsServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgPspApiKeysConfig, times(1))[pspId]
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, pspApiKey, createHostedOrderRequest)
     }
 
     @Test
@@ -138,20 +149,24 @@ class NpgClientTest {
                 .circuit("MC")
 
         // prerequisite
-        given(cardsServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
             .willReturn(mono { cardDataResponse })
 
         // test and assertions
         StepVerifier.create(npgClient.getCardData(sessionId, correlationId))
             .expectNext(cardDataResponse)
             .verifyComplete()
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+        verify(npgWebClient, times(1))
+            .pspApiV1BuildCardDataGet(correlationId, defaultApiKey, sessionId)
     }
 
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
         // prerequisite
-
-        given(cardsServicesApi.pspApiV1BuildCardDataGet(correlationId, sessionId))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -170,8 +185,9 @@ class NpgClientTest {
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1BuildCardDataGet(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1BuildCardDataGet(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1BuildCardDataGet(correlationId, defaultApiKey, sessionId)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 
     @Test
@@ -181,34 +197,29 @@ class NpgClientTest {
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
 
         // prerequisite
-        given(
-                cardsServicesApi.pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    ConfirmPaymentRequest().amount("0").sessionId(sessionId)
-                )
-            )
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1BuildConfirmPaymentPost(any(), any(), any()))
             .willReturn(mono { stateResponse })
 
         // test and assertions
         StepVerifier.create(npgClient.confirmPayment(confirmPaymentRequest, correlationId))
             .expectNext(stateResponse)
             .verifyComplete()
-
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1BuildConfirmPaymentPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1BuildConfirmPaymentPost(any(), any())
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+        verify(npgWebClient, times(1))
+            .pspApiV1BuildConfirmPaymentPost(
+                correlationId,
+                defaultApiKey,
+                ConfirmPaymentRequest().amount("0").sessionId(sessionId)
+            )
     }
 
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for validate`() {
         // prerequisite
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
-
-        given(
-                cardsServicesApi.pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    confirmPaymentRequest
-                )
-            )
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1BuildConfirmPaymentPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -227,15 +238,16 @@ class NpgClientTest {
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1BuildConfirmPaymentPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1BuildConfirmPaymentPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1BuildConfirmPaymentPost(correlationId, defaultApiKey, confirmPaymentRequest)
     }
 
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication`() {
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -247,22 +259,26 @@ class NpgClientTest {
             )
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 
     @Test
     fun `Should map error response to NpgClientException with INTERNAL_SERVER_ERROR error for 401 during communication`() {
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     401,
@@ -274,22 +290,26 @@ class NpgClientTest {
             )
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for 500 from ecommerce-payment-methods`() {
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -301,22 +321,26 @@ class NpgClientTest {
             )
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for 404 from ecommerce-payment-methods`() {
         // prerequisite
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     404,
@@ -328,15 +352,18 @@ class NpgClientTest {
             )
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 
     @Test
@@ -344,7 +371,8 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
 
         // prerequisite
-        given(cardsServicesApi.pspApiV1OrdersBuildPost(correlationId, createHostedOrderRequest))
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
                 WebClientResponseException.create(
                     400,
@@ -356,14 +384,17 @@ class NpgClientTest {
             )
 
         // test and assertions
-        StepVerifier.create(npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest))
+        StepVerifier.create(
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
+            )
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
             }
             .verify()
 
-        Mockito.verify(cardsServicesApi, times(1)).pspApiV1OrdersBuildPost(any(), any())
-        Mockito.verify(paypalServicesApi, times(0)).pspApiV1OrdersBuildPost(any(), any())
+        verify(npgWebClient, times(1))
+            .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
+        verify(npgPspApiKeysConfig, times(1)).defaultApiKey
     }
 }

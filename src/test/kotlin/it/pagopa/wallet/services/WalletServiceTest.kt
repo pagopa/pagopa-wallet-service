@@ -101,7 +101,6 @@ class WalletServiceTest {
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
             cardReturnUrl = URI.create("http://localhost/onboarding/creditcard"),
-            payPalPSPApiKey = "paypalPSPApiKey"
         )
     private val sessionUrlConfig =
         SessionUrlConfig(
@@ -832,7 +831,7 @@ class WalletServiceTest {
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-                given { npgClient.createNpgOrderBuild(any(), any()) }
+                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -857,7 +856,7 @@ class WalletServiceTest {
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
                 verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
             }
@@ -1002,7 +1001,7 @@ class WalletServiceTest {
                                 .notificationUrl(notificationUrl.toString())
                         )
 
-                given { npgClient.createNpgOrderBuild(any(), any()) }
+                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -1034,7 +1033,7 @@ class WalletServiceTest {
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
                 verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             }
         }
@@ -1118,7 +1117,7 @@ class WalletServiceTest {
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-                given { npgClient.createNpgOrderBuild(any(), any()) }
+                given { npgClient.createNpgOrderBuild(any(), any(), any()) }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -1145,7 +1144,7 @@ class WalletServiceTest {
                 verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
                 verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
                 verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             }
         }
@@ -1226,7 +1225,7 @@ class WalletServiceTest {
                                 .notificationUrl(notificationUrl.toString())
                         )
 
-                given { npgClient.createNpgOrderBuild(any(), any()) }
+                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                     .willAnswer { mono { npgFields } }
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -1254,7 +1253,7 @@ class WalletServiceTest {
                 verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
                 verify(walletRepository, times(1)).save(walletDocumentInitializedStatus)
                 verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             }
         }
@@ -1353,7 +1352,7 @@ class WalletServiceTest {
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-                given { npgClient.createNpgOrderBuild(any(), any()) }
+                given { npgClient.createNpgOrderBuild(any(), any(), any()) }
                     .willAnswer { mono { npgFields } }
 
                 given { walletRepository.findById(any<String>()) }
@@ -1379,7 +1378,7 @@ class WalletServiceTest {
                 verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
                 verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
                 verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest)
+                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             }
         }
