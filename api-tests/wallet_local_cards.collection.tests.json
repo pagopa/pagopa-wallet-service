@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "de2c1345-7029-410e-b808-df6e8984b243",
+		"_postman_id": "4c242096-f9f3-44b4-ac33-c682f5bfebad",
 		"name": "Wallet CARDS onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23963988"
+		"_exporter_id": "23305473"
 	},
 	"item": [
 		{
@@ -370,7 +370,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"applications\": [\n    \"PAGOA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
+					"raw": "{\n  \"applications\": [\n    \"PAGOPA\"\n  ],\n  \"useDiagnosticTracing\": {{USE_DIAGNOSTIC_TRACING}},\n  \"paymentMethodId\": \"{{PAYMENT_METHOD_ID}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -462,94 +462,6 @@
 					"path": [
 						"wallets",
 						"{{INVALID_WALLET_ID}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get wallet by x-user-id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
-							"    pm.response.to.have.status(200);",
-							"    const response = pm.response.json();",
-							"    pm.expect(response.wallets).to.be.not.null;",
-							"    const createdWallet = response.wallets[0];",
-							"    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.userId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.status).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.status).to.be.eq(\"CREATED\")",
-							"    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-							"    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-							"    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-							"});",
-							"",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-user-id",
-						"value": "{{x-user-id}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{HOSTNAME}}/wallets",
-					"host": [
-						"{{HOSTNAME}}"
-					],
-					"path": [
-						"wallets"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get wallet invalid x-user-id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id with error invalid format\", function () {",
-							"    pm.response.to.have.status(400);",
-							"    const detailErrorField = pm.response.json().detail;",
-							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
-							"});",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-user-id",
-						"value": "{{invalid-x-user-id}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{HOSTNAME}}/wallets",
-					"host": [
-						"{{HOSTNAME}}"
-					],
-					"path": [
-						"wallets"
 					]
 				}
 			},
@@ -1131,6 +1043,95 @@
 						"sessions",
 						"{{INVALID_ORDER_ID}}",
 						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet by x-user-id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.wallets).to.be.not.null;",
+							"    const createdWallet = response.wallets[0];",
+							"    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.userId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.eq(\"VALIDATED\")",
+							"    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get wallet invalid x-user-id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by x-user-id with error invalid format\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const detailErrorField = pm.response.json().detail;",
+							"    pm.expect(detailErrorField).to.be.contain(\"Input request is not valid\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{invalid-x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
 					]
 				}
 			},
