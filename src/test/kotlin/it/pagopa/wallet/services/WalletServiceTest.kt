@@ -2142,7 +2142,12 @@ class WalletServiceTest {
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
-                given { walletRepository.findByUserId(USER_ID.id.toString()) }
+                given {
+                        walletRepository.findByUserIdAndStatus(
+                            USER_ID.id.toString(),
+                            WalletStatusDto.VALIDATED
+                        )
+                    }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
