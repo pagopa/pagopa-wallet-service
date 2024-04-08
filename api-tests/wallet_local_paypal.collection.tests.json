@@ -635,6 +635,56 @@
 			"response": []
 		},
 		{
+			"name": "Get wallet by x-user-id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.wallets).to.be.not.null;",
+							"    const createdWallet = response.wallets[0];",
+							"    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.userId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.a(\"string\")",
+							"    pm.expect(createdWallet.status).to.be.eq(\"VALIDATED\")",
+							"    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Notify wallet invalid security token",
 			"event": [
 				{
@@ -982,56 +1032,6 @@
 						"sessions",
 						"{{ORDER_ID}}",
 						"notifications"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get wallet by x-user-id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by x-user-id return wallet information GET /wallets/\", function () {",
-							"    pm.response.to.have.status(200);",
-							"    const response = pm.response.json();",
-							"    pm.expect(response.wallets).to.be.not.null;",
-							"    const createdWallet = response.wallets[0];",
-							"    pm.expect(createdWallet.walletId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.userId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.paymentMethodId).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.status).to.be.a(\"string\")",
-							"    pm.expect(createdWallet.status).to.be.eq(\"VALIDATED\")",
-							"    pm.expect(createdWallet.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-							"    pm.expect(createdWallet.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-							"    pm.expect(createdWallet.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-							"});",
-							"",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-user-id",
-						"value": "{{x-user-id}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{HOSTNAME}}/wallets",
-					"host": [
-						"{{HOSTNAME}}"
-					],
-					"path": [
-						"wallets"
 					]
 				}
 			},
