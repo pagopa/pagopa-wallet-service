@@ -918,7 +918,6 @@ components:
       required:
         - type
         - pspId
-        - maskedEmail
     WalletApplicationUpdateRequest:
       type: object
       description: Wallet update request
