@@ -19,10 +19,12 @@ internal class ContextLifterMDC<T>(private val coreSubscriber: CoreSubscriber<T>
     }
 
     override fun onError(t: Throwable) {
+        copyToMdc(coreSubscriber.currentContext())
         coreSubscriber.onError(t)
     }
 
     override fun onComplete() {
+        copyToMdc(coreSubscriber.currentContext())
         coreSubscriber.onComplete()
     }
 

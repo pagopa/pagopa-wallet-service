@@ -12,6 +12,7 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.MigrationError
+import it.pagopa.wallet.reactormdc.enrichContext
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
@@ -72,6 +73,7 @@ class MigrationService(
         logger.info("Updating wallet details for ${cardDetails.lastFourDigits}")
         val now = Instant.now()
         return findWalletByContractId(contractId)
+            .enrichContext { value, context -> context.put(MDC_WALLET_ID, value.id.value) }
             .flatMap { currentWallet -> updateWalletCardDetails(currentWallet, cardDetails, now) }
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .doOnNext { logger.info("Wallet details updated for ${cardDetails.lastFourDigits}") }
@@ -84,6 +86,7 @@ class MigrationService(
         val now = Instant.now()
         return findWalletByContractId(contractId)
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
+            .enrichContext { value, context -> context.put(MDC_WALLET_ID, value.id.value) }
             .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
             .flatMap { walletRepository.save(it.toDocument()) }
             .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
@@ -180,4 +183,8 @@ class MigrationService(
                 )
             }
             .flatMap { walletPaymentManagerRepository.save(it) }
+
+    companion object {
+        const val MDC_WALLET_ID = "walletId"
+    }
 }
