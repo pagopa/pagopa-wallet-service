@@ -10,8 +10,6 @@ import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
-import java.net.URI
-import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -21,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
+import java.net.URI
+import java.util.*
 
 @RestController
 @Slf4j
@@ -114,15 +114,9 @@ class WalletController(
 
     override fun getWalletAuthDataById(
         walletId: UUID,
-        clientId: ClientIdDto?,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletAuthDataDto>> {
-        return walletService
-            .findWalletAuthData(WalletId(walletId))
-            .flatMap {
-                walletService.updateWalletUsage(walletId, clientId ?: ClientIdDto.IO).thenReturn(it)
-            }
-            .map { ResponseEntity.ok(it) }
+        return walletService.findWalletAuthData(WalletId(walletId)).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletById(

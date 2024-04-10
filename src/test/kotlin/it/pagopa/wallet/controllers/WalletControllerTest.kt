@@ -8,11 +8,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.WalletTestUtils.CLIENT_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_1
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
-import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.applications.ApplicationId
@@ -162,7 +160,6 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .header("x-client-id", CLIENT_ID.value)
             .bodyValue(
                 // workaround since this class is the request entrypoint and so discriminator
                 // mapping annotation is not read during serialization
@@ -206,7 +203,6 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
-            .header("x-client-id", CLIENT_ID.value)
             .bodyValue(
                 // workaround since this class is the request entrypoint and so discriminator
                 // mapping annotation is not read during serialization
@@ -381,8 +377,6 @@ class WalletControllerTest {
         val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
 
         given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
-        given { walletService.updateWalletUsage(any(), any()) }
-            .willReturn(mono { walletDocument() })
 
         /* test */
         webClient
@@ -403,8 +397,6 @@ class WalletControllerTest {
         val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
 
         given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
-        given { walletService.updateWalletUsage(any(), any()) }
-            .willReturn(mono { walletDocument() })
 
         /* test */
         webClient
