@@ -6,14 +6,14 @@ import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.services.MigrationService
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 @RestController
 @Slf4j

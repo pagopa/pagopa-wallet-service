@@ -14,7 +14,7 @@ class ConfigurationContextLifterMDC {
     private fun contextOperatorHook() {
         Hooks.onEachOperator(
             mdcContextReactorKey,
-            Operators.lift { _, coreSubscriber -> ContextLifterMDC(coreSubscriber) }
+            Operators.lift { _, coreSubscriber -> ContextLifterMDC(coreSubscriber, "contextKey") }
         )
     }
 

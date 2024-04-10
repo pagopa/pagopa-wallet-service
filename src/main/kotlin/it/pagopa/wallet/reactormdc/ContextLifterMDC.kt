@@ -1,13 +1,15 @@
 package it.pagopa.wallet.reactormdc
 
-import java.util.stream.Collectors
 import org.reactivestreams.Subscription
 import org.slf4j.MDC
 import reactor.core.CoreSubscriber
 import reactor.util.context.Context
+import java.util.stream.Collectors
 
-internal class ContextLifterMDC<T>(private val coreSubscriber: CoreSubscriber<T>) :
-    CoreSubscriber<T> {
+internal class ContextLifterMDC<T>(
+    private val coreSubscriber: CoreSubscriber<T>,
+    private val contextKey: String
+) : CoreSubscriber<T> {
 
     override fun onSubscribe(subscription: Subscription) {
         coreSubscriber.onSubscribe(subscription)
@@ -47,8 +49,8 @@ internal class ContextLifterMDC<T>(private val coreSubscriber: CoreSubscriber<T>
                         Collectors.toMap({ e -> e.key.toString() }, { e -> e.value.toString() })
                     )
             if (
-                reactorContextMap.getOrDefault("contextKey", "") ==
-                    mdcContextMap.getOrDefault("contextKey", "")
+                reactorContextMap.getOrDefault(contextKey, "") ==
+                    mdcContextMap.getOrDefault(contextKey, "")
             ) {
                 reactorContextMap.putAll(mdcContextMap)
                 MDC.setContextMap(reactorContextMap)

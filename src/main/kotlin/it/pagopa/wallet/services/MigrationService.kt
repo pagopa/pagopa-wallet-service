@@ -12,14 +12,10 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.MigrationError
-import it.pagopa.wallet.reactormdc.enrichContext
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Duration
-import java.time.Instant
-import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -28,6 +24,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 @Service
 class MigrationService(
@@ -58,26 +57,39 @@ class MigrationService(
         userId: UserId
     ): Mono<Wallet> {
         logger.info(
-            "Initialize wallet for PaymentManager Id $paymentManagerWalletId and userId: ${userId.id}"
+            "Initialize wallet for paymentManagerId: [{}] and userId: [{}]",
+            paymentManagerWalletId,
+            userId.id
         )
         val now = Instant.now()
         return walletPaymentManagerRepository
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
             .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
+            .doOnNext { logger.info("Initialized new Wallet [{}]", it.id.value) }
             .doOnError { logger.error("Failure during wallet's initialization", it) }
             .toMono()
     }
 
     fun updateWalletCardDetails(contractId: ContractId, cardDetails: CardDetails): Mono<Wallet> {
-        logger.info("Updating wallet details for ${cardDetails.lastFourDigits}")
+        logger.info("Updating wallet details for [{}]", cardDetails.lastFourDigits.lastFourDigits)
         val now = Instant.now()
         return findWalletByContractId(contractId)
-            .enrichContext { value, context -> context.put(MDC_WALLET_ID, value.id.value) }
-            .flatMap { currentWallet -> updateWalletCardDetails(currentWallet, cardDetails, now) }
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
-            .doOnNext { logger.info("Wallet details updated for ${cardDetails.lastFourDigits}") }
-            .doOnError { logger.error("Failure during wallet's card details update", it) }
+            .flatMap { wallet ->
+                Mono.just(wallet)
+                    .flatMap { currentWallet ->
+                        updateWalletCardDetails(currentWallet, cardDetails, now)
+                    }
+                    .doOnNext { logger.info("Wallet details updated for [{}]", it.id.value) }
+                    .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
+            }
+            .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
+                logger.error("Failure during wallet's card details update: contractId not found")
+            }
+            .doOnError({ e -> e !is MigrationError.WalletContractIdNotFound }) {
+                logger.error("Failure during wallet's card details update", it)
+            }
             .toMono()
     }
 
@@ -86,14 +98,22 @@ class MigrationService(
         val now = Instant.now()
         return findWalletByContractId(contractId)
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
-            .enrichContext { value, context -> context.put(MDC_WALLET_ID, value.id.value) }
-            .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
-            .flatMap { walletRepository.save(it.toDocument()) }
-            .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
-            .flatMap { it.saveEvents(loggingEventRepository) }
-            .map { it.toDomain() }
-            .doOnNext { logger.info("Deleted wallet successfully") }
-            .doOnError { logger.error("Failure during wallet delete", it) }
+            .flatMap { wallet ->
+                Mono.just(wallet)
+                    .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
+                    .flatMap { walletRepository.save(it.toDocument()) }
+                    .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
+                    .flatMap { it.saveEvents(loggingEventRepository) }
+                    .map { it.toDomain() }
+                    .doOnNext { logger.info("Deleted wallet successfully [{}]", it.id.value) }
+                    .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
+            }
+            .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
+                logger.error("Failure during wallet delete: contractId not found")
+            }
+            .doOnError({ e -> e !is MigrationError.WalletContractIdNotFound }) {
+                logger.error("Failure during wallet delete", it)
+            }
             .toMono()
     }
 
