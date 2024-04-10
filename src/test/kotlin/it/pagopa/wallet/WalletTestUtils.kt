@@ -6,6 +6,9 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Wallet
+import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
+import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
@@ -14,14 +17,11 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
-import org.springframework.http.HttpStatus
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
-import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
-import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
+import org.springframework.http.HttpStatus
 
 object WalletTestUtils {
 

@@ -228,6 +228,18 @@ class WalletController(
             .map { ResponseEntity.noContent().build() }
     }
 
+    override fun updateWalletUsage(
+        walletId: UUID,
+        updateWalletUsageRequestDto: Mono<UpdateWalletUsageRequestDto>,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<Void>> {
+        return updateWalletUsageRequestDto
+            .flatMap {
+                walletService.updateWalletUsage(walletId, it.clientId, it.usageTime.toInstant())
+            }
+            .map { ResponseEntity.noContent().build() }
+    }
+
     override fun postWalletValidations(
         walletId: UUID,
         orderId: String,

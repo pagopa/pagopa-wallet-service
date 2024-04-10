@@ -531,7 +531,8 @@ class WalletService(
 
     fun updateWalletUsage(
         walletId: UUID,
-        clientId: ClientIdDto
+        clientId: ClientIdDto,
+        usageTime: Instant
     ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
         walletRepository
             .findById(walletId.toString())
@@ -540,7 +541,7 @@ class WalletService(
             .filter { it.status == WalletStatusDto.VALIDATED }
             .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
             .flatMap {
-                walletRepository.save(it.updateUsageForClient(clientId, Instant.now()).toDocument())
+                walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
 
     private fun confirmPaymentCard(
