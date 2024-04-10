@@ -20,6 +20,7 @@ import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.exception.ApplicationNotFoundException
+import it.pagopa.wallet.exception.InvalidRequestException
 import it.pagopa.wallet.exception.SecurityTokenMatchException
 import it.pagopa.wallet.exception.WalletNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -35,10 +36,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
+import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -84,7 +87,7 @@ class WalletControllerTest {
     fun testCreateWallet() = runTest {
         /* preconditions */
 
-        given { walletService.createWallet(any(), any(), any()) }
+        given { walletService.createWallet(any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -104,6 +107,7 @@ class WalletControllerTest {
             .uri("/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
             .exchange()
             .expectStatus()
@@ -222,14 +226,7 @@ class WalletControllerTest {
         /* preconditions */
         val walletId = UUID.randomUUID()
         val orderId = Instant.now().toString() + "ABCDE"
-        val wallet =
-            walletDocumentVerifiedWithCardDetails(
-                "12345678",
-                "0000",
-                "203012",
-                "?",
-                WalletCardDetailsDto.BrandEnum.MASTERCARD
-            )
+        val wallet = walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val response =
             WalletVerifyRequestsResponseDto()
                 .orderId(orderId)
@@ -855,5 +852,31 @@ class WalletControllerTest {
                 .expectStatus()
                 .isBadRequest
                 .expectBody()
+        }
+
+    @Test
+    fun `should throw InvalidRequestException creating wallet for unmanaged OnboardingChannel`() =
+        runTest {
+            /* preconditions */
+            val mockClientId: ClientIdDto = mock()
+            given(mockClientId.toString()).willReturn("INVALID")
+            /* test */
+            val exception =
+                assertThrows<InvalidRequestException> {
+                    walletController
+                        .createWallet(
+                            xUserId = UUID.randomUUID(),
+                            xClientIdDto = mockClientId,
+                            walletCreateRequestDto =
+                                Mono.just(WalletTestUtils.CREATE_WALLET_REQUEST),
+                            exchange = mock()
+                        )
+                        .block()
+                }
+
+            assertEquals(
+                "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
+                exception.message
+            )
         }
 }

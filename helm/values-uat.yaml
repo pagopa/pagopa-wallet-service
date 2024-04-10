@@ -30,6 +30,14 @@ microservice-chart:
         NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
         ECS_SERVICE_NAME: "pagopa-wallet-service"
         ECS_SERVICE_ENVIRONMENT: "uat"
+        OTEL_SERVICE_NAME: "pagopa-wallet-service"
+        OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+        OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+        OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+        OTEL_TRACES_EXPORTER: otlp
+        OTEL_METRICS_EXPORTER: otlp
+        OTEL_LOGS_EXPORTER: none
+        OTEL_TRACES_SAMPLER: "always_on"
         WALLET_SESSION_TTL: "100000"
         WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
         WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
@@ -45,9 +53,11 @@ microservice-chart:
         ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
         NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
         WALLET_MIGRATION_CARD_PAYMENT_METHOD_ID: "f25399bf-c56f-4bd2-adc9-7aef87410609"
+        WALLET_MIGRATION_DEFAULT_APPLICATION_ID: "PAGOPA"
         WALLET_LOGO_MAPPING: >
-          { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png' }
+          { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
+        WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM"
       envSecret:
         MONGO_PASSWORD: mongo-wallet-password
         NPG_SERVICE_API_KEY: npg-service-api-key
@@ -55,9 +65,10 @@ microservice-chart:
         ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
         WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
         NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
+        OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   image:
     repository: pagopaucommonacr.azurecr.io/pagopawalletservice
-    tag: "0.6.2"
+    tag: "0.10.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -126,8 +137,15 @@ microservice-chart:
     NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
-    ECS_SERVICE_NAME: "pagopa-wallet-service"
-    ECS_SERVICE_ENVIRONMENT: "uat"
+    OTEL_SERVICE_NAME: "pagopa-wallet-service"
+    OTEL_SERVICE_ENVIRONMENT: "uat"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_METRICS_EXPORTER: otlp
+    OTEL_LOGS_EXPORTER: none
+    OTEL_TRACES_SAMPLER: "always_on"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
@@ -136,16 +154,18 @@ microservice-chart:
     SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"
-    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/ecommerce/npg/notifications/v1/sessions/{orderId}/outcomes?paymentMethodId={paymentMethodId}"
+    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
     WALLET_MIGRATION_CARD_PAYMENT_METHOD_ID: "f25399bf-c56f-4bd2-adc9-7aef87410609"
+    WALLET_MIGRATION_DEFAULT_APPLICATION_ID: "PAGOPA"
     WALLET_LOGO_MAPPING: >
-      { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png' }
+      { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
+    WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
@@ -153,6 +173,7 @@ microservice-chart:
     ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
+    OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   keyvault:
     name: "pagopa-u-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

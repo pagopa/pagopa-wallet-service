@@ -1,7 +1,7 @@
 package it.pagopa.wallet.util
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.config.LogoConfig
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
@@ -15,7 +15,7 @@ class WalletUtilsTest {
 
     companion object {
         val logoMap =
-            (WalletCardDetailsDto.BrandEnum.values().map { it.toString() } +
+            (LogoConfig.SupportedCardLogo.values().map { it.toString() } +
                     WalletDetailsType.values()
                         .filter { it != WalletDetailsType.CARDS }
                         .map { it.toString() } +
@@ -24,8 +24,8 @@ class WalletUtilsTest {
 
         @JvmStatic
         fun `card wallet with all brands method source`() =
-            WalletCardDetailsDto.BrandEnum.values().map {
-                WalletTestUtils.walletDocumentStatusValidatedCard(it).toDomain()
+            LogoConfig.SupportedCardLogo.values().map {
+                WalletTestUtils.walletDocumentStatusValidatedCard(it.name).toDomain()
             }
     }
 

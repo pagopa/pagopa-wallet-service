@@ -47,14 +47,13 @@ class MigrationController(private val migrationService: MigrationService) : Migr
         return walletPmCardDetailsRequestDto
             .flatMap { request ->
                 migrationService.updateWalletCardDetails(
-                    contractId = ContractId(request.newContractIdentifier),
+                    contractId = ContractId(request.contractIdentifier),
                     cardDetails =
                         CardDetails(
                             bin = Bin(request.cardBin),
                             lastFourDigits = LastFourDigits(request.lastFourDigits),
                             expiryDate = parseExpiryDateMMYY(request.expiryDate),
-                            brand =
-                                WalletCardDetailsDto.BrandEnum.fromValue(request.paymentCircuit),
+                            brand = request.paymentCircuit,
                             paymentInstrumentGatewayId =
                                 PaymentInstrumentGatewayId(request.paymentGatewayCardId)
                         )
@@ -69,7 +68,7 @@ class MigrationController(private val migrationService: MigrationService) : Migr
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> =
         walletPmDeleteRequestDto
-            .flatMap { migrationService.deleteWallet(ContractId(it.newContractIdentifier)) }
+            .flatMap { migrationService.deleteWallet(ContractId(it.contractIdentifier)) }
             .map { ResponseEntity.noContent().build() }
 
     private fun parseExpiryDateMMYY(expiryDate: String): ExpiryDate =

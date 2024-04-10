@@ -1,6 +1,5 @@
 package it.pagopa.wallet.controllers
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto.BrandEnum
 import it.pagopa.generated.wallet.model.WalletPmAssociationRequestDto
 import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletPmDeleteRequestDto
@@ -109,7 +108,7 @@ class MigrationControllerTest {
             verify(migrationService).updateWalletCardDetails(any(), capture())
             assertEquals(lastValue.bin.bin, "123456")
             assertEquals(lastValue.expiryDate, ExpiryDate("202512"))
-            assertEquals(lastValue.brand, BrandEnum.VISA)
+            assertEquals(lastValue.brand, "VISA")
             assertEquals(lastValue.lastFourDigits.lastFourDigits, "7890")
         }
     }
@@ -158,9 +157,7 @@ class MigrationControllerTest {
             .post()
             .uri("/migrations/wallets/delete")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(
-                WalletPmDeleteRequestDto().newContractIdentifier(UUID.randomUUID().toString())
-            )
+            .bodyValue(WalletPmDeleteRequestDto().contractIdentifier(UUID.randomUUID().toString()))
             .exchange()
             .expectStatus()
             .isNoContent
@@ -179,7 +176,7 @@ class MigrationControllerTest {
         private fun createDetailRequest(contractId: ContractId): WalletPmCardDetailsRequestDto =
             WalletPmCardDetailsRequestDto()
                 .newContractIdentifier(contractId.contractId)
-                .originalContractIdentifier(UUID.randomUUID().toString())
+                .contractIdentifier(UUID.randomUUID().toString())
                 .cardBin("123456")
                 .lastFourDigits("7890")
                 .paymentCircuit("VISA")

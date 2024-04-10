@@ -8,15 +8,12 @@ servers:
   - url: https://{gateway_prod}/api/v1
     description: PROD
 security:
-  - ApiKeyAuth: []
-  - OAuth2: []
+  - OAuth2: [ ]
 paths:
   /psp/api/v1/orders/build:
     post:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Create an order and initiates a payment through build functionality.
       description: This service is targeted to ecommerce platforms requiring to implement the payment pages in line with their own dedicated UI style guidelines. The service will return a list of fields expressed in JSON format, to be translated into HTML by the ecommerce platform web app. If the paymentService field is valued at CARDS the service will return a list of fields for the CARD_DATA_COLLECTION without going through the PAYMENT_METHOD_SELECTION state and if it's valued with an APM the service will return an url where the customer should be redirected.
       parameters:
@@ -27,6 +24,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
       requestBody:
         content:
           application/json:
@@ -91,8 +94,6 @@ paths:
     post:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Finalize a payment.
       description: This service shall be invoked by the ecommerce platforms to finalize the payment. It is limited to the flow versions 1 and 3.
       parameters:
@@ -103,6 +104,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
       requestBody:
         content:
           application/json:
@@ -221,8 +228,6 @@ paths:
     post:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Confirm a payment.
       description: This service shall be invoked by the ecommerce platforms to finalize the payment. It is limited to the flow version 2.
       parameters:
@@ -233,6 +238,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
       requestBody:
         content:
           application/json:
@@ -364,8 +375,6 @@ paths:
     post:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Cancel a payment.
       description: This service is targeted to ecommerce platforms in order to cancel the current payment session. This is typically required to clean up the collected data in case the user decided to quit the payment before completion.
       parameters:
@@ -376,6 +385,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
       requestBody:
         content:
           application/json:
@@ -466,8 +481,6 @@ paths:
     get:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Get current payment state.
       description: This service the ecommerce platforms to retrieve the current state of a payment flow.
       parameters:
@@ -478,6 +491,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
         - name: sessionId
           in: query
           required: true
@@ -612,8 +631,6 @@ paths:
     get:
       tags:
         - Payment Services
-      security:
-        - ApiKeyAuth: []
       summary: Get card characteristics.
       description: It provides PCI-free non sensitive information about the payment card entered by the user along the current payment session.
       parameters:
@@ -624,6 +641,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
+        - name: X-API-KEY
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Api key header
         - name: sessionId
           in: query
           required: true
@@ -671,12 +694,12 @@ paths:
             type: string
             format: uuid
           description: Mandatory field to be valued with a UUID to be renewed at every call. The purpose of the field is to allow referring to a specific call for any integration or maintenance activity.
-        - name: x-api-key
+        - name: X-API-KEY
           in: header
           required: true
           schema:
             type: string
-          description: Default api key
+          description: Api key header
         - name: Idempotency-key
           in: header
           required: true
@@ -717,7 +740,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: It stores a given text data in the ongoing build session.
       description: Through this service, the text is sent to Nexi back end and stored in a secure environment associated to the ongoing payment session. This service is invoked by the pages running in the internal fields. It is not required to invoke it directly by the ecomm platform.
       parameters:
@@ -787,7 +810,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Stores the array of data the current build session.
       description: Through this service, the data is sent to Nexi back end and stored in a secure environment associated to the ongoing payment session.
       parameters:
@@ -871,7 +894,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Submit the action requested by the user
       description: The service executes the requested action.
       parameters:
@@ -937,7 +960,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Get the settings of the specified field.
       parameters:
         - name: Correlation-Id
@@ -990,7 +1013,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Verify and return the result of the gdi.
       parameters:
         - name: Correlation-Id
@@ -1053,7 +1076,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Verify the GDI result in order to return the result of finalize_payment.
       parameters:
         - name: Correlation-Id
@@ -1106,7 +1129,7 @@ paths:
       tags:
         - Hosted Fields
       security:
-        - OAuth2: []
+        - OAuth2: [ ]
       summary: Finalize a payment after a challenge
       description: Through this service, Nexi back end finalize the payment.
       parameters:
@@ -1209,7 +1232,7 @@ components:
           example: '234244353'
         additionalData:
           type: object
-          additionalProperties: {}
+          additionalProperties: { }
           description: Map of additional fields specific to the chosen payment method
           example:
             authorizationCode: '647189'
@@ -1977,10 +2000,6 @@ components:
           example: '2022-09-01T01:20:00.001Z'
           description: Datetime of the operation
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      name: X-API-KEY
-      in: header
     OAuth2:
       type: http
       scheme: bearer

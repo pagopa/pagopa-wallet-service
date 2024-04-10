@@ -1,6 +1,5 @@
 package it.pagopa.wallet.config
 
-import it.pagopa.generated.wallet.model.WalletCardDetailsDto
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
@@ -11,13 +10,22 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class LogoConfig {
 
+    /** Enumeration of supported card brand-logo mapping. */
+    enum class SupportedCardLogo {
+        VISA,
+        MC,
+        DINERS,
+        MAESTRO,
+        AMEX
+    }
+
     @Bean
     fun walletLogoMapping(
         @Value("#{\${wallet.logo_mapping}}") logoMapping: Map<String, String>
     ): Map<String, URI> {
         val transformedLogoMapping = logoMapping.mapValues { URI.create(it.value) }
         val expectedKeys =
-            (WalletCardDetailsDto.BrandEnum.values().map { it.toString() } +
+            (SupportedCardLogo.values().map { it.toString() } +
                     WalletDetailsType.values()
                         .filter { it != WalletDetailsType.CARDS }
                         .map { it.toString() } +
