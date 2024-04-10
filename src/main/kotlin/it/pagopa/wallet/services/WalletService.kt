@@ -8,12 +8,10 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
-import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
@@ -21,14 +19,6 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
-import java.net.URI
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -41,6 +31,16 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.*
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
+import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 
 @Service
 class WalletService(
@@ -531,7 +531,8 @@ class WalletService(
 
     fun updateWalletUsage(
         walletId: UUID,
-        clientId: ClientIdDto
+        clientId: ClientIdDto,
+        usageTime: Instant
     ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
         walletRepository
             .findById(walletId.toString())
@@ -540,7 +541,7 @@ class WalletService(
             .filter { it.status == WalletStatusDto.VALIDATED }
             .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
             .flatMap {
-                walletRepository.save(it.updateUsageForClient(clientId, Instant.now()).toDocument())
+                walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
 
     private fun confirmPaymentCard(

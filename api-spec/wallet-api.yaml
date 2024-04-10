@@ -614,6 +614,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+  /wallets/{walletId}/usage:
+    patch:
+      tags:
+        - wallets
+      summary: Update last usage for wallet
+      operationId: updateWalletUsage
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet to return
+          required: true
+          schema:
+            $ref: '#/components/schemas/WalletId'
+      requestBody:
+        description: Session input data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientId:
+                  $ref: '#/components/schemas/ClientId'
+                usageTime:
+                  type: string
+                  format: date-time
+      responses:
+        '204':
+          description: Wallet update successfully
+        '400':
+          description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Wallet not found
+        '504':
+          description: Timeout serving request
 
   /migrations/wallets:
     put:
