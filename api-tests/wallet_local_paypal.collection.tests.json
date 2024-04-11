@@ -985,6 +985,7 @@
 							"      method: 'POST',",
 							"      header: {",
 							"        'Content-Type': 'application/json',",
+							"        'x-user-id': `${pm.environment.get(\"x-user-id\")}`,",
 							"      },",
 							"      body: {",
 							"        mode: 'raw',",
