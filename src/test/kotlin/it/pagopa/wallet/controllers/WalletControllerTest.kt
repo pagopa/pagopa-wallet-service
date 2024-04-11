@@ -391,7 +391,7 @@ class WalletControllerTest {
     fun testGetWalletAPMAuthDataSuccess() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
-        val walletAuthData = WalletTestUtils.walletAPMAuthDataDto()
+        val walletAuthData = WalletTestUtils.walletPayPalAuthDataDto()
         val jsonToTest = objectMapper.writeValueAsString(walletAuthData)
         given { walletService.findWalletAuthData(walletId) }.willReturn(mono { walletAuthData })
         /* test */
