@@ -14,6 +14,7 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.applications.ApplicationId
+import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -125,7 +126,8 @@ class WalletControllerTest {
     @Test
     fun testCreateSessionWalletWithCard() = runTest {
         /* preconditions */
-        val walletId = UUID.randomUUID()
+        val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
         val sessionResponseDto =
             SessionWalletCreateResponseDto()
                 .orderId("W3948594857645ruey")
@@ -143,7 +145,7 @@ class WalletControllerTest {
                             )
                         )
                 )
-        given { walletService.createSessionWallet(eq(walletId), any()) }
+        given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -157,9 +159,9 @@ class WalletControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/wallets/${walletId}/sessions")
+            .uri("/wallets/${walletId.value}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-user-id", userId.id.toString())
             .bodyValue(
                 // workaround since this class is the request entrypoint and so discriminator
                 // mapping annotation is not read during serialization
@@ -177,7 +179,8 @@ class WalletControllerTest {
     @Test
     fun testCreateSessionWalletWithAPM() = runTest {
         /* preconditions */
-        val walletId = UUID.randomUUID()
+        val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
         val sessionResponseDto =
             SessionWalletCreateResponseDto()
                 .orderId("W3948594857645ruey")
@@ -186,7 +189,7 @@ class WalletControllerTest {
                         .paymentMethodType("apm")
                         .redirectUrl("https://apm-redirect.url")
                 )
-        given { walletService.createSessionWallet(eq(walletId), any()) }
+        given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -200,9 +203,9 @@ class WalletControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/wallets/${walletId}/sessions")
+            .uri("/wallets/${walletId.value}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-user-id", userId.id.toString())
             .bodyValue(
                 // workaround since this class is the request entrypoint and so discriminator
                 // mapping annotation is not read during serialization
@@ -261,8 +264,9 @@ class WalletControllerTest {
     fun `deleteWalletById returns 204 when wallet is deleted successfully`() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
 
-        given { walletService.deleteWallet(walletId) }
+        given { walletService.deleteWallet(walletId, userId) }
             .willReturn(
                 Mono.just(LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())))
             )
@@ -274,6 +278,7 @@ class WalletControllerTest {
         webClient
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
             .isNoContent
@@ -297,14 +302,16 @@ class WalletControllerTest {
     fun `deleteWalletById returns 404 on missing wallet`() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
 
-        given { walletService.deleteWallet(walletId) }
+        given { walletService.deleteWallet(walletId, userId) }
             .willReturn(Mono.error(WalletNotFoundException(walletId)))
 
         /* test */
         webClient
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
             .isNotFound
@@ -336,6 +343,7 @@ class WalletControllerTest {
     fun testGetWalletById() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
         val walletInfo = WalletTestUtils.walletInfoDto()
         val jsonToTest = objectMapper.writeValueAsString(walletInfo)
         given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
@@ -343,6 +351,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
             .isOk
@@ -354,6 +363,7 @@ class WalletControllerTest {
     fun `get paypal wallet by id`() {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
         val walletInfo = WalletTestUtils.walletInfoDtoAPM()
         val jsonToTest = objectMapper.writeValueAsString(walletInfo)
         given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
@@ -362,6 +372,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
             .isOk
@@ -427,8 +438,9 @@ class WalletControllerTest {
     fun `wallet applications updated with valid statuses returns 204`() {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
 
-        given { walletService.updateWalletApplications(any(), any()) }
+        given { walletService.updateWalletApplications(eq(walletId), eq(userId), any()) }
             .willReturn(
                 mono {
                     LoggedAction(
@@ -454,6 +466,7 @@ class WalletControllerTest {
         webClient
             .put()
             .uri("/wallets/{walletId}/applications", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
             .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
             .exchange()
             .expectStatus()
@@ -469,6 +482,7 @@ class WalletControllerTest {
 
             /* preconditions */
             val walletId = WalletId(UUID.randomUUID())
+            val userId = UserId(java.util.UUID.randomUUID())
             val walletApplicationUpdateData =
                 WalletApplicationUpdateData(
                     successfullyUpdatedApplications =
@@ -484,7 +498,7 @@ class WalletControllerTest {
                     updatedWallet = WALLET_DOMAIN.toDocument()
                 )
 
-            given { walletService.updateWalletApplications(any(), any()) }
+            given { walletService.updateWalletApplications(eq(walletId), eq(userId), any()) }
                 .willReturn(
                     mono {
                         LoggedAction(
@@ -519,6 +533,7 @@ class WalletControllerTest {
                     "/wallets/{walletId}/applications",
                     mapOf("walletId" to walletId.value.toString())
                 )
+                .header("x-user-id", userId.id.toString())
                 .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
                 .exchange()
                 .expectStatus()
@@ -537,8 +552,9 @@ class WalletControllerTest {
 
             /* preconditions */
             val walletId = WalletId(UUID.randomUUID())
+            val userId = UserId(UUID.randomUUID())
 
-            given { walletService.updateWalletApplications(any(), any()) }
+            given { walletService.updateWalletApplications(eq(walletId), eq(userId), any()) }
                 .willReturn(Mono.error(ApplicationNotFoundException(ApplicationId("UNKNOWN").id)))
 
             /* test */
@@ -558,6 +574,7 @@ class WalletControllerTest {
                     "/wallets/{walletId}/applications",
                     mapOf("walletId" to walletId.value.toString())
                 )
+                .header("x-user-id", userId.id.toString())
                 .bodyValue(walletUpdateRequest)
                 .exchange()
                 .expectStatus()

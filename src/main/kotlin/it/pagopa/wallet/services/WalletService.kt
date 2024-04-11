@@ -276,16 +276,17 @@ class WalletService(
     }
 
     fun createSessionWallet(
-        walletId: UUID,
+        xUserId: UserId,
+        walletId: WalletId,
         sessionInputDataDto: SessionInputDataDto
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
             .filter { it.status == WalletStatusDto.CREATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
@@ -743,9 +744,9 @@ class WalletService(
             else -> null
         }
 
-    fun deleteWallet(walletId: WalletId): Mono<LoggedAction<Unit>> =
+    fun deleteWallet(walletId: WalletId, userId: UserId): Mono<LoggedAction<Unit>> =
         walletRepository
-            .findById(walletId.value.toString())
+            .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
             .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
@@ -950,12 +951,13 @@ class WalletService(
     }
 
     fun updateWalletApplications(
-        walletId: UUID,
+        walletId: WalletId,
+        userId: UserId,
         applicationsToUpdate: List<Pair<WalletApplicationId, WalletApplicationStatus>>
     ): Mono<LoggedAction<WalletApplicationUpdateData>> {
         return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .flatMap { wallet ->
                 val walletApplications =
                     wallet.applications.associateBy { WalletApplicationId(it.id) }.toMap()
