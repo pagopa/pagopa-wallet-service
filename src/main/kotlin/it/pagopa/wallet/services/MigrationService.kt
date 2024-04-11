@@ -66,7 +66,7 @@ class MigrationService(
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
             .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
-            .doOnNext { logger.info("Initialized new Wallet [{}]", it.id.value) }
+            .doOnNext { logger.info("Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]", paymentManagerWalletId, userId.id, it.id.value) }
             .doOnError { logger.error("Failure during wallet's initialization", it) }
             .toMono()
     }
