@@ -81,7 +81,7 @@ class MigrationService(
                     .flatMap { currentWallet ->
                         updateWalletCardDetails(currentWallet, cardDetails, now)
                     }
-                    .doOnNext { logger.info("Wallet details updated for [{}]", it.id.value) }
+                    .doOnNext { logger.info("Details updated for wallet with id: [{}]", it.id.value) }
                     .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
             }
             .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
