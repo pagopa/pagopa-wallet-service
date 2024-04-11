@@ -23,8 +23,6 @@ import java.time.ZoneId
 import java.util.*
 import org.springframework.http.HttpStatus
 
-private const val s = "test*****@****test.aaa"
-
 object WalletTestUtils {
 
     val USER_ID = UserId(UUID.randomUUID())
