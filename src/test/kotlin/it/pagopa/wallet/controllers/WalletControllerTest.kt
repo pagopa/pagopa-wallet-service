@@ -27,6 +27,7 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
@@ -50,6 +51,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.test.test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -871,4 +873,44 @@ class WalletControllerTest {
                 exception.message
             )
         }
+
+    @Test
+    fun `should return 204 when update last wallet usage successfully`() = runTest {
+        val wallet = WalletTestUtils.walletDocument()
+        val updateRequest =
+            Mono.just(
+                UpdateWalletUsageRequestDto().clientId(ClientIdDto.IO).usageTime(OffsetDateTime.MIN)
+            )
+
+        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.just(wallet))
+
+        walletController
+            .updateWalletUsage(
+                walletId = UUID.fromString(wallet.id),
+                updateWalletUsageRequestDto = updateRequest,
+                exchange = mock()
+            )
+            .test()
+            .assertNext { assertEquals(204, it.statusCode) }
+    }
+
+    @Test
+    fun `should return 404 when update last usage on non existing wallet`() = runTest {
+        val wallet = WalletTestUtils.walletDocument()
+        val updateRequest =
+            Mono.just(
+                UpdateWalletUsageRequestDto().clientId(ClientIdDto.IO).usageTime(OffsetDateTime.MIN)
+            )
+
+        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.empty())
+
+        walletController
+            .updateWalletUsage(
+                walletId = UUID.fromString(wallet.id),
+                updateWalletUsageRequestDto = updateRequest,
+                exchange = mock()
+            )
+            .test()
+            .assertNext { assertEquals(404, it.statusCode) }
+    }
 }
