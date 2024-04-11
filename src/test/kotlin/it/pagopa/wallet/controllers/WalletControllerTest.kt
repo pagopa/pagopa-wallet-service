@@ -25,6 +25,10 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
+import java.net.URI
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -46,10 +50,6 @@ import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
-import java.net.URI
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
