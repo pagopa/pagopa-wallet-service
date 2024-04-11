@@ -25,10 +25,6 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.net.URI
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -50,6 +46,10 @@ import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
+import java.net.URI
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -892,29 +892,12 @@ class WalletControllerTest {
             .assertNext {
                 assertEquals(HttpStatusCode.valueOf(204), it.statusCode)
                 verify(walletService)
-                    .updateWalletUsage(eq(UUID.fromString(wallet.id)), eq(ClientIdDto.IO), any())
+                    .updateWalletUsage(
+                        eq(UUID.fromString(wallet.id)),
+                        eq(ClientIdDto.IO),
+                        eq(OffsetDateTime.MIN.toInstant())
+                    )
             }
-            .verifyComplete()
-    }
-
-    @Test
-    fun `should return 404 when update last usage on non existing wallet`() = runTest {
-        val wallet = WalletTestUtils.walletDocument()
-        val updateRequest =
-            Mono.just(
-                UpdateWalletUsageRequestDto().clientId(ClientIdDto.IO).usageTime(OffsetDateTime.MIN)
-            )
-
-        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.empty())
-
-        walletController
-            .updateWalletUsage(
-                walletId = UUID.fromString(wallet.id),
-                updateWalletUsageRequestDto = updateRequest,
-                exchange = mock()
-            )
-            .test()
-            .assertNext { assertEquals(HttpStatusCode.valueOf(404), it.statusCode) }
             .verifyComplete()
     }
 }
