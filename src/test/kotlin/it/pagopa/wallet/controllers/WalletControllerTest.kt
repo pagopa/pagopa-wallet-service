@@ -37,14 +37,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.given
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -891,7 +889,12 @@ class WalletControllerTest {
                 exchange = mock()
             )
             .test()
-            .assertNext { assertEquals(204, it.statusCode) }
+            .assertNext {
+                assertEquals(HttpStatusCode.valueOf(204), it.statusCode)
+                verify(walletService)
+                    .updateWalletUsage(eq(UUID.fromString(wallet.id)), eq(ClientIdDto.IO), any())
+            }
+            .verifyComplete()
     }
 
     @Test
@@ -911,6 +914,7 @@ class WalletControllerTest {
                 exchange = mock()
             )
             .test()
-            .assertNext { assertEquals(404, it.statusCode) }
+            .assertNext { assertEquals(HttpStatusCode.valueOf(404), it.statusCode) }
+            .verifyComplete()
     }
 }
