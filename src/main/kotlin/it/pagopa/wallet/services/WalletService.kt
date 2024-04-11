@@ -543,6 +543,7 @@ class WalletService(
             .flatMap {
                 walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
+            .doOnNext { logger.info("Update last usage for walletId [{}]", it.id) }
 
     private fun confirmPaymentCard(
         sessionId: String,
