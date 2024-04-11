@@ -105,7 +105,7 @@ class MigrationService(
                     .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
                     .flatMap { it.saveEvents(loggingEventRepository) }
                     .map { it.toDomain() }
-                    .doOnNext { logger.info("Deleted wallet successfully [{}]", it.id.value) }
+                    .doOnNext { logger.info("Wallet with id: [{}] deleted successfully", it.id.value) }
                     .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
             }
             .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
