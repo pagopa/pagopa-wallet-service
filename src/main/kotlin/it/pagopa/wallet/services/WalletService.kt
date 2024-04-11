@@ -597,9 +597,9 @@ class WalletService(
     private fun gatewayToWalletExpiryDate(expiryDate: String) =
         YearMonth.parse(expiryDate, npgExpiryDateFormatter).format(walletExpiryDateFormatter)
 
-    fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
+    fun findWallet(walletId: UUID, userId: UUID): Mono<WalletInfoDto> {
         return walletRepository
-            .findById(walletId.toString())
+            .findByIdAndUserId(walletId.toString(), userId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { wallet -> toWalletInfoDto(wallet) }
     }

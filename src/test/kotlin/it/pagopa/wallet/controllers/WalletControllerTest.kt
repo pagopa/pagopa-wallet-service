@@ -346,7 +346,8 @@ class WalletControllerTest {
         val userId = UserId(UUID.randomUUID())
         val walletInfo = WalletTestUtils.walletInfoDto()
         val jsonToTest = objectMapper.writeValueAsString(walletInfo)
-        given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
+        given { walletService.findWallet(eq(walletId.value), eq(userId.id)) }
+            .willReturn(mono { walletInfo })
         /* test */
         webClient
             .get()
@@ -366,7 +367,8 @@ class WalletControllerTest {
         val userId = UserId(UUID.randomUUID())
         val walletInfo = WalletTestUtils.walletInfoDtoAPM()
         val jsonToTest = objectMapper.writeValueAsString(walletInfo)
-        given { walletService.findWallet(any()) }.willReturn(mono { walletInfo })
+        given { walletService.findWallet(eq(walletId.value), eq(userId.id)) }
+            .willReturn(mono { walletInfo })
 
         /* test */
         webClient

@@ -2017,11 +2017,17 @@ class WalletServiceTest {
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
@@ -2059,11 +2065,17 @@ class WalletServiceTest {
                             WalletPaypalDetailsDto().maskedEmail(MASKED_EMAIL.value).pspId(PSP_ID)
                         )
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
@@ -2100,11 +2112,17 @@ class WalletServiceTest {
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
