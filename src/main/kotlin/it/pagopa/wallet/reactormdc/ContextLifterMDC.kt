@@ -1,10 +1,10 @@
 package it.pagopa.wallet.reactormdc
 
+import java.util.stream.Collectors
 import org.reactivestreams.Subscription
 import org.slf4j.MDC
 import reactor.core.CoreSubscriber
 import reactor.util.context.Context
-import java.util.stream.Collectors
 
 internal class ContextLifterMDC<T>(
     private val coreSubscriber: CoreSubscriber<T>,

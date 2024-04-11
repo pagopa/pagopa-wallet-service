@@ -16,6 +16,9 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -24,9 +27,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
-import java.time.Duration
-import java.time.Instant
-import java.util.*
 
 @Service
 class MigrationService(
@@ -66,7 +66,14 @@ class MigrationService(
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
             .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
-            .doOnNext { logger.info("Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]", paymentManagerWalletId, userId.id, it.id.value) }
+            .doOnNext {
+                logger.info(
+                    "Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]",
+                    paymentManagerWalletId,
+                    userId.id,
+                    it.id.value
+                )
+            }
             .doOnError { logger.error("Failure during wallet's initialization", it) }
             .toMono()
     }
@@ -81,7 +88,9 @@ class MigrationService(
                     .flatMap { currentWallet ->
                         updateWalletCardDetails(currentWallet, cardDetails, now)
                     }
-                    .doOnNext { logger.info("Details updated for wallet with id: [{}]", it.id.value) }
+                    .doOnNext {
+                        logger.info("Details updated for wallet with id: [{}]", it.id.value)
+                    }
                     .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
             }
             .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
@@ -105,7 +114,9 @@ class MigrationService(
                     .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
                     .flatMap { it.saveEvents(loggingEventRepository) }
                     .map { it.toDomain() }
-                    .doOnNext { logger.info("Wallet with id: [{}] deleted successfully", it.id.value) }
+                    .doOnNext {
+                        logger.info("Wallet with id: [{}] deleted successfully", it.id.value)
+                    }
                     .contextWrite { it.put(MDC_WALLET_ID, wallet.id.value.toString()) }
             }
             .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
