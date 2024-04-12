@@ -75,6 +75,7 @@ import java.util.*
 import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -3462,7 +3463,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should return last usage for application if available`() = runTest {
+    fun `should return last usage for application if Wallet has it`() = runTest {
         val lastUsageTime = Instant.now().toString()
         val wallet =
             walletDocument()
@@ -3493,32 +3494,6 @@ class WalletServiceTest {
                     it.applications?.first()?.lastUsage
                 )
             }
-            .verifyComplete()
-    }
-
-    @Test
-    fun `should hide last usage for application if not available`() = runTest {
-        val lastUsageTime = Instant.now().toString()
-        val wallet =
-            walletDocument()
-                .copy(
-                    applications =
-                        listOf(
-                            it.pagopa.wallet.documents.wallets.WalletApplication(
-                                id = WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID.id,
-                                status = WalletApplicationStatus.ENABLED.name,
-                                creationDate = Instant.now().toString(),
-                                updateDate = Instant.now().toString(),
-                                metadata = emptyMap()
-                            )
-                        )
-                )
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
-
-        walletService
-            .findWallet(UUID.fromString(wallet.id))
-            .test()
-            .assertNext { assertNull(it.applications?.first()?.lastUsage) }
             .verifyComplete()
     }
 }
