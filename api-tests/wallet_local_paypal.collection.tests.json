@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "71b6db41-ced7-4027-a668-a9e23617d52d",
+		"_postman_id": "99ffbbaa-4c55-4c55-85db-5a5e81122de8",
 		"name": "Wallet PAYPAL onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23305473"
+		"_exporter_id": "23305473",
+		"_collection_link": "https://solar-shuttle-72092.postman.co/workspace/Wallet~1247c858-5774-4bb2-b6e4-a5d7c22704e0/collection/23305473-99ffbbaa-4c55-4c55-85db-5a5e81122de8?action=share&source=collection_link&creator=23305473"
 	},
 	"item": [
 		{
@@ -409,13 +410,20 @@
 							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
 					"host": [
@@ -440,13 +448,20 @@
 							"    pm.response.to.have.status(404);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}",
 					"host": [
@@ -540,7 +555,8 @@
 							"",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -553,8 +569,7 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
-						"type": "text",
-						"disabled": true
+						"type": "text"
 					}
 				],
 				"body": {
@@ -970,6 +985,7 @@
 							"      method: 'POST',",
 							"      header: {",
 							"        'Content-Type': 'application/json',",
+							"        'x-user-id': `${pm.environment.get(\"x-user-id\")}`,",
 							"      },",
 							"      body: {",
 							"        mode: 'raw',",
@@ -1169,7 +1185,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
 					"host": [
@@ -1264,7 +1286,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
 					"host": [
@@ -1494,7 +1522,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
 					"host": [
@@ -1668,7 +1702,13 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
 					"host": [

@@ -2,6 +2,7 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
@@ -68,12 +69,13 @@ class WalletController(
     }
 
     override fun createSessionWallet(
+        xUserId: UUID,
         walletId: UUID,
         sessionInputDataDto: Mono<SessionInputDataDto>,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<SessionWalletCreateResponseDto>> {
         return sessionInputDataDto
-            .flatMap { walletService.createSessionWallet(walletId, it) }
+            .flatMap { walletService.createSessionWallet(UserId(xUserId), WalletId(walletId), it) }
             .flatMap { (createSessionResponse, walletEvent) ->
                 walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
             }
@@ -92,11 +94,12 @@ class WalletController(
      */
     @SuppressWarnings("kotlin:S6508")
     override fun deleteWalletById(
+        xUserId: UUID,
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
         return walletService
-            .deleteWallet(WalletId(walletId))
+            .deleteWallet(WalletId(walletId), UserId(xUserId))
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map { ResponseEntity.noContent().build() }
     }
@@ -120,10 +123,11 @@ class WalletController(
     }
 
     override fun getWalletById(
+        xUserId: UUID,
         walletId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
-        return walletService.findWallet(walletId).map { ResponseEntity.ok(it) }
+        return walletService.findWallet(walletId, xUserId).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletsByIdUser(
@@ -195,6 +199,7 @@ class WalletController(
      */
     @SuppressWarnings("kotlin:S6508")
     override fun updateWalletApplicationsById(
+        xUserId: UUID,
         walletId: UUID,
         patchApplicationDto: Mono<WalletApplicationUpdateRequestDto>,
         exchange: ServerWebExchange
@@ -203,7 +208,8 @@ class WalletController(
             .map { it.applications }
             .flatMap { requestedApplications ->
                 walletService.updateWalletApplications(
-                    walletId,
+                    WalletId(walletId),
+                    UserId(xUserId),
                     requestedApplications.map {
                         Pair(
                             WalletApplicationId(it.name),
