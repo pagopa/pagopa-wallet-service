@@ -52,7 +52,6 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
-import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -67,12 +66,6 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
-import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
-import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -90,6 +83,13 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
+import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+import java.util.stream.Stream
+import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
@@ -838,7 +838,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentCreatedStatus))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -847,7 +847,8 @@ class WalletServiceTest {
                 /* test */
                 StepVerifier.create(
                         walletService.createSessionWallet(
-                            WALLET_UUID.value,
+                            USER_ID,
+                            WALLET_UUID,
                             SessionInputCardDataDto()
                         )
                     )
@@ -860,7 +861,8 @@ class WalletServiceTest {
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-                verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
+                verify(walletRepository, times(1))
+                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
             }
         }
     }
@@ -1008,7 +1010,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(
                         Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard)
                     )
@@ -1021,21 +1023,21 @@ class WalletServiceTest {
 
                 given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
                 /* test */
-
-                val result =
-                    walletService
-                        .createSessionWallet(
-                            WALLET_UUID.value,
-                            SessionInputCardDataDto(),
+                StepVerifier.create(
+                        walletService.createSessionWallet(
+                            USER_ID,
+                            WALLET_UUID,
+                            SessionInputCardDataDto()
                         )
-                        .block()
-
-                assertEquals(Pair(sessionResponseDto, expectedLoggedAction), result)
+                    )
+                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                    .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
+                verify(walletRepository, times(1))
+                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
                 verify(npgSessionRedisTemplate, times(1)).save(npgSession)
@@ -1126,7 +1128,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentCreatedStatus))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -1135,7 +1137,8 @@ class WalletServiceTest {
                 /* test */
                 StepVerifier.create(
                         walletService.createSessionWallet(
-                            WALLET_UUID.value,
+                            USER_ID,
+                            WALLET_UUID,
                             APM_SESSION_CREATE_REQUEST
                         )
                     )
@@ -1145,7 +1148,8 @@ class WalletServiceTest {
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
+                verify(walletRepository, times(1))
+                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
@@ -1234,7 +1238,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentCreatedStatus))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -1244,7 +1248,8 @@ class WalletServiceTest {
                 /* test */
                 StepVerifier.create(
                         walletService.createSessionWallet(
-                            WALLET_UUID.value,
+                            USER_ID,
+                            WALLET_UUID,
                             SessionInputCardDataDto()
                         )
                     )
@@ -1254,7 +1259,8 @@ class WalletServiceTest {
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
+                verify(walletRepository, times(1))
+                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentInitializedStatus)
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
@@ -1359,7 +1365,7 @@ class WalletServiceTest {
                 given { npgClient.createNpgOrderBuild(any(), any(), any()) }
                     .willAnswer { mono { npgFields } }
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentCreatedStatus))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
@@ -1369,7 +1375,8 @@ class WalletServiceTest {
                 /* test */
                 StepVerifier.create(
                         walletService.createSessionWallet(
-                            WALLET_UUID.value,
+                            USER_ID,
+                            WALLET_UUID,
                             APM_SESSION_CREATE_REQUEST
                         )
                     )
@@ -1379,7 +1386,8 @@ class WalletServiceTest {
                 verify(ecommercePaymentMethodsClient, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1)).findById(WALLET_UUID.value.toString())
+                verify(walletRepository, times(1))
+                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
@@ -2011,11 +2019,17 @@ class WalletServiceTest {
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
@@ -2053,11 +2067,17 @@ class WalletServiceTest {
                             WalletPaypalDetailsDto().maskedEmail(MASKED_EMAIL.value).pspId(PSP_ID)
                         )
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
@@ -2094,11 +2114,17 @@ class WalletServiceTest {
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
 
-                given { walletRepository.findById(any<String>()) }.willAnswer { Mono.just(wallet) }
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()),
+                            eq(USER_ID.id.toString())
+                        )
+                    }
+                    .willAnswer { Mono.just(wallet) }
 
                 /* test */
 
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value))
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
                     .expectNext(walletInfoDto)
                     .verifyComplete()
             }
@@ -2267,7 +2293,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(
                         Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
                     )
@@ -2287,7 +2313,8 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
-                            WALLET_UUID.value,
+                            WALLET_UUID,
+                            USER_ID,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
                     )
@@ -2348,7 +2375,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
                 val walletDocument = walletDocument()
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocument))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -2371,7 +2398,8 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
-                            WALLET_UUID.value,
+                            WALLET_UUID,
+                            USER_ID,
                             listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                         )
                     )
@@ -2419,7 +2447,7 @@ class WalletServiceTest {
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocument))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -2441,7 +2469,7 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(WALLET_UUID.value, listOf())
+                        walletService.updateWalletApplications(WALLET_UUID, USER_ID, listOf())
                     )
                     .assertNext { assertEquals(expectedLoggedAction, it) }
                     .verifyComplete()
@@ -2522,7 +2550,7 @@ class WalletServiceTest {
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocument))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
@@ -2548,7 +2576,8 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
-                            WALLET_UUID.value,
+                            WALLET_UUID,
+                            USER_ID,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
                                 Pair(
@@ -2595,7 +2624,7 @@ class WalletServiceTest {
 
                 val walletDocument = walletDocument()
 
-                given { walletRepository.findById(any<String>()) }
+                given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocument))
 
                 given { applicationRepository.findById(APPLICATION_ID.id) }
@@ -2612,7 +2641,8 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
-                            WALLET_UUID.value,
+                            WALLET_UUID,
+                            USER_ID,
                             listOf(
                                 Pair(WALLET_APPLICATION_ID, newApplicationStatus),
                                 Pair(
@@ -2634,12 +2664,13 @@ class WalletServiceTest {
     fun `should throws wallet not found exception`() {
         /* preconditions */
 
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+        given { walletRepository.findByIdAndUserId(any(), any()) }.willReturn(Mono.empty())
         /* test */
 
         StepVerifier.create(
                 walletService.updateWalletApplications(
-                    WALLET_UUID.value,
+                    WALLET_UUID,
+                    USER_ID,
                     listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
                 )
             )
@@ -3229,7 +3260,8 @@ class WalletServiceTest {
             )
 
         /* preconditions */
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given { walletRepository.findByIdAndUserId(any(), any()) }
+            .willReturn(Mono.just(walletDocument))
         given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
 
         val expectedLoggedAction = LoggedAction(Unit, WalletDeletedEvent(walletDocument.id))
@@ -3238,7 +3270,10 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.deleteWallet(WalletId(UUID.fromString(walletDocument.id)))
+                walletService.deleteWallet(
+                    WalletId(UUID.fromString(walletDocument.id)),
+                    UserId(UUID.fromString(walletDocument.userId))
+                )
             )
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
@@ -3486,7 +3521,7 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
 
         walletService
-            .findWallet(UUID.fromString(wallet.id))
+            .findWallet(UUID.fromString(wallet.id), USER_ID.id)
             .test()
             .assertNext {
                 assertEquals(

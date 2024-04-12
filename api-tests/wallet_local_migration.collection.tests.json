@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "99ec3ad7-39d3-4563-b5db-449d903ce79d",
+		"_postman_id": "03be2d18-9a3e-4704-9411-8bacda7a18bf",
 		"name": "Wallet CARDS Migration",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "32950386"
+		"_exporter_id": "23305473",
+		"_collection_link": "https://solar-shuttle-72092.postman.co/workspace/Wallet~1247c858-5774-4bb2-b6e4-a5d7c22704e0/collection/23305473-03be2d18-9a3e-4704-9411-8bacda7a18bf?action=share&source=collection_link&creator=23305473"
 	},
 	"item": [
 		{
@@ -101,6 +102,11 @@
 						"value": "application/pdf",
 						"type": "text",
 						"disabled": true
+					},
+					{
+						"key": "x-user-id",
+						"value": "{{USER_ID}}",
+						"type": "text"
 					}
 				],
 				"url": {
