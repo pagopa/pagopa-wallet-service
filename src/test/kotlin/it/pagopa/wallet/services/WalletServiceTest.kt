@@ -52,6 +52,7 @@ import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
+import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -66,6 +67,12 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
+import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -83,13 +90,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
-import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
-import java.util.stream.Stream
-import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
@@ -3518,7 +3518,8 @@ class WalletServiceTest {
                             )
                         )
                 )
-        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
+        given { walletRepository.findByIdAndUserId(any<String>(), any<String>()) }
+            .willReturn(Mono.just(wallet))
 
         walletService
             .findWallet(UUID.fromString(wallet.id), USER_ID.id)
