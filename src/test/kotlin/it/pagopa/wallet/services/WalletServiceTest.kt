@@ -74,8 +74,8 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -1997,7 +1997,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2043,7 +2043,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2086,7 +2086,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2129,7 +2129,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -3458,6 +3458,67 @@ class WalletServiceTest {
         /* test */
         StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
             .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should return last usage for application if available`() = runTest {
+        val lastUsageTime = Instant.now().toString()
+        val wallet =
+            walletDocument()
+                .copy(
+                    applications =
+                        listOf(
+                            it.pagopa.wallet.documents.wallets.WalletApplication(
+                                id = WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID.id,
+                                status = WalletApplicationStatus.ENABLED.name,
+                                creationDate = Instant.now().toString(),
+                                updateDate = Instant.now().toString(),
+                                metadata =
+                                    mapOf(
+                                        WalletApplicationMetadata.Metadata.LAST_USED_IO.value to
+                                            lastUsageTime
+                                    )
+                            )
+                        )
+                )
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
+
+        walletService
+            .findWallet(UUID.fromString(wallet.id))
+            .test()
+            .assertNext {
+                assertEquals(
+                    OffsetDateTime.parse(lastUsageTime),
+                    it.applications?.first()?.lastUsage
+                )
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should hide last usage for application if not available`() = runTest {
+        val lastUsageTime = Instant.now().toString()
+        val wallet =
+            walletDocument()
+                .copy(
+                    applications =
+                        listOf(
+                            it.pagopa.wallet.documents.wallets.WalletApplication(
+                                id = WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID.id,
+                                status = WalletApplicationStatus.ENABLED.name,
+                                creationDate = Instant.now().toString(),
+                                updateDate = Instant.now().toString(),
+                                metadata = emptyMap()
+                            )
+                        )
+                )
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
+
+        walletService
+            .findWallet(UUID.fromString(wallet.id))
+            .test()
+            .assertNext { assertNull(it.applications?.first()?.lastUsage) }
             .verifyComplete()
     }
 }
