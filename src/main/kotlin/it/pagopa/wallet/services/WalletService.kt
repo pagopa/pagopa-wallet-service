@@ -145,7 +145,7 @@ class WalletService(
                     parseWalletApplicationStatus(ApplicationStatus.valueOf(application.status)),
                     Instant.now(),
                     Instant.now(),
-                    WalletApplicationMetadata(hashMapOf())
+                    WalletApplicationMetadata.empty()
                 )
             }
             .collectList()
@@ -223,15 +223,14 @@ class WalletService(
                     WalletApplicationMetadata(
                         hashMapOf(
                             Pair(
-                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                    .value,
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD,
                                 "true"
                             ),
                             Pair(
-                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID,
                                 transactionId.value().toString()
                             ),
-                            Pair(WalletApplicationMetadata.Metadata.AMOUNT.value, amount.toString())
+                            Pair(WalletApplicationMetadata.Metadata.AMOUNT, amount.toString())
                         )
                     )
                 )
@@ -276,16 +275,17 @@ class WalletService(
     }
 
     fun createSessionWallet(
-        walletId: UUID,
+        xUserId: UserId,
+        walletId: WalletId,
         sessionInputDataDto: SessionInputDataDto
     ): Mono<Pair<SessionWalletCreateResponseDto, LoggedAction<Wallet>>> {
         logger.info("Create session for walletId: $walletId")
         return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
             .filter { it.status == WalletStatusDto.CREATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
@@ -310,7 +310,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT.value)
+                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT)
                     else null
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -325,7 +325,7 @@ class WalletService(
                         pagopaApplication
                             ?.metadata
                             ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID.value)
+                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID)
                     )
 
                 npgClient
@@ -399,11 +399,12 @@ class WalletService(
                             } else {
                                 WalletStatusDto.INITIALIZED
                             }
+
                         val updatedWallet =
                             wallet.copy(
                                 contractId = ContractId(contractId),
                                 status = newStatus,
-                                details = newDetails
+                                details = newDetails,
                             )
                         SessionCreationData(
                             hostedOrderResponse,
@@ -529,6 +530,22 @@ class WalletService(
             }
     }
 
+    fun updateWalletUsage(
+        walletId: UUID,
+        clientId: ClientIdDto,
+        usageTime: Instant
+    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
+        walletRepository
+            .findById(walletId.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .map { it.toDomain() }
+            .filter { it.status == WalletStatusDto.VALIDATED }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap {
+                walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
+            }
+            .doOnNext { logger.info("Update last usage for walletId [{}]", it.id) }
+
     private fun confirmPaymentCard(
         sessionId: String,
         correlationId: UUID,
@@ -596,9 +613,9 @@ class WalletService(
     private fun gatewayToWalletExpiryDate(expiryDate: String) =
         YearMonth.parse(expiryDate, npgExpiryDateFormatter).format(walletExpiryDateFormatter)
 
-    fun findWallet(walletId: UUID): Mono<WalletInfoDto> {
+    fun findWallet(walletId: UUID, userId: UUID): Mono<WalletInfoDto> {
         return walletRepository
-            .findById(walletId.toString())
+            .findByIdAndUserId(walletId.toString(), userId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { wallet -> toWalletInfoDto(wallet) }
     }
@@ -743,9 +760,9 @@ class WalletService(
             else -> null
         }
 
-    fun deleteWallet(walletId: WalletId): Mono<LoggedAction<Unit>> =
+    fun deleteWallet(walletId: WalletId, userId: UserId): Mono<LoggedAction<Unit>> =
         walletRepository
-            .findById(walletId.value.toString())
+            .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
             .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
@@ -957,12 +974,13 @@ class WalletService(
     }
 
     fun updateWalletApplications(
-        walletId: UUID,
+        walletId: WalletId,
+        userId: UserId,
         applicationsToUpdate: List<Pair<WalletApplicationId, WalletApplicationStatus>>
     ): Mono<LoggedAction<WalletApplicationUpdateData>> {
         return walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+            .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .flatMap { wallet ->
                 val walletApplications =
                     wallet.applications.associateBy { WalletApplicationId(it.id) }.toMap()
@@ -1127,7 +1145,7 @@ class WalletService(
     ): Boolean {
         if (application != null) {
             return application.metadata.data[
-                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
                 .toBoolean()
         }
         return false

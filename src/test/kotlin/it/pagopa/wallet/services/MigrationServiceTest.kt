@@ -117,7 +117,7 @@ class MigrationServiceTest {
                     assertEquals(defaultApplication.status, WalletApplicationStatus.ENABLED)
                     assertThat(
                         defaultApplication.metadata.data,
-                        hasKey(WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION.value)
+                        hasKey(WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION)
                     )
                 }
                 .verifyComplete()

@@ -27,14 +27,21 @@ object WalletTestUtils {
 
     val USER_ID = UserId(UUID.randomUUID())
     val WALLET_UUID = WalletId(UUID.randomUUID())
+    val CLIENT_ID = ClientIdDto.CHECKOUT
     val APPLICATION_ID = ApplicationId("PAGOPA")
     val APPLICATION_DESCRIPTION = ApplicationDescription("")
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
     val WALLET_APPLICATION_PAGOPA_ID = WalletApplicationId("PAGOPA")
+    val OTHER_WALLET_APPLICATION_ID = WalletApplicationId("PARI")
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
-    val APPLICATION_METADATA = WalletApplicationMetadata(APPLICATION_METADATA_HASHMAP)
+    val APPLICATION_METADATA =
+        WalletApplicationMetadata(
+            APPLICATION_METADATA_HASHMAP.mapKeys {
+                WalletApplicationMetadata.Metadata.fromMetadataValue(it.key)
+            }
+        )
     val CONTRACT_ID = ContractId("W49357937935R869i")
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
@@ -230,8 +237,8 @@ object WalletTestUtils {
                         WalletApplicationDocument(
                             WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.ENABLED.toString(),
-                            creationDate.toString(),
-                            creationDate.toString(),
+                            this.creationDate.toString(),
+                            this.creationDate.toString(),
                             hashMapOf(
                                 Pair(
                                     WalletApplicationMetadata.Metadata
@@ -506,11 +513,11 @@ object WalletTestUtils {
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id.toString(),
+                            WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.DISABLED.toString(),
                             TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
-                            APPLICATION_METADATA.data
+                            APPLICATION_METADATA.data.mapKeys { it.key.value }
                         )
                     ),
                 details = null,
@@ -540,11 +547,18 @@ object WalletTestUtils {
                 applications =
                     listOf(
                         WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id.toString(),
+                            WALLET_APPLICATION_ID.id,
                             WalletApplicationStatus.DISABLED.toString(),
                             TIMESTAMP.toString(),
                             TIMESTAMP.toString(),
                             APPLICATION_METADATA_HASHMAP
+                        ),
+                        WalletApplicationDocument(
+                            OTHER_WALLET_APPLICATION_ID.id,
+                            WalletApplicationStatus.DISABLED.toString(),
+                            TIMESTAMP.toString(),
+                            TIMESTAMP.toString(),
+                            mapOf()
                         )
                     ),
                 details =
@@ -578,6 +592,13 @@ object WalletTestUtils {
                         TIMESTAMP,
                         TIMESTAMP,
                         APPLICATION_METADATA
+                    ),
+                    WalletApplication(
+                        OTHER_WALLET_APPLICATION_ID,
+                        WalletApplicationStatus.DISABLED,
+                        TIMESTAMP,
+                        TIMESTAMP,
+                        WalletApplicationMetadata(mapOf())
                     )
                 ),
             contractId = CONTRACT_ID,
