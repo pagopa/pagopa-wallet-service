@@ -223,8 +223,9 @@ class WalletControllerTest {
     @Test
     fun testValidateWallet() = runTest {
         /* preconditions */
-        val walletId = UUID.randomUUID()
+        val walletId = WalletId(UUID.randomUUID())
         val orderId = Instant.now().toString() + "ABCDE"
+        val userId = UserId(UUID.randomUUID())
         val wallet = walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val response =
             WalletVerifyRequestsResponseDto()
@@ -232,7 +233,7 @@ class WalletControllerTest {
                 .details(
                     WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
                 )
-        given { walletService.validateWalletSession(orderId, walletId) }
+        given { walletService.validateWalletSession(orderId, walletId, userId) }
             .willReturn(
                 mono {
                     Pair(
@@ -251,7 +252,8 @@ class WalletControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/wallets/${walletId}/sessions/${orderId}/validations")
+            .uri("/wallets/${walletId.value}/sessions/${orderId}/validations")
+            .header("x-user-id", userId.id.toString())
             .contentType(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()

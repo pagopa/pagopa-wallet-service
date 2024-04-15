@@ -485,23 +485,22 @@ class WalletService(
 
     fun validateWalletSession(
         orderId: String,
-        walletId: UUID
+        walletId: WalletId,
+        userId: UserId
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
         val correlationId = UUID.randomUUID()
         return mono { npgSessionRedisTemplate.findById(orderId) }
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
                 walletRepository
-                    .findById(walletId.toString())
-                    .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+                    .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
                     .filter { session.walletId == it.id }
                     .switchIfEmpty {
-                        Mono.error(
-                            WalletSessionMismatchException(session.sessionId, WalletId(walletId))
-                        )
+                        Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
                     .filter { it.status == WalletStatusDto.INITIALIZED.value }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
                             .getPaymentMethodById(wallet.paymentMethodId)
@@ -514,17 +513,17 @@ class WalletService(
                                             orderId,
                                             wallet.toDomain()
                                         )
-                                    else ->
-                                        throw NoCardsSessionValidateRequestException(
-                                            WalletId(walletId)
-                                        )
+                                    else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
                     }
                     .flatMap { (response, wallet) ->
                         walletRepository.save(wallet.toDocument()).map {
                             response to
-                                LoggedAction(wallet, WalletDetailsAddedEvent(walletId.toString()))
+                                LoggedAction(
+                                    wallet,
+                                    WalletDetailsAddedEvent(walletId.value.toString())
+                                )
                         }
                     }
             }
