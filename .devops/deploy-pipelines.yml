@@ -179,6 +179,7 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-migration"
               WALLET_TOKEN_TEST: $(MIGRATION_WALLET_TOKEN_TEST_DEV)
               MIGRATION_API_KEY_TEST: $(MIGRATION_API_KEY_TEST_DEV)
+              MIGRATION_CSTAR_API_KEY_TEST: $(MIGRATION_CSTAR_API_KEY_TEST_DEV)
   # --- END Deploy DEV --- #
 
   # --- START Deploy UAT --- #
