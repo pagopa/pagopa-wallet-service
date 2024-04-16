@@ -27,7 +27,10 @@ tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
 
 repositories { mavenCentral() }
 
-val ecsLoggingVersion = "1.5.0"
+object Deps {
+  const val ecsLoggingVersion = "1.5.0"
+  const val openTelemetryVersion = "1.37.0"
+}
 
 dependencyManagement {
   imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.0.5") }
@@ -71,7 +74,10 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
   // ECS logback encoder
-  implementation("co.elastic.logging:logback-ecs-encoder:$ecsLoggingVersion")
+  implementation("co.elastic.logging:logback-ecs-encoder:${Deps.ecsLoggingVersion}")
+
+  // otel api
+  implementation("io.opentelemetry:opentelemetry-api:${Deps.openTelemetryVersion}")
 
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -114,7 +120,10 @@ tasks.create("applySemanticVersionPlugin") {
 Used java generator for wallet classes because of the following issue with kotlin generator
 https://github.com/OpenAPITools/openapi-generator/issues/14949
 */
-tasks.register("wallet", GenerateTask::class.java) {
+tasks.register<GenerateTask>("wallet") {
+  description = "Generate Wallet API interface"
+  group = "openapi-generation"
+
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
   outputDir.set("$buildDir/generated")
