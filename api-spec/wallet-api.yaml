@@ -928,6 +928,19 @@ components:
           $ref: '#/components/schemas/WalletApplicationId'
         status:
           $ref: '#/components/schemas/WalletApplicationStatus'
+    WalletApplicationInfo:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/WalletApplicationId'
+        status:
+          $ref: '#/components/schemas/WalletApplicationStatus'
+        lastUsage:
+          type: string
+          format: date-time
+      required:
+        - name
+        - status
     WalletApplicationId:
       type: string
       description: id of the application associated to the wallet
@@ -1101,7 +1114,7 @@ components:
           description: list of applications for which this wallet is created for
           type: array
           items:
-            $ref: '#/components/schemas/WalletApplication'
+            $ref: '#/components/schemas/WalletApplicationInfo'
         details:
           description: >-
             details for the specific payment instrument. This field is

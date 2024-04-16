@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -917,9 +918,14 @@ class WalletService(
             .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .applications(
                 wallet.applications.map { application ->
-                    WalletApplicationDto()
+                    WalletApplicationInfoDto()
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
+                        .lastUsage(
+                            application.toDomain().lastUsageIO()?.let {
+                                OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
+                            }
+                        )
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))
