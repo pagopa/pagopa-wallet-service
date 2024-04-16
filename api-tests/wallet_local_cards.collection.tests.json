@@ -1194,6 +1194,48 @@
 			"response": []
 		},
 		{
+			"name": "Update last usage",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet Last Usage Feature] Last usage update successfully with PATCH /wallets/:walletId/usages\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"clientId\": \"IO\",\n    \"usageTime\": \"{{$isoTimestamp}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/usages",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"usages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Create new wallet without applications",
 			"event": [
 				{
