@@ -74,6 +74,7 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -2074,7 +2075,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2126,7 +2127,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2175,7 +2176,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -2224,7 +2225,7 @@ class WalletServiceTest {
                         .creationDate(OffsetDateTime.parse(wallet.updateDate.toString()))
                         .applications(
                             wallet.applications.map { application ->
-                                WalletApplicationDto()
+                                WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
                             }
@@ -3562,6 +3563,42 @@ class WalletServiceTest {
         /* test */
         StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
             .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should return last usage for application if Wallet has it`() = runTest {
+        val lastUsageTime = Instant.now().toString()
+        val wallet =
+            walletDocument()
+                .copy(
+                    applications =
+                        listOf(
+                            it.pagopa.wallet.documents.wallets.WalletApplication(
+                                id = WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID.id,
+                                status = WalletApplicationStatus.ENABLED.name,
+                                creationDate = Instant.now().toString(),
+                                updateDate = Instant.now().toString(),
+                                metadata =
+                                    mapOf(
+                                        WalletApplicationMetadata.Metadata.LAST_USED_IO.value to
+                                            lastUsageTime
+                                    )
+                            )
+                        )
+                )
+        given { walletRepository.findByIdAndUserId(any<String>(), any<String>()) }
+            .willReturn(Mono.just(wallet))
+
+        walletService
+            .findWallet(UUID.fromString(wallet.id), USER_ID.id)
+            .test()
+            .assertNext {
+                assertEquals(
+                    OffsetDateTime.parse(lastUsageTime),
+                    it.applications?.first()?.lastUsage
+                )
+            }
             .verifyComplete()
     }
 }
