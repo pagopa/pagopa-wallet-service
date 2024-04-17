@@ -186,6 +186,18 @@ class MigrationService(
                     status = WalletStatusDto.CREATED,
                     paymentMethodId = paymentMethodId,
                     applications = listOf(application),
+                    clients =
+                        Client.WellKnown.values().associateWith { clientId ->
+                            // Enable wallet only for IO
+                            val status =
+                                if (clientId == Client.WellKnown.IO) {
+                                    Client.Status.ENABLED
+                                } else {
+                                    Client.Status.DISABLED
+                                }
+
+                            Client(status, null)
+                        },
                     creationDate = creationTime,
                     updateDate = creationTime,
                     onboardingChannel = OnboardingChannel.IO,

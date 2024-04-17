@@ -161,6 +161,20 @@ class WalletService(
                             paymentMethodId = PaymentMethodId(paymentMethodId),
                             applications = apps,
                             version = 0,
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    // Enable wallet only for the onboarding channel
+                                    val status =
+                                        if (
+                                            Client.Id.fromString(onboardingChannel.name) == clientId
+                                        ) {
+                                            Client.Status.ENABLED
+                                        } else {
+                                            Client.Status.DISABLED
+                                        }
+
+                                    Client(status, null)
+                                },
                             creationDate = creationTime,
                             updateDate = creationTime,
                             onboardingChannel = onboardingChannel
@@ -248,6 +262,20 @@ class WalletService(
                             creationDate = creationTime,
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    // Enable wallet only for the onboarding channel
+                                    val status =
+                                        if (
+                                            Client.Id.fromString(onboardingChannel.name) == clientId
+                                        ) {
+                                            Client.Status.ENABLED
+                                        } else {
+                                            Client.Status.DISABLED
+                                        }
+
+                                    Client(status, null)
+                                },
                             onboardingChannel = onboardingChannel
                         ),
                         it
@@ -922,9 +950,11 @@ class WalletService(
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
                         .lastUsage(
-                            application.toDomain().lastUsageIO()?.let {
-                                OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
-                            }
+                            wallet
+                                .toDomain()
+                                .clients[Client.WellKnown.IO]
+                                ?.lastUsage
+                                ?.atOffset(ZoneOffset.UTC)
                         )
                 }
             )

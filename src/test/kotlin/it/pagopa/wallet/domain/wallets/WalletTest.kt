@@ -4,10 +4,10 @@ import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
@@ -28,6 +28,7 @@ class WalletTest {
                 validationOperationResult = OperationResultEnum.EXECUTED,
                 validationErrorCode = null,
                 details = null,
+                clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
@@ -58,6 +59,7 @@ class WalletTest {
                 validationOperationResult = OperationResultEnum.EXECUTED,
                 validationErrorCode = null,
                 details = null,
+                clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
@@ -96,6 +98,7 @@ class WalletTest {
                         WalletTestUtils.BRAND,
                         WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
                     ),
+                clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
@@ -134,6 +137,7 @@ class WalletTest {
                         WalletTestUtils.BRAND,
                         WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
                     ),
+                clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
@@ -145,57 +149,27 @@ class WalletTest {
 
     @ParameterizedTest
     @EnumSource(ClientIdDto::class)
-    fun `updateUsageForClient adds all metadata usage keys`(clientId: ClientIdDto) {
-        val updateTime = Instant.now()
-        val wallet = WalletTestUtils.walletDomain().updateUsageForClient(clientId, updateTime)
-        val pagopaApplication =
-            wallet.applications.find { it.id == WalletApplicationId("PAGOPA") }!!
-
-        val usageKeys =
-            setOf(
-                WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT,
-                WalletApplicationMetadata.Metadata.LAST_USED_IO
-            )
-
-        assert(pagopaApplication.metadata.data.keys.containsAll(usageKeys))
-    }
-
-    @ParameterizedTest
-    @EnumSource(ClientIdDto::class)
     fun `updateUsageForClient updates only relevant client for wallet never used`(
         clientId: ClientIdDto
     ) {
         val walletBeforeUpdate = WalletTestUtils.walletDomain()
         val updateTime = Instant.now()
-        val otherApplications =
-            walletBeforeUpdate.applications.filter { it.id != WalletApplicationId("PAGOPA") }
+        val clientToBeUpdated = Client.Id.fromString(clientId.name)
+        val otherClientsDataBeforeUpdate =
+            walletBeforeUpdate.clients.filter { it.key != clientToBeUpdated }
 
         val wallet = walletBeforeUpdate.updateUsageForClient(clientId, updateTime)
-        val pagopaApplication =
-            wallet.applications.find { it.id == WalletApplicationId("PAGOPA") }!!
-        val nonUpdatedApplications =
-            wallet.applications.filter { it.id != WalletApplicationId("PAGOPA") }
-
-        val usageFieldMap =
-            mapOf(
-                ClientIdDto.CHECKOUT to WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT,
-                ClientIdDto.IO to WalletApplicationMetadata.Metadata.LAST_USED_IO,
-            )
+        val otherClientsData = wallet.clients.filter { it.key != clientToBeUpdated }
 
         assertEquals(
             updateTime.toString(),
-            pagopaApplication.metadata.data[usageFieldMap[clientId]]
+            wallet.clients[clientToBeUpdated]!!.lastUsage!!.toString()
         )
 
         assertEquals(
-            otherApplications,
-            nonUpdatedApplications,
-            "`Wallet#updateUsageForClient` updated non-PAGOPA application!"
+            otherClientsDataBeforeUpdate,
+            otherClientsData,
+            "`Wallet#updateUsageForClient` updated unexpected client data!"
         )
-
-        val otherClients = usageFieldMap.keys - clientId
-        for (client in otherClients) {
-            assertNull(pagopaApplication.metadata.data[usageFieldMap[client]], "client=$client")
-        }
     }
 }

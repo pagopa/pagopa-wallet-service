@@ -8,6 +8,7 @@ import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
 import java.time.Instant
+import org.slf4j.LoggerFactory
 
 /**
  * A wallet.
@@ -52,45 +53,35 @@ data class Wallet(
     var validationOperationResult: OperationResultEnum? = null,
     var validationErrorCode: String? = null,
     var details: WalletDetails<*>? = null,
+    val clients: Map<Client.Id, Client>,
     val version: Int,
     val creationDate: Instant,
     val updateDate: Instant,
     val onboardingChannel: OnboardingChannel
 ) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(Wallet::class.java)
+    }
+
     fun updateUsageForClient(
         clientId: ClientIdDto,
         usageTime: Instant
     ): it.pagopa.wallet.domain.wallets.Wallet {
-        val newApplications =
-            this.applications.map {
-                if (it.id == WalletApplicationId("PAGOPA")) {
-                    val newMetadata = it.metadata.data.toMutableMap()
-                    val lastUsedKeys =
-                        setOf(
-                            WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT,
-                            WalletApplicationMetadata.Metadata.LAST_USED_IO
-                        )
-                    val clientLastUsedKey =
-                        when (clientId) {
-                            ClientIdDto.CHECKOUT ->
-                                WalletApplicationMetadata.Metadata.LAST_USED_CHECKOUT
-                            ClientIdDto.IO -> WalletApplicationMetadata.Metadata.LAST_USED_IO
-                        }
-                    newMetadata[clientLastUsedKey] = usageTime.toString()
+        val newClients = clients.toMutableMap()
+        val client = Client.Id.fromString(clientId.name)
+        val clientData = clients[client]
 
-                    for (key in lastUsedKeys - clientLastUsedKey) {
-                        if (!newMetadata.containsKey(key)) {
-                            newMetadata[key] = null
-                        }
-                    }
+        if (clientData != null) {
+            newClients[client] = clientData.copy(lastUsage = usageTime)
+        } else {
+            logger.error(
+                "Missing client {}: requested usage update to wallet with id {}!",
+                id.value,
+                clientId
+            )
+        }
 
-                    it.copy(metadata = WalletApplicationMetadata(newMetadata))
-                } else {
-                    it
-                }
-            }
-
-        return this.copy(applications = newApplications)
+        return this.copy(clients = newClients)
     }
 
     fun toDocument(): Wallet {
@@ -114,6 +105,8 @@ data class Wallet(
                         )
                     },
                 details = this.details?.toDocument(),
+                clients =
+                    this.clients.entries.associate { it.key.name to it.value.toDocument() }.toMap(),
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,

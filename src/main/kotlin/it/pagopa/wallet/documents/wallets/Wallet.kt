@@ -24,6 +24,7 @@ data class Wallet(
     var validationErrorCode: String?,
     val applications: List<WalletApplication>,
     val details: WalletDetails<*>?,
+    val clients: Map<String, Client>,
     @Version var version: Int,
     @CreatedDate var creationDate: Instant,
     @LastModifiedDate var updateDate: Instant,
@@ -44,6 +45,11 @@ data class Wallet(
                     },
                 validationErrorCode = validationErrorCode,
                 details = this.details?.toDomain(),
+                clients =
+                    this.clients.entries.associate { (clientId, client) ->
+                        it.pagopa.wallet.domain.wallets.Client.Id.fromString(clientId) to
+                            client.toDomain()
+                    },
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,

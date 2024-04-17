@@ -5,6 +5,7 @@ import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.documents.applications.Application
+import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
 import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
@@ -27,7 +28,6 @@ object WalletTestUtils {
 
     val USER_ID = UserId(UUID.randomUUID())
     val WALLET_UUID = WalletId(UUID.randomUUID())
-    val CLIENT_ID = ClientIdDto.CHECKOUT
     val APPLICATION_ID = ApplicationId("PAGOPA")
     val APPLICATION_DESCRIPTION = ApplicationDescription("")
     val WALLET_APPLICATION_ID = WalletApplicationId("PAGOPA")
@@ -35,6 +35,12 @@ object WalletTestUtils {
     val OTHER_WALLET_APPLICATION_ID = WalletApplicationId("PARI")
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
+    val TEST_DEFAULT_CLIENTS: Map<Client.Id, Client> =
+        mapOf(
+            Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
+            Client.WellKnown.CHECKOUT to Client(Client.Status.ENABLED, null),
+            Client.Unknown("unknownClient") to Client(Client.Status.DISABLED, null)
+        )
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
     val APPLICATION_METADATA =
         WalletApplicationMetadata(
@@ -68,6 +74,8 @@ object WalletTestUtils {
             validationErrorCode = null,
             applications = listOf(),
             details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -90,6 +98,12 @@ object WalletTestUtils {
             validationErrorCode = null,
             applications,
             details = null,
+            clients =
+                mapOf(
+                    Client.WellKnown.IO.name to ClientDocument(Client.Status.ENABLED.name, null),
+                    Client.WellKnown.CHECKOUT.name to
+                        ClientDocument(Client.Status.DISABLED.name, null)
+                ),
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -99,7 +113,8 @@ object WalletTestUtils {
 
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
         paymentMethodId: PaymentMethodId,
-        application: Application
+        application: Application,
+        client: Client.Id = Client.WellKnown.IO
     ): Wallet {
         return newWalletDocumentToBeSaved(paymentMethodId)
             .copy(
@@ -127,7 +142,19 @@ object WalletTestUtils {
                                 )
                             )
                         )
-                    )
+                    ),
+                clients =
+                    Client.WellKnown.values().associate {
+                        it.name to
+                            ClientDocument(
+                                if (it == client) {
+                                    Client.Status.ENABLED.name
+                                } else {
+                                    Client.Status.DISABLED.name
+                                },
+                                null
+                            )
+                    }
             )
     }
 
@@ -137,7 +164,10 @@ object WalletTestUtils {
             else -> WalletApplicationStatus.DISABLED.name
         }
 
-    fun walletDocumentCreatedStatus(paymentMethodId: PaymentMethodId): Wallet {
+    fun walletDocumentCreatedStatus(
+        paymentMethodId: PaymentMethodId,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -148,6 +178,7 @@ object WalletTestUtils {
             validationErrorCode = null,
             applications = listOf(),
             details = null,
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -155,7 +186,10 @@ object WalletTestUtils {
         )
     }
 
-    fun walletDocumentInitializedStatus(paymentMethodId: PaymentMethodId): Wallet {
+    fun walletDocumentInitializedStatus(
+        paymentMethodId: PaymentMethodId,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -166,6 +200,7 @@ object WalletTestUtils {
             validationErrorCode = null,
             applications = listOf(),
             details = null,
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -262,7 +297,10 @@ object WalletTestUtils {
 
     fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
 
-    fun walletDocumentStatusValidatedCard(brand: String): Wallet {
+    fun walletDocumentStatusValidatedCard(
+        brand: String,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -290,6 +328,7 @@ object WalletTestUtils {
                     brand.toString(),
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                 ),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -297,7 +336,10 @@ object WalletTestUtils {
         )
     }
 
-    fun walletDocumentStatusValidatedAPM(paypalEmail: String?): Wallet {
+    fun walletDocumentStatusValidatedAPM(
+        paypalEmail: String?,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
@@ -317,6 +359,7 @@ object WalletTestUtils {
                     )
                 ),
             details = PayPalDetailsDocument(maskedEmail = paypalEmail, pspId = PSP_ID),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -329,7 +372,8 @@ object WalletTestUtils {
         lastFourDigits: String,
         expiryDate: String,
         paymentInstrumentGatewayId: String,
-        brand: String
+        brand: String,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
         val wallet =
             Wallet(
@@ -350,6 +394,7 @@ object WalletTestUtils {
                         brand,
                         paymentInstrumentGatewayId
                     ),
+                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -358,7 +403,10 @@ object WalletTestUtils {
         return wallet
     }
 
-    fun walletDocumentVerifiedWithAPM(details: WalletDetails<*>): Wallet {
+    fun walletDocumentVerifiedWithAPM(
+        details: WalletDetails<*>,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
         val wallet =
             Wallet(
                 id = WALLET_UUID.value.toString(),
@@ -370,6 +418,7 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = details,
+                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -381,7 +430,8 @@ object WalletTestUtils {
     fun walletDocumentWithError(
         operationResultEnum: OperationResultEnum,
         errorCode: String? = null,
-        details: WalletDetails<*>? = null
+        details: WalletDetails<*>? = null,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
@@ -393,6 +443,7 @@ object WalletTestUtils {
             validationErrorCode = errorCode,
             applications = listOf(),
             details = details,
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -400,7 +451,7 @@ object WalletTestUtils {
         )
     }
 
-    fun walletDocumentValidated(): Wallet {
+    fun walletDocumentValidated(clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS): Wallet {
         val wallet =
             Wallet(
                 id = WALLET_UUID.value.toString(),
@@ -412,6 +463,7 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = null,
+                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -432,6 +484,8 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -452,6 +506,8 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -472,6 +528,8 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -492,6 +550,8 @@ object WalletTestUtils {
                 validationErrorCode = null,
                 applications = listOf(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -521,6 +581,8 @@ object WalletTestUtils {
                         )
                     ),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -570,6 +632,8 @@ object WalletTestUtils {
                         BRAND.toString(),
                         PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                     ),
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
@@ -606,6 +670,7 @@ object WalletTestUtils {
             validationErrorCode = null,
             details =
                 CardDetails(BIN, LAST_FOUR_DIGITS, EXP_DATE, BRAND, PAYMENT_INSTRUMENT_GATEWAY_ID),
+            clients = TEST_DEFAULT_CLIENTS,
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
@@ -625,6 +690,7 @@ object WalletTestUtils {
                 validationOperationResult = null,
                 validationErrorCode = null,
                 details = null,
+                clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = creationDate,
                 updateDate = creationDate,
