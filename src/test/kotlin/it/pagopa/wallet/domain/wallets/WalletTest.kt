@@ -6,10 +6,12 @@ import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.domain.wallets.details.CardDetails
+import it.pagopa.wallet.exception.WalletClientConfigurationException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
@@ -171,5 +173,16 @@ class WalletTest {
             otherClientsData,
             "`Wallet#updateUsageForClient` updated unexpected client data!"
         )
+    }
+
+    @Test
+    fun `updateUsageForClient throws exception on non-configured client`() {
+        val walletBeforeUpdate =
+            WalletTestUtils.walletDomain()
+                .copy(clients = mapOf(Client.WellKnown.IO to Client(Client.Status.ENABLED, null)))
+
+        assertThrows<WalletClientConfigurationException> {
+            walletBeforeUpdate.updateUsageForClient(ClientIdDto.CHECKOUT, Instant.now())
+        }
     }
 }

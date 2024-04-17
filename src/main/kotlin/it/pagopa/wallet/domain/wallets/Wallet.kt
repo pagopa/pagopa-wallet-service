@@ -7,6 +7,7 @@ import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
+import it.pagopa.wallet.exception.WalletClientConfigurationException
 import java.time.Instant
 import org.slf4j.LoggerFactory
 
@@ -79,6 +80,8 @@ data class Wallet(
                 id.value,
                 clientId
             )
+
+            throw WalletClientConfigurationException(this.id, client)
         }
 
         return this.copy(clients = newClients)
