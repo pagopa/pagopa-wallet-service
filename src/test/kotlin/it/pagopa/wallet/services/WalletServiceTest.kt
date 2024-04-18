@@ -1449,7 +1449,13 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
                 val walletDocumentWithCardDetails =
-                    walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
+                    walletDocumentVerifiedWithCardDetails(
+                        "12345678",
+                        "0000",
+                        "203012",
+                        "?",
+                        "MASTERCARD"
+                    )
 
                 val expectedLoggedAction =
                     LoggedAction(
@@ -1491,7 +1497,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MC", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))

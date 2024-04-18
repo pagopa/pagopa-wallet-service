@@ -3,6 +3,7 @@ package it.pagopa.wallet.util
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.config.LogoConfig
 import it.pagopa.wallet.domain.wallets.Wallet
+import it.pagopa.wallet.domain.wallets.details.CardBrand
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import java.net.URI
@@ -25,7 +26,7 @@ class WalletUtilsTest {
         @JvmStatic
         fun `card wallet with all brands method source`() =
             LogoConfig.SupportedCardLogo.values().map {
-                WalletTestUtils.walletDocumentStatusValidatedCard(it.name).toDomain()
+                WalletTestUtils.walletDocumentStatusValidatedCard(CardBrand(it.name)).toDomain()
             }
     }
 
@@ -35,7 +36,7 @@ class WalletUtilsTest {
     @MethodSource("card wallet with all brands method source")
     fun `should retrieve logo for input card wallet successfully`(wallet: Wallet) {
         val logoURI = walletUtils.getLogo(wallet)
-        assertTrue(logoURI.toString().endsWith("/${(wallet.details as CardDetails).brand}"))
+        assertTrue(logoURI.toString().endsWith("/${(wallet.details as CardDetails).brand.value}"))
     }
 
     @Test

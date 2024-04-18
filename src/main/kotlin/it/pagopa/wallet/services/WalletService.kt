@@ -612,7 +612,7 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
-                                data.circuit.orEmpty(),
+                                CardBrand(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )

@@ -1,9 +1,6 @@
 package it.pagopa.wallet.documents.wallets.details
 
-import it.pagopa.wallet.domain.wallets.details.Bin
-import it.pagopa.wallet.domain.wallets.details.ExpiryDate
-import it.pagopa.wallet.domain.wallets.details.LastFourDigits
-import it.pagopa.wallet.domain.wallets.details.PaymentInstrumentGatewayId
+import it.pagopa.wallet.domain.wallets.details.*
 
 data class CardDetails(
     val type: String,
@@ -18,7 +15,7 @@ data class CardDetails(
             Bin(bin),
             LastFourDigits(lastFourDigits),
             ExpiryDate(expiryDate),
-            brand,
+            CardBrand(brand),
             PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
         )
 }

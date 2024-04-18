@@ -51,7 +51,7 @@ object WalletTestUtils {
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
     val EXP_DATE = ExpiryDate("203012")
-    const val BRAND = "MC"
+    val BRAND = CardBrand("MC")
     val PAYMENT_INSTRUMENT_GATEWAY_ID = PaymentInstrumentGatewayId("paymentInstrumentGatewayId")
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
@@ -292,10 +292,8 @@ object WalletTestUtils {
             )
     }
 
-    fun walletDocumentStatusValidatedCard() = walletDocumentStatusValidatedCard(BRAND)
-
     fun walletDocumentStatusValidatedCard(
-        brand: String,
+        brand: CardBrand = BRAND,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
         return Wallet(
@@ -322,7 +320,7 @@ object WalletTestUtils {
                     BIN.bin,
                     LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
-                    brand.toString(),
+                    brand.value,
                     PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                 ),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -626,7 +624,7 @@ object WalletTestUtils {
                         BIN.bin,
                         LAST_FOUR_DIGITS.lastFourDigits,
                         EXP_DATE.expDate,
-                        BRAND.toString(),
+                        BRAND.value,
                         PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                     ),
                 clients =
@@ -709,7 +707,7 @@ object WalletTestUtils {
                 WalletCardDetailsDto()
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .type("CARDS")
-                    .brand("MC")
+                    .brand("MASTERCARD")
                     .expiryDate(EXP_DATE.expDate)
             )
 
@@ -730,7 +728,7 @@ object WalletTestUtils {
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
-            .brand(BRAND)
+            .brand(BRAND.value)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
 
     fun walletAPMAuthDataDto() =

@@ -374,7 +374,7 @@ class MigrationServiceTest {
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
-                brand = "VISA",
+                brand = CardBrand("VISA"),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
             )
 

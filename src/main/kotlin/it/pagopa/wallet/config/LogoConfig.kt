@@ -13,7 +13,7 @@ class LogoConfig {
     /** Enumeration of supported card brand-logo mapping. */
     enum class SupportedCardLogo {
         VISA,
-        MC,
+        MASTERCARD,
         DINERS,
         MAESTRO,
         AMEX
