@@ -6,6 +6,8 @@ import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.services.MigrationService
+import it.pagopa.wallet.util.Tracing
+import it.pagopa.wallet.util.Tracing.Migration.CONTRACT_HMAC
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import lombok.extern.slf4j.Slf4j
@@ -42,9 +44,12 @@ class MigrationController(private val migrationService: MigrationService) : Migr
 
     override fun updateWalletDetailsByPM(
         walletPmCardDetailsRequestDto: Mono<WalletPmCardDetailsRequestDto>,
+        xContractHmac: String?,
         exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<WalletPmCardDetailsResponseDto>> {
-        return walletPmCardDetailsRequestDto
+    ): Mono<ResponseEntity<WalletPmCardDetailsResponseDto>> =
+        Tracing.customizeSpan(walletPmCardDetailsRequestDto) {
+                xContractHmac?.also { setAttribute(CONTRACT_HMAC, it) }
+            }
             .flatMap { request ->
                 migrationService.updateWalletCardDetails(
                     contractId = ContractId(request.contractIdentifier),
@@ -60,16 +65,24 @@ class MigrationController(private val migrationService: MigrationService) : Migr
                 )
             }
             .map { ResponseEntity.ok(WalletPmCardDetailsResponseDto().walletId(it.id.value)) }
-    }
+            .contextWrite { context ->
+                xContractHmac?.let { context.put(CONTRACT_HMAC, it) } ?: context
+            }
 
     @SuppressWarnings("kotlin:S6508")
     override fun removeWalletByPM(
         walletPmDeleteRequestDto: Mono<WalletPmDeleteRequestDto>,
+        xContractHmac: String?,
         exchange: ServerWebExchange?
     ): Mono<ResponseEntity<Void>> =
-        walletPmDeleteRequestDto
+        Tracing.customizeSpan(walletPmDeleteRequestDto) {
+                xContractHmac?.also { setAttribute(CONTRACT_HMAC, it) }
+            }
             .flatMap { migrationService.deleteWallet(ContractId(it.contractIdentifier)) }
-            .map { ResponseEntity.noContent().build() }
+            .map<ResponseEntity<Void>?> { ResponseEntity.noContent().build() }
+            .contextWrite { context ->
+                xContractHmac?.let { context.put(CONTRACT_HMAC, it) } ?: context
+            }
 
     private fun parseExpiryDateMMYY(expiryDate: String): ExpiryDate =
         ExpiryDate.fromYearMonth(YearMonth.parse(expiryDate, DateTimeFormatter.ofPattern("MM/yy")))
