@@ -163,17 +163,7 @@ class WalletService(
                             version = 0,
                             clients =
                                 Client.WellKnown.values().associateWith { clientId ->
-                                    // Enable wallet only for the onboarding channel
-                                    val status =
-                                        if (
-                                            Client.Id.fromString(onboardingChannel.name) == clientId
-                                        ) {
-                                            Client.Status.ENABLED
-                                        } else {
-                                            Client.Status.DISABLED
-                                        }
-
-                                    Client(status, null)
+                                    Client(Client.Status.ENABLED, null)
                                 },
                             creationDate = creationTime,
                             updateDate = creationTime,
@@ -264,17 +254,7 @@ class WalletService(
                             applications = listOf(walletApplication),
                             clients =
                                 Client.WellKnown.values().associateWith { clientId ->
-                                    // Enable wallet only for the onboarding channel
-                                    val status =
-                                        if (
-                                            Client.Id.fromString(onboardingChannel.name) == clientId
-                                        ) {
-                                            Client.Status.ENABLED
-                                        } else {
-                                            Client.Status.DISABLED
-                                        }
-
-                                    Client(status, null)
+                                    Client(Client.Status.ENABLED, null)
                                 },
                             onboardingChannel = onboardingChannel
                         ),
