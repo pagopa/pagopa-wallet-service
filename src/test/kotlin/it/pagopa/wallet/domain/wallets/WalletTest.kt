@@ -6,12 +6,11 @@ import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.domain.wallets.details.CardDetails
-import it.pagopa.wallet.exception.WalletClientConfigurationException
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 
@@ -176,13 +175,24 @@ class WalletTest {
     }
 
     @Test
-    fun `updateUsageForClient throws exception on non-configured client`() {
+    fun `updateUsageForClient adds client configuration for well-known non-configured client`() {
         val walletBeforeUpdate =
             WalletTestUtils.walletDomain()
                 .copy(clients = mapOf(Client.WellKnown.IO to Client(Client.Status.ENABLED, null)))
 
-        assertThrows<WalletClientConfigurationException> {
+        val updatedWallet =
             walletBeforeUpdate.updateUsageForClient(ClientIdDto.CHECKOUT, Instant.now())
-        }
+        assertEquals(
+            setOf(Client.WellKnown.IO, Client.WellKnown.CHECKOUT),
+            updatedWallet.clients.keys
+        )
+
+        assertAll(
+            Client.WellKnown.values().map {
+                Executable {
+                    assertEquals(Client.Status.ENABLED, updatedWallet.clients[it]!!.status)
+                }
+            }
+        )
     }
 }

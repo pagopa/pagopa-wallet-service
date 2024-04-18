@@ -75,13 +75,17 @@ data class Wallet(
         if (clientData != null) {
             newClients[client] = clientData.copy(lastUsage = usageTime)
         } else {
-            logger.error(
-                "Missing client {}: requested usage update to wallet with id {}!",
-                id.value,
-                clientId
-            )
+            if (client is Client.WellKnown) {
+                newClients[client] = Client(Client.Status.ENABLED, usageTime)
+            } else {
+                logger.error(
+                    "Missing unknown client {}: requested usage update to wallet with id {}!",
+                    id.value,
+                    clientId
+                )
 
-            throw WalletClientConfigurationException(this.id, client)
+                throw WalletClientConfigurationException(this.id, client)
+            }
         }
 
         return this.copy(clients = newClients)
