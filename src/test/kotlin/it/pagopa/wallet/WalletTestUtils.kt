@@ -38,7 +38,6 @@ object WalletTestUtils {
     val TEST_DEFAULT_CLIENTS: Map<Client.Id, Client> =
         mapOf(
             Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
-            Client.WellKnown.CHECKOUT to Client(Client.Status.ENABLED, null),
             Client.Unknown("unknownClient") to Client(Client.Status.DISABLED, null)
         )
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
@@ -101,8 +100,6 @@ object WalletTestUtils {
             clients =
                 mapOf(
                     Client.WellKnown.IO.name to ClientDocument(Client.Status.ENABLED.name, null),
-                    Client.WellKnown.CHECKOUT.name to
-                        ClientDocument(Client.Status.DISABLED.name, null)
                 ),
             version = 0,
             creationDate = creationDate,

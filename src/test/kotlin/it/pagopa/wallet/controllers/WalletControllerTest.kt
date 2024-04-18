@@ -925,7 +925,7 @@ class WalletControllerTest {
         val error =
             WalletClientConfigurationException(
                 WalletId(UUID.fromString(wallet.id)),
-                Client.WellKnown.CHECKOUT
+                Client.Unknown("unknownClient")
             )
         given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.error(error))
 

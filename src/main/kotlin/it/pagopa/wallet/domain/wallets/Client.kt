@@ -20,7 +20,6 @@ data class Client(val status: Status, val lastUsage: Instant?) {
     }
 
     enum class WellKnown : Id {
-        CHECKOUT,
         IO;
 
         companion object {

@@ -6,10 +6,12 @@ import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.domain.wallets.details.CardDetails
+import it.pagopa.wallet.exception.WalletClientConfigurationException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -149,17 +151,20 @@ class WalletTest {
     }
 
     @ParameterizedTest
-    @EnumSource(ClientIdDto::class)
+    @EnumSource(Client.WellKnown::class)
     fun `updateUsageForClient updates only relevant client for wallet never used`(
-        clientId: ClientIdDto
+        clientToBeUpdated: Client.WellKnown
     ) {
         val walletBeforeUpdate = WalletTestUtils.walletDomain()
         val updateTime = Instant.now()
-        val clientToBeUpdated = Client.Id.fromString(clientId.name)
         val otherClientsDataBeforeUpdate =
             walletBeforeUpdate.clients.filter { it.key != clientToBeUpdated }
 
-        val wallet = walletBeforeUpdate.updateUsageForClient(clientId, updateTime)
+        val wallet =
+            walletBeforeUpdate.updateUsageForClient(
+                ClientIdDto.valueOf(clientToBeUpdated.name),
+                updateTime
+            )
         val otherClientsData = wallet.clients.filter { it.key != clientToBeUpdated }
 
         assertEquals(
@@ -176,16 +181,10 @@ class WalletTest {
 
     @Test
     fun `updateUsageForClient adds client configuration for well-known non-configured client`() {
-        val walletBeforeUpdate =
-            WalletTestUtils.walletDomain()
-                .copy(clients = mapOf(Client.WellKnown.IO to Client(Client.Status.ENABLED, null)))
+        val walletBeforeUpdate = WalletTestUtils.walletDomain().copy(clients = mapOf())
 
-        val updatedWallet =
-            walletBeforeUpdate.updateUsageForClient(ClientIdDto.CHECKOUT, Instant.now())
-        assertEquals(
-            setOf(Client.WellKnown.IO, Client.WellKnown.CHECKOUT),
-            updatedWallet.clients.keys
-        )
+        val updatedWallet = walletBeforeUpdate.updateUsageForClient(ClientIdDto.IO, Instant.now())
+        assertEquals(setOf(Client.WellKnown.IO), updatedWallet.clients.keys)
 
         assertAll(
             Client.WellKnown.values().map {
@@ -194,5 +193,16 @@ class WalletTest {
                 }
             }
         )
+    }
+
+    @Test
+    fun `updateUsageForClient throws exception on non-configured client`() {
+        val walletBeforeUpdate =
+            WalletTestUtils.walletDomain()
+                .copy(clients = mapOf(Client.WellKnown.IO to Client(Client.Status.ENABLED, null)))
+
+        assertThrows<WalletClientConfigurationException> {
+            walletBeforeUpdate.updateUsageForClient(ClientIdDto.CHECKOUT, Instant.now())
+        }
     }
 }
