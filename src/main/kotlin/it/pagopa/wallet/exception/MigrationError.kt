@@ -9,4 +9,5 @@ sealed class MigrationError : Throwable() {
     data class WalletContractIdNotFound(val contractId: ContractId) : MigrationError()
     data class WalletIllegalStateTransition(val walletId: WalletId, val status: WalletStatusDto) :
         MigrationError()
+    data class WalletAlreadyOnboarded(val walletId: WalletId) : MigrationError()
 }

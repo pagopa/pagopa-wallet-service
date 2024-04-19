@@ -16,9 +16,6 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Duration
-import java.time.Instant
-import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -27,6 +24,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 @Service
 class MigrationService(
@@ -84,10 +84,7 @@ class MigrationService(
         return findWalletByContractId(contractId)
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .flatMap { wallet ->
-                Mono.just(wallet)
-                    .flatMap { currentWallet ->
-                        updateWalletCardDetails(currentWallet, cardDetails, now)
-                    }
+                updateWalletCardDetails(wallet, cardDetails, now)
                     .doOnNext {
                         logger.info("Details updated for wallet with id: [{}]", it.id.value)
                     }
@@ -95,6 +92,11 @@ class MigrationService(
             }
             .doOnError(MigrationError.WalletContractIdNotFound::class.java) {
                 logger.error("Failure during wallet's card details update: contractId not found")
+            }
+            .doOnError(MigrationError.WalletAlreadyOnboarded::class.java) {
+                logger.error(
+                    "Failure during wallet's card details update: wallet already onboarded"
+                )
             }
             .doOnError({ e -> e !is MigrationError.WalletContractIdNotFound }) {
                 logger.error("Failure during wallet's card details update", it)
@@ -147,11 +149,27 @@ class MigrationService(
                         status = WalletStatusDto.VALIDATED,
                         updateDate = updateTime,
                     )
-                    .toDocument()
-                    .let(walletRepository::save)
+                    .toMono()
+                    .filterWhen {
+                        isCardAlreadyOnboarded(it, cardDetails).map { onboarded -> !onboarded }
+                    }
+                    .switchIfEmpty(Mono.error(MigrationError.WalletAlreadyOnboarded(wallet.id)))
+                    .map { it.toDocument() }
+                    .flatMap(walletRepository::save)
                     .map { LoggedAction(it.toDomain(), WalletDetailsAddedEvent(it.id)) }
                     .flatMap { it.saveEvents(loggingEventRepository) }
         }
+
+    private fun isCardAlreadyOnboarded(wallet: Wallet, details: CardDetails): Mono<Boolean> {
+        return walletRepository
+            .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                userId = wallet.userId.id.toString(),
+                paymentInstrumentGatewayId =
+                    details.paymentInstrumentGatewayId.paymentInstrumentGatewayId,
+                status = WalletStatusDto.VALIDATED
+            )
+            .hasElement()
+    }
 
     private fun findWalletByContractId(contractId: ContractId): Flux<Wallet> =
         walletPaymentManagerRepository

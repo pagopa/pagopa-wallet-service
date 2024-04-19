@@ -116,5 +116,12 @@ class ExceptionHandler {
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Invalid request")
                     .detail("Cannot update Wallet details while its status is ${e.status}")
+            is MigrationError.WalletAlreadyOnboarded ->
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("Wallet already onboarded")
+                    .detail(
+                        "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"
+                    )
         }.let { ResponseEntity.status(it.status).body(it) }
 }
