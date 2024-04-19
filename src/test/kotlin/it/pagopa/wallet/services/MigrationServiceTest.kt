@@ -187,6 +187,15 @@ class MigrationServiceTest {
                     Mono.just(walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED))
                 }
             given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+            given {
+                    walletRepository
+                        .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                            any(),
+                            any(),
+                            any()
+                        )
+                }
+                .willAnswer { Mono.empty<String>() }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
