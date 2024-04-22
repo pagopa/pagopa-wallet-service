@@ -21,8 +21,8 @@ class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {
     fun getLogo(wallet: Wallet): URI =
         requireNotNull(
             when (val walletDetail = wallet.details) {
-                is CardDetails -> logoMapping[walletDetail.brand.toString()]
-                is PayPalDetails -> logoMapping[walletDetail.type.toString()]
+                is CardDetails -> logoMapping[walletDetail.brand.value]
+                is PayPalDetails -> logoMapping[walletDetail.type.name]
                 else -> logoMapping[UNKNOWN_LOGO_KEY]
             }
         )

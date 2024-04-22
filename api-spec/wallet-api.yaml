@@ -681,6 +681,8 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '422':
+          description: Client not present in wallet configuration
         '504':
           description: Timeout serving request
 

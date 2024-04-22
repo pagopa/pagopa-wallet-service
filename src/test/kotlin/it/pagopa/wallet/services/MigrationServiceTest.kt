@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.ApplicationsTestUtils.Companion.DOMAIN_APPLICATION
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
+import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
@@ -409,7 +410,7 @@ class MigrationServiceTest {
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
-                brand = "VISA",
+                brand = CardBrand("VISA"),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
             )
 
@@ -427,6 +428,8 @@ class MigrationServiceTest {
                 updateDate = Instant.now(),
                 applications = emptyList(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 validationOperationResult = null,
                 validationErrorCode = null,
                 version = 0,

@@ -8,7 +8,7 @@ class CardDetailsTest {
     private val validBin = "42424242"
     val validLastFourDigits = "5555"
     val validExpiryDate = "203012"
-    val brand = "MC"
+    val rawBrand = "MC"
     val paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
     val invalidBin = "42424"
     val invalidLastFourDigits = "4242425555"
@@ -22,7 +22,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
+                brand = CardBrand(rawBrand),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
 
@@ -40,7 +40,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(invalidExpiryDate),
-                brand = brand,
+                brand = CardBrand(rawBrand),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }
@@ -54,7 +54,7 @@ class CardDetailsTest {
                 bin = Bin(validBin),
                 lastFourDigits = LastFourDigits(invalidLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
+                brand = CardBrand(rawBrand),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }
@@ -68,7 +68,7 @@ class CardDetailsTest {
                 bin = Bin(invalidBin),
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
-                brand = brand,
+                brand = CardBrand(rawBrand),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
             )
         }

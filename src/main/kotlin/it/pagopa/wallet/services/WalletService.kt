@@ -161,6 +161,10 @@ class WalletService(
                             paymentMethodId = PaymentMethodId(paymentMethodId),
                             applications = apps,
                             version = 0,
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             creationDate = creationTime,
                             updateDate = creationTime,
                             onboardingChannel = onboardingChannel
@@ -248,6 +252,10 @@ class WalletService(
                             creationDate = creationTime,
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             onboardingChannel = onboardingChannel
                         ),
                         it
@@ -604,7 +612,7 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
-                                data.circuit.orEmpty(),
+                                CardBrand(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )
@@ -921,9 +929,11 @@ class WalletService(
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
                         .lastUsage(
-                            application.toDomain().lastUsageIO()?.let {
-                                OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
-                            }
+                            wallet
+                                .toDomain()
+                                .clients[Client.WellKnown.IO]
+                                ?.lastUsage
+                                ?.atOffset(ZoneOffset.UTC)
                         )
                 }
             )

@@ -5,9 +5,7 @@ data class WalletApplicationMetadata(val data: Map<Metadata, String?>) {
         TRANSACTION_ID("transactionId"),
         AMOUNT("amount"),
         PAYMENT_WITH_CONTEXTUAL_ONBOARD("paymentWithContextualOnboard"),
-        ONBOARD_BY_MIGRATION("onboardByMigration"),
-        LAST_USED_IO("lastUsedIO"),
-        LAST_USED_CHECKOUT("lastUsedCheckout");
+        ONBOARD_BY_MIGRATION("onboardByMigration");
 
         companion object {
             private val valuesMap: Map<String, Metadata> = values().associateBy { it.value }

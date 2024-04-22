@@ -9,6 +9,7 @@ import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.details.CardBrand
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.ExpiryDate
 import it.pagopa.wallet.exception.MigrationError
@@ -108,7 +109,7 @@ class MigrationControllerTest {
             verify(migrationService).updateWalletCardDetails(any(), capture())
             assertEquals(lastValue.bin.bin, "123456")
             assertEquals(lastValue.expiryDate, ExpiryDate("202512"))
-            assertEquals(lastValue.brand, "VISA")
+            assertEquals(lastValue.brand, CardBrand("VISA"))
             assertEquals(lastValue.lastFourDigits.lastFourDigits, "7890")
         }
     }

@@ -204,6 +204,10 @@ class MigrationService(
                     status = WalletStatusDto.CREATED,
                     paymentMethodId = paymentMethodId,
                     applications = listOf(application),
+                    clients =
+                        Client.WellKnown.values().associateWith { clientId ->
+                            Client(Client.Status.ENABLED, null)
+                        },
                     creationDate = creationTime,
                     updateDate = creationTime,
                     onboardingChannel = OnboardingChannel.IO,

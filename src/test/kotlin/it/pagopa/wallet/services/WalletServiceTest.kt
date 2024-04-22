@@ -53,6 +53,7 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
+import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -1448,7 +1449,13 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
                 val walletDocumentWithCardDetails =
-                    walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
+                    walletDocumentVerifiedWithCardDetails(
+                        "12345678",
+                        "0000",
+                        "203012",
+                        "?",
+                        "MASTERCARD"
+                    )
 
                 val expectedLoggedAction =
                     LoggedAction(
@@ -1490,7 +1497,7 @@ class WalletServiceTest {
                 val walletDocumentToSave = walletArgumentCaptor.firstValue
                 assertEquals(
                     walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MC", "?")
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
@@ -3572,19 +3579,10 @@ class WalletServiceTest {
         val wallet =
             walletDocument()
                 .copy(
-                    applications =
-                        listOf(
-                            it.pagopa.wallet.documents.wallets.WalletApplication(
-                                id = WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID.id,
-                                status = WalletApplicationStatus.ENABLED.name,
-                                creationDate = Instant.now().toString(),
-                                updateDate = Instant.now().toString(),
-                                metadata =
-                                    mapOf(
-                                        WalletApplicationMetadata.Metadata.LAST_USED_IO.value to
-                                            lastUsageTime
-                                    )
-                            )
+                    clients =
+                        mapOf(
+                            Client.WellKnown.IO.name to
+                                ClientDocument(Client.Status.ENABLED.name, lastUsageTime)
                         )
                 )
         given { walletRepository.findByIdAndUserId(any<String>(), any<String>()) }
