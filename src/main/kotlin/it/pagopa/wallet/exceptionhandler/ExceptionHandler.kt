@@ -4,10 +4,7 @@ import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
-import it.pagopa.wallet.exception.ApiError
-import it.pagopa.wallet.exception.MigrationError
-import it.pagopa.wallet.exception.RestApiException
-import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
+import it.pagopa.wallet.exception.*
 import jakarta.xml.bind.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -116,5 +113,12 @@ class ExceptionHandler {
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Invalid request")
                     .detail("Cannot update Wallet details while its status is ${e.status}")
+            is MigrationError.WalletAlreadyOnboarded ->
+                ProblemJsonDto()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .title("Wallet already onboarded")
+                    .detail(
+                        "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"
+                    )
         }.let { ResponseEntity.status(it.status).body(it) }
 }

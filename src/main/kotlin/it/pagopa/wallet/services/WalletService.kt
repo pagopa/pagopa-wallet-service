@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -160,6 +161,10 @@ class WalletService(
                             paymentMethodId = PaymentMethodId(paymentMethodId),
                             applications = apps,
                             version = 0,
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             creationDate = creationTime,
                             updateDate = creationTime,
                             onboardingChannel = onboardingChannel
@@ -247,6 +252,10 @@ class WalletService(
                             creationDate = creationTime,
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
+                            clients =
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             onboardingChannel = onboardingChannel
                         ),
                         it
@@ -485,23 +494,22 @@ class WalletService(
 
     fun validateWalletSession(
         orderId: String,
-        walletId: UUID
+        walletId: WalletId,
+        userId: UserId
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
         val correlationId = UUID.randomUUID()
         return mono { npgSessionRedisTemplate.findById(orderId) }
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
                 walletRepository
-                    .findById(walletId.toString())
-                    .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
+                    .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
+                    .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
                     .filter { session.walletId == it.id }
                     .switchIfEmpty {
-                        Mono.error(
-                            WalletSessionMismatchException(session.sessionId, WalletId(walletId))
-                        )
+                        Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
                     .filter { it.status == WalletStatusDto.INITIALIZED.value }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
                             .getPaymentMethodById(wallet.paymentMethodId)
@@ -514,17 +522,17 @@ class WalletService(
                                             orderId,
                                             wallet.toDomain()
                                         )
-                                    else ->
-                                        throw NoCardsSessionValidateRequestException(
-                                            WalletId(walletId)
-                                        )
+                                    else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
                     }
                     .flatMap { (response, wallet) ->
                         walletRepository.save(wallet.toDocument()).map {
                             response to
-                                LoggedAction(wallet, WalletDetailsAddedEvent(walletId.toString()))
+                                LoggedAction(
+                                    wallet,
+                                    WalletDetailsAddedEvent(walletId.value.toString())
+                                )
                         }
                     }
             }
@@ -604,7 +612,7 @@ class WalletService(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
                                 ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
-                                data.circuit.orEmpty(),
+                                CardBrand(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
                     )
@@ -917,9 +925,16 @@ class WalletService(
             .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
             .applications(
                 wallet.applications.map { application ->
-                    WalletApplicationDto()
+                    WalletApplicationInfoDto()
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
+                        .lastUsage(
+                            wallet
+                                .toDomain()
+                                .clients[Client.WellKnown.IO]
+                                ?.lastUsage
+                                ?.atOffset(ZoneOffset.UTC)
+                        )
                 }
             )
             .details(toWalletInfoDetailsDto(wallet.details))

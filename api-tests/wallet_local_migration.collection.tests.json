@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "03be2d18-9a3e-4704-9411-8bacda7a18bf",
+		"_postman_id": "bad3b169-09c2-40d2-9ffb-78eb2c8595c6",
 		"name": "Wallet CARDS Migration",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23305473",
-		"_collection_link": "https://solar-shuttle-72092.postman.co/workspace/Wallet~1247c858-5774-4bb2-b6e4-a5d7c22704e0/collection/23305473-03be2d18-9a3e-4704-9411-8bacda7a18bf?action=share&source=collection_link&creator=23305473"
+		"_exporter_id": "32950386"
 	},
 	"item": [
 		{
@@ -186,19 +185,34 @@
 							"    pm.sendRequest({",
 							"        url: `${pm.environment.get(\"HOSTNAME\")}/wallets/${pm.environment.get(\"WALLET_ID\")}`,",
 							"        method: \"GET\",",
+							"        header: {",
+							"            \"x-user-id\": pm.environment.get(\"USER_ID\")",
+							"        }",
 							"    }, (err, resp) => {",
 							"        const responseJson = resp.json();",
 							"        pm.expect(resp.code).to.be.eq(200);",
 							"        pm.expect(responseJson.status).to.be.eq(\"VALIDATED\")",
 							"        pm.expect(responseJson.details.type).to.be.eq(\"CARDS\")",
-							"        pm.expect(responseJson.details.bin).to.be.eq(\"12345678\")",
 							"        pm.expect(responseJson.details.lastFourDigits).to.be.eq(\"7295\")",
 							"        pm.expect(responseJson.details.expiryDate).to.be.eq(\"202512\")",
 							"        done();",
 							"    });",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if(!pm.environment.get('PAYMENT_GATEWAY_ID')) {",
+							"    pm.environment.set('PAYMENT_GATEWAY_ID', pm.variables.replaceIn(\"{{$guid}}\"));",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -207,7 +221,116 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"123\",\n  \"contractIdentifier\": \"{{NEW_CONTRACT_ID}}\",\n  \"newContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"{{PAYMENT_GATEWAY_ID}}\",\n  \"contractIdentifier\": \"{{NEW_CONTRACT_ID}}\",\n  \"newContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets/updateDetails",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets",
+						"updateDetails"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create duplicate wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] New wallet created successfully with PUT /wallets/migrations\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.status).to.be.eq(\"CREATED\");",
+							"    const contractId = responseJson.contractId;",
+							"    pm.environment.set(\"ANOTHER_CONTRACT_ID\", contractId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if(!pm.environment.get('ANOTHER_WALLET_ID_PM')) {",
+							"    pm.environment.set('ANOTHER_WALLET_ID_PM', Math.floor(Math.random() * 1_000_000))",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"walletIdPm\": {{ANOTHER_WALLET_ID_PM}},\n    \"userId\": \"{{USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/migrations/wallets",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"migrations",
+						"wallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Fail update for already onboarded wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet PM Migration] Fail update an already associated card /wallets/migrations/updateDetails\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"lastFourDigits\": \"7295\",\n  \"expiryDate\": \"12/25\",\n  \"cardId\": \"1234\",\n  \"paymentCircuit\": \"VISA\",\n  \"paymentGatewayCardId\": \"{{PAYMENT_GATEWAY_ID}}\",\n  \"contractIdentifier\": \"{{ANOTHER_CONTRACT_ID}}\",\n  \"newContractIdentifier\": \"{{$guid}}\",\n  \"cardBin\": \"12345678\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -284,19 +407,22 @@
 							"    pm.sendRequest({",
 							"        url: `${pm.environment.get(\"HOSTNAME\")}/wallets/${pm.environment.get(\"WALLET_ID\")}`,",
 							"        method: \"GET\",",
+							"        header: {",
+							"            \"x-user-id\": pm.environment.get(\"USER_ID\")",
+							"        }",
 							"    }, (err, resp) => {",
 							"        const responseJson = resp.json();",
 							"        pm.expect(resp.code).to.be.eq(200);",
 							"        pm.expect(responseJson.status).to.be.eq(\"DELETED\")",
 							"        pm.expect(responseJson.details.type).to.be.eq(\"CARDS\")",
-							"        pm.expect(responseJson.details.bin).to.be.eq(\"12345678\")",
 							"        pm.expect(responseJson.details.lastFourDigits).to.be.eq(\"7295\")",
 							"        pm.expect(responseJson.details.expiryDate).to.be.eq(\"202512\")",
 							"        done();",
 							"    });",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],

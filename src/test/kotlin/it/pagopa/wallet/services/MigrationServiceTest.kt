@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.ApplicationsTestUtils.Companion.DOMAIN_APPLICATION
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
+import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
@@ -187,6 +188,15 @@ class MigrationServiceTest {
                     Mono.just(walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED))
                 }
             given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+            given {
+                    walletRepository
+                        .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                            any(),
+                            any(),
+                            any()
+                        )
+                }
+                .willAnswer { Mono.empty<String>() }
 
             migrationService
                 .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
@@ -309,6 +319,33 @@ class MigrationServiceTest {
     }
 
     @Test
+    fun `should throw error when update card details with paymentGatewayId already associated`() {
+        val paymentManagerId = Random().nextLong().toString()
+        val cardDetails = generateCardDetails()
+        mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
+            val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }.willAnswer { walletTest.toMono() }
+            given {
+                    walletRepository
+                        .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                            any(),
+                            any(),
+                            any()
+                        )
+                }
+                .willAnswer { Mono.just(true) }
+
+            migrationService
+                .updateWalletCardDetails(contractId = contractId, cardDetails = cardDetails)
+                .test()
+                .expectError(MigrationError.WalletAlreadyOnboarded::class.java)
+                .verify()
+        }
+    }
+
+    @Test
     fun `should thrown ContractIdNotFound when ContractId doesn't exists`() {
         mockWalletMigration { _, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
@@ -373,7 +410,7 @@ class MigrationServiceTest {
                 bin = Bin("123456"),
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
-                brand = "VISA",
+                brand = CardBrand("VISA"),
                 paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
             )
 
@@ -391,6 +428,8 @@ class MigrationServiceTest {
                 updateDate = Instant.now(),
                 applications = emptyList(),
                 details = null,
+                clients =
+                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
                 validationOperationResult = null,
                 validationErrorCode = null,
                 version = 0,

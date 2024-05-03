@@ -247,16 +247,18 @@ class WalletController(
     }
 
     override fun postWalletValidations(
+        xUserId: UUID,
         walletId: UUID,
         orderId: String,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletVerifyRequestsResponseDto>> {
-        return walletService.validateWalletSession(orderId, walletId).flatMap {
-            (response, walletEvent) ->
-            walletEvent.saveEvents(loggingEventRepository).map {
-                ResponseEntity.ok().body(response)
+        return walletService
+            .validateWalletSession(orderId, WalletId(walletId), UserId(xUserId))
+            .flatMap { (response, walletEvent) ->
+                walletEvent.saveEvents(loggingEventRepository).map {
+                    ResponseEntity.ok().body(response)
+                }
             }
-        }
     }
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {

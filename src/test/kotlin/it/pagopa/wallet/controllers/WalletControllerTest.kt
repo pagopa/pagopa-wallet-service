@@ -14,14 +14,8 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.domain.applications.ApplicationId
-import it.pagopa.wallet.domain.wallets.UserId
-import it.pagopa.wallet.domain.wallets.WalletApplicationId
-import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
-import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.ApplicationNotFoundException
-import it.pagopa.wallet.exception.InvalidRequestException
-import it.pagopa.wallet.exception.SecurityTokenMatchException
-import it.pagopa.wallet.exception.WalletNotFoundException
+import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletService
@@ -223,8 +217,9 @@ class WalletControllerTest {
     @Test
     fun testValidateWallet() = runTest {
         /* preconditions */
-        val walletId = UUID.randomUUID()
+        val walletId = WalletId(UUID.randomUUID())
         val orderId = Instant.now().toString() + "ABCDE"
+        val userId = UserId(UUID.randomUUID())
         val wallet = walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val response =
             WalletVerifyRequestsResponseDto()
@@ -232,7 +227,7 @@ class WalletControllerTest {
                 .details(
                     WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
                 )
-        given { walletService.validateWalletSession(orderId, walletId) }
+        given { walletService.validateWalletSession(orderId, walletId, userId) }
             .willReturn(
                 mono {
                     Pair(
@@ -251,7 +246,8 @@ class WalletControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/wallets/${walletId}/sessions/${orderId}/validations")
+            .uri("/wallets/${walletId.value}/sessions/${orderId}/validations")
+            .header("x-user-id", userId.id.toString())
             .contentType(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()
@@ -918,5 +914,30 @@ class WalletControllerTest {
                     )
             }
             .verifyComplete()
+    }
+
+    @Test
+    fun `should return 422 when update last wallet usage for non-configured client`() = runTest {
+        val wallet = WalletTestUtils.walletDocument()
+        val updateRequest =
+            UpdateWalletUsageRequestDto()
+                .clientId(ClientIdDto.CHECKOUT)
+                .usageTime(OffsetDateTime.MIN)
+
+        val error =
+            WalletClientConfigurationException(
+                WalletId(UUID.fromString(wallet.id)),
+                Client.Unknown("unknownClient")
+            )
+        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.error(error))
+
+        webClient
+            .patch()
+            .uri("/wallets/{walletId}/usages", mapOf("walletId" to wallet.id))
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updateRequest)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(422)
     }
 }
