@@ -145,7 +145,7 @@ stages:
                     DO_DEPLOY: true
                     ENV: 'DEV'
                     KUBERNETES_SERVICE_CONN: $(DEV_KUBERNETES_SERVICE_CONN)
-                    NAMESPACE: $(WALLET_NAMESPACE)
+                    NAMESPACE: "pay-wallet"
                     APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
                     VALUE_FILE: "helm/values-dev.yaml"
                     GREEN_VERSION: $(Build.SourceVersion)
