@@ -15,7 +15,6 @@ import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
-import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
@@ -39,6 +38,12 @@ object WalletTestUtils {
         mapOf(
             Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
             Client.Unknown("unknownClient") to Client(Client.Status.DISABLED, null)
+        )
+    val TEST_FULL_INFO_CLIENTS: Map<Client.Id, Client> =
+        mapOf(
+            Client.WellKnown.IO to Client(Client.Status.ENABLED, Instant.now()),
+            Client.Unknown("unknownClient") to
+                Client(Client.Status.DISABLED, Instant.now().minusMillis(10000))
         )
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
     val APPLICATION_METADATA =
