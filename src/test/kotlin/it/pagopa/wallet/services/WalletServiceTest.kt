@@ -2072,6 +2072,13 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedCard()
+
+                val walletClientInfo =
+                    WalletInfoClientsDto()
+                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
+
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2094,6 +2101,7 @@ class WalletServiceTest {
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
+                        .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
@@ -2124,6 +2132,11 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedAPM(MASKED_EMAIL.value)
+                val walletClientInfo =
+                    WalletInfoClientsDto()
+                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2142,6 +2155,7 @@ class WalletServiceTest {
                         .details(
                             WalletPaypalDetailsDto().maskedEmail(MASKED_EMAIL.value).pspId(PSP_ID)
                         )
+                        .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
@@ -2172,7 +2186,11 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedAPM(null)
-
+                val walletClientInfo =
+                    WalletInfoClientsDto()
+                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2189,6 +2207,7 @@ class WalletServiceTest {
                             }
                         )
                         .details(WalletPaypalDetailsDto().maskedEmail(null).pspId(PSP_ID))
+                        .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
@@ -2222,6 +2241,11 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val logoUri = "http://logoURI"
                 val wallet = walletDocumentStatusValidatedCard()
+                val walletClientInfo =
+                    WalletInfoClientsDto()
+                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2245,6 +2269,7 @@ class WalletServiceTest {
                                 .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
                         )
                         .paymentMethodAsset(URI.create(logoUri))
+                        .clients(walletClientInfo)
 
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
