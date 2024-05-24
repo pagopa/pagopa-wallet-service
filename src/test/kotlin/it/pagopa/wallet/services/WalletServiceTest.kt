@@ -2075,12 +2075,10 @@ class WalletServiceTest {
 
                 val wallet = walletDocumentStatusValidatedCard()
 
-                val walletClientInfo =
-                    WalletInfoClientsDto()
-                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                val walletClientInfo = HashMap<String, WalletClientDto>()
                 walletClientInfo["unknownClient"] =
                     WalletClientDto().status(WalletClientStatusDto.DISABLED)
-
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2135,13 +2133,11 @@ class WalletServiceTest {
 
                 val wallet = walletDocumentStatusValidatedCard(BRAND, TEST_FULL_INFO_CLIENTS)
 
-                val walletClientInfo =
-                    WalletInfoClientsDto()
-                        .IO(
-                            WalletClientDto()
-                                .status(WalletClientStatusDto.ENABLED)
-                                .lastUsage(OffsetDateTime.parse(wallet.clients["IO"]?.lastUsage))
-                        )
+                val walletClientInfo = HashMap<String, WalletClientDto>()
+                walletClientInfo["IO"] =
+                    WalletClientDto()
+                        .status(WalletClientStatusDto.ENABLED)
+                        .lastUsage(OffsetDateTime.parse(wallet.clients["IO"]?.lastUsage))
                 walletClientInfo["unknownClient"] =
                     WalletClientDto()
                         .status(WalletClientStatusDto.DISABLED)
@@ -2203,11 +2199,11 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedAPM(MASKED_EMAIL.value)
-                val walletClientInfo =
-                    WalletInfoClientsDto()
-                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                val walletClientInfo = HashMap<String, WalletClientDto>()
                 walletClientInfo["unknownClient"] =
                     WalletClientDto().status(WalletClientStatusDto.DISABLED)
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
+
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2257,11 +2253,10 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedAPM(null)
-                val walletClientInfo =
-                    WalletInfoClientsDto()
-                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                val walletClientInfo = HashMap<String, WalletClientDto>()
                 walletClientInfo["unknownClient"] =
                     WalletClientDto().status(WalletClientStatusDto.DISABLED)
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
@@ -2312,11 +2307,10 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
                 val logoUri = "http://logoURI"
                 val wallet = walletDocumentStatusValidatedCard()
-                val walletClientInfo =
-                    WalletInfoClientsDto()
-                        .IO(WalletClientDto().status(WalletClientStatusDto.ENABLED))
+                val walletClientInfo = HashMap<String, WalletClientDto>()
                 walletClientInfo["unknownClient"] =
                     WalletClientDto().status(WalletClientStatusDto.DISABLED)
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
                 val walletInfoDto =
                     WalletInfoDto()
                         .walletId(UUID.fromString(wallet.id))
