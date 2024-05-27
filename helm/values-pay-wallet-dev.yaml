@@ -81,7 +81,7 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
-    OTEL_LOGS_EXPORTER: none
+    OTEL_LOGS_EXPORTER: otlp
     OTEL_TRACES_SAMPLER: "always_on"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
