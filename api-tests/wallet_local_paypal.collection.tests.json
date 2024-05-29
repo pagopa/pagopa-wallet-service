@@ -537,6 +537,54 @@
 			"response": []
 		},
 		{
+			"name": "Get wallet psp business name",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.a(\"string\")",
+							"    pm.expect(responseJson.status).to.be.eq(\"VALIDATION_REQUESTED\")",
+							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
+							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
+							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
+							"    pm.expect(responseJson.details.pspBusinessName).to.be.not.null;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Post sessions Wallet not found",
 			"event": [
 				{
@@ -643,54 +691,6 @@
 						"sessions",
 						"{{ORDER_ID}}",
 						"notifications"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get wallet psp business name",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"[Wallet for onboarding PAYPAL] Get Paypal Wallet has psp name /wallets/:idWallet\", function () {",
-							"    pm.response.to.have.status(200);",
-							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
-							"    pm.expect(responseJson.userId).to.be.a(\"string\")",
-							"    pm.expect(responseJson.paymentMethodId).to.be.a(\"string\")",
-							"    pm.expect(responseJson.status).to.be.a(\"string\")",
-							"    pm.expect(responseJson.status).to.be.eq(\"VALIDATION_REQUESTED\")",
-							"    pm.expect(responseJson.walletId).to.be.eq(pm.environment.get(\"WALLET_ID\"))",
-							"    pm.expect(responseJson.userId).to.be.eq(pm.environment.get(\"x-user-id\"))",
-							"    pm.expect(responseJson.paymentMethodId).to.be.eq(pm.environment.get(\"PAYMENT_METHOD_ID\"))",
-							"    pm.expect(responseJson.details.pspBusinessName).to.be.not.null;",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-user-id",
-						"value": "{{x-user-id}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
-					"host": [
-						"{{HOSTNAME}}"
-					],
-					"path": [
-						"wallets",
-						"{{WALLET_ID}}"
 					]
 				}
 			},
