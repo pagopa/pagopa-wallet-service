@@ -85,6 +85,21 @@ services:
     networks:
       - pagopa-wallet-net
 
+  pagopa-gec-mock:
+    build:
+      context: .
+      dockerfile: ./docker/config/gec-mock/Dockerfile.gec-mock
+    container_name: pagopa-gec-mock
+    volumes:
+      - type: bind
+        source: ./docker/config/gec-mock
+        target: /config
+        read_only: true
+    ports:
+      - "8090:3000"
+    networks:
+      - pagopa-wallet-net
+
 networks:
   pagopa-wallet-net:
     driver: bridge
