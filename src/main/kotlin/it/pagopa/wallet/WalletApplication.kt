@@ -1,5 +1,6 @@
 package it.pagopa.wallet
 
+import it.pagopa.wallet.config.AfmCalculatorConfig
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.config.WalletMigrationConfig
@@ -12,7 +13,8 @@ import reactor.core.publisher.Hooks
 @EnableConfigurationProperties(
     SessionUrlConfig::class,
     OnboardingConfig::class,
-    WalletMigrationConfig::class
+    WalletMigrationConfig::class,
+    AfmCalculatorConfig::class
 )
 class WalletApplication
 

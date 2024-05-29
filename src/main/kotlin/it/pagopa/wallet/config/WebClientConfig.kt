@@ -2,6 +2,7 @@ package it.pagopa.wallet.config
 
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
+import it.pagopa.generated.afm.api.CalculatorApi
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import java.util.concurrent.TimeUnit
@@ -61,5 +62,29 @@ class WebClientConfig {
         val apiClient = it.pagopa.generated.ecommerce.ApiClient(webClient).setBasePath(baseUrl)
         apiClient.setApiKey(npgApiKey)
         return PaymentMethodsApi(apiClient)
+    }
+
+    @Bean
+    fun calculatorApi(afmCalculatorConfig: AfmCalculatorConfig): CalculatorApi {
+        val httpClient =
+            HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, afmCalculatorConfig.connectionTimeout)
+                .doOnConnected { connection: Connection ->
+                    connection.addHandlerLast(
+                        ReadTimeoutHandler(
+                            afmCalculatorConfig.readTimeout.toLong(),
+                            TimeUnit.MILLISECONDS
+                        )
+                    )
+                }
+        val webClient =
+            it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
+                .clientConnector(ReactorClientHttpConnector(httpClient))
+                .baseUrl(afmCalculatorConfig.baseUrl)
+                .build()
+        val apiClient =
+            it.pagopa.generated.afm.ApiClient(webClient).setBasePath(afmCalculatorConfig.baseUrl)
+        apiClient.setApiKey(afmCalculatorConfig.apiKey)
+        return CalculatorApi(apiClient)
     }
 }

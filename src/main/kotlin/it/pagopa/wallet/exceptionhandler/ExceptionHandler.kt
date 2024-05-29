@@ -4,7 +4,10 @@ import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
-import it.pagopa.wallet.exception.*
+import it.pagopa.wallet.exception.ApiError
+import it.pagopa.wallet.exception.MigrationError
+import it.pagopa.wallet.exception.RestApiException
+import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import jakarta.xml.bind.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -50,7 +53,8 @@ class ExceptionHandler {
         ServerWebInputException::class,
         ValidationException::class,
         HttpMessageNotReadableException::class,
-        WebExchangeBindException::class
+        WebExchangeBindException::class,
+        IllegalArgumentException::class
     )
     fun handleRequestValidationException(e: Exception): ResponseEntity<ProblemJsonDto> {
 

@@ -238,6 +238,37 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
   )
 }
 
+tasks.register<GenerateTask>("afmCalculator") {
+  description = "Generate AFM Calculator API client"
+  group = "openapi-generation"
+  generatorName.set("java")
+  remoteInputSpec.set(
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/b1230524eeb726f1b98768745de1cd1974c9ac7f/src/domains/afm-app/api/calculator-service/v2/_openapi.json.tpl"
+  )
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.pagopa.generated.afm.api")
+  modelPackage.set("it.pagopa.generated.afm.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
+    )
+  )
+}
+
 tasks.withType<KotlinCompile> {
   dependsOn("wallet", "nexiNpg", "nexiNpgNotification", "ecommercePaymentMethod")
   kotlinOptions.jvmTarget = "17"

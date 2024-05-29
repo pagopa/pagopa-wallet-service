@@ -1013,6 +1013,9 @@ components:
         pspId:
           type: string
           description: PSP identifier for the PayPal wallet
+        pspBusinessName:
+          type: string
+          description: PSP business name
         maskedEmail:
           description: masked email
           type: string
@@ -1020,6 +1023,7 @@ components:
       required:
         - type
         - pspId
+        - pspBusinessName
     WalletApplicationUpdateRequest:
       type: object
       description: Wallet update request

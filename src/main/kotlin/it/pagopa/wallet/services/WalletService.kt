@@ -1,8 +1,10 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.client.AfmCalculatorClient
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.config.OnboardingConfig
@@ -57,7 +59,8 @@ class WalletService(
     @Autowired
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
-    @Autowired private val walletUtils: WalletUtils
+    @Autowired private val walletUtils: WalletUtils,
+    private val amfClient: AfmCalculatorClient,
 ) {
 
     companion object {
@@ -385,18 +388,8 @@ class WalletService(
                                     throw InternalServerErrorException("Unhandled session input")
                             }
                     )
-                    .map { hostedOrderResponse ->
+                    .flatMap { hostedOrderResponse ->
                         val isAPM = paymentMethod.paymentTypeCode != "CP"
-
-                        val newDetails =
-                            when (sessionInputDataDto) {
-                                is SessionInputCardDataDto -> wallet.details
-                                is SessionInputPayPalDataDto ->
-                                    PayPalDetails(null, sessionInputDataDto.pspId)
-                                else ->
-                                    throw InternalServerErrorException("Unhandled session input")
-                            }
-
                         /*
                          * Credit card onboarding requires a two-step validation process
                          * (see WalletService#confirmPaymentCard), while for APMs
@@ -409,18 +402,31 @@ class WalletService(
                                 WalletStatusDto.INITIALIZED
                             }
 
-                        val updatedWallet =
-                            wallet.copy(
-                                contractId = ContractId(contractId),
-                                status = newStatus,
-                                details = newDetails,
+                        val newDetails =
+                            when (sessionInputDataDto) {
+                                    is SessionInputCardDataDto -> wallet.details.toMono()
+                                    is SessionInputPayPalDataDto ->
+                                        createPaypalDetails(sessionInputDataDto, paymentMethod)
+                                    else ->
+                                        Mono.error(
+                                            InternalServerErrorException("Unhandled session input")
+                                        )
+                                }
+                                .map { Optional.of(it) }
+                                .defaultIfEmpty(Optional.empty())
+
+                        newDetails.map {
+                            SessionCreationData(
+                                hostedOrderResponse,
+                                wallet.copy(
+                                    contractId = ContractId(contractId),
+                                    status = newStatus,
+                                    details = it.orElse(null),
+                                ),
+                                orderId,
+                                isAPM = isAPM
                             )
-                        SessionCreationData(
-                            hostedOrderResponse,
-                            updatedWallet,
-                            orderId,
-                            isAPM = isAPM
-                        )
+                        }
                     }
             }
             .flatMap { sessionCreationData ->
@@ -949,7 +955,10 @@ class WalletService(
                     .lastFourDigits(details.lastFourDigits)
                     .brand(details.brand)
             is PayPalDetailsDocument ->
-                WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
+                WalletPaypalDetailsDto()
+                    .maskedEmail(details.maskedEmail)
+                    .pspId(details.pspId)
+                    .pspBusinessName(details.pspBusinessName)
             else -> null
         }
     }
@@ -1246,4 +1255,17 @@ class WalletService(
                 throw InvalidRequestException(errorDescription)
             }
         }
+
+    private fun createPaypalDetails(
+        sessionInputPayPalDataDto: SessionInputPayPalDataDto,
+        paymentMethod: PaymentMethodResponse,
+    ) =
+        amfClient
+            .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethod.paymentTypeCode)
+            .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
+            .switchIfEmpty {
+                Mono.error(
+                    IllegalArgumentException("Invalid pspId [${sessionInputPayPalDataDto.pspId}]")
+                )
+            }
 }
