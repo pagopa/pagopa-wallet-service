@@ -1,0 +1,128 @@
+{
+  "fees": {
+    "belowThreshold": true,
+    "bundleOptions": [
+      {
+        "abi": "abi1",
+        "bundleDescription": "bundleDescription1",
+        "bundleName": "bundleName1Old",
+        "idBrokerPsp": "idBrokerPsp1",
+        "idBundle": "idBundle1",
+        "idChannel": "idChannel1",
+        "idCiBundle": "idCiBundle1",
+        "idPsp": "CIPBITMM",
+        "onUs": true,
+        "paymentMethod": "CP",
+        "primaryCiIncurredFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint1",
+        "pspBusinessName": "bundleName1"
+      },
+      {
+        "abi": "abi2",
+        "bundleDescription": "bundleDescription2",
+        "bundleName": "bundleName2Old",
+        "idBrokerPsp": "idBrokerPsp2",
+        "idBundle": "idBundle2",
+        "idChannel": "idChannel2",
+        "idCiBundle": "idCiBundle2",
+        "idPsp": "BNLIITRR",
+        "onUs": false,
+        "paymentMethod": "CP",
+        "primaryCiIncurredFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint2",
+        "pspBusinessName": "bundleName2"
+      },
+      {
+        "abi": "abi3",
+        "bundleDescription": "bundleDescription3",
+        "bundleName": "bundleName3Old",
+        "idBrokerPsp": "idBrokerPsp3",
+        "idBundle": "idBundle3",
+        "idChannel": "idChannel3",
+        "idCiBundle": "idCiBundle3",
+        "idPsp": "REDIRECT",
+        "onUs": false,
+        "paymentMethod": "RBPR",
+        "primaryCiIncurredFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint2",
+        "pspBusinessName": "bundleName3"
+      }
+    ]
+  },
+  "fees_v2": {
+    "belowThreshold": true,
+    "bundleOptions": [
+      {
+        "abi": "abi1",
+        "bundleDescription": "bundleDescription1",
+        "bundleName": "bundleName1Old",
+        "idBrokerPsp": "idBrokerPsp1",
+        "idBundle": "idBundle1",
+        "idChannel": "idChannel1",
+        "idsCiBundle": [],
+        "idPsp": "CIPBITMM",
+        "onUs": true,
+        "paymentMethod": "CP",
+        "actualPayerFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint1",
+        "pspBusinessName": "bundleName1",
+        "fees": []
+      },
+      {
+        "abi": "abi2",
+        "bundleDescription": "bundleDescription2",
+        "bundleName": "bundleName2Old",
+        "idBrokerPsp": "idBrokerPsp2",
+        "idBundle": "idBundle2",
+        "idChannel": "idChannel2",
+        "idsCiBundle": [],
+        "idPsp": "BNLIITRR",
+        "onUs": false,
+        "paymentMethod": "CP",
+        "actualPayerFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint2",
+        "pspBusinessName": "bundleName2",
+        "fees": []
+      },
+      {
+        "abi": "abi3",
+        "bundleDescription": "bundleDescription3",
+        "bundleName": "bundleName3Old",
+        "idBrokerPsp": "idBrokerPsp3",
+        "idBundle": "idBundle3",
+        "idChannel": "idChannel3",
+        "idsCiBundle": [],
+        "idPsp": "REDIRECT",
+        "onUs": false,
+        "paymentMethod": "RBPR",
+        "actualPayerFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint2",
+        "pspBusinessName": "bundleName3",
+        "fees": []
+      },
+      {
+        "abi": "abi4",
+        "bundleDescription": "bundleDescription1",
+        "bundleName": "bundleName1Old",
+        "idBrokerPsp": "idBrokerPsp1",
+        "idBundle": "idBundle1",
+        "idChannel": "idChannel1",
+        "idsCiBundle": [],
+        "idPsp": "pspId",
+        "onUs": true,
+        "paymentMethod": "CP",
+        "actualPayerFee": 0,
+        "taxPayerFee": 0,
+        "touchpoint": "touchpoint1",
+        "pspBusinessName": "bundleName1",
+        "fees": []
+      }
+    ]
+  }
+}

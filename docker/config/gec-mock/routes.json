@@ -1,0 +1,4 @@
+{
+    "/afm/calculator-service/v1/*": "/fees",
+    "/afm/calculator-service/v2/*": "/fees_v2"
+  }
