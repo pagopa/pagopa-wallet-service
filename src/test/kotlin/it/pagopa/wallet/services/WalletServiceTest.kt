@@ -2137,7 +2137,7 @@ class WalletServiceTest {
                 walletClientInfo["IO"] =
                     WalletClientDto()
                         .status(WalletClientStatusDto.ENABLED)
-                        .lastUsage(OffsetDateTime.parse(wallet.clients["IO"]?.lastUsage))
+                        .lastUsage(OffsetDateTime.parse(wallet.clients["IO"]!!.lastUsage))
                 walletClientInfo["unknownClient"] =
                     WalletClientDto()
                         .status(WalletClientStatusDto.DISABLED)
