@@ -83,5 +83,6 @@ class PspDetailClient(
                                 .creditorInstitution("")
                         )
                 )
+                .isAllCCP(false)
     }
 }
