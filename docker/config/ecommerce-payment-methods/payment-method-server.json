@@ -29,7 +29,7 @@
       ]
     }
   ],
-  "/v2/fees": {
+  "feesV2": {
     "paymentMethodName": "PAYPAL",
     "paymentMethodDescription": "Paypal",
     "paymentMethodStatus": "ENABLED",
