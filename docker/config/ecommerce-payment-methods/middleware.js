@@ -14,7 +14,7 @@ module.exports = function (req, res, next) {
      ${JSON.stringify(req.body)}
      `);
 
-  if (requestPath.includes("feesV2")) {
+  if (requestPath.includes("fees")) {
     res.json(db.get("feesV2"));
   } else {
     next();
