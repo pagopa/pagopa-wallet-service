@@ -5,13 +5,13 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
+import java.util.concurrent.TimeUnit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import reactor.netty.Connection
 import reactor.netty.http.client.HttpClient
-import java.util.concurrent.TimeUnit
 
 @Configuration
 class WebClientConfig {
