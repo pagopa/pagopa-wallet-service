@@ -6,7 +6,7 @@ import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 data class PayPalDetails(
     val maskedEmail: String?,
     val pspId: String,
-    val pspBusinessName: String = ""
+    val pspBusinessName: String
 ) : WalletDetails<PayPalDetails> {
 
     override fun toDomain() =
