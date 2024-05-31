@@ -3657,7 +3657,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should throw InvalidArgument error when creation session for invalid Paypal pspId`() {
+    fun `should throw PspNotFoundException error when creation session for invalid Paypal pspId`() {
         /* preconditions */
         reset(pspDetailClient)
         given { pspDetailClient.getPspDetails(any(), any()) }.willReturn(Mono.empty())
@@ -3701,7 +3701,7 @@ class WalletServiceTest {
                 walletService
                     .createSessionWallet(USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST)
                     .test()
-                    .expectError(IllegalArgumentException::class.java)
+                    .expectError(PspNotFoundException::class.java)
                     .verify()
             }
         }

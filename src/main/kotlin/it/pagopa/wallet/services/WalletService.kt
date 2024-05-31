@@ -1265,9 +1265,5 @@ class WalletService(
         pspDetailClient
             .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethodId)
             .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
-            .switchIfEmpty {
-                Mono.error(
-                    IllegalArgumentException("Invalid pspId [${sessionInputPayPalDataDto.pspId}]")
-                )
-            }
+            .switchIfEmpty { Mono.error(PspNotFoundException(sessionInputPayPalDataDto.pspId)) }
 }

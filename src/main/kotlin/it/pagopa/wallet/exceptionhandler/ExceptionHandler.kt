@@ -53,8 +53,7 @@ class ExceptionHandler {
         ServerWebInputException::class,
         ValidationException::class,
         HttpMessageNotReadableException::class,
-        WebExchangeBindException::class,
-        IllegalArgumentException::class
+        WebExchangeBindException::class
     )
     fun handleRequestValidationException(e: Exception): ResponseEntity<ProblemJsonDto> {
 
