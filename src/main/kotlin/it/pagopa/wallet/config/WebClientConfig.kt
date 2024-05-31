@@ -2,9 +2,9 @@ package it.pagopa.wallet.config
 
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
-import it.pagopa.generated.afm.api.CalculatorApi
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.npg.api.PaymentServicesApi
+import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
 import java.util.concurrent.TimeUnit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -41,50 +41,48 @@ class WebClientConfig {
 
     @Bean(name = ["ecommercePaymentMethodsWebClient"])
     fun ecommercePaymentMethodsClient(
-        @Value("\${ecommercePaymentMethods.uri}") baseUrl: String,
-        @Value("\${ecommercePaymentMethods.readTimeout}") readTimeout: Int,
-        @Value("\${ecommercePaymentMethods.connectionTimeout}") connectionTimeout: Int,
-        @Value("\${ecommercePaymentMethods.apiKey}") npgApiKey: String
+        config: PaymentMethodsConfigProperties,
     ): PaymentMethodsApi {
         val httpClient =
             HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS)
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
                     )
                 }
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
-                .baseUrl(baseUrl)
+                .baseUrl(config.uri)
                 .build()
-        val apiClient = it.pagopa.generated.ecommerce.ApiClient(webClient).setBasePath(baseUrl)
-        apiClient.setApiKey(npgApiKey)
+        val apiClient = it.pagopa.generated.ecommerce.ApiClient(webClient).setBasePath(config.uri)
+        apiClient.setApiKey(config.apiKey)
         return PaymentMethodsApi(apiClient)
     }
 
-    @Bean
-    fun calculatorApi(afmCalculatorConfig: AfmCalculatorConfig): CalculatorApi {
+    @Bean(name = ["ecommercePaymentMethodsWebClientV2"])
+    fun ecommercePaymentMethodsClientV2(
+        config: PaymentMethodsConfigProperties
+    ): it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi {
         val httpClient =
             HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, afmCalculatorConfig.connectionTimeout)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(
-                            afmCalculatorConfig.readTimeout.toLong(),
-                            TimeUnit.MILLISECONDS
-                        )
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
                     )
                 }
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
-                .baseUrl(afmCalculatorConfig.baseUrl)
+                .baseUrl(config.uriV2)
                 .build()
         val apiClient =
-            it.pagopa.generated.afm.ApiClient(webClient).setBasePath(afmCalculatorConfig.baseUrl)
-        apiClient.setApiKey(afmCalculatorConfig.apiKey)
-        return CalculatorApi(apiClient)
+            it.pagopa.generated.ecommerce.paymentmethods.v2
+                .ApiClient(webClient)
+                .setBasePath(config.uri)
+        apiClient.setApiKey(config.apiKey)
+        return it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi(apiClient)
     }
 }

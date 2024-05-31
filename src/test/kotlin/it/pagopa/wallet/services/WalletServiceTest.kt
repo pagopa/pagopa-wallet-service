@@ -1,8 +1,8 @@
 package it.pagopa.wallet.services
 
 import io.vavr.control.Either
-import it.pagopa.generated.afm.model.Transfer
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.v2.model.Bundle
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.WalletTestUtils
@@ -50,9 +50,9 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentWithError
 import it.pagopa.wallet.WalletTestUtils.walletDomain
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.client.AfmCalculatorClient
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
@@ -105,7 +105,7 @@ class WalletServiceTest {
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
     private val uniqueIdUtils: UniqueIdUtils = mock()
     private val jwtTokenUtils: JwtTokenUtils = mock()
-    private val afmCalculatorClient: AfmCalculatorClient = mock()
+    private val pspDetailClient: PspDetailClient = mock()
     private val onboardingConfig =
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
@@ -226,15 +226,15 @@ class WalletServiceTest {
             jwtTokenUtils = jwtTokenUtils,
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
             walletUtils = walletUtils,
-            amfClient = afmCalculatorClient
+            pspDetailClient = pspDetailClient
         )
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 
     @BeforeEach
     fun setup() {
-        given { afmCalculatorClient.getPspDetails(any(), any()) }
-            .willReturn(Transfer().pspBusinessName(PSP_BUSINESS_NAME).toMono())
+        given { pspDetailClient.getPspDetails(any(), any()) }
+            .willReturn(Bundle().pspBusinessName(PSP_BUSINESS_NAME).toMono())
     }
 
     @Test
@@ -3659,8 +3659,8 @@ class WalletServiceTest {
     @Test
     fun `should throw InvalidArgument error when creation session for invalid Paypal pspId`() {
         /* preconditions */
-        reset(afmCalculatorClient)
-        given { afmCalculatorClient.getPspDetails(any(), any()) }.willReturn(Mono.empty())
+        reset(pspDetailClient)
+        given { pspDetailClient.getPspDetails(any(), any()) }.willReturn(Mono.empty())
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 

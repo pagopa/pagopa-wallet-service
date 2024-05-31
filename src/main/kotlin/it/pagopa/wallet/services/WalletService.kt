@@ -1,12 +1,11 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.client.AfmCalculatorClient
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -60,7 +59,7 @@ class WalletService(
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
     @Autowired private val walletUtils: WalletUtils,
-    private val amfClient: AfmCalculatorClient,
+    private val pspDetailClient: PspDetailClient,
 ) {
 
     companion object {
@@ -406,7 +405,10 @@ class WalletService(
                             when (sessionInputDataDto) {
                                     is SessionInputCardDataDto -> wallet.details.toMono()
                                     is SessionInputPayPalDataDto ->
-                                        createPaypalDetails(sessionInputDataDto, paymentMethod)
+                                        createPaypalDetails(
+                                            sessionInputDataDto,
+                                            wallet.paymentMethodId
+                                        )
                                     else ->
                                         Mono.error(
                                             InternalServerErrorException("Unhandled session input")
@@ -1258,10 +1260,10 @@ class WalletService(
 
     private fun createPaypalDetails(
         sessionInputPayPalDataDto: SessionInputPayPalDataDto,
-        paymentMethod: PaymentMethodResponse,
+        paymentMethodId: PaymentMethodId,
     ) =
-        amfClient
-            .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethod.paymentTypeCode)
+        pspDetailClient
+            .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethodId)
             .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
             .switchIfEmpty {
                 Mono.error(

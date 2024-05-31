@@ -1,8 +1,9 @@
 package it.pagopa.wallet.client
 
-import it.pagopa.generated.afm.api.CalculatorApi
-import it.pagopa.generated.afm.model.BundleOption
-import it.pagopa.generated.afm.model.Transfer
+import it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi
+import it.pagopa.generated.ecommerce.paymentmethods.v2.model.Bundle
+import it.pagopa.generated.ecommerce.paymentmethods.v2.model.CalculateFeeResponse
+import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.exception.RestApiException
 import java.util.*
 import java.util.stream.Stream
@@ -20,24 +21,24 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 
-class AfmCalculatorClientTest {
+class PspDetailClientTest {
 
-    private val afmCalculatorApi: CalculatorApi = mock()
-    lateinit var afmCalculatorClient: AfmCalculatorClient
+    private val paymentMethodsV2Api: PaymentMethodsApi = mock()
+    lateinit var pspDetailClient: PspDetailClient
 
     @BeforeEach
     fun setup() {
-        reset(afmCalculatorApi)
-        afmCalculatorClient = AfmCalculatorClient(afmCalculatorApi)
+        reset(paymentMethodsV2Api)
+        pspDetailClient = PspDetailClient(paymentMethodsV2Api)
     }
 
     @Test
     fun `Calculate fees with stub request must return the psp bundle`() {
-        given { afmCalculatorApi.getFeesMulti(any(), any(), any()) }
-            .willReturn(generateBundle().toMono())
+        given { paymentMethodsV2Api.calculateFees(any(), any(), any(), any()) }
+            .willReturn(generateFeesResponse().toMono())
 
-        afmCalculatorClient
-            .getPspDetails(PSP_ID, "AFM")
+        pspDetailClient
+            .getPspDetails(PSP_ID, PAYMENT_METHOD_ID_APM)
             .test()
             .expectNextMatches { it.idPsp == PSP_ID && it.pspBusinessName == PSP_BUSINESS_NAME }
             .verifyComplete()
@@ -45,20 +46,25 @@ class AfmCalculatorClientTest {
 
     @Test
     fun `Getting psp details for non existing psp must return an empty mono`() {
-        given { afmCalculatorApi.getFeesMulti(any(), any(), any()) }
-            .willReturn(generateBundle().toMono())
+        given { paymentMethodsV2Api.calculateFees(any(), any(), any(), any()) }
+            .willReturn(generateFeesResponse().toMono())
 
-        afmCalculatorClient.getPspDetails("nonExistingPsp", "AFM").test().verifyComplete()
+        pspDetailClient
+            .getPspDetails("nonExistingPsp", PAYMENT_METHOD_ID_APM)
+            .test()
+            .verifyComplete()
     }
 
     @ParameterizedTest
     @MethodSource("errorResponses")
-    fun `Should return error when afm request fails`(response: WebClientResponseException) {
-        given { afmCalculatorApi.getFeesMulti(any(), any(), any()) }
+    fun `Should return error when payment-methods request fails`(
+        response: WebClientResponseException
+    ) {
+        given { paymentMethodsV2Api.calculateFees(any(), any(), any(), any()) }
             .willReturn(Mono.error(response))
 
-        afmCalculatorClient
-            .getPspDetails(PSP_ID, "AFM")
+        pspDetailClient
+            .getPspDetails(PSP_ID, PAYMENT_METHOD_ID_APM)
             .test()
             .expectError(RestApiException::class.java)
             .verify()
@@ -66,13 +72,13 @@ class AfmCalculatorClientTest {
 
     @ParameterizedTest
     @MethodSource("errorResponses")
-    fun `Should return error when afm request fails directly throws an exception`(
+    fun `Should return error when payment-methods request fails directly throws an exception`(
         response: WebClientResponseException
     ) {
-        given { afmCalculatorApi.getFeesMulti(any(), any(), any()) }.willThrow(response)
+        given { paymentMethodsV2Api.calculateFees(any(), any(), any(), any()) }.willThrow(response)
 
-        afmCalculatorClient
-            .getPspDetails(PSP_ID, "AFM")
+        pspDetailClient
+            .getPspDetails(PSP_ID, PAYMENT_METHOD_ID_APM)
             .test()
             .expectError(RestApiException::class.java)
             .verify()
@@ -81,9 +87,9 @@ class AfmCalculatorClientTest {
     companion object {
         private const val PSP_ID = "pspId"
         private const val PSP_BUSINESS_NAME = "pspBusinessName"
-        private fun generateBundle() =
-            BundleOption()
-                .addBundleOptionsItem(Transfer().idPsp(PSP_ID).pspBusinessName(PSP_BUSINESS_NAME))
+        private fun generateFeesResponse() =
+            CalculateFeeResponse()
+                .addBundlesItem(Bundle().idPsp(PSP_ID).pspBusinessName(PSP_BUSINESS_NAME))
 
         @JvmStatic
         fun errorResponses(): Stream<Arguments> =

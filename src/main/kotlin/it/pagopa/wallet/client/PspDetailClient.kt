@@ -1,27 +1,41 @@
 package it.pagopa.wallet.client
 
 import io.vavr.control.Try
-import it.pagopa.generated.afm.model.*
+import it.pagopa.generated.ecommerce.paymentmethods.v2.model.*
+import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.exception.RestApiException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
+/**
+ * Client to retrieve info about psp by given a pspId or get all psp by payment method. Actually is
+ * backed by calculate fees v2 exposed by payment-methods microservice.
+ *
+ * Note: It could be backed by dedicated Psp API to get details about it without using calculate
+ * fees, so keep this client separated by PaymentMethodsClient
+ */
 @Component
-class AfmCalculatorClient(private val calculatorApi: it.pagopa.generated.afm.api.CalculatorApi) {
+class PspDetailClient(
+    @Qualifier("ecommercePaymentMethodsWebClientV2")
+    private val paymentMethodsApi:
+        it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi
+) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun getPspList(paymentMethodCode: String): Mono<BundleOption> {
-        logger.info("Getting psp list for payment method code [{}]", paymentMethodCode)
+    fun getPspList(paymentMethodId: PaymentMethodId): Mono<CalculateFeeResponse> {
+        logger.info("Getting psp list for payment method id [{}]", paymentMethodId.value)
         return Try.of {
-                calculatorApi.getFeesMulti(
-                    STUB_FEES_REQUEST.paymentMethod(paymentMethodCode),
-                    1000,
-                    "false"
+                paymentMethodsApi.calculateFees(
+                    paymentMethodId.value.toString(),
+                    STUB_TRANSACTION_ID,
+                    STUB_FEES_REQUEST,
+                    DEFAULT_MAX_OCCURRENCES
                 )
             }
             .fold({ error -> Mono.error(error) }, { it })
@@ -44,19 +58,22 @@ class AfmCalculatorClient(private val calculatorApi: it.pagopa.generated.afm.api
             }
     }
 
-    fun getPspDetails(pspId: String, paymentMethodCode: String): Mono<Transfer> {
-        return getPspList(paymentMethodCode).flatMap { bundle ->
-            bundle.bundleOptions?.firstOrNull { it.idPsp == pspId }?.toMono() ?: Mono.empty()
+    fun getPspDetails(pspId: String, paymentMethodId: PaymentMethodId): Mono<Bundle> {
+        logger.info("Getting info about pspId [{}]", pspId)
+        return getPspList(paymentMethodId).flatMap { bundle ->
+            bundle.bundles.firstOrNull { it.idPsp == pspId }?.toMono() ?: Mono.empty()
         }
     }
 
     companion object {
+        private const val STUB_TRANSACTION_ID = ""
+        private const val DEFAULT_MAX_OCCURRENCES = 1000
         private val STUB_FEES_REQUEST =
-            PaymentOptionMulti()
+            CalculateFeeRequest()
                 .idPspList(emptyList())
                 .touchpoint("IO")
-                .addPaymentNoticeItem(
-                    PaymentNoticeItem()
+                .addPaymentNoticesItem(
+                    PaymentNotice()
                         .paymentAmount(1)
                         .primaryCreditorInstitution("")
                         .addTransferListItem(
