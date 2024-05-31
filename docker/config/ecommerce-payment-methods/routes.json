@@ -1,3 +1,4 @@
 {
-  "/payment-methods/:id": "/payment-methods/:id"
+  "/payment-methods/:id": "/payment-methods/:id",
+  "/v2/payment-methods/:id/fees": "/v2/fees"
 }
