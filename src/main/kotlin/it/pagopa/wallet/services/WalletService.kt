@@ -945,8 +945,24 @@ class WalletService(
                         )
                 }
             )
+            .clients(
+                wallet.clients.entries.associate { (clientKey, clientInfo) ->
+                    clientKey to buildWalletClientDto(clientInfo)
+                }
+            )
             .details(toWalletInfoDetailsDto(wallet.details))
             .paymentMethodAsset(walletUtils.getLogo(wallet.toDomain()))
+
+    private fun buildWalletClientDto(
+        clientInfo: it.pagopa.wallet.documents.wallets.Client
+    ): WalletClientDto {
+        val walletClient =
+            WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
+        Optional.ofNullable(clientInfo.lastUsage).ifPresent { lastUsage ->
+            walletClient.lastUsage(OffsetDateTime.parse(lastUsage))
+        }
+        return walletClient
+    }
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {
