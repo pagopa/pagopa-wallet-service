@@ -2265,7 +2265,6 @@ class WalletServiceTest {
             it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                print("Mocked instant: $mockedInstant")
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val wallet = walletDocumentStatusValidatedAPM(null)
@@ -2294,6 +2293,7 @@ class WalletServiceTest {
                                 .pspId(PSP_ID)
                                 .pspBusinessName(PSP_BUSINESS_NAME)
                         )
+                        .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
