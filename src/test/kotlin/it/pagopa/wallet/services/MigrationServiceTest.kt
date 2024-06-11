@@ -8,6 +8,7 @@ import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.applications.Application
@@ -20,8 +21,6 @@ import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Instant
-import java.util.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.hasKey
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,6 +33,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
+import java.time.Instant
+import java.util.*
 
 class MigrationServiceTest {
     private val applicationRepository: ApplicationRepository = mock()
@@ -342,6 +343,29 @@ class MigrationServiceTest {
                 .test()
                 .expectError(MigrationError.WalletAlreadyOnboarded::class.java)
                 .verify()
+        }
+    }
+
+    @Test
+    fun `should delete Wallet successfully if contractId exists`() {
+        mockWalletMigration { walletPmDocument, contractId ->
+            val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }.willAnswer { walletTest.toMono() }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .assertNext { assertEquals(it.status, WalletStatusDto.DELETED) }
+                .verifyComplete()
+
+            verify(walletRepository, times(1)).save(any())
+            argumentCaptor<Iterable<LoggingEvent>> {
+                verify(loggingEventRepository, times(1)).saveAll(capture())
+                assertInstanceOf(WalletDeletedEvent::class.java, lastValue.firstOrNull())
+            }
         }
     }
 
