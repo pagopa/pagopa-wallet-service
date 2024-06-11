@@ -140,7 +140,7 @@ microservice-chart:
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
     OTEL_SERVICE_ENVIRONMENT: "uat"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "https://weudev.kibana.internal.dev.platform.pagopa.it/apm"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "https://itnuat.kibana.internal.uat.platform.pagopa.it/apm"
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
