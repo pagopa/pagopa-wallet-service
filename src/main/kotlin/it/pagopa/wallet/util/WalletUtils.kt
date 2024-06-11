@@ -6,9 +6,9 @@ import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.InvalidRequestException
+import java.net.URI
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.net.URI
 
 @Component
 class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {

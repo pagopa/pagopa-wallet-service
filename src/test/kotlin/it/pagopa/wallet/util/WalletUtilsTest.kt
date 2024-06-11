@@ -6,12 +6,12 @@ import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.CardBrand
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
+import java.net.URI
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
-import java.net.URI
 
 class WalletUtilsTest {
 
