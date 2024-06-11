@@ -28,5 +28,39 @@
         }
       ]
     }
-  ]
+  ],
+  "feesV2": {
+    "paymentMethodName": "PAYPAL",
+    "paymentMethodDescription": "Paypal",
+    "paymentMethodStatus": "ENABLED",
+    "belowThreshold": false,
+    "bundles": [{
+      "abi": "1234567",
+      "bundleDescription": "Description 1",
+      "bundleName": "Business Name",
+      "idBrokerPsp": "00799960158",
+      "idBundle": "14a1e518-b997-4914-a87c-7058863b1592",
+      "idChannel": "00799960158_07",
+      "idPsp": "pspId",
+      "onUs": false,
+      "paymentMethod": "PPAL",
+      "taxPayerFee": 50,
+      "touchpoint": "IO",
+      "pspBusinessName": "Business Name 1"
+    }, {
+      "abi": "890123",
+      "bundleDescription": "Description 2",
+      "bundleName": "Business Name 2",
+      "idBrokerPsp": "00799960158",
+      "idBundle": "14a1e518-b997-4914-a87c-7058863b1598",
+      "idChannel": "00799960158_00",
+      "idPsp": "pspId2",
+      "onUs": false,
+      "paymentMethod": "PPAL",
+      "taxPayerFee": 50,
+      "touchpoint": "IO",
+      "pspBusinessName": "Business Name 2"
+    }],
+    "asset": "https://assets.cdn.platform.pagopa.it/apm/paypal.png"
+  }
 }

@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "0.11.5"
+version = "0.12.0"
 
 description = "pagopa-wallet-service"
 
@@ -154,6 +154,7 @@ tasks.register<GenerateTask>("wallet") {
 }
 
 tasks.register("nexiNpg", GenerateTask::class.java) {
+  group = "openapi-generation"
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
   outputDir.set("$buildDir/generated")
@@ -181,6 +182,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
 }
 
 tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
+  group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
@@ -209,7 +211,39 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
   )
 }
 
+tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
+  description = "Generate eCommerce Payment Method Client v2"
+  group = "openapi-generation"
+  generatorName.set("java")
+  remoteInputSpec.set(
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
+  )
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false"
+    )
+  )
+}
+
 tasks.register("nexiNpgNotification", GenerateTask::class.java) {
+  group = "openapi-generation"
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/npg-api/npg-notification-api.yaml")
   outputDir.set("$buildDir/generated")
@@ -239,7 +273,13 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
 }
 
 tasks.withType<KotlinCompile> {
-  dependsOn("wallet", "nexiNpg", "nexiNpgNotification", "ecommercePaymentMethod")
+  dependsOn(
+    "wallet",
+    "nexiNpg",
+    "nexiNpgNotification",
+    "ecommercePaymentMethod",
+    "ecommercePaymentMethodV2"
+  )
   kotlinOptions.jvmTarget = "17"
 }
 

@@ -6,6 +6,8 @@ import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.PspNotFoundException
+import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -16,6 +18,7 @@ import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
@@ -80,6 +83,9 @@ class WalletController(
                 walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
             }
             .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
+            .onErrorMap(PspNotFoundException::class.java) {
+                RestApiException(HttpStatus.NOT_FOUND, "Psp not found", it.message.orEmpty())
+            }
     }
 
     /*

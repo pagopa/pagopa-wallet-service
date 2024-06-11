@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -57,7 +58,8 @@ class WalletService(
     @Autowired
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
-    @Autowired private val walletUtils: WalletUtils
+    @Autowired private val walletUtils: WalletUtils,
+    private val pspDetailClient: PspDetailClient,
 ) {
 
     companion object {
@@ -385,18 +387,8 @@ class WalletService(
                                     throw InternalServerErrorException("Unhandled session input")
                             }
                     )
-                    .map { hostedOrderResponse ->
+                    .flatMap { hostedOrderResponse ->
                         val isAPM = paymentMethod.paymentTypeCode != "CP"
-
-                        val newDetails =
-                            when (sessionInputDataDto) {
-                                is SessionInputCardDataDto -> wallet.details
-                                is SessionInputPayPalDataDto ->
-                                    PayPalDetails(null, sessionInputDataDto.pspId)
-                                else ->
-                                    throw InternalServerErrorException("Unhandled session input")
-                            }
-
                         /*
                          * Credit card onboarding requires a two-step validation process
                          * (see WalletService#confirmPaymentCard), while for APMs
@@ -409,18 +401,34 @@ class WalletService(
                                 WalletStatusDto.INITIALIZED
                             }
 
-                        val updatedWallet =
-                            wallet.copy(
-                                contractId = ContractId(contractId),
-                                status = newStatus,
-                                details = newDetails,
+                        val newDetails =
+                            when (sessionInputDataDto) {
+                                    is SessionInputCardDataDto -> wallet.details.toMono()
+                                    is SessionInputPayPalDataDto ->
+                                        createPaypalDetails(
+                                            sessionInputDataDto,
+                                            wallet.paymentMethodId
+                                        )
+                                    else ->
+                                        Mono.error(
+                                            InternalServerErrorException("Unhandled session input")
+                                        )
+                                }
+                                .map { Optional.of(it) }
+                                .defaultIfEmpty(Optional.empty())
+
+                        newDetails.map {
+                            SessionCreationData(
+                                hostedOrderResponse,
+                                wallet.copy(
+                                    contractId = ContractId(contractId),
+                                    status = newStatus,
+                                    details = it.orElse(null),
+                                ),
+                                orderId,
+                                isAPM = isAPM
                             )
-                        SessionCreationData(
-                            hostedOrderResponse,
-                            updatedWallet,
-                            orderId,
-                            isAPM = isAPM
-                        )
+                        }
                     }
             }
             .flatMap { sessionCreationData ->
@@ -937,8 +945,24 @@ class WalletService(
                         )
                 }
             )
+            .clients(
+                wallet.clients.entries.associate { (clientKey, clientInfo) ->
+                    clientKey to buildWalletClientDto(clientInfo)
+                }
+            )
             .details(toWalletInfoDetailsDto(wallet.details))
             .paymentMethodAsset(walletUtils.getLogo(wallet.toDomain()))
+
+    private fun buildWalletClientDto(
+        clientInfo: it.pagopa.wallet.documents.wallets.Client
+    ): WalletClientDto {
+        val walletClient =
+            WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
+        Optional.ofNullable(clientInfo.lastUsage).ifPresent { lastUsage ->
+            walletClient.lastUsage(OffsetDateTime.parse(lastUsage))
+        }
+        return walletClient
+    }
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {
@@ -949,7 +973,10 @@ class WalletService(
                     .lastFourDigits(details.lastFourDigits)
                     .brand(details.brand)
             is PayPalDetailsDocument ->
-                WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
+                WalletPaypalDetailsDto()
+                    .maskedEmail(details.maskedEmail)
+                    .pspId(details.pspId)
+                    .pspBusinessName(details.pspBusinessName)
             else -> null
         }
     }
@@ -1246,4 +1273,13 @@ class WalletService(
                 throw InvalidRequestException(errorDescription)
             }
         }
+
+    private fun createPaypalDetails(
+        sessionInputPayPalDataDto: SessionInputPayPalDataDto,
+        paymentMethodId: PaymentMethodId,
+    ) =
+        pspDetailClient
+            .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethodId)
+            .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
+            .switchIfEmpty { Mono.error(PspNotFoundException(sessionInputPayPalDataDto.pspId)) }
 }

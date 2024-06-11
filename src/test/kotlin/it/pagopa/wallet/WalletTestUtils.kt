@@ -15,7 +15,6 @@ import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
-import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
@@ -39,6 +38,12 @@ object WalletTestUtils {
         mapOf(
             Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
             Client.Unknown("unknownClient") to Client(Client.Status.DISABLED, null)
+        )
+    val TEST_FULL_INFO_CLIENTS: Map<Client.Id, Client> =
+        mapOf(
+            Client.WellKnown.IO to Client(Client.Status.ENABLED, Instant.now()),
+            Client.Unknown("unknownClient") to
+                Client(Client.Status.DISABLED, Instant.now().minusMillis(10000))
         )
     val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
     val APPLICATION_METADATA =
@@ -221,7 +226,11 @@ object WalletTestUtils {
                             PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
                         )
                     } else {
-                        PayPalDetailsDocument(maskedEmail = null, pspId = PSP_ID)
+                        PayPalDetailsDocument(
+                            maskedEmail = null,
+                            pspId = PSP_ID,
+                            pspBusinessName = PSP_BUSINESS_NAME
+                        )
                     },
             )
     }
@@ -353,7 +362,12 @@ object WalletTestUtils {
                         APPLICATION_METADATA_HASHMAP
                     )
                 ),
-            details = PayPalDetailsDocument(maskedEmail = paypalEmail, pspId = PSP_ID),
+            details =
+                PayPalDetailsDocument(
+                    maskedEmail = paypalEmail,
+                    pspId = PSP_ID,
+                    pspBusinessName = PSP_BUSINESS_NAME
+                ),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
@@ -775,6 +789,7 @@ object WalletTestUtils {
         WalletApplicationUpdateRequestDto().applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
     val PSP_ID = UUID.randomUUID().toString()
+    val PSP_BUSINESS_NAME = "pspBusinessName"
 
     val APM_SESSION_CREATE_REQUEST =
         SessionInputPayPalDataDto().apply {

@@ -1013,6 +1013,9 @@ components:
         pspId:
           type: string
           description: PSP identifier for the PayPal wallet
+        pspBusinessName:
+          type: string
+          description: PSP business name
         maskedEmail:
           description: masked email
           type: string
@@ -1020,6 +1023,7 @@ components:
       required:
         - type
         - pspId
+        - pspBusinessName
     WalletApplicationUpdateRequest:
       type: object
       description: Wallet update request
@@ -1093,6 +1097,23 @@ components:
           example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
       required:
         - walletId
+    WalletClientStatus:
+      type: string
+      description: Enumeration of wallet client statuses
+      enum:
+        - ENABLED
+        - DISABLED
+    WalletClient:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/WalletClientStatus'
+        lastUsage:
+          type: string
+          description: Time of last usage of this wallet by the client
+          format: date-time
+      required:
+        - status
     WalletInfo:
       type: object
       description: Wallet information
@@ -1123,6 +1144,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletApplicationInfo'
+        clients:
+          description: Client-specific state (e.g. last usage) and configuration (enabled/disabled)
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/WalletClient'
         details:
           description: >-
             details for the specific payment instrument. This field is
@@ -1149,6 +1175,7 @@ components:
         - updateDate
         - type
         - applications
+        - clients
         - paymentMethodAsset
     Wallets:
       type: object
