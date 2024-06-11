@@ -8,6 +8,7 @@ import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
+import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.applications.Application
@@ -342,6 +343,29 @@ class MigrationServiceTest {
                 .test()
                 .expectError(MigrationError.WalletAlreadyOnboarded::class.java)
                 .verify()
+        }
+    }
+
+    @Test
+    fun `should delete Wallet successfully if contractId exists`() {
+        mockWalletMigration { walletPmDocument, contractId ->
+            val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
+            given { mongoWalletMigrationRepository.findByContractId(any()) }
+                .willAnswer { Flux.just(walletPmDocument) }
+            given { walletRepository.findById(any<String>()) }.willAnswer { walletTest.toMono() }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .assertNext { assertEquals(it.status, WalletStatusDto.DELETED) }
+                .verifyComplete()
+
+            verify(walletRepository, times(1)).save(any())
+            argumentCaptor<Iterable<LoggingEvent>> {
+                verify(loggingEventRepository, times(1)).saveAll(capture())
+                assertInstanceOf(WalletDeletedEvent::class.java, lastValue.firstOrNull())
+            }
         }
     }
 

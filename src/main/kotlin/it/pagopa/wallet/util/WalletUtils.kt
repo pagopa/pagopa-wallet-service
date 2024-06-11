@@ -25,6 +25,7 @@ class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {
                 is PayPalDetails -> logoMapping[walletDetail.type.name]
                 else -> logoMapping[UNKNOWN_LOGO_KEY]
             }
+                ?: logoMapping[UNKNOWN_LOGO_KEY]
         )
 }
 

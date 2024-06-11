@@ -10,6 +10,7 @@ object Tracing {
     object Migration {
         /** HMAC of contract ID produced by CSTAR during migration phase */
         val CONTRACT_HMAC = AttributeKey.stringKey("contract")
+        val WALLET_ID = AttributeKey.stringKey("walletId")
     }
 
     fun <T> customizeSpan(mono: Mono<T>, f: Span.() -> Unit): Mono<T> {
