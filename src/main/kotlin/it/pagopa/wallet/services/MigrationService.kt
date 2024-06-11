@@ -15,10 +15,8 @@ import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.util.Tracing
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.time.Duration
-import java.time.Instant
-import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
@@ -27,6 +25,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
+import java.time.Instant
+import java.util.*
 
 @Service
 class MigrationService(
@@ -65,14 +66,37 @@ class MigrationService(
         return walletPaymentManagerRepository
             .findByWalletPmId(paymentManagerWalletId)
             .switchIfEmptyDeferred { createMigrationData(paymentManagerWalletId) }
-            .flatMap { createWalletByPaymentManager(it, userId, cardPaymentMethodId, now) }
-            .doOnNext {
-                logger.info(
-                    "Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]",
-                    paymentManagerWalletId,
-                    userId.id,
-                    it.id.value
-                )
+            .flatMap { walletPaymentManager ->
+                Tracing.customizeSpan(
+                        createWalletByPaymentManager(
+                            walletPaymentManager,
+                            userId,
+                            cardPaymentMethodId,
+                            now
+                        )
+                    ) {
+                        setAttribute(
+                            Tracing.Migration.WALLET_ID,
+                            walletPaymentManager.walletId.value.toString()
+                        )
+                    }
+                    .doOnNext { wallet ->
+                        logger.info(
+                            "Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]",
+                            paymentManagerWalletId,
+                            userId.id,
+                            wallet.id.value
+                        )
+                    }
+                    .doOnError {
+                        logger.error(
+                            "Failure during wallet creation. paymentManagerId: [${walletPaymentManager.walletPmId}], userId: [${userId.id}], wallet id: [${walletPaymentManager.walletId.value}]",
+                            it
+                        )
+                    }
+                    .contextWrite { ctx ->
+                        ctx.put(MDC_WALLET_ID, walletPaymentManager.walletId.value.toString())
+                    }
             }
             .doOnError { logger.error("Failure during wallet's initialization", it) }
             .toMono()
@@ -84,7 +108,9 @@ class MigrationService(
         return findWalletByContractId(contractId)
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .flatMap { wallet ->
-                updateWalletCardDetails(wallet, cardDetails, now)
+                Tracing.customizeSpan(updateWalletCardDetails(wallet, cardDetails, now)) {
+                        setAttribute(Tracing.Migration.WALLET_ID, wallet.id.value.toString())
+                    }
                     .doOnNext {
                         logger.info("Details updated for wallet with id: [{}]", it.id.value)
                     }
@@ -110,7 +136,9 @@ class MigrationService(
         return findWalletByContractId(contractId)
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .flatMap { wallet ->
-                Mono.just(wallet)
+                Tracing.customizeSpan(Mono.just(wallet)) {
+                        setAttribute(Tracing.Migration.WALLET_ID, wallet.id.value.toString())
+                    }
                     .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
                     .flatMap { walletRepository.save(it.toDocument()) }
                     .map { LoggedAction(it, WalletDeletedEvent(it.id)) }
@@ -205,7 +233,7 @@ class MigrationService(
                     paymentMethodId = paymentMethodId,
                     applications = listOf(application),
                     clients =
-                        Client.WellKnown.values().associateWith { clientId ->
+                        Client.WellKnown.values().associateWith { _ ->
                             Client(Client.Status.ENABLED, null)
                         },
                     creationDate = creationTime,
