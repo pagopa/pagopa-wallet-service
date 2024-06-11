@@ -6,11 +6,12 @@ import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.CardBrand
 import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
-import java.net.URI
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
+import java.net.URI
 
 class WalletUtilsTest {
 
@@ -51,5 +52,14 @@ class WalletUtilsTest {
         val wallet = WalletTestUtils.walletDocumentNullDetails().toDomain()
         val logoURI = walletUtils.getLogo(wallet)
         assertTrue(logoURI.toString().endsWith("/UNKNOWN"))
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["MAE", "UNK", "OTHER"])
+    fun `should fallback to unknown logo when brand is unknown`(unknownBrand: String) {
+        val walletWithUnknownBrand =
+            WalletTestUtils.walletDocumentStatusValidatedCard(CardBrand(unknownBrand)).toDomain()
+        val logoUri = walletUtils.getLogo(walletWithUnknownBrand)
+        assertTrue(logoUri.toString().endsWith("/UNKNOWN"))
     }
 }
