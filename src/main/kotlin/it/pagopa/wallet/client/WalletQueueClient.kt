@@ -8,9 +8,9 @@ import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.util.QueueTracingInfo
-import reactor.core.publisher.Mono
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import reactor.core.publisher.Mono
 
 class WalletQueueClient(
     private val expirationQueueClient: QueueAsyncClient,
