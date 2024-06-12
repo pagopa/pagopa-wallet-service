@@ -10,11 +10,11 @@ import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.util.TracingUtils
-import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import java.time.Duration
 
 @Component
 class DomainEventDispatcherService(
@@ -25,6 +25,10 @@ class DomainEventDispatcherService(
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
+    private val walletExpireTimeout by lazy {
+        Duration.ofSeconds(expirationQueueConfig.timeoutWalletCreated)
+    }
+
     companion object {
         const val WALLET_CREATED_EVENT_HANDLER_SPAN_NAME = "walletCreatedEventHandler"
     }
@@ -32,10 +36,7 @@ class DomainEventDispatcherService(
     override fun dispatchEvent(event: LoggingEvent): Mono<LoggingEvent> =
         when (event) {
             is WalletAddedEvent -> onWalletCreated(event).map { event }
-            else -> {
-                logger.info("No dispatcher for ${event.javaClass.name}")
-                Mono.empty()
-            }
+            else -> Mono.empty()
         }
 
     private fun onWalletCreated(
@@ -44,20 +45,22 @@ class DomainEventDispatcherService(
         tracingUtils
             .traceMono(WALLET_CREATED_EVENT_HANDLER_SPAN_NAME) { tracingInfo ->
                 logger.info(
-                    "Handling wallet created event for [{}], publishing to storage queue",
-                    walletCreated.walletId
+                    "Handling wallet created event for [{}], publishing to storage queue with delay of [{}]",
+                    walletCreated.walletId,
+                    walletExpireTimeout
                 )
                 val walletExpiredEvent = WalletExpiredEvent.of(WalletId.of(walletCreated.walletId))
                 walletQueueClient.sendExpirationEvent(
                     event = walletExpiredEvent,
-                    delay = Duration.ofSeconds(expirationQueueConfig.timeoutWalletCreated),
+                    delay = walletExpireTimeout,
                     tracingInfo = tracingInfo
                 )
             }
             .doOnNext {
                 logger.info(
-                    "Successfully published expiration message for [{}]",
-                    walletCreated.walletId
+                    "Successfully published expiration message for [{}] with delay of [{}]",
+                    walletCreated.walletId,
+                    walletExpireTimeout
                 )
             }
             .doOnError { logger.error("Failed to publish event for [${walletCreated.walletId}]") }

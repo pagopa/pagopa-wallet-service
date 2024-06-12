@@ -8,7 +8,7 @@ sealed interface WalletEvent
 
 data class WalletExpiredEvent(
     val eventId: String,
-    val creationDate: OffsetDateTime,
+    val creationDate: OffsetDateTime, // TODO: format it
     val walletId: String
 ) : WalletEvent {
     companion object {
