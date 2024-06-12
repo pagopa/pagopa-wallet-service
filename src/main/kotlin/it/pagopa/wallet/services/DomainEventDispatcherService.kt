@@ -10,7 +10,7 @@ import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
 import it.pagopa.wallet.domain.wallets.WalletId
 import it.pagopa.wallet.util.TracingUtils
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -50,7 +50,7 @@ class DomainEventDispatcherService(
                 val walletExpiredEvent = WalletExpiredEvent.of(WalletId.of(walletCreated.walletId))
                 walletQueueClient.sendExpirationEvent(
                     event = walletExpiredEvent,
-                    delay = expirationQueueConfig.timeoutWalletCreated.seconds,
+                    delay = Duration.ofSeconds(expirationQueueConfig.timeoutWalletCreated),
                     tracingInfo = tracingInfo
                 )
             }

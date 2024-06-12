@@ -8,7 +8,7 @@ import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.common.serialization.StrictJsonSerializerProvider
 import it.pagopa.wallet.common.serialization.WalletEventMixin
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
-import kotlin.time.Duration.Companion.seconds
+import java.time.Duration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import reactor.netty.http.client.HttpClient
@@ -40,6 +40,10 @@ class AzureStorageConfiguration {
                         .build()
                 )
                 .buildAsyncClient()
-        return WalletQueueClient(queue, serializer, expirationQueueConfig.ttlSeconds.seconds)
+        return WalletQueueClient(
+            queue,
+            serializer,
+            Duration.ofSeconds(expirationQueueConfig.ttlSeconds)
+        )
     }
 }

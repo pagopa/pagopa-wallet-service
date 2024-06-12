@@ -8,8 +8,7 @@ import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.util.QueueTracingInfo
-import kotlin.time.Duration
-import kotlin.time.toJavaDuration
+import java.time.Duration
 import reactor.core.publisher.Mono
 
 class WalletQueueClient(
@@ -25,11 +24,7 @@ class WalletQueueClient(
     ): Mono<Response<SendMessageResult>> {
         val queueEvent = QueueEvent(event, tracingInfo)
         return BinaryData.fromObjectAsync(queueEvent, jsonSerializer).flatMap {
-            expirationQueueClient.sendMessageWithResponse(
-                it,
-                delay.toJavaDuration(),
-                ttl.toJavaDuration()
-            )
+            expirationQueueClient.sendMessageWithResponse(it, delay, ttl)
         }
     }
 }

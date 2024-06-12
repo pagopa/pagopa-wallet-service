@@ -16,12 +16,17 @@ import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.util.QueueTracingInfo
+import it.pagopa.wallet.util.TracingUtils
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 
 object WalletTestUtils {
 
@@ -863,4 +868,15 @@ object WalletTestUtils {
             .operationResult(OperationResultEnum.DECLINED)
             .timestampOperation(OffsetDateTime.now())
             .operationId("validationOperationId")
+
+    fun getMock(): TracingUtils {
+        val mockedTraceInfo = QueueTracingInfo(UUID.randomUUID().toString(), "", "")
+        val mockedTracingUtils = Mockito.mock(TracingUtils::class.java)
+        Mockito.`when`(mockedTracingUtils.traceMono<Any>(any(), any())).thenAnswer { invocation ->
+            return@thenAnswer (invocation.getArgument<Any>(1) as (QueueTracingInfo) -> Mono<*>)
+                .invoke(mockedTraceInfo)
+        }
+
+        return mockedTracingUtils
+    }
 }
