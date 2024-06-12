@@ -30,6 +30,7 @@ class WebClientConfig {
                         ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS)
                     )
                 }
+                .resolver { it.ndots(1) }
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
@@ -51,6 +52,7 @@ class WebClientConfig {
                         ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
                     )
                 }
+                .resolver { it.ndots(1) }
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
@@ -73,6 +75,7 @@ class WebClientConfig {
                         ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
                     )
                 }
+                .resolver { it.ndots(1) }
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
