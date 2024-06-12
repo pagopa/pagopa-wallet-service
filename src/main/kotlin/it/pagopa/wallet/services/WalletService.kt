@@ -456,7 +456,7 @@ class WalletService(
             }
             .map { (sessionResponseDto, wallet) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
             }
     }
 

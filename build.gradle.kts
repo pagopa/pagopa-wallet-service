@@ -34,7 +34,7 @@ object Deps {
 
 dependencyManagement {
   imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.0.5") }
-  imports { mavenBom("com.azure.spring:spring-cloud-azure-dependencies:4.0.0") }
+  imports { mavenBom("com.azure.spring:spring-cloud-azure-dependencies:5.13.0") }
   // Kotlin BOM
   imports { mavenBom("org.jetbrains.kotlin:kotlin-bom:1.7.22") }
   imports { mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4") }
@@ -78,6 +78,11 @@ dependencies {
 
   // otel api
   implementation("io.opentelemetry:opentelemetry-api:${Deps.openTelemetryVersion}")
+
+  // azure storage queue
+  implementation("com.azure.spring:spring-cloud-azure-starter")
+  implementation("com.azure:azure-storage-queue")
+  implementation("com.azure:azure-core-serializer-json-jackson")
 
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
