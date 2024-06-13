@@ -47,7 +47,7 @@ class WalletQueueClientTest {
             .willReturn(AzureQueueTestUtils.QUEUE_SUCCESSFUL_RESPONSE)
 
         walletQueueClient
-            .sendExpirationEvent(expiredEvent, delay = Duration.ofSeconds(10), tracingInfo)
+            .sendWalletCreatedEvent(expiredEvent, delay = Duration.ofSeconds(10), tracingInfo)
             .test()
             .assertNext { Assertions.assertEquals(200, it.statusCode) }
             .verifyComplete()

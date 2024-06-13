@@ -246,7 +246,7 @@ class MigrationService(
                 Mono.error(ApplicationNotFoundException(walletMigrationConfig.defaultApplicationId))
             )
             .flatMap { walletRepository.save(it.toDocument()) }
-            .map { LoggedAction(it.toDomain(), WalletAddedEvent(it.id)) }
+            .map { LoggedAction(it.toDomain(), WalletAddedEvent(it.id, true)) }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .onErrorResume(DuplicateKeyException::class.java) {
                 walletRepository.findById(migration.walletId.value.toString()).map { it.toDomain() }

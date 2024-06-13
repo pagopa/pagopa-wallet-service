@@ -10,11 +10,11 @@ import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
 import it.pagopa.wallet.domain.wallets.WalletId
-import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import java.time.Duration
 
 @Component
 class DomainEventDispatcherService(
@@ -35,7 +35,8 @@ class DomainEventDispatcherService(
 
     override fun dispatchEvent(event: LoggingEvent): Mono<LoggingEvent> =
         when (event) {
-            is WalletAddedEvent -> onWalletCreated(event).map { event }
+            is WalletAddedEvent ->
+                if (!event.createByMigration) onWalletCreated(event).map { event } else Mono.empty()
             else -> Mono.empty()
         }
 
@@ -50,7 +51,7 @@ class DomainEventDispatcherService(
                     walletExpireTimeout
                 )
                 val walletCreatedEvent = WalletCreatedEvent.of(WalletId.of(walletCreated.walletId))
-                walletQueueClient.sendExpirationEvent(
+                walletQueueClient.sendWalletCreatedEvent(
                     event = walletCreatedEvent,
                     delay = walletExpireTimeout,
                     tracingInfo = tracingInfo

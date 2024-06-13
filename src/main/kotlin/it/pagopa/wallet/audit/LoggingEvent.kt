@@ -10,7 +10,8 @@ sealed class LoggingEvent(val id: String, val timestamp: String) {
     constructor() : this(UUID.randomUUID().toString(), Instant.now().toString())
 }
 
-data class WalletAddedEvent(val walletId: String) : LoggingEvent()
+data class WalletAddedEvent(val walletId: String, val createByMigration: Boolean = false) :
+    LoggingEvent()
 
 data class WalletDeletedEvent(val walletId: String) : LoggingEvent()
 

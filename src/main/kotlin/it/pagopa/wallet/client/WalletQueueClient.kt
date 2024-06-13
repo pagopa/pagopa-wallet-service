@@ -8,8 +8,8 @@ import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.common.tracing.QueueTracingInfo
-import java.time.Duration
 import reactor.core.publisher.Mono
+import java.time.Duration
 
 class WalletQueueClient(
     private val expirationQueueClient: QueueAsyncClient,
@@ -17,7 +17,7 @@ class WalletQueueClient(
     private val ttl: Duration
 ) {
 
-    fun sendExpirationEvent(
+    fun sendWalletCreatedEvent(
         event: WalletCreatedEvent,
         delay: Duration,
         tracingInfo: QueueTracingInfo
