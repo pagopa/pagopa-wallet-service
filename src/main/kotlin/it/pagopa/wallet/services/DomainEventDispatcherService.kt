@@ -6,10 +6,10 @@ import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.client.WalletQueueClient
+import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.util.TracingUtils
 import java.time.Duration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

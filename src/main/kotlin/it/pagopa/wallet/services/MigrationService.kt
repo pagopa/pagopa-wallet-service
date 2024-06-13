@@ -5,6 +5,7 @@ import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
+import it.pagopa.wallet.common.tracing.Tracing
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
 import it.pagopa.wallet.domain.migration.WalletPaymentManagerRepository
@@ -15,7 +16,6 @@ import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.Tracing
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.time.Duration
 import java.time.Instant

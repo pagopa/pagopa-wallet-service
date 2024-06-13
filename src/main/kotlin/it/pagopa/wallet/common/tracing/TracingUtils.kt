@@ -1,36 +1,13 @@
-package it.pagopa.wallet.util
+package it.pagopa.wallet.common.tracing
 
-import com.azure.core.http.HttpHeaderName
 import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import reactor.core.publisher.Mono
 
-object Tracing {
-
-    object Migration {
-        /** HMAC of contract ID produced by CSTAR during migration phase */
-        val CONTRACT_HMAC = AttributeKey.stringKey("contract")
-        val WALLET_ID = AttributeKey.stringKey("walletId")
-    }
-
-    fun <T> customizeSpan(mono: Mono<T>, f: Span.() -> Unit): Mono<T> {
-        return Mono.using(
-            { Span.fromContext(Context.current()) },
-            { span -> f(span).let { mono } },
-            {}
-        )
-    }
-}
-
-data class QueueTracingInfo(
-    val traceparent: String?,
-    val tracestate: String?,
-    val baggage: String?
-)
+typealias TracedMono<T> = (QueueTracingInfo) -> Mono<T>
 
 class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer: Tracer) {
     companion object {
@@ -39,7 +16,7 @@ class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer:
         const val BAGGAGE: String = "baggage"
     }
 
-    fun <T> traceMono(spanName: String, traced: (QueueTracingInfo) -> Mono<T>) =
+    fun <T> traceMono(spanName: String, traced: TracedMono<T>) =
         Mono.using(
             {
                 val span: Span =
@@ -56,9 +33,9 @@ class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer:
                     map?.put(k, v)
                 }
 
-                val tracingInfo: QueueTracingInfo =
+                val tracingInfo =
                     QueueTracingInfo(
-                        rawTracingInfo[HttpHeaderName.TRACEPARENT.toString()],
+                        rawTracingInfo[TRACEPARENT],
                         rawTracingInfo[TRACESTATE],
                         rawTracingInfo[BAGGAGE]
                     )

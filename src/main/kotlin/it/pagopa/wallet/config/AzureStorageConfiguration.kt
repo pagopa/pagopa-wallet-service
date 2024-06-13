@@ -1,12 +1,11 @@
 package it.pagopa.wallet.config
 
 import com.azure.core.http.netty.NettyAsyncHttpClientBuilder
+import com.azure.core.serializer.json.jackson.JacksonJsonSerializerBuilder
 import com.azure.core.util.serializer.JsonSerializerProvider
 import com.azure.storage.queue.QueueClientBuilder
-import it.pagopa.wallet.audit.WalletEvent
+import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.wallet.client.WalletQueueClient
-import it.pagopa.wallet.common.serialization.StrictJsonSerializerProvider
-import it.pagopa.wallet.common.serialization.WalletEventMixin
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import java.time.Duration
 import org.springframework.context.annotation.Bean
@@ -16,10 +15,12 @@ import reactor.netty.http.client.HttpClient
 @Configuration
 class AzureStorageConfiguration {
 
+    /** @see SerializationConfiguration */
     @Bean
-    fun jsonSerializerProvider(): JsonSerializerProvider =
-        StrictJsonSerializerProvider()
-            .addMixIn(WalletEvent::class.java, WalletEventMixin::class.java)
+    fun jsonSerializerProvider(objectMapper: ObjectMapper): JsonSerializerProvider =
+        JsonSerializerProvider {
+            JacksonJsonSerializerBuilder().serializer(objectMapper).build()
+        }
 
     @Bean
     fun expirationQueueClient(

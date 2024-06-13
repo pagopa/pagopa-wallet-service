@@ -2,10 +2,11 @@ package it.pagopa.wallet.services
 
 import com.azure.core.http.rest.Response
 import com.azure.storage.queue.models.SendMessageResult
-import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.client.WalletQueueClient
+import it.pagopa.wallet.common.tracing.TracedMono
+import it.pagopa.wallet.common.tracing.TracingUtilsTest
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.util.AzureQueueTestUtils
 import java.time.Duration
@@ -21,9 +22,8 @@ class DomainEventDispatcherServiceTest {
 
     private val config = ExpirationQueueConfig("", "", 100, 100)
 
-    private var argumentCaptor = argumentCaptor<WalletExpiredEvent>()
     private val walletQueueClient: WalletQueueClient = mock()
-    private val tracingUtils = WalletTestUtils.getMock()
+    private val tracingUtils = TracingUtilsTest.getMock()
     private val domainEventDispatcherService =
         DomainEventDispatcherService(walletQueueClient, tracingUtils, config)
 
@@ -51,6 +51,7 @@ class DomainEventDispatcherServiceTest {
                     any()
                 )
             Assertions.assertEquals(walletCreatedLoggingEvent.walletId, lastValue.walletId)
+            verify(tracingUtils, times(1)).traceMono(any(), any<TracedMono<Any>>())
         }
     }
 
@@ -63,5 +64,6 @@ class DomainEventDispatcherServiceTest {
             }
 
         domainEventDispatcherService.dispatchEvent(walletCreatedLoggingEvent).test().expectError()
+        verify(tracingUtils, times(1)).traceMono(any(), any<TracedMono<Any>>())
     }
 }

@@ -7,7 +7,7 @@ import com.azure.storage.queue.QueueAsyncClient
 import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.common.QueueEvent
-import it.pagopa.wallet.util.QueueTracingInfo
+import it.pagopa.wallet.common.tracing.QueueTracingInfo
 import java.time.Duration
 import reactor.core.publisher.Mono
 

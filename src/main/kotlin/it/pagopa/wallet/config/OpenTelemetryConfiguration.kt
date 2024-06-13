@@ -3,7 +3,7 @@ package it.pagopa.wallet.config
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Tracer
-import it.pagopa.wallet.util.TracingUtils
+import it.pagopa.wallet.common.tracing.TracingUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
