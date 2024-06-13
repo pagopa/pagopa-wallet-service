@@ -47,7 +47,7 @@ class DomainEventDispatcherServiceTest {
             verify(walletQueueClient, times(1))
                 .sendExpirationEvent(
                     capture(),
-                    eq(Duration.ofSeconds(config.timeoutWalletCreated)),
+                    eq(Duration.ofSeconds(config.timeoutWalletExpired)),
                     any()
                 )
             Assertions.assertEquals(walletCreatedLoggingEvent.walletId, lastValue.walletId)

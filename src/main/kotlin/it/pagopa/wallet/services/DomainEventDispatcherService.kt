@@ -26,7 +26,7 @@ class DomainEventDispatcherService(
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val walletExpireTimeout by lazy {
-        Duration.ofSeconds(expirationQueueConfig.timeoutWalletCreated)
+        Duration.ofSeconds(expirationQueueConfig.timeoutWalletExpired)
     }
 
     companion object {

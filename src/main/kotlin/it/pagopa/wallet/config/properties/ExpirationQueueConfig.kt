@@ -7,5 +7,5 @@ data class ExpirationQueueConfig(
     val storageConnectionString: String,
     val storageQueueName: String,
     val ttlSeconds: Long,
-    val timeoutWalletCreated: Long
+    val timeoutWalletExpired: Long
 )

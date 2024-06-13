@@ -107,7 +107,7 @@ microservice-chart:
     APP_LOGGING_LEVEL: "DEBUG"
     EXPIRATION_QUEUE_NAME: pagopa-d-weu-wallet-expiration-queue
     EXPIRATION_QUEUE_TTL_SECONDS: "3600"
-    EXPIRATION_QUEUE_TIMEOUT_SECONDS_WALLET_CREATED: "900"
+    EXPIRATION_QUEUE_TIMEOUT_SECONDS_WALLET_EXPIRED: "900"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
