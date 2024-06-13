@@ -24,6 +24,7 @@ import java.net.URI
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.*
+import kotlin.reflect.KClass
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -31,6 +32,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.kotlin.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -65,6 +68,10 @@ class WalletControllerTest {
     private val objectMapper =
         JsonMapper.builder()
             .addModule(JavaTimeModule())
+            .addMixIn(
+                WalletStatusErrorPatchRequestDto::class.java,
+                WalletStatusPatchRequestDto::class.java
+            )
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build()
@@ -157,11 +164,8 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId.id.toString())
             .bodyValue(
-                // workaround since this class is the request entrypoint and so discriminator
-                // mapping annotation is not read during serialization
-                ObjectMapper()
-                    .writeValueAsString(SessionInputCardDataDto() as SessionInputDataDto)
-                    .replace("SessionInputCardData", "cards")
+                SessionInputCardDataDto()
+                    .serializeRootDiscriminator(SessionInputCardDataDto::class, "cards")
             )
             .exchange()
             .expectStatus()
@@ -939,5 +943,72 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(422)
+    }
+
+    @Test
+    fun `should return 409 when patch error state to wallet in non transient state`() {
+        val updateRequest =
+            WalletStatusErrorPatchRequestDto()
+                .status(WalletStatusDto.ERROR.name)
+                .details(WalletStatusErrorPatchRequestDetailsDto().reason("Any Reason"))
+                as WalletStatusPatchRequestDto
+
+        given { walletService.patchWalletStateToError(any(), any()) }
+            .willReturn(Mono.error(WalletConflictStatusException(WalletId.create())))
+
+        val update =
+            """
+                {
+                    "status": "ERROR",
+                    "details": {
+                        "reason": "any error"
+                    }
+                }
+            """
+                .trimIndent()
+        webClient
+            .patch()
+            .uri("/wallets/{walletId}", mapOf("walletId" to WalletId.create().value.toString()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(update)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(409)
+    }
+
+    @ParameterizedTest
+    @MethodSource("it.pagopa.wallet.services.WalletServiceTest#walletTransientState")
+    fun `should return 204 when successfully patch wallet error state`(
+        walletStatusDto: WalletStatusDto
+    ) = runTest {
+        val wallet = WalletTestUtils.walletDocument().copy(status = walletStatusDto.name)
+
+        given { walletService.patchWalletStateToError(any(), any()) }.willReturn(Mono.just(wallet))
+
+        val updateRequest =
+            WalletStatusErrorPatchRequestDto()
+                .status("ERROR")
+                .details(WalletStatusErrorPatchRequestDetailsDto().reason("Any reason"))
+                .serializeRootDiscriminator(WalletStatusErrorPatchRequestDto::class, "ERROR")
+
+        webClient
+            .patch()
+            .uri("/wallets/{walletId}", mapOf("walletId" to wallet.id))
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(updateRequest)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(204)
+    }
+
+    // workaround since this class is the request entrypoint and so discriminator
+    // mapping annotation is not read during serialization
+    private fun <K : Any> Any.serializeRootDiscriminator(
+        clazz: KClass<K>,
+        discriminatorValue: String
+    ): String {
+        return objectMapper
+            .writeValueAsString(this)
+            .replace(clazz.simpleName.toString().replace("Dto", ""), discriminatorValue)
     }
 }

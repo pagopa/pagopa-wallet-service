@@ -76,6 +76,7 @@ object WalletTestUtils {
             contractId = null,
             validationOperationResult = null,
             validationErrorCode = null,
+            errorReason = null,
             applications = listOf(),
             details = null,
             clients =
@@ -100,6 +101,7 @@ object WalletTestUtils {
             contractId = null,
             validationOperationResult = null,
             validationErrorCode = null,
+            errorReason = null,
             applications,
             details = null,
             clients =
@@ -178,6 +180,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = null,
             validationErrorCode = null,
+            errorReason = null,
             applications = listOf(),
             details = null,
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -200,6 +203,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = null,
             validationErrorCode = null,
+            errorReason = null,
             applications = listOf(),
             details = null,
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -313,6 +317,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = OperationResultEnum.EXECUTED.value,
             validationErrorCode = null,
+            errorReason = null,
             applications =
                 listOf(
                     WalletApplicationDocument(
@@ -352,6 +357,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = OperationResultEnum.EXECUTED.value,
             validationErrorCode = null,
+            errorReason = null,
             applications =
                 listOf(
                     WalletApplicationDocument(
@@ -393,6 +399,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details =
                     CardDetailsDocument(
@@ -425,6 +432,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = details,
                 clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -450,6 +458,7 @@ object WalletTestUtils {
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = operationResultEnum.value,
             validationErrorCode = errorCode,
+            errorReason = null,
             applications = listOf(),
             details = details,
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -470,6 +479,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.toString(),
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = null,
                 clients = clients.entries.associate { it.key.name to it.value.toDocument() },
@@ -491,6 +501,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = null,
                 clients =
@@ -513,6 +524,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = null,
                 clients =
@@ -535,6 +547,7 @@ object WalletTestUtils {
                 contractId = null,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = null,
                 clients =
@@ -557,6 +570,7 @@ object WalletTestUtils {
                 contractId = null,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
+                errorReason = null,
                 applications = listOf(),
                 details = null,
                 clients =
@@ -579,6 +593,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = null,
                 validationErrorCode = null,
+                errorReason = null,
                 applications =
                     listOf(
                         WalletApplicationDocument(
@@ -615,6 +630,7 @@ object WalletTestUtils {
                 contractId = CONTRACT_ID.contractId,
                 validationOperationResult = OperationResultEnum.EXECUTED.value,
                 validationErrorCode = null,
+                errorReason = null,
                 applications =
                     listOf(
                         WalletApplicationDocument(

@@ -148,7 +148,8 @@ tasks.register<GenerateTask>("wallet") {
       "oas3" to "true",
       "generateSupportingFiles" to "true",
       "enumPropertyNaming" to "UPPERCASE",
-      "legacyDiscriminatorBehavior" to "true"
+      "legacyDiscriminatorBehavior" to "true",
+      "useOneOfInterfaces" to "true",
     )
   )
 }

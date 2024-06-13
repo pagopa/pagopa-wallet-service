@@ -63,7 +63,7 @@ data class Wallet(
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)
-        private val transientState =
+        val TRANSIENT_STATES =
             setOf(
                 WalletStatusDto.CREATED,
                 WalletStatusDto.INITIALIZED,
@@ -72,7 +72,7 @@ data class Wallet(
     }
 
     fun error(reason: String): it.pagopa.wallet.domain.wallets.Wallet {
-        return if (transientState.contains(status)) {
+        return if (TRANSIENT_STATES.contains(status)) {
             copy(status = WalletStatusDto.ERROR, errorReason = reason)
         } else {
             this
@@ -116,6 +116,7 @@ data class Wallet(
                 contractId = this.contractId?.contractId,
                 validationOperationResult = this.validationOperationResult?.value,
                 validationErrorCode = this.validationErrorCode,
+                errorReason = this.errorReason,
                 applications =
                     this.applications.map { app ->
                         it.pagopa.wallet.documents.wallets.WalletApplication(

@@ -213,6 +213,19 @@ class WalletServiceTest {
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
                 ),
             )
+
+        @JvmStatic
+        private fun walletFinalState() =
+            Stream.of(
+                Arguments.of(WalletStatusDto.VALIDATED),
+                Arguments.of(WalletStatusDto.DELETED),
+            )
+
+        @JvmStatic
+        private fun walletTransientState() =
+            it.pagopa.wallet.domain.wallets.Wallet.TRANSIENT_STATES.stream().map {
+                Arguments.of(it)
+            }
     }
 
     private val walletService: WalletService =
@@ -3793,6 +3806,55 @@ class WalletServiceTest {
                     .expectError(PspNotFoundException::class.java)
                     .verify()
             }
+        }
+    }
+
+    @Test
+    fun `when patching to error state a non existing wallet should throw error`() {
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+
+        walletService
+            .patchWalletStateToError(walletId = WalletId.create(), reason = "Any reason")
+            .test()
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+    }
+
+    @ParameterizedTest
+    @MethodSource("walletFinalState")
+    fun `when patching to error a wallet in final state should throw error`(
+        state: WalletStatusDto
+    ) {
+        val wallet = walletDocument().copy(status = state.value)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
+        given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+        walletService
+            .patchWalletStateToError(walletId = WalletId.of(wallet.id), reason = "Any reason")
+            .test()
+            .expectError(WalletConflictStatusException::class.java)
+            .verify()
+    }
+
+    @ParameterizedTest
+    @MethodSource("walletTransientState")
+    fun `when patching to error a wallet in non final state should move to error`(
+        state: WalletStatusDto
+    ) {
+        val wallet = walletDocument().copy(status = state.value)
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
+        given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+        walletService
+            .patchWalletStateToError(walletId = WalletId.of(wallet.id), reason = "Any Reason")
+            .test()
+            .assertNext { assertEquals(it.status, WalletStatusDto.ERROR.value) }
+            .verifyComplete()
+
+        argumentCaptor<Wallet> {
+            verify(walletRepository, times(1)).save(capture())
+            assertEquals("Any Reason", lastValue.errorReason)
+            assertEquals(WalletStatusDto.ERROR.name, lastValue.status)
         }
     }
 }
