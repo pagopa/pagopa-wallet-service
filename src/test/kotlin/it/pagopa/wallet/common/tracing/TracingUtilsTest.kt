@@ -6,7 +6,6 @@ import io.opentelemetry.context.propagation.ContextPropagators
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.context.propagation.TextMapSetter
 import it.pagopa.wallet.common.tracing.TracingUtils.Companion.TRACEPARENT
-import java.util.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -14,6 +13,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.util.*
 
 class TracingUtilsTest {
 
@@ -35,7 +35,7 @@ class TracingUtilsTest {
         val contextPropagators = Mockito.mock(ContextPropagators::class.java)
         given { contextPropagators.textMapPropagator }.willReturn(textMapPropagator)
         given { openTelemetry.propagators }.willReturn(contextPropagators)
-        Mockito.`when`(openTelemetry.propagators).thenReturn(contextPropagators)
+        given(openTelemetry.propagators).willReturn(contextPropagators)
     }
 
     @Test

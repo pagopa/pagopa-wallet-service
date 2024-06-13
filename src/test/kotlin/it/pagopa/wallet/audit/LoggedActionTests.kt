@@ -2,7 +2,7 @@ package it.pagopa.wallet.audit
 
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
+import it.pagopa.wallet.domain.wallets.LoggingEventDispatcher
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.repositories.LoggingEventRepositoryImpl
 import it.pagopa.wallet.repositories.LoggingEventRepositoryMongo
@@ -18,9 +18,9 @@ import reactor.kotlin.test.test
 class LoggedActionTests {
 
     private val mongoRepository: LoggingEventRepositoryMongo = mock()
-    private val domainEventDispatcher: DomainEventDispatcher = mock()
+    private val loggingEventDispatcher: LoggingEventDispatcher = mock()
     val repository: LoggingEventRepository =
-        LoggingEventRepositoryImpl(domainEventDispatcher, mongoRepository)
+        LoggingEventRepositoryImpl(loggingEventDispatcher, mongoRepository)
 
     fun saveIdWithLogging(id: String): Mono<LoggedAction<String>> {
         return Mono.just(id).map { LoggedAction(it, WalletAddedEvent(it)) }
@@ -43,7 +43,7 @@ class LoggedActionTests {
 
     @BeforeEach
     fun setup() {
-        given { domainEventDispatcher.dispatchEvent(any()) }
+        given { loggingEventDispatcher.dispatchEvent(any()) }
             .willAnswer { Mono.just(it.arguments[0]) }
     }
 
@@ -165,7 +165,7 @@ class LoggedActionTests {
         assertEquals(walletId, actualId)
 
         argumentCaptor<LoggingEvent> {
-            verify(domainEventDispatcher, times(2)).dispatchEvent(capture())
+            verify(loggingEventDispatcher, times(2)).dispatchEvent(capture())
             assertArrayEquals(expectedSavedEvents.toTypedArray(), allValues.toTypedArray())
         }
     }
@@ -184,7 +184,7 @@ class LoggedActionTests {
                     validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                 )
             )
-        given { domainEventDispatcher.dispatchEvent(any()) }
+        given { loggingEventDispatcher.dispatchEvent(any()) }
             .willAnswer { Mono.just(it.arguments.get(0)) }
             .willAnswer { Mono.empty<LoggingEvent>() }
 
@@ -197,7 +197,7 @@ class LoggedActionTests {
             .test()
             .assertNext {
                 argumentCaptor<LoggingEvent> {
-                    verify(domainEventDispatcher, times(2)).dispatchEvent(capture())
+                    verify(loggingEventDispatcher, times(2)).dispatchEvent(capture())
                     assertArrayEquals(expectedSavedEvents.toTypedArray(), allValues.toTypedArray())
                 }
             }

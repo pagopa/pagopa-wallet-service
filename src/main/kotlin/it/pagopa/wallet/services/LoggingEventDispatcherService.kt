@@ -8,7 +8,7 @@ import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
-import it.pagopa.wallet.domain.wallets.DomainEventDispatcher
+import it.pagopa.wallet.domain.wallets.LoggingEventDispatcher
 import it.pagopa.wallet.domain.wallets.WalletId
 import java.time.Duration
 import org.slf4j.Logger
@@ -17,17 +17,15 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-class DomainEventDispatcherService(
+class LoggingEventDispatcherService(
     private val walletQueueClient: WalletQueueClient,
     private val tracingUtils: TracingUtils,
     private val expirationQueueConfig: ExpirationQueueConfig,
-) : DomainEventDispatcher {
+) : LoggingEventDispatcher {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val walletExpireTimeout by lazy {
-        Duration.ofSeconds(expirationQueueConfig.timeoutWalletExpired)
-    }
+    private val walletExpireTimeout = Duration.ofSeconds(expirationQueueConfig.timeoutWalletExpired)
 
     companion object {
         const val WALLET_CREATED_EVENT_HANDLER_SPAN_NAME = "walletCreatedEventHandler"
