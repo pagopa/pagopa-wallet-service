@@ -2,9 +2,9 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.audit.LoggedAction
-import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
+import it.pagopa.wallet.audit.WalletMigratedAddedEvent
 import it.pagopa.wallet.common.tracing.Tracing
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.domain.migration.WalletPaymentManager
@@ -246,7 +246,7 @@ class MigrationService(
                 Mono.error(ApplicationNotFoundException(walletMigrationConfig.defaultApplicationId))
             )
             .flatMap { walletRepository.save(it.toDocument()) }
-            .map { LoggedAction(it.toDomain(), WalletAddedEvent(it.id, true)) }
+            .map { LoggedAction(it.toDomain(), WalletMigratedAddedEvent(it.id)) }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .onErrorResume(DuplicateKeyException::class.java) {
                 walletRepository.findById(migration.walletId.value.toString()).map { it.toDomain() }

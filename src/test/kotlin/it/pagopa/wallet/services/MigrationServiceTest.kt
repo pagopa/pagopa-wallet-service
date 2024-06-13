@@ -7,9 +7,9 @@ import it.pagopa.wallet.WalletTestUtils.TEST_DEFAULT_CLIENTS
 import it.pagopa.wallet.WalletTestUtils.USER_ID
 import it.pagopa.wallet.WalletTestUtils.WALLET_APPLICATION_PAGOPA_ID
 import it.pagopa.wallet.audit.LoggingEvent
-import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.audit.WalletDeletedEvent
 import it.pagopa.wallet.audit.WalletDetailsAddedEvent
+import it.pagopa.wallet.audit.WalletMigratedAddedEvent
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.migration.WalletPaymentManagerDocument
@@ -91,7 +91,10 @@ class MigrationServiceTest {
                         .let { app -> assertEquals(app.status, WalletApplicationStatus.ENABLED) }
                     argumentCaptor<Iterable<LoggingEvent>> {
                         verify(loggingEventRepository, times(1)).saveAll(capture())
-                        assertInstanceOf(WalletAddedEvent::class.java, lastValue.firstOrNull())
+                        assertInstanceOf(
+                            WalletMigratedAddedEvent::class.java,
+                            lastValue.firstOrNull()
+                        )
                     }
                 }
                 .verifyComplete()

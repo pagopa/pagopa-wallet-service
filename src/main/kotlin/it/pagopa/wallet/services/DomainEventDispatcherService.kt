@@ -35,8 +35,7 @@ class DomainEventDispatcherService(
 
     override fun dispatchEvent(event: LoggingEvent): Mono<LoggingEvent> =
         when (event) {
-            is WalletAddedEvent ->
-                if (!event.createByMigration) onWalletCreated(event).map { event } else Mono.empty()
+            is WalletAddedEvent -> onWalletCreated(event).map { event }
             else -> Mono.empty()
         }
 
