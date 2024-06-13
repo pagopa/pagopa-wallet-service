@@ -2,7 +2,7 @@ package it.pagopa.wallet.client
 
 import com.azure.core.util.BinaryData
 import com.azure.storage.queue.QueueAsyncClient
-import it.pagopa.wallet.audit.WalletExpiredEvent
+import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.common.tracing.QueueTracingInfo
 import it.pagopa.wallet.config.AzureStorageConfiguration
@@ -33,9 +33,9 @@ class WalletQueueClientTest {
         )
 
     @Test
-    fun shouldEmitWalletExpiredEvent() {
+    fun shouldEmitWalletCreatedEvent() {
         val expiredEvent =
-            WalletExpiredEvent(
+            WalletCreatedEvent(
                 UUID.randomUUID().toString(),
                 Instant.now(),
                 UUID.randomUUID().toString()

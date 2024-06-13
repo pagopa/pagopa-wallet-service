@@ -5,7 +5,7 @@ import com.azure.core.util.BinaryData
 import com.azure.core.util.serializer.JsonSerializer
 import com.azure.storage.queue.QueueAsyncClient
 import com.azure.storage.queue.models.SendMessageResult
-import it.pagopa.wallet.audit.WalletExpiredEvent
+import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.common.tracing.QueueTracingInfo
 import java.time.Duration
@@ -18,7 +18,7 @@ class WalletQueueClient(
 ) {
 
     fun sendExpirationEvent(
-        event: WalletExpiredEvent,
+        event: WalletCreatedEvent,
         delay: Duration,
         tracingInfo: QueueTracingInfo
     ): Mono<Response<SendMessageResult>> {

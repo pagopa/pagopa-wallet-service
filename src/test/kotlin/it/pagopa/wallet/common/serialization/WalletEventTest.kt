@@ -2,8 +2,8 @@ package it.pagopa.wallet.common.serialization
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.audit.WalletEvent
-import it.pagopa.wallet.audit.WalletExpiredEvent
 import it.pagopa.wallet.common.QueueEvent
 import it.pagopa.wallet.common.tracing.QueueTracingInfo
 import it.pagopa.wallet.config.SerializationConfiguration
@@ -41,7 +41,7 @@ class WalletEventTest {
         @JvmStatic
         private fun walletEvents() =
             Stream.of(
-                Arguments.of(WalletExpiredEvent.of(WalletId(UUID.randomUUID()))),
+                Arguments.of(WalletCreatedEvent.of(WalletId(UUID.randomUUID()))),
             )
     }
 }

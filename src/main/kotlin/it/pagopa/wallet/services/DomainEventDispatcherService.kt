@@ -4,7 +4,7 @@ import com.azure.core.http.rest.Response
 import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
-import it.pagopa.wallet.audit.WalletExpiredEvent
+import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
@@ -49,9 +49,9 @@ class DomainEventDispatcherService(
                     walletCreated.walletId,
                     walletExpireTimeout
                 )
-                val walletExpiredEvent = WalletExpiredEvent.of(WalletId.of(walletCreated.walletId))
+                val walletCreatedEvent = WalletCreatedEvent.of(WalletId.of(walletCreated.walletId))
                 walletQueueClient.sendExpirationEvent(
-                    event = walletExpiredEvent,
+                    event = walletCreatedEvent,
                     delay = walletExpireTimeout,
                     tracingInfo = tracingInfo
                 )

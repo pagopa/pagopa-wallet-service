@@ -6,14 +6,14 @@ import java.util.*
 
 sealed interface WalletEvent
 
-data class WalletExpiredEvent(
+data class WalletCreatedEvent(
     val eventId: String,
     val creationDate: Instant,
     val walletId: String
 ) : WalletEvent {
     companion object {
         fun of(walletId: WalletId) =
-            WalletExpiredEvent(
+            WalletCreatedEvent(
                 eventId = UUID.randomUUID().toString(),
                 creationDate = Instant.now(),
                 walletId = walletId.value.toString()

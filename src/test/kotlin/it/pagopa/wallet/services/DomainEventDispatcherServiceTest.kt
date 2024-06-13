@@ -3,7 +3,7 @@ package it.pagopa.wallet.services
 import com.azure.core.http.rest.Response
 import com.azure.storage.queue.models.SendMessageResult
 import it.pagopa.wallet.audit.WalletAddedEvent
-import it.pagopa.wallet.audit.WalletExpiredEvent
+import it.pagopa.wallet.audit.WalletCreatedEvent
 import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.common.tracing.TracedMono
 import it.pagopa.wallet.common.tracing.TracingUtilsTest
@@ -34,7 +34,7 @@ class DomainEventDispatcherServiceTest {
     }
 
     @Test
-    fun `should dispatch WalletExpiredEvent from WalletAdded domain event`() {
+    fun `should dispatch WalletCreatedEvent from WalletAdded domain event`() {
         val walletCreatedLoggingEvent = WalletAddedEvent(walletId = UUID.randomUUID().toString())
 
         domainEventDispatcherService
@@ -43,7 +43,7 @@ class DomainEventDispatcherServiceTest {
             .assertNext { Assertions.assertEquals(walletCreatedLoggingEvent, it) }
             .verifyComplete()
 
-        argumentCaptor<WalletExpiredEvent> {
+        argumentCaptor<WalletCreatedEvent> {
             verify(walletQueueClient, times(1))
                 .sendExpirationEvent(
                     capture(),
