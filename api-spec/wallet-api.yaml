@@ -231,6 +231,52 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
+    patch:
+      tags:
+        - wallet
+      operationId: patchWallet
+      parameters:
+        - in: path
+          name: walletId
+          required: true
+          schema:
+            $ref: '#/components/schemas/WalletId'
+      requestBody:
+        description: Usage input data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletStatusPatchRequest"
+      responses:
+        "204":
+          description: "Wallet update successfully"
+        '400':
+          description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '422':
+          description: Unable to patch wallet status. This can be caused by forbidden state transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '504':
+          description: Timeout serving request
   /wallets/{walletId}/applications:
     put:
       tags:
@@ -1396,6 +1442,29 @@ components:
           $ref: '#/components/schemas/ApplicationId'
       required:
         - applicationId
+    WalletStatusPatchRequest:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/WalletStatusErrorPatchRequest'
+      discriminator:
+        propertyName: status
+        mapping:
+          ERROR: '#/components/schemas/WalletStatusErrorPatchRequest'
+
+    WalletStatusErrorPatchRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Patchable wallet status
+          enum: [ "ERROR" ]
+        details:
+          type: object
+          properties:
+            reason:
+              type: string
+              description: "Reason of error"
+
     ApplicationPatchRequest:
       type: object
       description: Application updating request
