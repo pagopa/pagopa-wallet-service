@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  pagopa-wallet:
+    container_name: pagopa-wallet
+    build:
+      dockerfile: Dockerfile
+      context: .
+    env_file:
+      - ./.env
+    ports:
+      - "8200:8080"
+    depends_on:
+      - mongo
+    networks:
+      - pagopa-wallet-net
+
+  mongo-express:
+    container_name: pagopa-wallet-mongo-express
+    image: mongo-express
+    env_file: ./docker/config/mongo/mongo-express.env
+    ports:
+      - "8201:8081"
+    networks:
+      - pagopa-wallet-net
+    depends_on:
+      - mongo
+
   mongo:
     container_name: pagopa-wallet-mongo
     image: mongo
@@ -34,6 +59,14 @@ services:
     command: [ "sh", "-c", 'exec redis-server --requirepass "$$REDIS_PASSWORD"' ]
     ports:
       - "6379:6379"
+    networks:
+      - pagopa-wallet-net
+
+  redis-insight:
+    container_name: wallet-redis-insight
+    image: redislabs/redisinsight
+    ports:
+      - "8001:8001"
     networks:
       - pagopa-wallet-net
 
