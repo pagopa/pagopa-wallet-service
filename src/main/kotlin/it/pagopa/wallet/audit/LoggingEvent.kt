@@ -1,9 +1,9 @@
 package it.pagopa.wallet.audit
 
 import it.pagopa.wallet.domain.applications.ApplicationStatus
-import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 import java.util.*
+import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("wallet-log-events")
 sealed class LoggingEvent(val id: String, val timestamp: String) {
