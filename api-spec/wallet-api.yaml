@@ -233,7 +233,7 @@ paths:
           description: Timeout serving request
     patch:
       tags:
-        - wallet
+        - wallets
       operationId: patchWallet
       parameters:
         - in: path
