@@ -104,7 +104,7 @@ If you want to customize the application environment, reference this table:
 | EXPIRATION_QUEUE_NAME                                    | Name of expiration queue                                           | string                   |         |
 | EXPIRATION_QUEUE_TTL_SECONDS                             | TTL in seconds for published message                               | string                   |         |
 | EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                 | string                   |         |
-| EXPIRATION_QUEUE_TIMEOUT_SECONDS_WALLET_EXPIRED          | Visibility timeout in seconds for expired event                    |                          |         |
+| EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                    |                          |         |
 
 ### Run docker container
 
