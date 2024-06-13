@@ -116,17 +116,32 @@ microservice-chart:
     name: "pagopa-d-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
-  tolerations: []
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node_type
-                operator: In
-                values:
-                  - user
   canaryDelivery:
     deployment:
       image:
         tag: ""
+
+  tolerations:
+  - effect: "NoSchedule"
+    key: "paymentWalletOnly"
+    operator: "Equal"
+    value: "true"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+         - matchExpressions:
+           - key: domain
+             operator: In
+             values:
+             - paywallet
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                aadpodidbinding: pay-wallet-pod-identity
+            namespaces: ["pay-wallet"]
+            topologyKey: topology.kubernetes.io/zone
