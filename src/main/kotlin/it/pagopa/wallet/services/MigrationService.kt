@@ -76,7 +76,7 @@ class MigrationService(
                         )
                     ) {
                         setAttribute(
-                            Tracing.Migration.WALLET_ID,
+                            Tracing.WALLET_ID,
                             walletPaymentManager.walletId.value.toString()
                         )
                     }
@@ -109,7 +109,7 @@ class MigrationService(
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .flatMap { wallet ->
                 Tracing.customizeSpan(updateWalletCardDetails(wallet, cardDetails, now)) {
-                        setAttribute(Tracing.Migration.WALLET_ID, wallet.id.value.toString())
+                        setAttribute(Tracing.WALLET_ID, wallet.id.value.toString())
                     }
                     .doOnNext {
                         logger.info("Details updated for wallet with id: [{}]", it.id.value)
@@ -137,7 +137,7 @@ class MigrationService(
             .switchIfEmpty(MigrationError.WalletContractIdNotFound(contractId).toMono())
             .flatMap { wallet ->
                 Tracing.customizeSpan(Mono.just(wallet)) {
-                        setAttribute(Tracing.Migration.WALLET_ID, wallet.id.value.toString())
+                        setAttribute(Tracing.WALLET_ID, wallet.id.value.toString())
                     }
                     .map { it.copy(status = WalletStatusDto.DELETED, updateDate = now) }
                     .flatMap { walletRepository.save(it.toDocument()) }

@@ -53,6 +53,7 @@ data class Wallet(
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
     var validationErrorCode: String? = null,
+    val errorReason: String? = null,
     var details: WalletDetails<*>? = null,
     val clients: Map<Client.Id, Client>,
     val version: Int,
@@ -62,6 +63,20 @@ data class Wallet(
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)
+        private val transientState =
+            setOf(
+                WalletStatusDto.CREATED,
+                WalletStatusDto.INITIALIZED,
+                WalletStatusDto.VALIDATION_REQUESTED
+            )
+    }
+
+    fun error(reason: String): it.pagopa.wallet.domain.wallets.Wallet {
+        return if (transientState.contains(status)) {
+            copy(status = WalletStatusDto.ERROR, errorReason = reason)
+        } else {
+            this
+        }
     }
 
     fun updateUsageForClient(

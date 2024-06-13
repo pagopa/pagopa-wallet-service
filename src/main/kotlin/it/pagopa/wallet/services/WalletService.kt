@@ -783,6 +783,30 @@ class WalletService(
             .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
             .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
 
+    fun patchWalletStateToError(
+        walletId: WalletId,
+        reason: String
+    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> {
+        logger.info("Patching wallet state to error for [{}]", walletId.value.toString())
+        return walletRepository
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .map { it.toDomain().error(reason) }
+            .filter { it.status == WalletStatusDto.ERROR }
+            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap { walletRepository.save(it.toDocument()) }
+            .doOnNext {
+                logger.info(
+                    "Wallet [{}] moved to error state with reason: [{}]",
+                    walletId.value.toString(),
+                    reason
+                )
+            }
+            .doOnError {
+                logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)
+            }
+    }
+
     private fun handleWalletNotification(
         wallet: Wallet,
         walletNotificationRequestDto: WalletNotificationRequestDto
