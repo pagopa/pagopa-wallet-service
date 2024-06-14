@@ -104,6 +104,9 @@ microservice-chart:
 
     WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX"
     APP_LOGGING_LEVEL: "DEBUG"
+    EXPIRATION_QUEUE_NAME: pagopa-d-itn-wallet-expiration-queue
+    EXPIRATION_QUEUE_TTL_SECONDS: "3600"
+    EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC: "1800"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
@@ -112,6 +115,7 @@ microservice-chart:
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
+    EXPIRATION_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
   keyvault:
     name: "pagopa-d-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
