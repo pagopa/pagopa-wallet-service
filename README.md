@@ -182,7 +182,7 @@ and the ones stored into `verification-metadata.xml` file raising error during b
 The following command can be used to recalculate dependency checksum:
 
 ```shell
-./gradlew --write-verification-metadata sha256 clean spotlessApply build 
+./gradlew --write-verification-metadata sha256 clean spotlessApply build --no-build-cache --refresh-dependencies
 ```
 
 In the above command the `clean`, `spotlessApply` `build` tasks where chosen to be run
@@ -245,7 +245,7 @@ file adding the following component:
 Add those components at the end of the components list and then run the
 
 ```shell
-./gradlew --write-verification-metadata sha256 clean spotlessApply build 
+./gradlew --write-verification-metadata sha256 clean spotlessApply build --no-build-cache --refresh-dependencies
 ```
 
 that will reorder the file with the added dependencies checksum in the expected order.
@@ -253,7 +253,7 @@ that will reorder the file with the added dependencies checksum in the expected 
 Finally, you can add new dependencies both to gradle.lockfile writing verification metadata running
 
 ```shell
- ./gradlew dependencies --write-locks --write-verification-metadata sha256
+ ./gradlew dependencies --write-locks --write-verification-metadata sha256 --no-build-cache --refresh-dependencies
 ```
 
 For more information read the
