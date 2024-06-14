@@ -4,10 +4,7 @@ import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
-import it.pagopa.wallet.exception.ApiError
-import it.pagopa.wallet.exception.MigrationError
-import it.pagopa.wallet.exception.RestApiException
-import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
+import it.pagopa.wallet.exception.*
 import jakarta.xml.bind.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,6 +40,13 @@ class ExceptionHandler {
     /** ApiError exception handler */
     @ExceptionHandler(ApiError::class)
     fun handleException(e: ApiError): ResponseEntity<ProblemJsonDto> {
+        if (e is WalletConflictStatusException) {
+            logger.warn(
+                "Conflict on wallet [{}] with status [{}]",
+                e.walletId.value.toString(),
+                e.walletStatusDto.value
+            )
+        }
         return handleException(e.toRestException())
     }
 

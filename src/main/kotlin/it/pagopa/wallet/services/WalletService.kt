@@ -295,8 +295,12 @@ class WalletService(
             .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
-            .filter { it.status == WalletStatusDto.CREATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap {
+                when (it.status) {
+                    WalletStatusDto.CREATED -> Mono.just(it)
+                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
+                }
+            }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
@@ -516,8 +520,18 @@ class WalletService(
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
-                    .filter { it.status == WalletStatusDto.INITIALIZED.value }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+                    .flatMap {
+                        when (it.status) {
+                            WalletStatusDto.INITIALIZED.value -> Mono.just(it)
+                            else ->
+                                Mono.error(
+                                    WalletConflictStatusException(
+                                        walletId,
+                                        WalletStatusDto.valueOf(it.status)
+                                    )
+                                )
+                        }
+                    }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
                             .getPaymentMethodById(wallet.paymentMethodId)
@@ -555,8 +569,12 @@ class WalletService(
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { it.toDomain() }
-            .filter { it.status == WalletStatusDto.VALIDATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap {
+                when (it.status) {
+                    WalletStatusDto.VALIDATED -> Mono.just(it)
+                    else -> Mono.error(WalletConflictStatusException(WalletId(walletId), it.status))
+                }
+            }
             .flatMap {
                 walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
@@ -673,8 +691,12 @@ class WalletService(
                     }
             }
             .map { walletDocument -> walletDocument.toDomain() }
-            .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap {
+                when (it.status) {
+                    WalletStatusDto.VALIDATION_REQUESTED -> Mono.just(it)
+                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
+                }
+            }
             .flatMap { wallet ->
                 val paymentInstrumentGatewayId =
                     getPaymentInstrumentGatewayId(walletNotificationRequestDto)
@@ -792,8 +814,12 @@ class WalletService(
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain().error(reason) }
-            .filter { it.status == WalletStatusDto.ERROR }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap {
+                when (it.status) {
+                    WalletStatusDto.ERROR -> Mono.just(it)
+                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
+                }
+            }
             .flatMap { walletRepository.save(it.toDocument()) }
             .doOnNext {
                 logger.info(
@@ -915,12 +941,15 @@ class WalletService(
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
                     .map { walletDocument -> walletDocument.toDomain() }
-                    .filter { wallet ->
-                        wallet.status == WalletStatusDto.VALIDATION_REQUESTED ||
-                            wallet.status == WalletStatusDto.VALIDATED ||
-                            wallet.status == WalletStatusDto.ERROR
+                    .flatMap {
+                        if (
+                            it.status == WalletStatusDto.VALIDATION_REQUESTED ||
+                                it.status == WalletStatusDto.VALIDATED ||
+                                it.status == WalletStatusDto.ERROR
+                        ) {
+                            Mono.just(it)
+                        } else Mono.error(WalletConflictStatusException(walletId, it.status))
                     }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .map { wallet ->
                         val isFinalStatus =
                             wallet.status == WalletStatusDto.VALIDATED ||

@@ -954,7 +954,14 @@ class WalletControllerTest {
                 as WalletStatusPatchRequestDto
 
         given { walletService.patchWalletStateToError(any(), any()) }
-            .willReturn(Mono.error(WalletConflictStatusException(WalletId.create())))
+            .willReturn(
+                Mono.error(
+                    WalletConflictStatusException(
+                        WalletId.create(),
+                        WalletStatusDto.VALIDATION_REQUESTED
+                    )
+                )
+            )
 
         webClient
             .patch()
