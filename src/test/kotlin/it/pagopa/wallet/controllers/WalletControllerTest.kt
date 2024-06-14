@@ -20,11 +20,6 @@ import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
-import java.net.URI
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
-import kotlin.reflect.KClass
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
@@ -48,6 +43,11 @@ import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
+import java.net.URI
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+import kotlin.reflect.KClass
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -68,6 +68,10 @@ class WalletControllerTest {
     private val objectMapper =
         JsonMapper.builder()
             .addModule(JavaTimeModule())
+            .addMixIn(
+                WalletStatusErrorPatchRequestDto::class.java,
+                WalletStatusPatchRequestDto::class.java
+            )
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build()
@@ -956,7 +960,12 @@ class WalletControllerTest {
             .patch()
             .uri("/wallets/{walletId}", mapOf("walletId" to WalletId.create().value.toString()))
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(updateRequest)
+            .bodyValue(
+                updateRequest.serializeRootDiscriminator(
+                    WalletStatusErrorPatchRequestDto::class,
+                    "ERROR"
+                )
+            )
             .exchange()
             .expectStatus()
             .isEqualTo(409)
@@ -981,7 +990,12 @@ class WalletControllerTest {
             .patch()
             .uri("/wallets/{walletId}", mapOf("walletId" to wallet.id))
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(updateRequest)
+            .bodyValue(
+                updateRequest.serializeRootDiscriminator(
+                    WalletStatusErrorPatchRequestDto::class,
+                    "ERROR"
+                )
+            )
             .exchange()
             .expectStatus()
             .isEqualTo(204)
