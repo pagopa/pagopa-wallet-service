@@ -13,15 +13,15 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
+        repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
         tag: "latest"
         pullPolicy: Always
       envConfig:
-        MONGO_HOST: pagopa-u-weu-wallet-cosmos-account.mongo.cosmos.azure.com
-        MONGO_USERNAME: pagopa-u-weu-wallet-cosmos-account
+        MONGO_HOST: pagopa-p-weu-wallet-cosmos-account.mongo.cosmos.azure.com
+        MONGO_USERNAME: pagopa-p-weu-wallet-cosmos-account
         MONGO_PORT: "10255"
         MONGO_SSL_ENABLED: "true"
-        REDIS_HOST: pagopa-u-weu-wallet-redis.redis.cache.windows.net
+        REDIS_HOST: pagopa-p-weu-wallet-redis.redis.cache.windows.net
         REDIS_PORT: "6380"
         REDIS_SSL_ENABLED: "true"
         WEB_LOGGING_LEVEL: "off"
@@ -29,9 +29,9 @@ microservice-chart:
         NPG_SERVICE_READ_TIMEOUT: "10000"
         NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
         ECS_SERVICE_NAME: "pagopa-wallet-service"
-        ECS_SERVICE_ENVIRONMENT: "uat"
+        ECS_SERVICE_ENVIRONMENT: "prod"
         OTEL_SERVICE_NAME: "pagopa-wallet-service"
-        OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+        OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
         OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
         OTEL_EXPORTER_OTLP_PROTOCOL: grpc
         OTEL_TRACES_EXPORTER: otlp
@@ -40,15 +40,15 @@ microservice-chart:
         OTEL_TRACES_SAMPLER: "always_on"
         WALLET_SESSION_TTL: "100000"
         WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
-        WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
-        WALLET_ONBOARDING_APM_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/apm
-        WALLET_PAYMENT_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/payment/creditcard
-        SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
+        WALLET_ONBOARDING_CARD_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/creditcard
+        WALLET_ONBOARDING_APM_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/apm
+        WALLET_PAYMENT_CARD_RETURN_URL: https://payment-wallet.pagopa.it/payment/creditcard
+        SESSION_URL_BASEPATH: "https://payment-wallet.pagopa.it"
         SESSION_URL_OUTCOME_SUFFIX: "/esito"
         SESSION_URL_CANCEL_SUFFIX: "/cancel"
-        SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
-        SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
-        ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+        SESSION_URL_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
+        SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
+        ECOMMERCE_PAYMENT_METHODS_URI: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v1"
         ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
         ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
         NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
@@ -67,8 +67,8 @@ microservice-chart:
         NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
         OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   image:
-    repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
-    tag: "0.14.1"
+    repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
+    tag: "0.14.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -93,7 +93,7 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "itnuat.pay-wallet.internal.uat.platform.pagopa.it"
+    host: "itnprod.pay-wallet.internal.prod.platform.pagopa.it"
     path: /pagopa-wallet-service/(.*)
     servicePort: 8080
   serviceAccount:
@@ -126,11 +126,11 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    MONGO_HOST: pagopa-u-itn-pay-wallet-cosmos-account.mongo.cosmos.azure.com
-    MONGO_USERNAME: pagopa-u-itn-pay-wallet-cosmos-account
+    MONGO_HOST: pagopa-p-itn-pay-wallet-cosmos-account.mongo.cosmos.azure.com
+    MONGO_USERNAME: pagopa-p-itn-pay-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
-    REDIS_HOST: pagopa-u-itn-pay-wallet-redis.redis.cache.windows.net
+    REDIS_HOST: pagopa-p-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
@@ -140,7 +140,7 @@ microservice-chart:
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
     OTEL_SERVICE_ENVIRONMENT: "uat"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "https://weuuat.kibana.internal.uat.platform.pagopa.it/apm"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "https://weuprod.kibana.internal.prod.platform.pagopa.it/apm"
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
@@ -148,16 +148,16 @@ microservice-chart:
     OTEL_TRACES_SAMPLER: "always_on"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
-    WALLET_ONBOARDING_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/creditcard
-    WALLET_ONBOARDING_APM_RETURN_URL: https://uat.payment-wallet.pagopa.it/onboarding/apm
-    WALLET_PAYMENT_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/payment/creditcard
-    SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
+    WALLET_ONBOARDING_CARD_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/creditcard
+    WALLET_ONBOARDING_APM_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/apm
+    WALLET_PAYMENT_CARD_RETURN_URL: https://payment-wallet.pagopa.it/payment/creditcard
+    SESSION_URL_BASEPATH: "https://payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/cancel"
-    SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
-    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
-    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
-    ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v2"
+    SESSION_URL_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
+    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+    ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v2"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
@@ -176,7 +176,7 @@ microservice-chart:
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   keyvault:
-    name: "pagopa-u-pay-wallet-kv"
+    name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
   tolerations:
