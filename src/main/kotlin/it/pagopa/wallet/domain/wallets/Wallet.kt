@@ -71,7 +71,7 @@ data class Wallet(
             )
     }
 
-    fun error(reason: String): it.pagopa.wallet.domain.wallets.Wallet {
+    fun error(reason: String?): it.pagopa.wallet.domain.wallets.Wallet {
         return if (TRANSIENT_STATES.contains(status)) {
             copy(status = WalletStatusDto.ERROR, errorReason = reason)
         } else {

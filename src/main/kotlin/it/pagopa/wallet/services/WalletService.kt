@@ -9,12 +9,10 @@ import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
-import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
@@ -22,15 +20,6 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
-import java.net.URI
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.YearMonth
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,6 +32,17 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.YearMonth
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
+import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 
 @Service
 class WalletService(
@@ -785,7 +785,7 @@ class WalletService(
 
     fun patchWalletStateToError(
         walletId: WalletId,
-        reason: String
+        reason: String?
     ): Mono<it.pagopa.wallet.documents.wallets.Wallet> {
         logger.info("Patching wallet state to error for [{}]", walletId.value.toString())
         return walletRepository
