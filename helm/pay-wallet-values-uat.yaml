@@ -1,7 +1,7 @@
 microservice-chart:
-  namespace: "wallet"
+  namespace: "pay-wallet"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
@@ -13,7 +13,7 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: pagopaucommonacr.azurecr.io/pagopawalletservice
+        repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
         tag: "latest"
         pullPolicy: Always
       envConfig:
@@ -67,8 +67,8 @@ microservice-chart:
         NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
         OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   image:
-    repository: pagopaucommonacr.azurecr.io/pagopawalletservice
-    tag: "0.14.3"
+    repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
+    tag: "0.14.2"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -93,7 +93,7 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "weuuat.wallet.internal.uat.platform.pagopa.it"
+    host: "itnuat.pay-wallet.internal.uat.platform.pagopa.it"
     path: /pagopa-wallet-service/(.*)
     servicePort: 8080
   serviceAccount:
@@ -126,11 +126,11 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    MONGO_HOST: pagopa-u-weu-wallet-cosmos-account.mongo.cosmos.azure.com
-    MONGO_USERNAME: pagopa-u-weu-wallet-cosmos-account
+    MONGO_HOST: pagopa-u-itn-pay-wallet-cosmos-account.mongo.cosmos.azure.com
+    MONGO_USERNAME: pagopa-u-itn-pay-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
-    REDIS_HOST: pagopa-u-weu-wallet-redis.redis.cache.windows.net
+    REDIS_HOST: pagopa-u-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
@@ -140,11 +140,11 @@ microservice-chart:
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
     OTEL_SERVICE_ENVIRONMENT: "uat"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
-    OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+    OTEL_EXPORTER_OTLP_ENDPOINT: "https://weuuat.kibana.internal.uat.platform.pagopa.it/apm"
+    OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
-    OTEL_LOGS_EXPORTER: none
+    OTEL_LOGS_EXPORTER: otlp
     OTEL_TRACES_SAMPLER: "always_on"
     WALLET_SESSION_TTL: "100000"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
@@ -153,7 +153,7 @@ microservice-chart:
     WALLET_PAYMENT_CARD_RETURN_URL: https://uat.payment-wallet.pagopa.it/payment/creditcard
     SESSION_URL_BASEPATH: "https://uat.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
-    SESSION_URL_CANCEL_SUFFIX: "/esito"
+    SESSION_URL_CANCEL_SUFFIX: "/cancel"
     SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
@@ -167,9 +167,6 @@ microservice-chart:
       { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
     WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX"
-    EXPIRATION_QUEUE_NAME: pagopa-u-weu-wallet-expiration-queue
-    EXPIRATION_QUEUE_TTL_SECONDS: "3600"
-    EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC: "1800"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
@@ -178,18 +175,30 @@ microservice-chart:
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
-    EXPIRATION_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
   keyvault:
-    name: "pagopa-u-wallet-kv"
+    name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
-  tolerations: []
+  tolerations:
+    - effect: "NoSchedule"
+      key: "paymentWalletOnly"
+      operator: "Equal"
+      value: "true"
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
-              - key: node_type
+              - key: domain
                 operator: In
                 values:
-                  - user
+                  - paywallet
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                aadpodidbinding: pay-wallet-pod-identity
+            namespaces: ["pay-wallet"]
+            topologyKey: topology.kubernetes.io/zone
