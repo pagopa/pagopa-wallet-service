@@ -68,7 +68,7 @@ microservice-chart:
         OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
-    tag: "0.14.0"
+    tag: "0.14.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
