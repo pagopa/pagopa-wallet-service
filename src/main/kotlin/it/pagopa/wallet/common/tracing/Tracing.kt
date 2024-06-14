@@ -1,4 +1,4 @@
-package it.pagopa.wallet.util
+package it.pagopa.wallet.common.tracing
 
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span

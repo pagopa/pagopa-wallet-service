@@ -812,7 +812,7 @@ class WalletServiceTest {
                 val expectedLoggedAction =
                     LoggedAction(
                         walletDocumentInitializedStatus.toDomain(),
-                        SessionWalletAddedEvent(WALLET_UUID.value.toString())
+                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
                     )
 
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -981,7 +981,7 @@ class WalletServiceTest {
                     LoggedAction(
                         walletDocumentInitializedStatusForTransactionWithContextualOnboard
                             .toDomain(),
-                        SessionWalletAddedEvent(WALLET_UUID.value.toString())
+                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
                     )
 
                 val basePath = URI.create(sessionUrlConfig.basePath)
@@ -1341,7 +1341,7 @@ class WalletServiceTest {
                 val expectedLoggedAction =
                     LoggedAction(
                         walletDocumentValidationRequestedStatus.toDomain(),
-                        SessionWalletAddedEvent(WALLET_UUID.value.toString())
+                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
                     )
 
                 val basePath = URI.create(sessionUrlConfig.basePath)

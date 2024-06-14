@@ -101,6 +101,10 @@ If you want to customize the application environment, reference this table:
 | REDIS_SSL_ENABLED                                        | Whether SSL is enabled while connecting to  Redis                  | string                   |         |
 | WALLET_SESSION_TTL                                       | Wallet session TTL in minutes                                      | int                      |         |
 | WALLET_LOGO_MAPPING                                      | Wallet logo map parameter that handles wallet type to logo mapping | string (Map<string,URI>) |         |
+| EXPIRATION_QUEUE_NAME                                    | Name of expiration queue                                           | string                   |         |
+| EXPIRATION_QUEUE_TTL_SECONDS                             | TTL in seconds for published message                               | string                   |         |
+| EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                 | string                   |         |
+| EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                    |                          |         |
 
 ### Run docker container
 

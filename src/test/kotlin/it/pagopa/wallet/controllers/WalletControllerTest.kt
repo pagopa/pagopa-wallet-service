@@ -151,7 +151,7 @@ class WalletControllerTest {
                 mono {
                     Pair(
                         sessionResponseDto,
-                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
+                        LoggedAction(WALLET_DOMAIN, SessionWalletCreatedEvent(walletId.toString()))
                     )
                 }
             )
@@ -192,7 +192,7 @@ class WalletControllerTest {
                 mono {
                     Pair(
                         sessionResponseDto,
-                        LoggedAction(WALLET_DOMAIN, SessionWalletAddedEvent(walletId.toString()))
+                        LoggedAction(WALLET_DOMAIN, SessionWalletCreatedEvent(walletId.toString()))
                     )
                 }
             )
