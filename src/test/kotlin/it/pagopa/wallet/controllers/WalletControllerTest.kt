@@ -944,9 +944,9 @@ class WalletControllerTest {
     @Test
     fun `should return 409 when patch error state to wallet in non transient state`() {
         val updateRequest =
-            WalletStatusPatchRequestDto()
-                .status(WalletStatusPatchRequestDto.StatusEnum.ERROR)
-                .details(WalletStatusErrorDetailsDto().reason("Any Reason"))
+            WalletStatusErrorPatchRequestDto()
+                .status("ERROR")
+                .details(WalletStatusErrorPatchRequestDetailsDto().reason("Any Reason"))
                 as WalletStatusPatchRequestDto
 
         given { walletService.patchWalletStateToError(any(), any()) }
@@ -972,9 +972,9 @@ class WalletControllerTest {
         given { walletService.patchWalletStateToError(any(), any()) }.willReturn(Mono.just(wallet))
 
         val updateRequest =
-            WalletStatusPatchRequestDto()
-                .status(WalletStatusPatchRequestDto.StatusEnum.ERROR)
-                .details(WalletStatusErrorDetailsDto().reason("Any Reason"))
+            WalletStatusErrorPatchRequestDto()
+                .status("ERROR")
+                .details(WalletStatusErrorPatchRequestDetailsDto().reason("Any Reason"))
                 as WalletStatusPatchRequestDto
 
         webClient

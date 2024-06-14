@@ -202,13 +202,11 @@ class WalletController(
         Tracing.customizeSpan(walletStatusPatchRequestDto) {
                 setAttribute(Tracing.WALLET_ID, walletId.toString())
             }
+            .cast(WalletStatusErrorPatchRequestDto::class.java)
             .flatMap {
                 walletService.patchWalletStateToError(
                     WalletId.of(walletId.toString()),
-                    when (val details = it.details) {
-                        is WalletStatusErrorDetailsDto -> details.reason
-                        else -> null
-                    }
+                    it.details.reason
                 )
             }
             .map { ResponseEntity.noContent().build() }
