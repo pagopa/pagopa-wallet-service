@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-pay-wallet-microservice"
   image:
     repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
-    tag: "0.13.0"
+    tag: "0.13.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -62,11 +62,11 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    MONGO_HOST: pagopa-d-weu-wallet-cosmos-account.mongo.cosmos.azure.com
-    MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
+    MONGO_HOST: pagopa-d-itn-pay-wallet-cosmos-account.mongo.cosmos.azure.com
+    MONGO_USERNAME: pagopa-d-itn-pay-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
-    REDIS_HOST: pagopa-d-weu-wallet-redis.redis.cache.windows.net
+    REDIS_HOST: pagopa-d-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
@@ -116,17 +116,30 @@ microservice-chart:
     name: "pagopa-d-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
-  tolerations: []
+  canaryDelivery:
+    deployment:
+      image:
+        tag: ""
+  tolerations:
+    - effect: "NoSchedule"
+      key: "paymentWalletOnly"
+      operator: "Equal"
+      value: "true"
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
-              - key: node_type
+              - key: domain
                 operator: In
                 values:
-                  - user
-  canaryDelivery:
-    deployment:
-      image:
-        tag: ""
+                  - paywallet
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                aadpodidbinding: pay-wallet-pod-identity
+            namespaces: ["pay-wallet"]
+            topologyKey: topology.kubernetes.io/zone
