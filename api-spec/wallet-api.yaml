@@ -1444,32 +1444,34 @@ components:
         - applicationId
     WalletStatusPatchRequest:
       type: object
-      oneOf:
-        - $ref: '#/components/schemas/WalletStatusErrorPatchRequest'
-      discriminator:
-        propertyName: status
-        mapping:
-          ERROR: '#/components/schemas/WalletStatusErrorPatchRequest'
-    WalletPatchableStatus:
-      description: Patchable wallet status
-      type: string
-      pattern: "ERROR" # we cannot use enums cause code generator expecting string as discriminator key
-    WalletStatusErrorPatchRequest:
-      type: object
       properties:
         status:
-          $ref: '#/components/schemas/WalletPatchableStatus'
+          type: string
+          description: Patchable wallet status
+          enum:
+            - ERROR
         details:
-          type: object
-          properties:
-            reason:
-              type: string
-              description: "Reason of error"
-          required:
-            - reason
+          oneOf:
+            - $ref: '#/components/schemas/WalletStatusErrorDetails'
+          discriminator:
+            propertyName: type
+            mapping:
+              errorDetails: '#/components/schemas/WalletStatusErrorDetails'
       required:
         - status
-        - details
+    WalletStatusErrorDetails:
+      type: object
+      properties:
+        type:
+          description: Kind of details
+          type: string
+          pattern: "errorDetails"
+        reason:
+          type: string
+          description: "Reason of error"
+      required:
+        - type
+        - reason
     ApplicationPatchRequest:
       type: object
       description: Application updating request
