@@ -1450,12 +1450,15 @@ components:
         propertyName: status
         mapping:
           ERROR: '#/components/schemas/WalletStatusErrorPatchRequest'
+    WalletPatchableStatus:
+      description: Patchable wallet status
+      type: string
+      pattern: "ERROR" # we cannot use enums cause code generator expecting string as discriminator key
     WalletStatusErrorPatchRequest:
       type: object
       properties:
         status:
-          description: Patchable wallet status
-          type: string
+          $ref: '#/components/schemas/WalletPatchableStatus'
         details:
           type: object
           properties:
