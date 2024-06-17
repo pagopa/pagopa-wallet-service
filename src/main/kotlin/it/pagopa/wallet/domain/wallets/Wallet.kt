@@ -8,12 +8,12 @@ import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationRe
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
+import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
 import it.pagopa.wallet.exception.WalletClientConfigurationException
 import it.pagopa.wallet.exception.WalletConflictStatusException
-import org.slf4j.LoggerFactory
 import java.time.Instant
-import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
+import org.slf4j.LoggerFactory
 
 /**
  * A wallet.
