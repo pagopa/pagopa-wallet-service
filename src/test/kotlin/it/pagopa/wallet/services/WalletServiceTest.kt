@@ -223,7 +223,7 @@ class WalletServiceTest {
 
         @JvmStatic
         private fun walletTransientState() =
-            it.pagopa.wallet.domain.wallets.Wallet.TRANSIENT_STATES.stream().map {
+            it.pagopa.wallet.domain.wallets.Wallet.TRANSIENT_STATUSES.stream().map {
                 Arguments.of(it)
             }
     }

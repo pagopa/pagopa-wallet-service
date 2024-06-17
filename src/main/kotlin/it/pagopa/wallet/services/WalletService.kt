@@ -22,6 +22,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
+import it.pagopa.wallet.util.EitherExtension.toMono
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -295,12 +296,7 @@ class WalletService(
             .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
-            .flatMap {
-                when (it.status) {
-                    WalletStatusDto.CREATED -> Mono.just(it)
-                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
-                }
-            }
+            .flatMap { it.expectInStatus(WalletStatusDto.CREATED).toMono() }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
@@ -569,12 +565,7 @@ class WalletService(
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { it.toDomain() }
-            .flatMap {
-                when (it.status) {
-                    WalletStatusDto.VALIDATED -> Mono.just(it)
-                    else -> Mono.error(WalletConflictStatusException(WalletId(walletId), it.status))
-                }
-            }
+            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATED).toMono() }
             .flatMap {
                 walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
@@ -691,12 +682,7 @@ class WalletService(
                     }
             }
             .map { walletDocument -> walletDocument.toDomain() }
-            .flatMap {
-                when (it.status) {
-                    WalletStatusDto.VALIDATION_REQUESTED -> Mono.just(it)
-                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
-                }
-            }
+            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATION_REQUESTED).toMono() }
             .flatMap { wallet ->
                 val paymentInstrumentGatewayId =
                     getPaymentInstrumentGatewayId(walletNotificationRequestDto)
@@ -814,12 +800,7 @@ class WalletService(
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain().error(reason) }
-            .flatMap {
-                when (it.status) {
-                    WalletStatusDto.ERROR -> Mono.just(it)
-                    else -> Mono.error(WalletConflictStatusException(walletId, it.status))
-                }
-            }
+            .flatMap { it.expectInStatus(WalletStatusDto.ERROR).toMono() }
             .flatMap { walletRepository.save(it.toDocument()) }
             .doOnNext {
                 logger.info(
@@ -942,13 +923,12 @@ class WalletService(
                     }
                     .map { walletDocument -> walletDocument.toDomain() }
                     .flatMap {
-                        if (
-                            it.status == WalletStatusDto.VALIDATION_REQUESTED ||
-                                it.status == WalletStatusDto.VALIDATED ||
-                                it.status == WalletStatusDto.ERROR
-                        ) {
-                            Mono.just(it)
-                        } else Mono.error(WalletConflictStatusException(walletId, it.status))
+                        it.expectInStatus(
+                                WalletStatusDto.VALIDATION_REQUESTED,
+                                WalletStatusDto.VALIDATED,
+                                WalletStatusDto.ERROR
+                            )
+                            .toMono()
                     }
                     .map { wallet ->
                         val isFinalStatus =

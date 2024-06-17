@@ -1,15 +1,19 @@
 package it.pagopa.wallet.domain.wallets
 
+import io.vavr.control.Either
+import io.vavr.control.Either.left
+import io.vavr.control.Either.right
 import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
-import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
 import it.pagopa.wallet.exception.WalletClientConfigurationException
-import java.time.Instant
+import it.pagopa.wallet.exception.WalletConflictStatusException
 import org.slf4j.LoggerFactory
+import java.time.Instant
+import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
 
 /**
  * A wallet.
@@ -63,7 +67,7 @@ data class Wallet(
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)
-        val TRANSIENT_STATES =
+        val TRANSIENT_STATUSES =
             setOf(
                 WalletStatusDto.CREATED,
                 WalletStatusDto.INITIALIZED,
@@ -71,18 +75,15 @@ data class Wallet(
             )
     }
 
-    fun error(reason: String?): it.pagopa.wallet.domain.wallets.Wallet {
-        return if (TRANSIENT_STATES.contains(status)) {
+    fun error(reason: String?): Wallet {
+        return if (TRANSIENT_STATUSES.contains(status)) {
             copy(status = WalletStatusDto.ERROR, errorReason = reason)
         } else {
             this
         }
     }
 
-    fun updateUsageForClient(
-        clientId: ClientIdDto,
-        usageTime: Instant
-    ): it.pagopa.wallet.domain.wallets.Wallet {
+    fun updateUsageForClient(clientId: ClientIdDto, usageTime: Instant): Wallet {
         val newClients = clients.toMutableMap()
         val client = Client.Id.fromString(clientId.name)
         val clientData = clients[client]
@@ -106,9 +107,19 @@ data class Wallet(
         return this.copy(clients = newClients)
     }
 
-    fun toDocument(): Wallet {
+    fun expectInStatus(
+        vararg statuses: WalletStatusDto
+    ): Either<WalletConflictStatusException, Wallet> {
+        return if (setOf(*statuses).contains(status)) {
+            right(this)
+        } else {
+            left(WalletConflictStatusException(id, status))
+        }
+    }
+
+    fun toDocument(): WalletDocument {
         val wallet =
-            Wallet(
+            WalletDocument(
                 id = this.id.value.toString(),
                 userId = this.userId.id.toString(),
                 status = this.status.name,
