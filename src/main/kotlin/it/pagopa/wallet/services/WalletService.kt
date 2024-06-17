@@ -516,21 +516,10 @@ class WalletService(
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
-                    .flatMap {
-                        when (it.status) {
-                            WalletStatusDto.INITIALIZED.value -> Mono.just(it)
-                            else ->
-                                Mono.error(
-                                    WalletConflictStatusException(
-                                        walletId,
-                                        WalletStatusDto.valueOf(it.status)
-                                    )
-                                )
-                        }
-                    }
+                    .flatMap { it.toDomain().expectInStatus(WalletStatusDto.INITIALIZED).toMono() }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
-                            .getPaymentMethodById(wallet.paymentMethodId)
+                            .getPaymentMethodById(wallet.paymentMethodId.value.toString())
                             .flatMap {
                                 when (it.paymentTypeCode) {
                                     "CP" ->
@@ -538,7 +527,7 @@ class WalletService(
                                             session.sessionId,
                                             correlationId,
                                             orderId,
-                                            wallet.toDomain()
+                                            wallet
                                         )
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }

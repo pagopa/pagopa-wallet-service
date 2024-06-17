@@ -815,7 +815,7 @@
 							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid current status\", function () {",
 							"    pm.response.to.have.status(409);",
 							"    const detailErrorField = pm.response.json().detail;",
-							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
+							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with walletId\");",
 							"});"
 						],
 						"type": "text/javascript"
