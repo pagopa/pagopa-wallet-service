@@ -34,9 +34,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -73,9 +73,8 @@ microservice-chart:
     NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
-    ECS_SERVICE_NAME: "pagopa-wallet-service"
-    ECS_SERVICE_ENVIRONMENT: "dev"
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
+    OTEL_SERVICE_ENVIRONMENT: "dev"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=dev"
     OTEL_EXPORTER_OTLP_ENDPOINT: "https://weudev.kibana.internal.dev.platform.pagopa.it/apm"
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
@@ -90,10 +89,11 @@ microservice-chart:
     WALLET_PAYMENT_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/payment/creditcard
     SESSION_URL_BASEPATH: "https://dev.payment-wallet.pagopa.it"
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
-    SESSION_URL_CANCEL_SUFFIX: "/cancel"
+    SESSION_URL_CANCEL_SUFFIX: "/esito"
     SESSION_URL_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.dev.platform.pagopa.it/ecommerce/payment-methods-service/v1"
+    ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.dev.platform.pagopa.it/ecommerce/payment-methods-service/v2"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "120"
@@ -119,7 +119,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-d-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
+  nodeSelector: { }
   canaryDelivery:
     deployment:
       image:
@@ -145,5 +145,5 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 aadpodidbinding: pay-wallet-pod-identity
-            namespaces: ["pay-wallet"]
+            namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
