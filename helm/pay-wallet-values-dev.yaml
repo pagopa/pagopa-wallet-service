@@ -66,6 +66,7 @@ microservice-chart:
     MONGO_USERNAME: pagopa-d-itn-pay-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
+    MONGO_DB_NAME: "payment-wallet"
     REDIS_HOST: pagopa-d-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"

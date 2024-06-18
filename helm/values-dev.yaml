@@ -34,9 +34,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: ""
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -66,6 +66,7 @@ microservice-chart:
     MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
+    MONGO_DB_NAME: "wallet"
     REDIS_HOST: pagopa-d-weu-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
@@ -120,8 +121,8 @@ microservice-chart:
   keyvault:
     name: "pagopa-d-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: { }
+  tolerations: [ ]
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
