@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/pagopawalletservice
-    tag: "0.14.5"
+    tag: "0.15.2"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -66,6 +66,7 @@ microservice-chart:
     MONGO_USERNAME: pagopa-d-weu-wallet-cosmos-account
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
+    MONGO_DB_NAME: "wallet"
     REDIS_HOST: pagopa-d-weu-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
