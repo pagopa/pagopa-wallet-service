@@ -104,7 +104,7 @@ microservice-chart:
 
     WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX"
     APP_LOGGING_LEVEL: "DEBUG"
-    EXPIRATION_QUEUE_NAME: pagopa-d-itn-wallet-expiration-queue
+    EXPIRATION_QUEUE_NAME: pagopa-d-itn-pay-wallet-expiration-queue
     EXPIRATION_QUEUE_TTL_SECONDS: "3600"
     EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC: "1800"
   envSecret:
