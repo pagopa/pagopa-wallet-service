@@ -93,7 +93,7 @@ microservice-chart:
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
     OTEL_SERVICE_ENVIRONMENT: "prod"
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
     OTEL_EXPORTER_OTLP_ENDPOINT: "https://weuprod.kibana.internal.platform.pagopa.it/apm"
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
