@@ -15,6 +15,17 @@ services:
     networks:
       - pagopa-wallet-net
 
+  mongo-express:
+    container_name: pagopa-wallet-mongo-express
+    image: mongo-express
+    env_file: ./docker/config/mongo/mongo-express.env
+    ports:
+      - "8201:8081"
+    networks:
+      - pagopa-wallet-net
+    depends_on:
+      - mongo
+
   mongo:
     container_name: pagopa-wallet-mongo
     image: mongo
@@ -26,17 +37,6 @@ services:
     healthcheck:
       test: echo "db.stats().ok" | mongo --quiet
       interval: 10s
-
-  mongo-express:
-    container_name: pagopa-wallet-mongo-express
-    image: mongo-express
-    env_file: ./docker/config/mongo/mongo-express.env
-    ports:
-      - "8201:8081"
-    networks:
-      - pagopa-wallet-net
-    depends_on:
-      - mongo
 
   ecommerce-payment-methods:
     build:
@@ -82,6 +82,30 @@ services:
         read_only: true
     ports:
       - "3000:3000"
+    networks:
+      - pagopa-wallet-net
+
+  storage:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - $PWD/.data:/opt/azurite/folder
+    networks:
+      - pagopa-wallet-net
+
+  azurite-init:
+    container_name: azurite-init
+    build:
+      context: azurite/
+      dockerfile: Dockerfile
+    depends_on:
+      - storage
+    environment:
+      QUEUE_EXPIRATION_WALLET: pagopa-wallet-expiration-queue
     networks:
       - pagopa-wallet-net
 

@@ -22,6 +22,7 @@ data class Wallet(
     val contractId: String?,
     val validationOperationResult: String?,
     var validationErrorCode: String?,
+    val errorReason: String?,
     val applications: List<WalletApplication>,
     val details: WalletDetails<*>?,
     val clients: Map<String, Client>,
@@ -50,6 +51,7 @@ data class Wallet(
                         it.pagopa.wallet.domain.wallets.Client.Id.fromString(clientId) to
                             client.toDomain()
                     },
+                errorReason = this.errorReason,
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,

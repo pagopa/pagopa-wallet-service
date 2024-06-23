@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "99ffbbaa-4c55-4c55-85db-5a5e81122de8",
+		"_postman_id": "b37e0c99-bf3c-4a4e-b647-a6733e54f25f",
 		"name": "Wallet PAYPAL onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23305473",
-		"_collection_link": "https://solar-shuttle-72092.postman.co/workspace/Wallet~1247c858-5774-4bb2-b6e4-a5d7c22704e0/collection/23305473-99ffbbaa-4c55-4c55-85db-5a5e81122de8?action=share&source=collection_link&creator=23305473"
+		"_exporter_id": "32950386"
 	},
 	"item": [
 		{
@@ -816,7 +815,7 @@
 							"pm.test(\"[Wallet for onboarding PAYPAL] Nofity wallet with invalid current status\", function () {",
 							"    pm.response.to.have.status(409);",
 							"    const detailErrorField = pm.response.json().detail;",
-							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with the current state walletId\");",
+							"    pm.expect(detailErrorField).to.be.contain(\"Conflict with walletId\");",
 							"});"
 						],
 						"type": "text/javascript"
@@ -1717,6 +1716,88 @@
 					"path": [
 						"wallets",
 						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update wallet status to error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Patch Wallet Status to error PATCH /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"ERROR\",\n    \"details\": {\n        \"reason\": \"move to error due test\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Wallet status to non existing wallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding PAYPAL] Patch Wallet Status to error PATCH /wallets/:idWallet\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"ERROR\",\n    \"details\": {\n        \"reason\": \"move to error due test\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{INVALID_WALLET_ID}}",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{INVALID_WALLET_ID}}"
 					]
 				}
 			},

@@ -2,15 +2,25 @@ package it.pagopa.wallet.audit
 
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.domain.wallets.LoggingEventDispatcher
 import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.repositories.LoggingEventRepositoryImpl
+import it.pagopa.wallet.repositories.LoggingEventRepositoryMongo
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.test.test
 
 class LoggedActionTests {
-    val repository: LoggingEventRepository = mock()
+
+    private val mongoRepository: LoggingEventRepositoryMongo = mock()
+    private val loggingEventDispatcher: LoggingEventDispatcher = mock()
+    val repository: LoggingEventRepository =
+        LoggingEventRepositoryImpl(loggingEventDispatcher, mongoRepository)
 
     fun saveIdWithLogging(id: String): Mono<LoggedAction<String>> {
         return Mono.just(id).map { LoggedAction(it, WalletAddedEvent(it)) }
@@ -31,18 +41,24 @@ class LoggedActionTests {
         }
     }
 
+    @BeforeEach
+    fun setup() {
+        given { loggingEventDispatcher.dispatchEvent(any()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
+    }
+
     @Test
     fun `saveEvents saves events correctly`() {
         val walletId = "walletId"
         val expectedSavedEvents = listOf(WalletAddedEvent(walletId))
 
-        given(repository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
+        given(mongoRepository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
 
         val actualId = saveIdWithLogging(walletId).flatMap { it.saveEvents(repository) }.block()
 
         assertEquals(walletId, actualId)
 
-        verify(repository, times(1)).saveAll(any<Iterable<LoggingEvent>>())
+        verify(mongoRepository, times(1)).saveAll(any<Iterable<LoggingEvent>>())
     }
 
     @Test
@@ -113,7 +129,7 @@ class LoggedActionTests {
                 )
             )
 
-        given(repository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
+        given(mongoRepository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
 
         val actualId =
             saveWalletNotificationEventWithLogging(walletId)
@@ -122,6 +138,69 @@ class LoggedActionTests {
 
         assertEquals(walletId, actualId)
 
-        verify(repository, times(1)).saveAll(any<Iterable<LoggingEvent>>())
+        verify(mongoRepository, times(1)).saveAll(any<Iterable<LoggingEvent>>())
+    }
+
+    @Test
+    fun `when save domain events than domain dispatcher is used for each event`() {
+        val walletId = "walletId"
+        val expectedSavedEvents =
+            listOf(
+                WalletAddedEvent(walletId),
+                WalletNotificationEvent(
+                    walletId = walletId,
+                    validationOperationId = "validationOperationId",
+                    validationOperationResult = OperationResultEnum.EXECUTED.value,
+                    validationErrorCode = null,
+                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                )
+            )
+        given(mongoRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
+            Flux.fromIterable(expectedSavedEvents)
+        }
+        val actualId =
+            saveWalletNotificationEventWithLogging(walletId)
+                .flatMap { it.saveEvents(repository) }
+                .block()
+        assertEquals(walletId, actualId)
+
+        argumentCaptor<LoggingEvent> {
+            verify(loggingEventDispatcher, times(2)).dispatchEvent(capture())
+            assertArrayEquals(expectedSavedEvents.toTypedArray(), allValues.toTypedArray())
+        }
+    }
+
+    @Test
+    fun `when save domain events and one event is not supported by domain event dispatcher should also returns the whole events`() {
+        val walletId = "walletId"
+        val expectedSavedEvents =
+            listOf(
+                WalletAddedEvent(walletId),
+                WalletNotificationEvent(
+                    walletId = walletId,
+                    validationOperationId = "validationOperationId",
+                    validationOperationResult = OperationResultEnum.EXECUTED.value,
+                    validationErrorCode = null,
+                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                )
+            )
+        given { loggingEventDispatcher.dispatchEvent(any()) }
+            .willAnswer { Mono.just(it.arguments.get(0)) }
+            .willAnswer { Mono.empty<LoggingEvent>() }
+
+        given(mongoRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
+            Flux.fromIterable(expectedSavedEvents)
+        }
+
+        saveWalletNotificationEventWithLogging(walletId)
+            .flatMap { it.saveEvents(repository) }
+            .test()
+            .assertNext {
+                argumentCaptor<LoggingEvent> {
+                    verify(loggingEventDispatcher, times(2)).dispatchEvent(capture())
+                    assertArrayEquals(expectedSavedEvents.toTypedArray(), allValues.toTypedArray())
+                }
+            }
+            .verifyComplete()
     }
 }

@@ -1,4 +1,4 @@
-package it.pagopa.wallet.util
+package it.pagopa.wallet.common.tracing
 
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
@@ -6,6 +6,8 @@ import io.opentelemetry.context.Context
 import reactor.core.publisher.Mono
 
 object Tracing {
+
+    val WALLET_ID = AttributeKey.stringKey("walletId")
 
     object Migration {
         /** HMAC of contract ID produced by CSTAR during migration phase */

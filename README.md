@@ -80,6 +80,7 @@ If you want to customize the application environment, reference this table:
 | MONGO_USERNAME                                           | MongoDB username used to connect to the database                   | string                   |         |
 | MONGO_PASSWORD                                           | MongoDB password used to connect to the database                   | string                   |         |
 | MONGO_SSL_ENABLED                                        | Whether SSL is enabled while connecting to MongoDB                 | string                   |         |
+| MONGO_DB_NAME                                            | Mongo database name                                                |                          |         |
 | DEFAULT_LOGGING_LEVEL                                    | Application root logger level                                      | string                   | INFO    |
 | APP_LOGGING_LEVEL                                        | it.pagopa logger level                                             | string                   | INFO    |
 | WEB_LOGGING_LEVEL                                        | Web logger level                                                   | string                   | DEBUG   |
@@ -101,6 +102,10 @@ If you want to customize the application environment, reference this table:
 | REDIS_SSL_ENABLED                                        | Whether SSL is enabled while connecting to  Redis                  | string                   |         |
 | WALLET_SESSION_TTL                                       | Wallet session TTL in minutes                                      | int                      |         |
 | WALLET_LOGO_MAPPING                                      | Wallet logo map parameter that handles wallet type to logo mapping | string (Map<string,URI>) |         |
+| EXPIRATION_QUEUE_NAME                                    | Name of expiration queue                                           | string                   |         |
+| EXPIRATION_QUEUE_TTL_SECONDS                             | TTL in seconds for published message                               | string                   |         |
+| EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                 | string                   |         |
+| EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                    |                          |         |
 
 ### Run docker container
 
@@ -178,7 +183,7 @@ and the ones stored into `verification-metadata.xml` file raising error during b
 The following command can be used to recalculate dependency checksum:
 
 ```shell
-./gradlew --write-verification-metadata sha256 clean spotlessApply build 
+./gradlew --write-verification-metadata sha256 clean spotlessApply build --no-build-cache --refresh-dependencies
 ```
 
 In the above command the `clean`, `spotlessApply` `build` tasks where chosen to be run
@@ -241,7 +246,7 @@ file adding the following component:
 Add those components at the end of the components list and then run the
 
 ```shell
-./gradlew --write-verification-metadata sha256 clean spotlessApply build 
+./gradlew --write-verification-metadata sha256 clean spotlessApply build --no-build-cache --refresh-dependencies
 ```
 
 that will reorder the file with the added dependencies checksum in the expected order.
@@ -249,7 +254,7 @@ that will reorder the file with the added dependencies checksum in the expected 
 Finally, you can add new dependencies both to gradle.lockfile writing verification metadata running
 
 ```shell
- ./gradlew dependencies --write-locks --write-verification-metadata sha256
+ ./gradlew dependencies --write-locks --write-verification-metadata sha256 --no-build-cache --refresh-dependencies
 ```
 
 For more information read the

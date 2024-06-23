@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
@@ -21,6 +22,7 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
+import it.pagopa.wallet.util.EitherExtension.toMono
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -57,7 +59,8 @@ class WalletService(
     @Autowired
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
-    @Autowired private val walletUtils: WalletUtils
+    @Autowired private val walletUtils: WalletUtils,
+    private val pspDetailClient: PspDetailClient,
 ) {
 
     companion object {
@@ -293,8 +296,7 @@ class WalletService(
             .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
-            .filter { it.status == WalletStatusDto.CREATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap { it.expectInStatus(WalletStatusDto.CREATED).toMono() }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
@@ -385,18 +387,8 @@ class WalletService(
                                     throw InternalServerErrorException("Unhandled session input")
                             }
                     )
-                    .map { hostedOrderResponse ->
+                    .flatMap { hostedOrderResponse ->
                         val isAPM = paymentMethod.paymentTypeCode != "CP"
-
-                        val newDetails =
-                            when (sessionInputDataDto) {
-                                is SessionInputCardDataDto -> wallet.details
-                                is SessionInputPayPalDataDto ->
-                                    PayPalDetails(null, sessionInputDataDto.pspId)
-                                else ->
-                                    throw InternalServerErrorException("Unhandled session input")
-                            }
-
                         /*
                          * Credit card onboarding requires a two-step validation process
                          * (see WalletService#confirmPaymentCard), while for APMs
@@ -409,18 +401,34 @@ class WalletService(
                                 WalletStatusDto.INITIALIZED
                             }
 
-                        val updatedWallet =
-                            wallet.copy(
-                                contractId = ContractId(contractId),
-                                status = newStatus,
-                                details = newDetails,
+                        val newDetails =
+                            when (sessionInputDataDto) {
+                                    is SessionInputCardDataDto -> wallet.details.toMono()
+                                    is SessionInputPayPalDataDto ->
+                                        createPaypalDetails(
+                                            sessionInputDataDto,
+                                            wallet.paymentMethodId
+                                        )
+                                    else ->
+                                        Mono.error(
+                                            InternalServerErrorException("Unhandled session input")
+                                        )
+                                }
+                                .map { Optional.of(it) }
+                                .defaultIfEmpty(Optional.empty())
+
+                        newDetails.map {
+                            SessionCreationData(
+                                hostedOrderResponse,
+                                wallet.copy(
+                                    contractId = ContractId(contractId),
+                                    status = newStatus,
+                                    details = it.orElse(null),
+                                ),
+                                orderId,
+                                isAPM = isAPM
                             )
-                        SessionCreationData(
-                            hostedOrderResponse,
-                            updatedWallet,
-                            orderId,
-                            isAPM = isAPM
-                        )
+                        }
                     }
             }
             .flatMap { sessionCreationData ->
@@ -448,7 +456,7 @@ class WalletService(
             }
             .map { (sessionResponseDto, wallet) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletAddedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
             }
     }
 
@@ -508,11 +516,10 @@ class WalletService(
                     .switchIfEmpty {
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
-                    .filter { it.status == WalletStatusDto.INITIALIZED.value }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+                    .flatMap { it.toDomain().expectInStatus(WalletStatusDto.INITIALIZED).toMono() }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
-                            .getPaymentMethodById(wallet.paymentMethodId)
+                            .getPaymentMethodById(wallet.paymentMethodId.value.toString())
                             .flatMap {
                                 when (it.paymentTypeCode) {
                                     "CP" ->
@@ -520,7 +527,7 @@ class WalletService(
                                             session.sessionId,
                                             correlationId,
                                             orderId,
-                                            wallet.toDomain()
+                                            wallet
                                         )
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
@@ -547,8 +554,7 @@ class WalletService(
             .findById(walletId.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
             .map { it.toDomain() }
-            .filter { it.status == WalletStatusDto.VALIDATED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(WalletId(walletId))) }
+            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATED).toMono() }
             .flatMap {
                 walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
             }
@@ -665,8 +671,7 @@ class WalletService(
                     }
             }
             .map { walletDocument -> walletDocument.toDomain() }
-            .filter { wallet -> wallet.status == WalletStatusDto.VALIDATION_REQUESTED }
-            .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
+            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATION_REQUESTED).toMono() }
             .flatMap { wallet ->
                 val paymentInstrumentGatewayId =
                     getPaymentInstrumentGatewayId(walletNotificationRequestDto)
@@ -774,6 +779,29 @@ class WalletService(
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
             .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
+
+    fun patchWalletStateToError(
+        walletId: WalletId,
+        reason: String?
+    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> {
+        logger.info("Patching wallet state to error for [{}]", walletId.value.toString())
+        return walletRepository
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .map { it.toDomain().error(reason) }
+            .flatMap { it.expectInStatus(WalletStatusDto.ERROR).toMono() }
+            .flatMap { walletRepository.save(it.toDocument()) }
+            .doOnNext {
+                logger.info(
+                    "Wallet [{}] moved to error state with reason: [{}]",
+                    walletId.value.toString(),
+                    reason
+                )
+            }
+            .doOnError {
+                logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)
+            }
+    }
 
     private fun handleWalletNotification(
         wallet: Wallet,
@@ -883,12 +911,14 @@ class WalletService(
                         Mono.error(WalletSessionMismatchException(session.sessionId, walletId))
                     }
                     .map { walletDocument -> walletDocument.toDomain() }
-                    .filter { wallet ->
-                        wallet.status == WalletStatusDto.VALIDATION_REQUESTED ||
-                            wallet.status == WalletStatusDto.VALIDATED ||
-                            wallet.status == WalletStatusDto.ERROR
+                    .flatMap {
+                        it.expectInStatus(
+                                WalletStatusDto.VALIDATION_REQUESTED,
+                                WalletStatusDto.VALIDATED,
+                                WalletStatusDto.ERROR
+                            )
+                            .toMono()
                     }
-                    .switchIfEmpty { Mono.error(WalletConflictStatusException(walletId)) }
                     .map { wallet ->
                         val isFinalStatus =
                             wallet.status == WalletStatusDto.VALIDATED ||
@@ -937,8 +967,24 @@ class WalletService(
                         )
                 }
             )
+            .clients(
+                wallet.clients.entries.associate { (clientKey, clientInfo) ->
+                    clientKey to buildWalletClientDto(clientInfo)
+                }
+            )
             .details(toWalletInfoDetailsDto(wallet.details))
             .paymentMethodAsset(walletUtils.getLogo(wallet.toDomain()))
+
+    private fun buildWalletClientDto(
+        clientInfo: it.pagopa.wallet.documents.wallets.Client
+    ): WalletClientDto {
+        val walletClient =
+            WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
+        Optional.ofNullable(clientInfo.lastUsage).ifPresent { lastUsage ->
+            walletClient.lastUsage(OffsetDateTime.parse(lastUsage))
+        }
+        return walletClient
+    }
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {
@@ -949,7 +995,10 @@ class WalletService(
                     .lastFourDigits(details.lastFourDigits)
                     .brand(details.brand)
             is PayPalDetailsDocument ->
-                WalletPaypalDetailsDto().maskedEmail(details.maskedEmail).pspId(details.pspId)
+                WalletPaypalDetailsDto()
+                    .maskedEmail(details.maskedEmail)
+                    .pspId(details.pspId)
+                    .pspBusinessName(details.pspBusinessName)
             else -> null
         }
     }
@@ -1253,4 +1302,13 @@ class WalletService(
                 throw InvalidRequestException(errorDescription)
             }
         }
+
+    private fun createPaypalDetails(
+        sessionInputPayPalDataDto: SessionInputPayPalDataDto,
+        paymentMethodId: PaymentMethodId,
+    ) =
+        pspDetailClient
+            .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethodId)
+            .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
+            .switchIfEmpty { Mono.error(PspNotFoundException(sessionInputPayPalDataDto.pspId)) }
 }

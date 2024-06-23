@@ -2,12 +2,12 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.api.MigrationsApi
 import it.pagopa.generated.wallet.model.*
+import it.pagopa.wallet.common.tracing.Tracing
+import it.pagopa.wallet.common.tracing.Tracing.Migration.CONTRACT_HMAC
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.services.MigrationService
-import it.pagopa.wallet.util.Tracing
-import it.pagopa.wallet.util.Tracing.Migration.CONTRACT_HMAC
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import lombok.extern.slf4j.Slf4j
