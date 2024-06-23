@@ -194,15 +194,14 @@ stages:
   - stage: "Build_release_candidate"
     displayName: 'Build release candidate'
     dependsOn: [ ]
-    #condition:
-      #  and(
-      #succeeded(),
-      #eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-      #or(
-      #eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-      #startsWith(variables['Build.SourceBranch'], 'refs/tags')
-      #)
-    #)
+    condition:
+        and(
+        succeeded(),
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        or(
+        eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+        startsWith(variables['Build.SourceBranch'], 'refs/tags')
+        ))
     jobs:
       - job: "build"
         displayName: 'Build release candidate docker image'
