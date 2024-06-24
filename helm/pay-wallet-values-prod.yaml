@@ -88,7 +88,7 @@ microservice-chart:
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
-    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
+    NPG_SERVICE_URI: "https://xpay.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     OTEL_SERVICE_NAME: "pagopa-wallet-service"

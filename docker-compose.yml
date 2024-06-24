@@ -17,7 +17,7 @@ services:
 
   mongo-express:
     container_name: pagopa-wallet-mongo-express
-    image: mongo-express
+    image: mongo-express@sha256:1b23d7976f0210dbec74045c209e52fbb26d29b2e873d6c6fa3d3f0ae32c2a64
     env_file: ./docker/config/mongo/mongo-express.env
     ports:
       - "8201:8081"
@@ -28,7 +28,7 @@ services:
 
   mongo:
     container_name: pagopa-wallet-mongo
-    image: mongo
+    image: mongo@sha256:7b225d4ae2df7cf98812f27f5d0d98054efaf9bfd4cc79c7e3e0bed1c1d3bf45
     env_file: ./docker/config/mongo/mongodb.env
     ports:
       - "28017:27017"
@@ -55,7 +55,7 @@ services:
 
   redis:
     container_name: wallet-redis
-    image: redis
+    image: redis@sha256:e422889e156ebea83856b6ff973bfe0c86bce867d80def228044eeecf925592b
     command: [ "sh", "-c", 'exec redis-server --requirepass "$$REDIS_PASSWORD"' ]
     ports:
       - "6379:6379"
@@ -64,7 +64,7 @@ services:
 
   redis-insight:
     container_name: wallet-redis-insight
-    image: redislabs/redisinsight
+    image: redislabs/redisinsight@sha256:bbfe06e00282fc051bbfadd49286865e75b359baea62f0d56af0cb0d5684b942
     ports:
       - "8001:8001"
     networks:
@@ -86,7 +86,7 @@ services:
       - pagopa-wallet-net
 
   storage:
-    image: mcr.microsoft.com/azure-storage/azurite:latest
+    image: mcr.microsoft.com/azure-storage/azurite:latest@sha256:d449d953a1c5bd1e26c800744a65c451e88f3387b696e02e3e2e79a995c3105b
     container_name: azurite
     ports:
       - "10000:10000"
