@@ -46,7 +46,7 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "itnprod.pay-wallet.internal.prod.platform.pagopa.it"
+    host: "itnprod.pay-wallet.internal.platform.pagopa.it"
     path: /pagopa-wallet-service/(.*)
     servicePort: 8080
   serviceAccount:
