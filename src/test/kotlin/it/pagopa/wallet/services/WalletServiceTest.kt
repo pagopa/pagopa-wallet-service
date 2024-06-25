@@ -532,8 +532,6 @@ class WalletServiceTest {
             uuidMockStatic.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
 
             mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockStatic ->
-                println("Mocked uuid: $mockedUUID")
-                println("Mocked instant: $mockedInstant")
                 instantMockStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val expectedPagoPAApplication =
@@ -740,159 +738,143 @@ class WalletServiceTest {
     fun `should create new wallet session with CARD wallet`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
-            val contractId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = UUID.randomUUID().toString() + "%20"
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId)
-                        .securityToken("token")
-                        .state(WorkflowState.GDI_VERIFICATION)
-                        .apply {
-                            fields =
-                                listOf(
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/h")
-                                        .propertyClass("holder")
-                                        .propertyClass("h"),
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/p")
-                                        .propertyClass("pan")
-                                        .propertyClass("p"),
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/c")
-                                        .propertyClass("cvv")
-                                        .propertyClass("c")
-                                )
-                        }
-                val sessionResponseDto =
-                    SessionWalletCreateResponseDto()
-                        .orderId(orderId)
-                        .sessionData(
-                            SessionWalletCreateResponseCardDataDto()
-                                .paymentMethodType("cards")
-                                .cardFormFields(
-                                    listOf(
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/h"))
-                                            .propertyClass("holder")
-                                            .propertyClass("h"),
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/p"))
-                                            .propertyClass("pan")
-                                            .propertyClass("p"),
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/c"))
-                                            .propertyClass("cvv")
-                                            .propertyClass("c"),
-                                    )
-                                )
-                        )
-
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
-
-                val walletDocumentCreatedStatus =
-                    walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
-                var walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
-
-                val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentInitializedStatus.toDomain(),
-                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
-                    )
-
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("walletId", walletDocumentCreatedStatus.id),
-                                Pair("orderId", orderId),
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockedStatic ->
+            instantMockedStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString() + "%20"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
                             )
-                        )
+                    }
+            val sessionResponseDto =
+                SessionWalletCreateResponseDto()
+                    .orderId(orderId)
+                    .sessionData(
+                        SessionWalletCreateResponseCardDataDto()
+                            .paymentMethodType("cards")
+                            .cardFormFields(
+                                npgFields.fields!!.map {
+                                    FieldDto()
+                                        .propertyClass(it.propertyClass)
+                                        .src(URI.create(it.src))
+                                        .id(it.id)
+                                }
+                            )
+                    )
 
-                val npgCorrelationId = mockedUUID
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(
-                            Order()
-                                .orderId(orderId)
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                        )
-                        .paymentSession(
-                            PaymentSession()
-                                .actionType(ActionType.VERIFY)
-                                .recurrence(
-                                    RecurringSettings()
-                                        .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(contractId)
-                                        .contractType(RecurringContractType.CIT)
-                                )
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                .captureType(CaptureType.IMPLICIT)
-                                .paymentService("CARDS")
-                                .resultUrl(resultUrl.toString())
-                                .cancelUrl(cancelUrl.toString())
-                                .notificationUrl(notificationUrl.toString())
-                        )
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentInitializedStatus.toDomain(),
+                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                )
 
-                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                    .willAnswer { mono { npgFields } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentCreatedStatus))
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-                /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
-                            USER_ID,
-                            WALLET_UUID,
-                            SessionInputCardDataDto()
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
                         )
                     )
-                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
-                    .verifyComplete()
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
-                verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-            }
+            val npgCorrelationId = WALLET_UUID.value
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("CARDS")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputCardDataDto()
+                    )
+                )
+                .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                .verifyComplete()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
         }
     }
 
@@ -900,290 +882,268 @@ class WalletServiceTest {
     fun `should create wallet session for transaction with contextual onboard with CARD wallet`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
-            val contractId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = UUID.randomUUID().toString()
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId)
-                        .securityToken("token")
-                        .state(WorkflowState.GDI_VERIFICATION)
-                        .apply {
-                            fields =
-                                listOf(
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/h")
-                                        .propertyClass("holder")
-                                        .propertyClass("h"),
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/p")
-                                        .propertyClass("pan")
-                                        .propertyClass("p"),
-                                    Field()
-                                        .id(UUID.randomUUID().toString())
-                                        .src("https://test.it/c")
-                                        .propertyClass("cvv")
-                                        .propertyClass("c")
-                                )
-                        }
-                val sessionResponseDto =
-                    SessionWalletCreateResponseDto()
-                        .orderId(orderId)
-                        .sessionData(
-                            SessionWalletCreateResponseCardDataDto()
-                                .paymentMethodType("cards")
-                                .cardFormFields(
-                                    listOf(
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/h"))
-                                            .propertyClass("holder")
-                                            .propertyClass("h"),
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/p"))
-                                            .propertyClass("pan")
-                                            .propertyClass("p"),
-                                        FieldDto()
-                                            .id(UUID.randomUUID().toString())
-                                            .src(URI.create("https://test.it/c"))
-                                            .propertyClass("cvv")
-                                            .propertyClass("c"),
-                                    )
-                                )
-                        )
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
-
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
-
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
-
-                val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
-                    walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS
-                    )
-                val walletDocumentInitializedStatusForTransactionWithContextualOnboard =
-                    walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS
-                    )
-
-                val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentInitializedStatusForTransactionWithContextualOnboard
-                            .toDomain(),
-                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
-                    )
-
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(
-                            sessionUrlConfig.trxWithContextualOnboardNotificationUrl
-                        )
-                        .build(
-                            mapOf(
-                                Pair("transactionId", TransactionId(TRANSACTION_ID).value()),
-                                Pair(
-                                    "walletId",
-                                    walletDocumentCreatedStatusForTransactionWithContextualOnboard
-                                        .id
-                                ),
-                                Pair("orderId", orderId),
-                                Pair("sessionToken", "token")
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
                             )
+                    }
+            val sessionResponseDto =
+                SessionWalletCreateResponseDto()
+                    .orderId(orderId)
+                    .sessionData(
+                        SessionWalletCreateResponseCardDataDto()
+                            .paymentMethodType("cards")
+                            .cardFormFields(
+                                npgFields.fields!!.map {
+                                    FieldDto()
+                                        .propertyClass(it.propertyClass)
+                                        .src(URI.create(it.src))
+                                        .id(it.id)
+                                }
+                            )
+                    )
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+
+            val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
+                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS
+                )
+            val walletDocumentInitializedStatusForTransactionWithContextualOnboard =
+                walletDocumentInitializedStatusForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS
+                )
+
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentInitializedStatusForTransactionWithContextualOnboard.toDomain(),
+                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                )
+
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(
+                        sessionUrlConfig.trxWithContextualOnboardNotificationUrl
+                    )
+                    .build(
+                        mapOf(
+                            Pair("transactionId", TransactionId(TRANSACTION_ID).value()),
+                            Pair(
+                                "walletId",
+                                walletDocumentCreatedStatusForTransactionWithContextualOnboard.id
+                            ),
+                            Pair("orderId", orderId),
+                            Pair("sessionToken", "token")
                         )
-
-                val npgCorrelationId = mockedUUID
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(
-                            Order()
-                                .orderId(orderId)
-                                .amount(AMOUNT.toString())
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                        )
-                        .paymentSession(
-                            PaymentSession()
-                                .actionType(ActionType.PAY)
-                                .recurrence(
-                                    RecurringSettings()
-                                        .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(contractId)
-                                        .contractType(RecurringContractType.CIT)
-                                )
-                                .amount(AMOUNT.toString())
-                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                .captureType(CaptureType.IMPLICIT)
-                                .paymentService("CARDS")
-                                .resultUrl(resultUrl.toString())
-                                .cancelUrl(cancelUrl.toString())
-                                .notificationUrl(notificationUrl.toString())
-                        )
-
-                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                    .willAnswer { mono { npgFields } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(
-                        Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard)
                     )
 
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-
-                given { jwtTokenUtils.generateJwtTokenForNpgNotifications(any(), any()) }
-                    .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
-
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-                /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
-                            USER_ID,
-                            WALLET_UUID,
-                            SessionInputCardDataDto()
-                        )
+            val npgCorrelationId = WALLET_UUID.value
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(AMOUNT.toString())
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
                     )
-                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
-                    .verifyComplete()
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.PAY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(AMOUNT.toString())
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("CARDS")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
-                verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            }
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(
+                    Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard)
+                )
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+
+            given { jwtTokenUtils.generateJwtTokenForNpgNotifications(any(), any()) }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
+
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputCardDataDto()
+                    )
+                )
+                .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                .verifyComplete()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
         }
     }
 
     @Test
     fun `should throw exception if receives a state that is not REDIRECT_TO_EXTERNAL_DOMAIN when creating session for APM`() {
         /* preconditions */
-        val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
-            val contractId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = UUID.randomUUID().toString()
-                val apmRedirectUrl = "https://apm-url"
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId)
-                        .securityToken("token")
-                        .url(apmRedirectUrl)
-                        .state(WorkflowState.READY_FOR_PAYMENT)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val apmRedirectUrl = "https://apm-url"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .url(apmRedirectUrl)
+                    .state(WorkflowState.READY_FOR_PAYMENT)
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                var walletDocumentValidationRequestedStatus =
-                    walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
+            var walletDocumentValidationRequestedStatus =
+                walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
 
-                val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
 
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("walletId", walletDocumentCreatedStatus.id),
-                                Pair("orderId", orderId),
-                            )
-                        )
-
-                val npgCorrelationId = mockedUUID
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(
-                            Order()
-                                .orderId(orderId)
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                        )
-                        .paymentSession(
-                            PaymentSession()
-                                .actionType(ActionType.VERIFY)
-                                .recurrence(
-                                    RecurringSettings()
-                                        .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(contractId)
-                                        .contractType(RecurringContractType.CIT)
-                                )
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                .captureType(CaptureType.IMPLICIT)
-                                .paymentService("PAYPAL")
-                                .resultUrl(resultUrl.toString())
-                                .cancelUrl(cancelUrl.toString())
-                                .notificationUrl(notificationUrl.toString())
-                        )
-
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
-
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
-
-                given { npgClient.createNpgOrderBuild(any(), any(), any()) }
-                    .willAnswer { mono { npgFields } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentCreatedStatus))
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-                /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
-                            USER_ID,
-                            WALLET_UUID,
-                            APM_SESSION_CREATE_REQUEST
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
                         )
                     )
-                    .expectError(NpgClientException::class.java)
-                    .verify()
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
-                verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
-                verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
-                verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            }
+            val npgCorrelationId = WALLET_UUID.value
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("PAYPAL")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), any()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        APM_SESSION_CREATE_REQUEST
+                    )
+                )
+                .expectError(NpgClientException::class.java)
+                .verify()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
         }
     }
 
@@ -1191,110 +1151,106 @@ class WalletServiceTest {
     fun `should throw exception if receives an empty fields list when creating session for cards`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
-            val contractId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = UUID.randomUUID().toString()
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId)
-                        .securityToken("token")
-                        .state(WorkflowState.READY_FOR_PAYMENT)
-                        .apply { fields = listOf() }
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.READY_FOR_PAYMENT)
+                    .apply { fields = listOf() }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                val walletDocumentCreatedStatus = walletDocumentEmptyCreatedStatus()
+            val walletDocumentCreatedStatus = walletDocumentEmptyCreatedStatus()
 
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("walletId", walletDocumentCreatedStatus.id),
-                                Pair("orderId", orderId),
-                            )
-                        )
-
-                val npgCorrelationId = mockedUUID
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(
-                            Order()
-                                .orderId(orderId)
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                        )
-                        .paymentSession(
-                            PaymentSession()
-                                .actionType(ActionType.VERIFY)
-                                .recurrence(
-                                    RecurringSettings()
-                                        .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(contractId)
-                                        .contractType(RecurringContractType.CIT)
-                                )
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                .captureType(CaptureType.IMPLICIT)
-                                .paymentService("CARDS")
-                                .resultUrl(resultUrl.toString())
-                                .cancelUrl(cancelUrl.toString())
-                                .notificationUrl(notificationUrl.toString())
-                        )
-
-                given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                    .willAnswer { mono { npgFields } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentCreatedStatus))
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(eq(npgSession)) }
-                    .willAnswer { mono { npgSession } }
-                /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
-                            USER_ID,
-                            WALLET_UUID,
-                            SessionInputCardDataDto()
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
                         )
                     )
-                    .expectError(NpgClientException::class.java)
-                    .verify()
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentInitializedStatus)
-                verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
-                verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            }
+            val npgCorrelationId = WALLET_UUID.value
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("CARDS")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(eq(npgSession)) }
+                .willAnswer { mono { npgSession } }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputCardDataDto()
+                    )
+                )
+                .expectError(NpgClientException::class.java)
+                .verify()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentInitializedStatus)
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
         }
     }
 
@@ -1304,124 +1260,121 @@ class WalletServiceTest {
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
-            val contractId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = mockedUUID
-                val npgCorrelationId = mockedUUID
-                val apmRedirectUrl = "https://apm-url"
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = mockedUUID
+            val npgCorrelationId = WALLET_UUID.value
+            val apmRedirectUrl = "https://apm-url"
 
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId.toString())
-                        .securityToken("token")
-                        .url("https://apm-url")
-                        .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId.toString())
+                    .securityToken("token")
+                    .url("https://apm-url")
+                    .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
 
-                val sessionResponseDto =
-                    SessionWalletCreateResponseDto()
-                        .orderId(orderId)
-                        .sessionData(
-                            SessionWalletCreateResponseAPMDataDto()
-                                .redirectUrl(apmRedirectUrl)
-                                .paymentMethodType("apm")
-                        )
-
-                val npgSession =
-                    NpgSession(orderId, sessionId.toString(), "token", WALLET_UUID.value.toString())
-
-                val walletDocumentValidationRequestedStatus =
-                    walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
-                val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
-                val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentValidationRequestedStatus.toDomain(),
-                        SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+            val sessionResponseDto =
+                SessionWalletCreateResponseDto()
+                    .orderId(orderId)
+                    .sessionData(
+                        SessionWalletCreateResponseAPMDataDto()
+                            .redirectUrl(apmRedirectUrl)
+                            .paymentMethodType("apm")
                     )
 
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                        .build(
-                            mapOf(
-                                Pair("walletId", walletDocumentCreatedStatus.id),
-                                Pair("orderId", orderId),
+            val npgSession =
+                NpgSession(orderId, sessionId.toString(), "token", WALLET_UUID.value.toString())
+
+            val walletDocumentValidationRequestedStatus =
+                walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentValidationRequestedStatus.toDomain(),
+                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                )
+
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
+                        )
+                    )
+
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
                             )
-                        )
-
-                val npgCreateHostedOrderRequest =
-                    CreateHostedOrderRequest()
-                        .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                        .merchantUrl(merchantUrl)
-                        .order(
-                            Order()
-                                .orderId(orderId)
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                        )
-                        .paymentSession(
-                            PaymentSession()
-                                .actionType(ActionType.VERIFY)
-                                .recurrence(
-                                    RecurringSettings()
-                                        .action(RecurringAction.CONTRACT_CREATION)
-                                        .contractId(contractId)
-                                        .contractType(RecurringContractType.CIT)
-                                )
-                                .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                                .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                .captureType(CaptureType.IMPLICIT)
-                                .paymentService("PAYPAL")
-                                .resultUrl(resultUrl.toString())
-                                .cancelUrl(cancelUrl.toString())
-                                .notificationUrl(notificationUrl.toString())
-                        )
-
-                /* Mock response */
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
-
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
-
-                given { npgClient.createNpgOrderBuild(any(), any(), any()) }
-                    .willAnswer { mono { npgFields } }
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentCreatedStatus))
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-                /* test */
-                StepVerifier.create(
-                        walletService.createSessionWallet(
-                            USER_ID,
-                            WALLET_UUID,
-                            APM_SESSION_CREATE_REQUEST
-                        )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("PAYPAL")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
                     )
-                    .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
-                    .verifyComplete()
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
-                verify(uniqueIdUtils, times(2)).generateUniqueId()
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
-                verify(npgClient, times(1))
-                    .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
-                verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            }
+            /* Mock response */
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), any()) }
+                .willAnswer { mono { npgFields } }
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        APM_SESSION_CREATE_REQUEST
+                    )
+                )
+                .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                .verifyComplete()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentValidationRequestedStatus)
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
         }
     }
 
@@ -1429,117 +1382,112 @@ class WalletServiceTest {
     fun `should execute validation for wallet CARD`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = Instant.now().toString() + "ABCDE"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("12345678")
+                    .expiringDate("12/30")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = Instant.now().toString() + "ABCDE"
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("12345678")
-                        .expiringDate("12/30")
-                        .lastFourDigits("0000")
-                        .circuit("MC")
-
-                val npgStateResponse =
-                    StateResponse()
-                        .state(WorkflowState.GDI_VERIFICATION)
-                        .fieldSet(
-                            Fields()
-                                .sessionId(sessionId)
-                                .addFieldsItem(Field().src("http://src.state.url"))
-                        )
-
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
-                val verifyResponse =
-                    WalletVerifyRequestsResponseDto()
-                        .orderId(orderId)
-                        .details(
-                            WalletVerifyRequestCardDetailsDto()
-                                .type("CARD")
-                                .iframeUrl(
-                                    Base64.getUrlEncoder()
-                                        .encodeToString(
-                                            npgStateResponse.fieldSet!!
-                                                .fields!![0]
-                                                .src!!
-                                                .toByteArray(StandardCharsets.UTF_8)
-                                        )
-                                )
-                        )
-
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
-
-                val walletDocumentWithCardDetails =
-                    walletDocumentVerifiedWithCardDetails(
-                        "12345678",
-                        "0000",
-                        "203012",
-                        "?",
-                        "MASTERCARD"
+            val npgStateResponse =
+                StateResponse()
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .fieldSet(
+                        Fields()
+                            .sessionId(sessionId)
+                            .addFieldsItem(Field().src("http://src.state.url"))
                     )
 
-                val expectedLoggedAction =
-                    LoggedAction(
-                        walletDocumentWithCardDetails.toDomain(),
-                        WalletDetailsAddedEvent(WALLET_UUID.value.toString())
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val verifyResponse =
+                WalletVerifyRequestsResponseDto()
+                    .orderId(orderId)
+                    .details(
+                        WalletVerifyRequestCardDetailsDto()
+                            .type("CARD")
+                            .iframeUrl(
+                                Base64.getUrlEncoder()
+                                    .encodeToString(
+                                        npgStateResponse.fieldSet!!
+                                            .fields!![0]
+                                            .src!!
+                                            .toByteArray(StandardCharsets.UTF_8)
+                                    )
+                            )
                     )
 
-                given { npgClient.getCardData(any(), any()) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                given { npgClient.confirmPayment(any(), any()) }
-                    .willAnswer { mono { npgStateResponse } }
-
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
-
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentInitializedStatus))
-
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
-
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
-
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidCardsPaymentMethod() } }
-
-                /* test */
-
-                StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
-                    .expectNext(Pair(verifyResponse, expectedLoggedAction))
-                    .verifyComplete()
-
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(
-                    walletDocumentToSave.details,
-                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+            val walletDocumentWithCardDetails =
+                walletDocumentVerifiedWithCardDetails(
+                    "12345678",
+                    "0000",
+                    "203012",
+                    "?",
+                    "MASTERCARD"
                 )
 
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentWithCardDetails)
-                verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
-                verify(npgClient, times(1))
-                    .confirmPayment(
-                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                        npgCorrelationId
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentWithCardDetails.toDomain(),
+                    WalletDetailsAddedEvent(WALLET_UUID.value.toString())
+                )
+
+            given { npgClient.getCardData(any(), any()) }
+                .willAnswer { mono { npgGetCardDataResponse } }
+
+            given { npgClient.confirmPayment(any(), any()) }
+                .willAnswer { mono { npgStateResponse } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
+
+            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { mono { getValidCardsPaymentMethod() } }
+
+            /* test */
+
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
-            }
+                )
+                .expectNext(Pair(verifyResponse, expectedLoggedAction))
+                .verifyComplete()
+
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(
+                walletDocumentToSave.details,
+                CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+            )
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentWithCardDetails)
+            verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
+            verify(npgClient, times(1))
+                .confirmPayment(
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                    npgCorrelationId
+                )
         }
     }
 
@@ -1774,76 +1722,71 @@ class WalletServiceTest {
     fun `validate should throws BadGatewayException with card data by wrong state`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = Instant.now().toString() + "ABCDE"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("123456")
+                    .expiringDate("122030")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
+            val npgStateResponse =
+                StateResponse().state(WorkflowState.READY_FOR_PAYMENT).url("http://state.url")
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = Instant.now().toString() + "ABCDE"
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MC")
-                val npgStateResponse =
-                    StateResponse().state(WorkflowState.READY_FOR_PAYMENT).url("http://state.url")
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
+            given { npgClient.getCardData(sessionId, npgCorrelationId) }
+                .willAnswer { mono { npgGetCardDataResponse } }
 
-                given { npgClient.getCardData(sessionId, npgCorrelationId) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
+            given { npgClient.confirmPayment(any(), any()) }
+                .willAnswer { mono { npgStateResponse } }
 
-                given { npgClient.confirmPayment(any(), any()) }
-                    .willAnswer { mono { npgStateResponse } }
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentInitializedStatus))
+            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { mono { getValidCardsPaymentMethod() } }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidCardsPaymentMethod() } }
+            /* test */
 
-                /* test */
-
-                StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
+                )
+                .expectError(BadGatewayException::class.java)
+                .verify()
 
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
 
-                verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentToSave)
-                verify(npgClient, times(1))
-                    .confirmPayment(
-                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                        npgCorrelationId
-                    )
-            }
+            verify(npgSessionRedisTemplate, times(1)).findById(orderId)
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentToSave)
+            verify(npgClient, times(1))
+                .confirmPayment(
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                    npgCorrelationId
+                )
         }
     }
 
@@ -1851,76 +1794,71 @@ class WalletServiceTest {
     fun `validate should throws BadGatewayException with card data by fields null`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = Instant.now().toString() + "ABCDE"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("123456")
+                    .expiringDate("122030")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
+            val npgStateResponse = StateResponse().state(WorkflowState.GDI_VERIFICATION)
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = Instant.now().toString() + "ABCDE"
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MC")
-                val npgStateResponse = StateResponse().state(WorkflowState.GDI_VERIFICATION)
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
+            given { npgClient.getCardData(any(), any()) }
+                .willAnswer { mono { npgGetCardDataResponse } }
 
-                given { npgClient.getCardData(any(), any()) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
+            given { npgClient.confirmPayment(any(), any()) }
+                .willAnswer { mono { npgStateResponse } }
 
-                given { npgClient.confirmPayment(any(), any()) }
-                    .willAnswer { mono { npgStateResponse } }
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentInitializedStatus))
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
 
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { mono { getValidCardsPaymentMethod() } }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidCardsPaymentMethod() } }
+            /* test */
 
-                /* test */
-
-                StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
+                )
+                .expectError(BadGatewayException::class.java)
+                .verify()
 
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
 
-                verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentToSave)
-                verify(npgClient, times(1))
-                    .confirmPayment(
-                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                        npgCorrelationId
-                    )
-                verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
-            }
+            verify(npgSessionRedisTemplate, times(1)).findById(orderId)
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentToSave)
+            verify(npgClient, times(1))
+                .confirmPayment(
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                    npgCorrelationId
+                )
+            verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
 
@@ -1928,81 +1866,74 @@ class WalletServiceTest {
     fun `validate should throws BadGatewayException with card data by fields list empty`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = "orderId"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("123456")
+                    .expiringDate("122030")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
+            val npgStateResponse =
+                StateResponse()
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .fieldSet(Fields().sessionId(sessionId))
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = "orderId"
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MC")
-                val npgStateResponse =
-                    StateResponse()
-                        .state(WorkflowState.GDI_VERIFICATION)
-                        .fieldSet(Fields().sessionId(sessionId))
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
+            given { npgClient.getCardData(any(), any()) }
+                .willAnswer { mono { npgGetCardDataResponse } }
 
-                given { npgClient.getCardData(any(), any()) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
+            given { npgClient.confirmPayment(any(), any()) }
+                .willAnswer { mono { npgStateResponse } }
 
-                given { npgClient.confirmPayment(any(), any()) }
-                    .willAnswer { mono { npgStateResponse } }
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentInitializedStatus))
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
 
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") } }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer {
-                        mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
-                    }
+            /* test */
 
-                /* test */
-
-                StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
+                )
+                .expectError(BadGatewayException::class.java)
+                .verify()
 
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
 
-                verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentToSave)
-                verify(npgClient, times(1))
-                    .confirmPayment(
-                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                        npgCorrelationId
-                    )
-                verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
-            }
+            verify(npgSessionRedisTemplate, times(1)).findById(orderId)
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentToSave)
+            verify(npgClient, times(1))
+                .confirmPayment(
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                    npgCorrelationId
+                )
+            verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
 
@@ -2010,81 +1941,74 @@ class WalletServiceTest {
     fun `validate should throws BadGatewayException with card data by first field src null`() {
         /* preconditions */
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = Instant.now().toString() + "ABCDE"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("123456")
+                    .expiringDate("122030")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
+            val npgStateResponse =
+                StateResponse()
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .fieldSet(Fields().sessionId(sessionId).addFieldsItem(Field().id("field")))
 
-                val sessionId = UUID.randomUUID().toString()
-                val npgCorrelationId = mockedUUID
-                val orderId = Instant.now().toString() + "ABCDE"
-                val npgGetCardDataResponse =
-                    CardDataResponse()
-                        .bin("123456")
-                        .expiringDate("122030")
-                        .lastFourDigits("0000")
-                        .circuit("MC")
-                val npgStateResponse =
-                    StateResponse()
-                        .state(WorkflowState.GDI_VERIFICATION)
-                        .fieldSet(Fields().sessionId(sessionId).addFieldsItem(Field().id("field")))
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                val npgSession =
-                    NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val walletDocumentInitializedStatus =
+                walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-                val walletDocumentInitializedStatus =
-                    walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
+            given { npgClient.getCardData(any(), any()) }
+                .willAnswer { mono { npgGetCardDataResponse } }
 
-                given { npgClient.getCardData(any(), any()) }
-                    .willAnswer { mono { npgGetCardDataResponse } }
+            given { npgClient.confirmPayment(any(), any()) }
+                .willAnswer { mono { npgStateResponse } }
 
-                given { npgClient.confirmPayment(any(), any()) }
-                    .willAnswer { mono { npgStateResponse } }
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
-                val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentInitializedStatus))
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
 
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { walletRepository.save(walletArgumentCaptor.capture()) }
-                    .willAnswer { Mono.just(it.arguments[0]) }
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") } }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer {
-                        mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
-                    }
+            /* test */
 
-                /* test */
-
-                StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
-                    .expectError(BadGatewayException::class.java)
-                    .verify()
+                )
+                .expectError(BadGatewayException::class.java)
+                .verify()
 
-                val walletDocumentToSave = walletArgumentCaptor.firstValue
-                assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(walletDocumentToSave.status, WalletStatusDto.ERROR.value)
 
-                verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-                verify(walletRepository, times(1))
-                    .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-                verify(walletRepository, times(1)).save(walletDocumentToSave)
-                verify(npgClient, times(1))
-                    .confirmPayment(
-                        ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                        npgCorrelationId
-                    )
-                verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
-            }
+            verify(npgSessionRedisTemplate, times(1)).findById(orderId)
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentToSave)
+            verify(npgClient, times(1))
+                .confirmPayment(
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
+                    npgCorrelationId
+                )
+            verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
 
@@ -3766,46 +3690,43 @@ class WalletServiceTest {
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
 
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-            val uniqueId = getUniqueId()
-            val orderId = uniqueId
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
 
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-                val sessionId = mockedUUID
-                val npgFields =
-                    Fields()
-                        .sessionId(sessionId.toString())
-                        .securityToken("token")
-                        .url("https://apm-url")
-                        .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
-                val npgSession =
-                    NpgSession(orderId, sessionId.toString(), "token", WALLET_UUID.value.toString())
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = mockedUUID
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId.toString())
+                    .securityToken("token")
+                    .url("https://apm-url")
+                    .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
+            val npgSession =
+                NpgSession(orderId, sessionId.toString(), "token", WALLET_UUID.value.toString())
 
-                val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
 
-                /* Mock response */
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+            /* Mock response */
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
-                given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-                given { npgClient.createNpgOrderBuild(any(), any(), any()) }
-                    .willAnswer { mono { npgFields } }
+            given { npgClient.createNpgOrderBuild(any(), any(), any()) }
+                .willAnswer { mono { npgFields } }
 
-                given { walletRepository.findByIdAndUserId(any(), any()) }
-                    .willReturn(Mono.just(walletDocumentCreatedStatus))
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
 
-                given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
-                given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
-                /* test */
-                walletService
-                    .createSessionWallet(USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST)
-                    .test()
-                    .expectError(PspNotFoundException::class.java)
-                    .verify()
-            }
+            given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            /* test */
+            walletService
+                .createSessionWallet(USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST)
+                .test()
+                .expectError(PspNotFoundException::class.java)
+                .verify()
         }
     }
 
