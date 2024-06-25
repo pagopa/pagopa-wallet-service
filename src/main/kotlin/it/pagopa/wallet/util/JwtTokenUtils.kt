@@ -5,11 +5,9 @@ import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.vavr.control.Either
 import it.pagopa.wallet.exception.JWTTokenGenerationException
-import jakarta.validation.constraints.NotNull
 import java.time.Duration
 import java.time.Instant
-import java.util.Date
-import java.util.UUID
+import java.util.*
 import javax.crypto.SecretKey
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -31,8 +29,8 @@ class JwtTokenUtils(
      * @return Mono jwt with specific claim
      */
     fun generateJwtTokenForNpgNotifications(
-        @NotNull transactionIdAsClaim: String,
-        @NotNull walletIdAsClaim: String
+        transactionIdAsClaim: String? = null,
+        walletIdAsClaim: String
     ): Either<JWTTokenGenerationException, String> {
         return try {
             val now = Instant.now()
@@ -45,8 +43,9 @@ class JwtTokenUtils(
                     .setIssuedAt(issuedAtDate) // iat
                     .setExpiration(expiryDate) // exp
                     .signWith(signingKeyForNpgNotification)
-
-            jwtBuilder.claim(TRANSACTION_ID_CLAIM, transactionIdAsClaim) // claim TransactionId
+            if (transactionIdAsClaim != null) {
+                jwtBuilder.claim(TRANSACTION_ID_CLAIM, transactionIdAsClaim) // claim TransactionId
+            }
             jwtBuilder.claim(WALLET_ID_CLAIM, walletIdAsClaim) // claim WalletId
 
             Either.right(jwtBuilder.compact())
@@ -58,6 +57,7 @@ class JwtTokenUtils(
     companion object {
         /** The claim transactionId */
         const val TRANSACTION_ID_CLAIM = "transactionId"
+
         /** The claim walletId */
         const val WALLET_ID_CLAIM = "walletId"
     }
