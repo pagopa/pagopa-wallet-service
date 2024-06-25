@@ -9,10 +9,12 @@ import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.wallets.details.CardDetails
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
@@ -21,6 +23,15 @@ import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
 import it.pagopa.wallet.util.EitherExtension.toMono
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.YearMonth
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,17 +44,6 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
-import java.net.URI
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.YearMonth
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.*
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
-import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 
 @Service
 class WalletService(
@@ -165,9 +165,9 @@ class WalletService(
                             applications = apps,
                             version = 0,
                             clients =
-                            Client.WellKnown.values().associateWith { clientId ->
-                                Client(Client.Status.ENABLED, null)
-                            },
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             creationDate = creationTime,
                             updateDate = creationTime,
                             onboardingChannel = onboardingChannel
@@ -256,9 +256,9 @@ class WalletService(
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
                             clients =
-                            Client.WellKnown.values().associateWith { clientId ->
-                                Client(Client.Status.ENABLED, null)
-                            },
+                                Client.WellKnown.values().associateWith { clientId ->
+                                    Client(Client.Status.ENABLED, null)
+                                },
                             onboardingChannel = onboardingChannel
                         ),
                         it
@@ -276,7 +276,6 @@ class WalletService(
                                 when (WalletDetailsType.valueOf(it)) {
                                     WalletDetailsType.CARDS ->
                                         Optional.of(URI.create(walletPaymentReturnUrl))
-
                                     else -> {
                                         Optional.empty()
                                     }
@@ -312,7 +311,7 @@ class WalletService(
                 val pagopaApplication =
                     wallet.applications.singleOrNull { application ->
                         application.id == WalletApplicationId("PAGOPA") &&
-                                application.status == WalletApplicationStatus.ENABLED
+                            application.status == WalletApplicationStatus.ENABLED
                     }
                 val isTransactionWithContextualOnboard =
                     isWalletForTransactionWithContextualOnboard(pagopaApplication)
@@ -344,49 +343,49 @@ class WalletService(
                     .createNpgOrderBuild(
                         correlationId = walletId.value,
                         createHostedOrderRequest =
-                        CreateHostedOrderRequest()
-                            .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                            .merchantUrl(merchantUrl)
-                            .order(
-                                Order()
-                                    .orderId(orderId)
-                                    .amount(
-                                        if (isTransactionWithContextualOnboard) amount
-                                        else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
-                                    )
-                                    .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                // TODO customerId must be valorised with the one coming from
-                            )
-                            .paymentSession(
-                                PaymentSession()
-                                    .actionType(
-                                        if (isTransactionWithContextualOnboard) ActionType.PAY
-                                        else ActionType.VERIFY
-                                    )
-                                    .recurrence(
-                                        RecurringSettings()
-                                            .action(RecurringAction.CONTRACT_CREATION)
-                                            .contractId(contractId)
-                                            .contractType(RecurringContractType.CIT)
-                                    )
-                                    .amount(
-                                        if (isTransactionWithContextualOnboard) amount
-                                        else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
-                                    )
-                                    .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                    .captureType(CaptureType.IMPLICIT)
-                                    .paymentService(paymentMethod.name)
-                                    .resultUrl(resultUrl.toString())
-                                    .cancelUrl(cancelUrl.toString())
-                                    .notificationUrl(notificationUrl.toString())
-                            ),
+                            CreateHostedOrderRequest()
+                                .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                                .merchantUrl(merchantUrl)
+                                .order(
+                                    Order()
+                                        .orderId(orderId)
+                                        .amount(
+                                            if (isTransactionWithContextualOnboard) amount
+                                            else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                        )
+                                        .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                    // TODO customerId must be valorised with the one coming from
+                                )
+                                .paymentSession(
+                                    PaymentSession()
+                                        .actionType(
+                                            if (isTransactionWithContextualOnboard) ActionType.PAY
+                                            else ActionType.VERIFY
+                                        )
+                                        .recurrence(
+                                            RecurringSettings()
+                                                .action(RecurringAction.CONTRACT_CREATION)
+                                                .contractId(contractId)
+                                                .contractType(RecurringContractType.CIT)
+                                        )
+                                        .amount(
+                                            if (isTransactionWithContextualOnboard) amount
+                                            else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                        )
+                                        .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                        .captureType(CaptureType.IMPLICIT)
+                                        .paymentService(paymentMethod.name)
+                                        .resultUrl(resultUrl.toString())
+                                        .cancelUrl(cancelUrl.toString())
+                                        .notificationUrl(notificationUrl.toString())
+                                ),
                         pspId =
-                        when (sessionInputDataDto) {
-                            is SessionInputCardDataDto -> null
-                            is SessionInputPayPalDataDto -> sessionInputDataDto.pspId
-                            else ->
-                                throw InternalServerErrorException("Unhandled session input")
-                        }
+                            when (sessionInputDataDto) {
+                                is SessionInputCardDataDto -> null
+                                is SessionInputPayPalDataDto -> sessionInputDataDto.pspId
+                                else ->
+                                    throw InternalServerErrorException("Unhandled session input")
+                            }
                     )
                     .flatMap { hostedOrderResponse ->
                         val isAPM = paymentMethod.paymentTypeCode != "CP"
@@ -404,18 +403,17 @@ class WalletService(
 
                         val newDetails =
                             when (sessionInputDataDto) {
-                                is SessionInputCardDataDto -> wallet.details.toMono()
-                                is SessionInputPayPalDataDto ->
-                                    createPaypalDetails(
-                                        sessionInputDataDto,
-                                        wallet.paymentMethodId
-                                    )
-
-                                else ->
-                                    Mono.error(
-                                        InternalServerErrorException("Unhandled session input")
-                                    )
-                            }
+                                    is SessionInputCardDataDto -> wallet.details.toMono()
+                                    is SessionInputPayPalDataDto ->
+                                        createPaypalDetails(
+                                            sessionInputDataDto,
+                                            wallet.paymentMethodId
+                                        )
+                                    else ->
+                                        Mono.error(
+                                            InternalServerErrorException("Unhandled session input")
+                                        )
+                                }
                                 .map { Optional.of(it) }
                                 .defaultIfEmpty(Optional.empty())
 
@@ -458,7 +456,7 @@ class WalletService(
             }
             .map { (sessionResponseDto, wallet) ->
                 sessionResponseDto to
-                        LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
             }
     }
 
@@ -530,7 +528,6 @@ class WalletService(
                                             orderId,
                                             wallet
                                         )
-
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
@@ -538,10 +535,10 @@ class WalletService(
                     .flatMap { (response, wallet) ->
                         walletRepository.save(wallet.toDocument()).map {
                             response to
-                                    LoggedAction(
-                                        wallet,
-                                        WalletDetailsAddedEvent(walletId.value.toString())
-                                    )
+                                LoggedAction(
+                                    wallet,
+                                    WalletDetailsAddedEvent(walletId.value.toString())
+                                )
                         }
                     }
             }
@@ -581,9 +578,9 @@ class WalletService(
             .doOnNext { logger.debug("State Response: {}", it.first) }
             .filter { (state) ->
                 state.state == WorkflowState.GDI_VERIFICATION &&
-                        state.fieldSet?.fields != null &&
-                        state.fieldSet!!.fields!!.isNotEmpty() &&
-                        state.fieldSet!!.fields!![0]!!.src != null
+                    state.fieldSet?.fields != null &&
+                    state.fieldSet!!.fields!!.isNotEmpty() &&
+                    state.fieldSet!!.fields!![0]!!.src != null
             }
             .switchIfEmpty {
                 walletRepository
@@ -613,9 +610,9 @@ class WalletService(
             }
             .map { (response, data) ->
                 response to
-                        wallet.copy(
-                            status = WalletStatusDto.VALIDATION_REQUESTED,
-                            details =
+                    wallet.copy(
+                        status = WalletStatusDto.VALIDATION_REQUESTED,
+                        details =
                             DomainCardDetails(
                                 Bin(data.bin.orEmpty()),
                                 LastFourDigits(data.lastFourDigits.orEmpty()),
@@ -623,7 +620,7 @@ class WalletService(
                                 CardBrand(data.circuit.orEmpty()),
                                 PaymentInstrumentGatewayId("?")
                             )
-                        )
+                    )
             }
 
     private fun gatewayToWalletExpiryDate(expiryDate: String) =
@@ -746,7 +743,7 @@ class WalletService(
                         .copy(
                             status = newWalletStatus,
                             validationOperationResult =
-                            walletNotificationRequestDto.operationResult,
+                                walletNotificationRequestDto.operationResult,
                             validationErrorCode = errorCode,
                             details = newWalletDetails
                         )
@@ -827,28 +824,28 @@ class WalletService(
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
                             walletDetails =
-                            walletDetails.copy(
-                                paymentInstrumentGatewayId =
-                                PaymentInstrumentGatewayId(
-                                    operationDetails.paymentInstrumentGatewayId
-                                )
-                            ),
+                                walletDetails.copy(
+                                    paymentInstrumentGatewayId =
+                                        PaymentInstrumentGatewayId(
+                                            operationDetails.paymentInstrumentGatewayId
+                                        )
+                                ),
                             errorCode = walletNotificationRequestDto.errorCode
                         )
                     } else {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.ERROR,
                             walletDetails =
-                            if (operationDetails.paymentInstrumentGatewayId != null) {
-                                walletDetails.copy(
-                                    paymentInstrumentGatewayId =
-                                    PaymentInstrumentGatewayId(
-                                        operationDetails.paymentInstrumentGatewayId
+                                if (operationDetails.paymentInstrumentGatewayId != null) {
+                                    walletDetails.copy(
+                                        paymentInstrumentGatewayId =
+                                            PaymentInstrumentGatewayId(
+                                                operationDetails.paymentInstrumentGatewayId
+                                            )
                                     )
-                                )
-                            } else {
-                                walletDetails
-                            },
+                                } else {
+                                    walletDetails
+                                },
                             errorCode = walletNotificationRequestDto.errorCode,
                         )
                     }
@@ -862,16 +859,15 @@ class WalletService(
                         errorCode = walletNotificationRequestDto.errorCode
                     )
                 }
-
             is PayPalDetails ->
                 if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
                             walletDetails =
-                            walletDetails.copy(
-                                maskedEmail = MaskedEmail(operationDetails.maskedEmail)
-                            ),
+                                walletDetails.copy(
+                                    maskedEmail = MaskedEmail(operationDetails.maskedEmail)
+                                ),
                             errorCode = walletNotificationRequestDto.errorCode
                         )
                     } else {
@@ -891,7 +887,6 @@ class WalletService(
                         errorCode = walletNotificationRequestDto.errorCode
                     )
                 }
-
             else ->
                 throw InvalidRequestException(
                     "Unhandled wallet details for notification request: $walletDetails"
@@ -917,16 +912,16 @@ class WalletService(
                     .map { walletDocument -> walletDocument.toDomain() }
                     .flatMap {
                         it.expectInStatus(
-                            WalletStatusDto.VALIDATION_REQUESTED,
-                            WalletStatusDto.VALIDATED,
-                            WalletStatusDto.ERROR
-                        )
+                                WalletStatusDto.VALIDATION_REQUESTED,
+                                WalletStatusDto.VALIDATED,
+                                WalletStatusDto.ERROR
+                            )
                             .toMono()
                     }
                     .map { wallet ->
                         val isFinalStatus =
                             wallet.status == WalletStatusDto.VALIDATED ||
-                                    wallet.status == WalletStatusDto.ERROR
+                                wallet.status == WalletStatusDto.ERROR
                         SessionWalletRetrieveResponseDto()
                             .orderId(orderId)
                             .walletId(walletId.value.toString())
@@ -998,13 +993,11 @@ class WalletService(
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
                     .brand(details.brand)
-
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
                     .pspId(details.pspId)
                     .pspBusinessName(details.pspBusinessName)
-
             else -> null
         }
     }
@@ -1016,16 +1009,13 @@ class WalletService(
             when (wallet.details) {
                 is CardDetails ->
                     wallet.details.brand to
-                            WalletAuthCardDataDto().paymentMethodType("cards").bin(wallet.details.bin)
-
+                        WalletAuthCardDataDto().paymentMethodType("cards").bin(wallet.details.bin)
                 is PayPalDetailsDocument ->
                     "PAYPAL" to WalletAuthAPMDataDto().paymentMethodType("apm")
-
                 null ->
                     throw RuntimeException(
                         "Called getAuthData on null wallet details for wallet id: ${wallet.id}!"
                     )
-
                 else ->
                     throw RuntimeException(
                         "Unhandled wallet details variant in getAuthData for wallet id ${wallet.id}"
@@ -1067,7 +1057,8 @@ class WalletService(
                             mutableMapOf<WalletApplicationId, WalletApplicationStatus>(),
                             walletApplications.toMutableMap()
                         )
-                    ) { (
+                    ) {
+                        (
                             applicationsUpdatedSuccessfully,
                             applicationsWithUpdateFailed,
                             updatedApplications),
@@ -1105,10 +1096,11 @@ class WalletService(
                             updatedApplications
                         )
                     }
-                    .map { (
-                               applicationsUpdatedSuccessfully,
-                               applicationsWithUpdateFailed,
-                               updatedApplications) ->
+                    .map {
+                        (
+                            applicationsUpdatedSuccessfully,
+                            applicationsWithUpdateFailed,
+                            updatedApplications) ->
                         WalletApplicationUpdateData(
                             applicationsUpdatedSuccessfully,
                             applicationsWithUpdateFailed,
@@ -1158,41 +1150,30 @@ class WalletService(
                     } else {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
                     }
-
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
                         decodeCardsOnboardingNpgErrorCode(errorCode)
                     } else {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
                     }
-
                 WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-
                 WalletNotificationRequestDto.OperationResultEnum.PENDING ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-
                 WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
-
                 WalletNotificationRequestDto.OperationResultEnum.VOIDED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-
                 WalletNotificationRequestDto.OperationResultEnum.REFUNDED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-
                 WalletNotificationRequestDto.OperationResultEnum.FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
-
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
@@ -1220,7 +1201,7 @@ class WalletService(
     ): Boolean {
         if (application != null) {
             return application.metadata.data[
-                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
                 .toBoolean()
         }
         return false
@@ -1237,8 +1218,8 @@ class WalletService(
                 .build(mapOf(Pair("walletId", walletId), Pair("orderId", orderId)))
         } else {
             UriComponentsBuilder.fromHttpUrl(
-                sessionUrlConfig.trxWithContextualOnboardNotificationUrl
-            )
+                    sessionUrlConfig.trxWithContextualOnboardNotificationUrl
+                )
                 .build(
                     mapOf(
                         Pair("transactionId", transactionId),
@@ -1299,7 +1280,6 @@ class WalletService(
                     )
                 }
             }
-
             is PayPalDetails -> {
                 logger.debug(
                     "Already onboard check DISABLED for PAYPAL for userId [{}] and walletId [{}]",
@@ -1308,7 +1288,6 @@ class WalletService(
                 )
                 mono { false }
             }
-
             else -> {
                 val errorDescription =
                     "Unhandled already onboard check for userId [${userId}] and walletId [${walletId}]"
