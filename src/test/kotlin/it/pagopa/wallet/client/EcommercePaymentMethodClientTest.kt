@@ -1,6 +1,7 @@
 package it.pagopa.wallet.client
 
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
+import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import java.nio.charset.StandardCharsets
@@ -24,11 +25,13 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getValidCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willReturn(mono { paymentMethod })
 
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectNext(paymentMethod)
             .verifyComplete()
     }
@@ -37,7 +40,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for exception during communication`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -48,7 +51,9 @@ class EcommercePaymentMethodClientTest {
                 )
             )
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -60,7 +65,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with INTERNAL_SERVER_ERROR error for 401 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willThrow(
                 WebClientResponseException.create(
                     401,
@@ -71,7 +76,9 @@ class EcommercePaymentMethodClientTest {
                 )
             )
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
@@ -83,7 +90,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 500 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willThrow(
                 WebClientResponseException.create(
                     500,
@@ -94,7 +101,9 @@ class EcommercePaymentMethodClientTest {
                 )
             )
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -106,7 +115,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 404 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willThrow(
                 WebClientResponseException.create(
                     404,
@@ -117,7 +126,9 @@ class EcommercePaymentMethodClientTest {
                 )
             )
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -129,7 +140,7 @@ class EcommercePaymentMethodClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 400 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willThrow(
                 WebClientResponseException.create(
                     400,
@@ -140,7 +151,9 @@ class EcommercePaymentMethodClientTest {
                 )
             )
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -154,11 +167,13 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getDisabledCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willReturn(mono { paymentMethod })
 
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_REQUEST
@@ -172,11 +187,13 @@ class EcommercePaymentMethodClientTest {
         val paymentMethod = WalletTestUtils.getInvalidCardsPaymentMethod()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
+        given(paymentMethodsApi.getPaymentMethod(paymentMethodId, ClientIdDto.IO.value))
             .willReturn(mono { paymentMethod })
 
         // test and assertions
-        StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
+        StepVerifier.create(
+                paymentMethodsClient.getPaymentMethodById(paymentMethodId, ClientIdDto.IO.value)
+            )
             .expectErrorMatches {
                 it as EcommercePaymentMethodException
                 it.toRestException().httpStatus == HttpStatus.BAD_REQUEST

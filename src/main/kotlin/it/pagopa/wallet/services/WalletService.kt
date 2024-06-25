@@ -154,27 +154,29 @@ class WalletService(
             }
             .collectList()
             .flatMap { apps ->
-                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
-                    val creationTime = Instant.now()
-                    return@map Pair(
-                        Wallet(
-                            id = WalletId(UUID.randomUUID()),
-                            userId = UserId(userId),
-                            status = WalletStatusDto.CREATED,
-                            paymentMethodId = PaymentMethodId(paymentMethodId),
-                            applications = apps,
-                            version = 0,
-                            clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
-                                },
-                            creationDate = creationTime,
-                            updateDate = creationTime,
-                            onboardingChannel = onboardingChannel
-                        ),
-                        it
-                    )
-                }
+                ecommercePaymentMethodsClient
+                    .getPaymentMethodById(paymentMethodId.toString(), ClientIdDto.IO.value)
+                    .map {
+                        val creationTime = Instant.now()
+                        return@map Pair(
+                            Wallet(
+                                id = WalletId(UUID.randomUUID()),
+                                userId = UserId(userId),
+                                status = WalletStatusDto.CREATED,
+                                paymentMethodId = PaymentMethodId(paymentMethodId),
+                                applications = apps,
+                                version = 0,
+                                clients =
+                                    Client.WellKnown.values().associateWith { clientId ->
+                                        Client(Client.Status.ENABLED, null)
+                                    },
+                                creationDate = creationTime,
+                                updateDate = creationTime,
+                                onboardingChannel = onboardingChannel
+                            ),
+                            it
+                        )
+                    }
             }
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
@@ -244,26 +246,28 @@ class WalletService(
                 )
             }
             .flatMap { walletApplication ->
-                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
-                    return@map Pair(
-                        Wallet(
-                            id = WalletId(UUID.randomUUID()),
-                            userId = UserId(userId),
-                            status = WalletStatusDto.CREATED,
-                            paymentMethodId = PaymentMethodId(paymentMethodId),
-                            version = 0,
-                            creationDate = creationTime,
-                            updateDate = creationTime,
-                            applications = listOf(walletApplication),
-                            clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
-                                },
-                            onboardingChannel = onboardingChannel
-                        ),
-                        it
-                    )
-                }
+                ecommercePaymentMethodsClient
+                    .getPaymentMethodById(paymentMethodId.toString(), ClientIdDto.IO.value)
+                    .map {
+                        return@map Pair(
+                            Wallet(
+                                id = WalletId(UUID.randomUUID()),
+                                userId = UserId(userId),
+                                status = WalletStatusDto.CREATED,
+                                paymentMethodId = PaymentMethodId(paymentMethodId),
+                                version = 0,
+                                creationDate = creationTime,
+                                updateDate = creationTime,
+                                applications = listOf(walletApplication),
+                                clients =
+                                    Client.WellKnown.values().associateWith { clientId ->
+                                        Client(Client.Status.ENABLED, null)
+                                    },
+                                onboardingChannel = onboardingChannel
+                            ),
+                            it
+                        )
+                    }
             }
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
@@ -299,7 +303,7 @@ class WalletService(
             .flatMap { it.expectInStatus(WalletStatusDto.CREATED).toMono() }
             .flatMap {
                 ecommercePaymentMethodsClient
-                    .getPaymentMethodById(it.paymentMethodId.value.toString())
+                    .getPaymentMethodById(it.paymentMethodId.value.toString(), ClientIdDto.IO.value)
                     .map { paymentMethod -> paymentMethod to it }
             }
             .flatMap { (paymentMethodResponse, wallet) ->
@@ -519,7 +523,10 @@ class WalletService(
                     .flatMap { it.toDomain().expectInStatus(WalletStatusDto.INITIALIZED).toMono() }
                     .flatMap { wallet ->
                         ecommercePaymentMethodsClient
-                            .getPaymentMethodById(wallet.paymentMethodId.value.toString())
+                            .getPaymentMethodById(
+                                wallet.paymentMethodId.value.toString(),
+                                ClientIdDto.IO.value
+                            )
                             .flatMap {
                                 when (it.paymentTypeCode) {
                                     "CP" ->
