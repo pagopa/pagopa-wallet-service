@@ -1,11 +1,25 @@
 package it.pagopa.wallet.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST
+import io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.context.Context
 import io.vavr.control.Either
+import io.vavr.control.Try
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
+import it.pagopa.wallet.client.NpgClient.NpgTracing.GatewayOperation
+import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME
+import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME
+import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE
+import it.pagopa.wallet.client.NpgClient.NpgTracing.usingNpgTracing
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -14,14 +28,17 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import java.io.IOException
+import java.util.*
 
 /** NPG API client service class */
 @Component
 class NpgClient(
     @Autowired @Qualifier("npgWebClient") private val npgWebClient: PaymentServicesApi,
-    @Autowired private val npgPaypalPspApiKeysConfig: NpgPspApiKeysConfig
+    @Autowired private val npgPaypalPspApiKeysConfig: NpgPspApiKeysConfig,
+    private val tracer: Tracer,
+    private val objectMapper: ObjectMapper,
 ) {
-
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun createNpgOrderBuild(
@@ -36,10 +53,14 @@ class NpgClient(
                 npgPaypalPspApiKeysConfig[pspId]
             }
 
-        val response: Mono<Fields> =
-            try {
-                logger.info("Sending orderBuild with correlationId: $correlationId")
-                apiKey.fold(
+        return usingNpgTracing(
+            tracer,
+            GatewayOperation.BUILD_FORM,
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
+        ) { span, operation ->
+            logger.info("Sending orderBuild with correlationId: $correlationId")
+            apiKey
+                .fold(
                     { Mono.error(it) },
                     {
                         npgWebClient.pspApiV1OrdersBuildPost(
@@ -49,36 +70,36 @@ class NpgClient(
                         )
                     }
                 )
-            } catch (e: WebClientResponseException) {
-                Mono.error(e)
-            }
-        return response.onErrorMap(WebClientResponseException::class.java) {
-            logger.error(
-                "Error communicating with NPG-orderBuild for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                it
-            )
-            mapNpgException(it.statusCode)
+                .doOnError(WebClientResponseException::class.java) {
+                    logger.error(
+                        "Error communicating with NPG-orderBuild  for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                        it
+                    )
+                }
+                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
         }
     }
 
     fun getCardData(sessionId: String, correlationId: UUID): Mono<CardDataResponse> {
-        val response: Mono<CardDataResponse> =
-            try {
-                logger.info("getCardData with correlationId: $correlationId")
-                npgWebClient.pspApiV1BuildCardDataGet(
+        return usingNpgTracing(
+            tracer,
+            GatewayOperation.GET_CARD_DATA,
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
+        ) { span, operation ->
+            logger.info("getCardData with correlationId: $correlationId")
+            npgWebClient
+                .pspApiV1BuildCardDataGet(
                     correlationId,
                     npgPaypalPspApiKeysConfig.defaultApiKey,
                     sessionId
                 )
-            } catch (e: WebClientResponseException) {
-                Mono.error(e)
-            }
-        return response.onErrorMap(WebClientResponseException::class.java) {
-            logger.error(
-                "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                it
-            )
-            mapNpgException(it.statusCode)
+                .doOnError(WebClientResponseException::class.java) {
+                    logger.error(
+                        "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                        it
+                    )
+                }
+                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
         }
     }
 
@@ -86,24 +107,68 @@ class NpgClient(
         confirmPaymentRequest: ConfirmPaymentRequest,
         correlationId: UUID
     ): Mono<StateResponse> {
-        val response: Mono<StateResponse> =
-            try {
-                logger.info("confirmPayment with correlationId: $correlationId")
-                npgWebClient.pspApiV1BuildConfirmPaymentPost(
+        return usingNpgTracing(
+            tracer,
+            GatewayOperation.CONFIRM_PAYMENT,
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
+        ) { span, operation ->
+            logger.info("confirmPayment with correlationId: $correlationId")
+            npgWebClient
+                .pspApiV1BuildConfirmPaymentPost(
                     correlationId,
                     npgPaypalPspApiKeysConfig.defaultApiKey,
                     confirmPaymentRequest,
                 )
-            } catch (e: WebClientResponseException) {
-                Mono.error(e)
-            }
-        return response.onErrorMap(WebClientResponseException::class.java) {
-            logger.error(
-                "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                it
-            )
-            mapNpgException(it.statusCode)
+                .doOnError(WebClientResponseException::class.java) {
+                    logger.error(
+                        "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                        it
+                    )
+                }
+                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
         }
+    }
+
+    private fun exceptionToNpgResponseException(
+        err: Throwable,
+        span: Span,
+        gatewayOperation: GatewayOperation
+    ): NpgClientException {
+        span.setStatus(StatusCode.ERROR)
+        if (err is WebClientResponseException) {
+            try {
+                val responseErrors =
+                    when (err.statusCode) {
+                        INTERNAL_SERVER_ERROR ->
+                            objectMapper
+                                .readValue(err.responseBodyAsByteArray, ServerError::class.java)
+                                .errors
+                        BAD_REQUEST ->
+                            objectMapper
+                                .readValue(err.responseBodyAsByteArray, ClientError::class.java)
+                                .errors
+                        else -> emptyList()
+                    }?.mapNotNull { it.code }
+                        ?: emptyList()
+
+                span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, responseErrors)
+
+                span.setAttribute(NPG_HTTP_ERROR_CODE, err.statusCode.value())
+
+                return mapNpgException(err.statusCode)
+            } catch (ex: IOException) {
+                return NpgClientException(
+                    description =
+                        "Invalid error response from NPG with status code ${err.statusCode}",
+                    httpStatusCode = HttpStatus.valueOf(err.statusCode.value()),
+                )
+            }
+        }
+
+        return NpgClientException(
+            "Unexpected error while invoke method for %s".format(gatewayOperation.spanName),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        )
     }
 
     private fun mapNpgException(statusCode: HttpStatusCode): NpgClientException =
@@ -129,4 +194,37 @@ class NpgClient(
                     httpStatusCode = HttpStatus.BAD_GATEWAY,
                 )
         }
+
+    private object NpgTracing {
+        val NPG_CORRELATION_ID_ATTRIBUTE_NAME: AttributeKey<String> =
+            AttributeKey.stringKey("npg.correlation_id")
+        val NPG_ERROR_CODES_ATTRIBUTE_NAME: AttributeKey<List<String>> =
+            AttributeKey.stringArrayKey("npg.error_codes")
+        val NPG_HTTP_ERROR_CODE: AttributeKey<Long> = AttributeKey.longKey("npg.http_error_code")
+
+        enum class GatewayOperation(val spanName: String) {
+            BUILD_FORM("NpgClient#buildForm"),
+            GET_CARD_DATA("NpgClient#getCardData"),
+            CONFIRM_PAYMENT("NpgClient#confirmPayment"),
+        }
+
+        fun <T> usingNpgTracing(
+            tracer: Tracer,
+            operation: GatewayOperation,
+            spanDecorator: (SpanBuilder) -> SpanBuilder,
+            mono: (Span, GatewayOperation) -> Mono<T>
+        ): Mono<T> =
+            Mono.using(
+                {
+                    spanDecorator(
+                            tracer
+                                .spanBuilder(operation.spanName)
+                                .setParent(Context.current().with(Span.current()))
+                        )
+                        .startSpan()
+                },
+                { span -> Try.of { mono(span, operation) }.getOrElseGet { Mono.error(it) } },
+                { span -> span.end() }
+            )
+    }
 }

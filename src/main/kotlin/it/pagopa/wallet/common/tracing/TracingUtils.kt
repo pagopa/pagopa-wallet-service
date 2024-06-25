@@ -16,7 +16,7 @@ class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer:
         const val BAGGAGE: String = "baggage"
     }
 
-    fun <T> traceMono(spanName: String, traced: TracedMono<T>) =
+    fun <T> traceMonoQueue(spanName: String, traced: TracedMono<T>) =
         Mono.using(
             {
                 val span: Span =

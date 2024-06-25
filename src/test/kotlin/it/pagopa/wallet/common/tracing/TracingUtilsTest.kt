@@ -43,7 +43,7 @@ class TracingUtilsTest {
         val expected = 0
         val operation = Mono.just(expected)
 
-        StepVerifier.create(tracingUtils.traceMono("test", ({ _ -> operation })))
+        StepVerifier.create(tracingUtils.traceMonoQueue("test", ({ _ -> operation })))
             .expectNext(expected)
             .verifyComplete()
     }
@@ -52,7 +52,7 @@ class TracingUtilsTest {
     fun traceMonoWithMonoErrorReturnsError() {
         val expected = RuntimeException("error!")
         val operation = Mono.error<Int>(expected)
-        StepVerifier.create(tracingUtils.traceMono("test", ({ _ -> operation })))
+        StepVerifier.create(tracingUtils.traceMonoQueue("test", ({ _ -> operation })))
             .expectErrorMatches { e: Throwable -> e == expected }
             .verify()
     }
@@ -61,8 +61,8 @@ class TracingUtilsTest {
         fun getMock(): TracingUtils {
             val mockedTraceInfo = QueueTracingInfo(UUID.randomUUID().toString(), "", "")
             val mockedTracingUtils = Mockito.mock(TracingUtils::class.java)
-            Mockito.`when`(mockedTracingUtils.traceMono<Any>(any(), any())).thenAnswer { invocation
-                ->
+            Mockito.`when`(mockedTracingUtils.traceMonoQueue<Any>(any(), any())).thenAnswer {
+                invocation ->
                 return@thenAnswer (invocation.getArgument<Any>(1) as (QueueTracingInfo) -> Mono<*>)
                     .invoke(mockedTraceInfo)
             }
