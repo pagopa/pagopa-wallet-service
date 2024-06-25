@@ -277,7 +277,7 @@ class WalletServiceTest {
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
 
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any(), any())
                 verify(walletRepository, times(0)).save(any())
             }
         }
@@ -325,7 +325,7 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }
                     .willAnswer { Mono.just(newWalletDocumentToBeSaved) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -347,7 +347,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1)).save(newWalletDocumentToBeSaved)
             }
         }
@@ -392,7 +395,7 @@ class WalletServiceTest {
                 given { applicationRepository.findById(anyString()) }
                     .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willReturn { Mono.just(getValidAPMPaymentMethod()) }
 
                 /* test */
@@ -414,7 +417,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_APM.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1)).save(newWalletDocumentToBeSaved)
             }
         }
@@ -447,7 +453,8 @@ class WalletServiceTest {
                     )
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(anyString())
+                verify(ecommercePaymentMethodsClient, times(0))
+                    .getPaymentMethodById(anyString(), anyString())
                 verify(walletRepository, times(0)).save(any())
             }
         }
@@ -492,7 +499,7 @@ class WalletServiceTest {
                     .willAnswer {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -517,7 +524,10 @@ class WalletServiceTest {
                     }
                     .verifyComplete()
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
             }
@@ -563,7 +573,7 @@ class WalletServiceTest {
                     .willAnswer {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -588,7 +598,10 @@ class WalletServiceTest {
                     }
                     .verifyComplete()
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
             }
@@ -634,7 +647,7 @@ class WalletServiceTest {
                     .willAnswer {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 /* test */
@@ -659,7 +672,10 @@ class WalletServiceTest {
                     }
                     .verifyComplete()
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
             }
@@ -706,7 +722,7 @@ class WalletServiceTest {
                     .willAnswer {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
                 /* test */
@@ -729,7 +745,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_APM.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
             }
@@ -857,7 +876,7 @@ class WalletServiceTest {
                                 .notificationUrl(notificationUrl.toString())
                         )
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
@@ -885,7 +904,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(npgClient, times(1))
                     .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
@@ -960,7 +982,7 @@ class WalletServiceTest {
                                     )
                                 )
                         )
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
@@ -1063,7 +1085,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
@@ -1147,7 +1172,7 @@ class WalletServiceTest {
                                 .notificationUrl(notificationUrl.toString())
                         )
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
@@ -1175,7 +1200,10 @@ class WalletServiceTest {
                     .verify()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_APM.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
@@ -1207,7 +1235,7 @@ class WalletServiceTest {
                         .state(WorkflowState.READY_FOR_PAYMENT)
                         .apply { fields = listOf() }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
@@ -1286,7 +1314,10 @@ class WalletServiceTest {
                     .verify()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
@@ -1386,7 +1417,7 @@ class WalletServiceTest {
                         )
 
                 /* Mock response */
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
@@ -1413,7 +1444,10 @@ class WalletServiceTest {
                     .verifyComplete()
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_APM.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(uniqueIdUtils, times(2)).generateUniqueId()
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
@@ -1507,7 +1541,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { mono { getValidCardsPaymentMethod() } }
 
                 /* test */
@@ -1529,7 +1563,10 @@ class WalletServiceTest {
                 )
 
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentWithCardDetails)
@@ -1578,7 +1615,7 @@ class WalletServiceTest {
 
                 given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { mono { getValidAPMPaymentMethod() } }
 
                 /* test */
@@ -1595,7 +1632,10 @@ class WalletServiceTest {
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_APM.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(0)).save(any())
@@ -1628,7 +1668,7 @@ class WalletServiceTest {
                     .verify()
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any(), any())
                 verify(walletRepository, times(0)).findById(any<String>())
                 verify(walletRepository, times(0)).save(any())
                 verify(npgClient, times(0)).confirmPayment(any(), any())
@@ -1667,7 +1707,7 @@ class WalletServiceTest {
                     .verify()
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any(), any())
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(0)).save(any())
@@ -1712,7 +1752,7 @@ class WalletServiceTest {
                     .verify()
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any(), any())
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(0)).save(any())
@@ -1761,7 +1801,7 @@ class WalletServiceTest {
                     .verify()
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
-                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+                verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any(), any())
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(0)).save(any())
@@ -1814,7 +1854,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { mono { getValidCardsPaymentMethod() } }
 
                 /* test */
@@ -1834,7 +1874,10 @@ class WalletServiceTest {
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentToSave)
@@ -1890,7 +1933,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { mono { getValidCardsPaymentMethod() } }
 
                 /* test */
@@ -1910,7 +1953,10 @@ class WalletServiceTest {
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentToSave)
@@ -1970,7 +2016,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer {
                         mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
                     }
@@ -1992,7 +2038,10 @@ class WalletServiceTest {
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentToSave)
@@ -2052,7 +2101,7 @@ class WalletServiceTest {
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
 
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer {
                         mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") }
                     }
@@ -2074,7 +2123,10 @@ class WalletServiceTest {
 
                 verify(npgSessionRedisTemplate, times(1)).findById(orderId)
                 verify(ecommercePaymentMethodsClient, times(1))
-                    .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+                    .getPaymentMethodById(
+                        PAYMENT_METHOD_ID_CARDS.value.toString(),
+                        ClientIdDto.IO.value
+                    )
                 verify(walletRepository, times(1))
                     .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
                 verify(walletRepository, times(1)).save(walletDocumentToSave)
@@ -3786,7 +3838,7 @@ class WalletServiceTest {
                 val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
 
                 /* Mock response */
-                given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                given { ecommercePaymentMethodsClient.getPaymentMethodById(any(), any()) }
                     .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
                 given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }

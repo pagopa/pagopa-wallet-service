@@ -22,12 +22,15 @@ class EcommercePaymentMethodsClient(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> {
+    fun getPaymentMethodById(
+        paymentMethodId: String,
+        xClientId: String
+    ): Mono<PaymentMethodResponse> {
 
         val maybePaymentMethodResponse: Mono<PaymentMethodResponse> =
             try {
                 logger.info("Starting getPaymentMethod given id $paymentMethodId")
-                ecommercePaymentMethodsClient.getPaymentMethod(paymentMethodId, null)
+                ecommercePaymentMethodsClient.getPaymentMethod(paymentMethodId, xClientId)
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
