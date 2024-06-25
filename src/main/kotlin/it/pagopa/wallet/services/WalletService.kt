@@ -341,7 +341,7 @@ class WalletService(
 
                 npgClient
                     .createNpgOrderBuild(
-                        correlationId = UUID.randomUUID(),
+                        correlationId = walletId.value,
                         createHostedOrderRequest =
                             CreateHostedOrderRequest()
                                 .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
@@ -505,7 +505,6 @@ class WalletService(
         walletId: WalletId,
         userId: UserId
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
-        val correlationId = UUID.randomUUID()
         return mono { npgSessionRedisTemplate.findById(orderId) }
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
@@ -525,7 +524,7 @@ class WalletService(
                                     "CP" ->
                                         confirmPaymentCard(
                                             session.sessionId,
-                                            correlationId,
+                                            walletId.value,
                                             orderId,
                                             wallet
                                         )
