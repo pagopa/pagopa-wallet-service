@@ -20,8 +20,6 @@ import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE
 import it.pagopa.wallet.client.NpgClient.NpgTracing.usingNpgTracing
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
-import java.io.IOException
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -30,6 +28,8 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import java.io.IOException
+import java.util.*
 
 /** NPG API client service class */
 @Component
@@ -59,17 +59,19 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("Sending orderBuild with correlationId: $correlationId")
-            apiKey
-                .fold(
-                    { Mono.error(it) },
-                    {
-                        npgWebClient.pspApiV1OrdersBuildPost(
-                            correlationId,
-                            it,
-                            createHostedOrderRequest
-                        )
-                    }
-                )
+            Try.of {
+                    apiKey.fold(
+                        { Mono.error(it) },
+                        {
+                            npgWebClient.pspApiV1OrdersBuildPost(
+                                correlationId,
+                                it,
+                                createHostedOrderRequest
+                            )
+                        }
+                    )
+                }
+                .getOrElseGet { Mono.error(it) }
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-orderBuild  for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -87,12 +89,14 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("getCardData with correlationId: $correlationId")
-            npgWebClient
-                .pspApiV1BuildCardDataGet(
-                    correlationId,
-                    npgPaypalPspApiKeysConfig.defaultApiKey,
-                    sessionId
-                )
+            Try.of {
+                    npgWebClient.pspApiV1BuildCardDataGet(
+                        correlationId,
+                        npgPaypalPspApiKeysConfig.defaultApiKey,
+                        sessionId
+                    )
+                }
+                .getOrElseGet { Mono.error(it) }
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -113,12 +117,14 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("confirmPayment with correlationId: $correlationId")
-            npgWebClient
-                .pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    npgPaypalPspApiKeysConfig.defaultApiKey,
-                    confirmPaymentRequest,
-                )
+            Try.of {
+                    npgWebClient.pspApiV1BuildConfirmPaymentPost(
+                        correlationId,
+                        npgPaypalPspApiKeysConfig.defaultApiKey,
+                        confirmPaymentRequest,
+                    )
+                }
+                .getOrElseGet { Mono.error(it) }
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -223,7 +229,7 @@ class NpgClient(
                         )
                         .startSpan()
                 },
-                { span -> Try.of { mono(span, operation) }.getOrElseGet { Mono.error(it) } },
+                { span -> mono(span, operation) },
                 { span -> span.end() }
             )
     }

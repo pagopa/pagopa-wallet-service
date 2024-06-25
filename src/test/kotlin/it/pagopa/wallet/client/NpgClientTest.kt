@@ -1,5 +1,10 @@
 package it.pagopa.wallet.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.Tracer
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
@@ -10,7 +15,10 @@ import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
 import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlinx.coroutines.reactor.mono
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
@@ -25,7 +33,9 @@ import reactor.test.StepVerifier
 class NpgClientTest {
     private val npgWebClient: PaymentServicesApi = mock()
     private val npgPspApiKeysConfig: NpgPspApiKeysConfig = mock()
-    private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig)
+    private val tracer: Tracer = mock()
+    private val objectMapper = ObjectMapper()
+    private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig, tracer, objectMapper)
 
     private val correlationId = UUID.randomUUID()
     private val sessionId = "sessionId"
@@ -54,6 +64,16 @@ class NpgClientTest {
                     .cancelUrl("cancelUrl")
                     .notificationUrl("notificationUrl")
             )
+
+    @BeforeEach
+    fun setup() {
+        val spanBuilder = Mockito.mock(SpanBuilder::class.java)
+        given(spanBuilder.setParent(any())).willReturn(spanBuilder)
+        given(spanBuilder.setAttribute(any<AttributeKey<String>>(), anyString()))
+            .willReturn(spanBuilder)
+        given(spanBuilder.startSpan()).willReturn(Span.getInvalid())
+        given(tracer.spanBuilder(anyString())).willReturn(spanBuilder)
+    }
 
     @Test
     fun `Should create payment order build successfully with cards`() {
