@@ -20,8 +20,6 @@ import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE
 import it.pagopa.wallet.client.NpgClient.NpgTracing.usingNpgTracing
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
-import java.io.IOException
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -30,6 +28,8 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import java.io.IOException
+import java.util.*
 
 /** NPG API client service class */
 @Component
@@ -144,12 +144,12 @@ class NpgClient(
         if (err is WebClientResponseException) {
             try {
                 val responseErrors =
-                    when (err.statusCode) {
-                        INTERNAL_SERVER_ERROR ->
+                    when (err.statusCode.value()) {
+                        INTERNAL_SERVER_ERROR.code() ->
                             objectMapper
                                 .readValue(err.responseBodyAsByteArray, ServerError::class.java)
                                 .errors
-                        BAD_REQUEST ->
+                        BAD_REQUEST.code() ->
                             objectMapper
                                 .readValue(err.responseBodyAsByteArray, ClientError::class.java)
                                 .errors
