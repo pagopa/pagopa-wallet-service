@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.vavr.control.Either
-import io.vavr.control.Try
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
 import it.pagopa.wallet.client.NpgClient.NpgTracing.GatewayOperation
@@ -59,19 +58,17 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("Sending orderBuild with correlationId: $correlationId")
-            Try.of {
-                    apiKey.fold(
-                        { Mono.error(it) },
-                        {
-                            npgWebClient.pspApiV1OrdersBuildPost(
-                                correlationId,
-                                it,
-                                createHostedOrderRequest
-                            )
-                        }
-                    )
-                }
-                .getOrElseGet { Mono.error(it) }
+            apiKey
+                .fold(
+                    { Mono.error(it) },
+                    {
+                        npgWebClient.pspApiV1OrdersBuildPost(
+                            correlationId,
+                            it,
+                            createHostedOrderRequest
+                        )
+                    }
+                )
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-orderBuild  for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -89,14 +86,12 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("getCardData with correlationId: $correlationId")
-            Try.of {
-                    npgWebClient.pspApiV1BuildCardDataGet(
-                        correlationId,
-                        npgPaypalPspApiKeysConfig.defaultApiKey,
-                        sessionId
-                    )
-                }
-                .getOrElseGet { Mono.error(it) }
+            npgWebClient
+                .pspApiV1BuildCardDataGet(
+                    correlationId,
+                    npgPaypalPspApiKeysConfig.defaultApiKey,
+                    sessionId
+                )
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
@@ -117,14 +112,12 @@ class NpgClient(
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
         ) { span, operation ->
             logger.info("confirmPayment with correlationId: $correlationId")
-            Try.of {
-                    npgWebClient.pspApiV1BuildConfirmPaymentPost(
-                        correlationId,
-                        npgPaypalPspApiKeysConfig.defaultApiKey,
-                        confirmPaymentRequest,
-                    )
-                }
-                .getOrElseGet { Mono.error(it) }
+            npgWebClient
+                .pspApiV1BuildConfirmPaymentPost(
+                    correlationId,
+                    npgPaypalPspApiKeysConfig.defaultApiKey,
+                    confirmPaymentRequest,
+                )
                 .doOnError(WebClientResponseException::class.java) {
                     logger.error(
                         "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",

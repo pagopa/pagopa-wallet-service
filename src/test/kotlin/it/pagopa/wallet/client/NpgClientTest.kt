@@ -25,6 +25,7 @@ import org.mockito.kotlin.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 class NpgClientTest {
@@ -185,15 +186,18 @@ class NpgClientTest {
         given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    objectMapper.writeValueAsBytes(
-                        ServerError().addErrorsItem(ErrorsInner().code("123").description("error"))
-                    ),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ServerError()
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))
+                        ),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -250,13 +254,15 @@ class NpgClientTest {
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1BuildConfirmPaymentPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -278,13 +284,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -309,13 +317,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    401,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        401,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -340,13 +350,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -371,13 +383,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    404,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        404,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -405,15 +419,18 @@ class NpgClientTest {
         given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    400,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    objectMapper.writeValueAsBytes(
-                        ClientError().addErrorsItem(ErrorsInner().code("123").description("error"))
-                    ),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        400,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ClientError()
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))
+                        ),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
