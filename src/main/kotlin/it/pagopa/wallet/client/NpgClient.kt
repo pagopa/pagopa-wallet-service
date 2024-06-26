@@ -201,7 +201,7 @@ class NpgClient(
                 )
         }
 
-    private object NpgTracing {
+    object NpgTracing {
         val NPG_CORRELATION_ID_ATTRIBUTE_NAME: AttributeKey<String> =
             AttributeKey.stringKey("npg.correlation_id")
         val NPG_ERROR_CODES_ATTRIBUTE_NAME: AttributeKey<List<String>> =

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
@@ -18,13 +19,9 @@ import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.given
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -34,6 +31,7 @@ class NpgClientTest {
     private val npgWebClient: PaymentServicesApi = mock()
     private val npgPspApiKeysConfig: NpgPspApiKeysConfig = mock()
     private val tracer: Tracer = mock()
+    private val spanBuilder: SpanBuilder = mock()
     private val objectMapper = ObjectMapper()
     private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig, tracer, objectMapper)
 
@@ -67,10 +65,8 @@ class NpgClientTest {
 
     @BeforeEach
     fun setup() {
-        val spanBuilder = Mockito.mock(SpanBuilder::class.java)
         given(spanBuilder.setParent(any())).willReturn(spanBuilder)
-        given(spanBuilder.setAttribute(any<AttributeKey<String>>(), anyString()))
-            .willReturn(spanBuilder)
+        given(spanBuilder.setAttribute(any<AttributeKey<Any>>(), any())).willReturn(spanBuilder)
         given(spanBuilder.startSpan()).willReturn(Span.getInvalid())
         given(tracer.spanBuilder(anyString())).willReturn(spanBuilder)
     }
@@ -185,6 +181,8 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
         // prerequisite
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
             .willThrow(
@@ -210,6 +208,16 @@ class NpgClientTest {
         verify(npgWebClient, times(1))
             .pspApiV1BuildCardDataGet(correlationId, defaultApiKey, sessionId)
         verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+
+        verify(spanBuilder)
+            .setAttribute(eq(NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME), anyString())
+        verify(span).setStatus(eq(StatusCode.ERROR))
+        verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(500L))
+        verify(span)
+            .setAttribute(
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
+                eq(listOf("123"))
+            )
     }
 
     @Test
@@ -391,8 +399,10 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with INTERNAL_SERVER_ERROR error for 400 from ecommerce-payment-methods`() {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
+        val span = spy(Span.current())
 
         // prerequisite
+        given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
             .willThrow(
@@ -420,5 +430,14 @@ class NpgClientTest {
         verify(npgWebClient, times(1))
             .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
         verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+        verify(spanBuilder)
+            .setAttribute(eq(NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME), anyString())
+        verify(span).setStatus(eq(StatusCode.ERROR))
+        verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(400L))
+        verify(span)
+            .setAttribute(
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
+                eq(listOf("123"))
+            )
     }
 }
