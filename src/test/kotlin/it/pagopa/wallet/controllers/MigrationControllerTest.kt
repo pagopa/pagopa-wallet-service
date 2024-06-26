@@ -131,13 +131,33 @@ class MigrationControllerTest {
     }
 
     @Test
-    fun `should return bad request when trying to update Wallet from illegal state`() {
+    fun `should return conflict when trying to update Wallet from illegal state`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { migrationService.updateWalletCardDetails(any(), any()) }
             .willAnswer {
                 MigrationError.WalletIllegalStateTransition(
                         WalletId.create(),
                         WalletStatusDto.ERROR
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatusCode.valueOf(409))
+    }
+
+    @Test
+    fun `should return conflict when trying to update Wallet while another wallet is already onboarded`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletAlreadyOnboarded(
+                        WalletId.create(),
                     )
                     .toMono<Wallet>()
             }
