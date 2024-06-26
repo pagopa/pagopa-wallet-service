@@ -14,6 +14,7 @@ import it.pagopa.wallet.domain.wallets.details.CardDetails
 import it.pagopa.wallet.domain.wallets.details.ExpiryDate
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.services.MigrationService
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -29,7 +30,6 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import java.util.*
 
 @WebFluxTest(MigrationController::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
