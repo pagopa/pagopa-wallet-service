@@ -166,7 +166,7 @@ class NpgClient(
                 return NpgClientException(
                     description =
                         "Invalid error response from NPG with status code ${err.statusCode}",
-                    httpStatusCode = HttpStatus.valueOf(err.statusCode.value()),
+                    httpStatusCode = HttpStatus.BAD_GATEWAY,
                 )
             }
         }
