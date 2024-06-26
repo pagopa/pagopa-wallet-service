@@ -12,6 +12,8 @@ import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
+import java.nio.charset.StandardCharsets
+import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,8 +29,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.test.StepVerifier
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 class NpgClientTest {
     private val npgWebClient: PaymentServicesApi = mock()
