@@ -185,9 +185,7 @@ class MigrationServiceTest {
         val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
         mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }
+            given { walletRepository.findByContractId(any<String>()) }
                 .willAnswer {
                     Mono.just(walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED))
                 }
@@ -236,9 +234,7 @@ class MigrationServiceTest {
         val cardDetails = generateCardDetails()
 
         mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }
+            given { walletRepository.findByContractId(any<String>()) }
                 .willAnswer {
                     walletPmDocument
                         .createWalletTest(USER_ID, WalletStatusDto.VALIDATED)
@@ -260,8 +256,8 @@ class MigrationServiceTest {
     @Test
     fun `should throw not found when update details for non existing contract id`() {
         val contractId = ContractId(UUID.randomUUID().toString())
-        given { mongoWalletMigrationRepository.findByContractId(any()) }
-            .willAnswer { Flux.empty<WalletPaymentManagerDocument>() }
+        given { walletRepository.findByContractId(any()) }
+            .willAnswer { Mono.empty<WalletPaymentManagerDocument>() }
         migrationService
             .updateWalletCardDetails(contractId, generateCardDetails())
             .test()
@@ -277,9 +273,7 @@ class MigrationServiceTest {
         val paymentManagerId = Random().nextLong().toString()
         val cardDetails = generateCardDetails()
         mockWalletMigration(paymentManagerId) { migrationDocument, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(migrationDocument) }
-            given { walletRepository.findById(any<String>()) }
+            given { walletRepository.findByContractId(any<String>()) }
                 .willAnswer {
                     Mono.just(migrationDocument.createWalletTest(USER_ID, WalletStatusDto.ERROR))
                 }
@@ -301,9 +295,7 @@ class MigrationServiceTest {
         val cardDetails = generateCardDetails()
 
         mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }
+            given { walletRepository.findByContractId(any<String>()) }
                 .willAnswer {
                     walletPmDocument
                         .createWalletTest(USER_ID, WalletStatusDto.VALIDATED)
@@ -328,9 +320,8 @@ class MigrationServiceTest {
         val cardDetails = generateCardDetails()
         mockWalletMigration(paymentManagerId) { walletPmDocument, contractId ->
             val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }.willAnswer { walletTest.toMono() }
+            given { walletRepository.findByContractId(any<String>()) }
+                .willAnswer { walletTest.toMono() }
             given {
                     walletRepository
                         .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
@@ -353,9 +344,8 @@ class MigrationServiceTest {
     fun `should delete Wallet successfully if contractId exists`() {
         mockWalletMigration { walletPmDocument, contractId ->
             val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.just(walletPmDocument) }
-            given { walletRepository.findById(any<String>()) }.willAnswer { walletTest.toMono() }
+            given { walletRepository.findByContractId(any<String>()) }
+                .willAnswer { walletTest.toMono() }
             given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
 
             migrationService
@@ -375,8 +365,8 @@ class MigrationServiceTest {
     @Test
     fun `should thrown ContractIdNotFound when ContractId doesn't exists`() {
         mockWalletMigration { _, contractId ->
-            given { mongoWalletMigrationRepository.findByContractId(any()) }
-                .willAnswer { Flux.empty<WalletPaymentManager>() }
+            given { walletRepository.findByContractId(any()) }
+                .willAnswer { Mono.empty<WalletPaymentManager>() }
 
             migrationService
                 .deleteWallet(contractId)
@@ -393,7 +383,7 @@ class MigrationServiceTest {
         mockWalletMigration { walletPmDocument, contractId ->
             given { mongoWalletMigrationRepository.findByContractId(any()) }
                 .willReturn(Flux.just(walletPmDocument))
-            given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
+            given { walletRepository.findByContractId(any<String>()) }.willReturn(Mono.empty())
 
             migrationService
                 .deleteWallet(contractId)
