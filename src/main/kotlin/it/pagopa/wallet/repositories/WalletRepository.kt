@@ -14,6 +14,7 @@ interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
     fun findByUserId(userId: String): Flux<Wallet>
     fun findByIdAndUserId(id: String, userId: String): Mono<Wallet>
     fun findByUserIdAndStatus(userId: String, status: WalletStatusDto): Flux<Wallet>
+    fun findByContractId(contract: String): Mono<Wallet>
 
     @Query(
         value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1, 'status' : ?2 }",

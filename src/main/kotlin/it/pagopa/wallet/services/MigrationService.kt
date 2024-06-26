@@ -24,7 +24,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
@@ -199,11 +198,8 @@ class MigrationService(
             .hasElement()
     }
 
-    private fun findWalletByContractId(contractId: ContractId): Flux<Wallet> =
-        walletPaymentManagerRepository
-            .findByContractId(contractId)
-            .flatMap { walletRepository.findById(it.walletId.value.toString()) }
-            .map { it.toDomain() }
+    private fun findWalletByContractId(contractId: ContractId): Mono<Wallet> =
+        walletRepository.findByContractId(contractId.contractId).map { it.toDomain() }
 
     private fun createWalletByPaymentManager(
         migration: WalletPaymentManager,
