@@ -113,12 +113,12 @@ class ExceptionHandler {
                     .detail("The contract id or associated wallet does not exist")
             is MigrationError.WalletIllegalStateTransition ->
                 ProblemJsonDto()
-                    .status(HttpStatus.BAD_REQUEST.value())
+                    .status(HttpStatus.CONFLICT.value())
                     .title("Invalid request")
                     .detail("Cannot update Wallet details while its status is ${e.status}")
             is MigrationError.WalletAlreadyOnboarded ->
                 ProblemJsonDto()
-                    .status(HttpStatus.BAD_REQUEST.value())
+                    .status(HttpStatus.CONFLICT.value())
                     .title("Wallet already onboarded")
                     .detail(
                         "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"

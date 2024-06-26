@@ -24,6 +24,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -130,7 +131,7 @@ class MigrationControllerTest {
     }
 
     @Test
-    fun `should return bad request when trying to update Wallet from illegal state`() {
+    fun `should return conflict when trying to update Wallet from illegal state`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { migrationService.updateWalletCardDetails(any(), any()) }
             .willAnswer {
@@ -147,7 +148,27 @@ class MigrationControllerTest {
             .bodyValue(createDetailRequest(contractId))
             .exchange()
             .expectStatus()
-            .isBadRequest
+            .isEqualTo(HttpStatusCode.valueOf(409))
+    }
+
+    @Test
+    fun `should return conflict when trying to update Wallet while another wallet is already onboarded`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletAlreadyOnboarded(
+                        WalletId.create(),
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatusCode.valueOf(409))
     }
 
     @Test
