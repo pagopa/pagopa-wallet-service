@@ -236,7 +236,7 @@ class WalletService(
                             ),
                             Pair(
                                 WalletApplicationMetadata.Metadata.TRANSACTION_ID,
-                                transactionId.value().toString()
+                                transactionId.trimmedUUIDString
                             ),
                             Pair(WalletApplicationMetadata.Metadata.AMOUNT, amount.toString())
                         )
@@ -1215,7 +1215,20 @@ class WalletService(
     ): URI {
         return if (!isTransactionWithContextualOnboard) {
             UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                .build(mapOf(Pair("walletId", walletId), Pair("orderId", orderId)))
+                .build(
+                    mapOf(
+                        Pair("walletId", walletId),
+                        Pair("orderId", orderId),
+                        Pair(
+                            "sessionToken",
+                            jwtTokenUtils
+                                .generateJwtTokenForNpgNotifications(
+                                    walletIdAsClaim = walletId.toString()
+                                )
+                                .fold({ throw it }, { token -> token })
+                        )
+                    )
+                )
         } else {
             UriComponentsBuilder.fromHttpUrl(
                     sessionUrlConfig.trxWithContextualOnboardNotificationUrl
@@ -1227,14 +1240,12 @@ class WalletService(
                         Pair("orderId", orderId),
                         Pair(
                             "sessionToken",
-                            transactionId?.let {
-                                jwtTokenUtils
-                                    .generateJwtTokenForNpgNotifications(
-                                        walletId.toString(),
-                                        transactionId
-                                    )
-                                    .fold({ throw it }, { token -> token })
-                            }
+                            jwtTokenUtils
+                                .generateJwtTokenForNpgNotifications(
+                                    walletIdAsClaim = walletId.toString(),
+                                    transactionIdAsClaim = transactionId
+                                )
+                                .fold({ throw it }, { token -> token })
                         )
                     )
                 )

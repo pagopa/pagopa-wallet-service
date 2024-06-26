@@ -138,7 +138,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
@@ -260,7 +260,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
@@ -293,7 +293,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,

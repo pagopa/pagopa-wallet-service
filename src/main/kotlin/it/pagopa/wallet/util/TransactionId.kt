@@ -33,7 +33,7 @@ data class TransactionId(val trimmedUUIDString: String) {
         }
     }
 
-    fun value(): UUID {
+    fun uuid(): UUID {
         return fromTrimmedUUIDString(trimmedUUIDString)
     }
 }

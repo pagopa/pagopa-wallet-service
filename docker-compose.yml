@@ -87,7 +87,7 @@ services:
 
   storage:
     image: mcr.microsoft.com/azure-storage/azurite:latest@sha256:d449d953a1c5bd1e26c800744a65c451e88f3387b696e02e3e2e79a995c3105b
-    container_name: azurite
+    container_name: pagopa-wallet-azurite
     ports:
       - "10000:10000"
       - "10001:10001"
@@ -98,7 +98,7 @@ services:
       - pagopa-wallet-net
 
   azurite-init:
-    container_name: azurite-init
+    container_name: pagopa-wallet-azurite-init
     build:
       context: azurite/
       dockerfile: Dockerfile

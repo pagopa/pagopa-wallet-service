@@ -10,41 +10,48 @@ import io.vavr.control.Either
 import it.pagopa.wallet.exception.JWTTokenGenerationException
 import java.time.Duration
 import java.util.*
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
-import org.mockito.BDDMockito
 import org.mockito.Mockito
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.given
 
 internal class JwtTokenUtilsTests {
     private val jwtSecretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(STRONG_KEY))
     private val jwtTokenUtils: JwtTokenUtils =
         JwtTokenUtils(jwtSecretKey, TOKEN_VALIDITY_TIME_SECONDS)
+
     @Test
-    fun shouldGenerateValidJwtTokenWithOrderIdAndTransactionId() {
+    fun shouldGenerateValidJwtTokenWithWalletIdAndTransactionId() {
         val transactionIdAsClaim = UUID.randomUUID().toString()
         val walletAsClaim = UUID.randomUUID().toString()
 
         val generatedToken: Either<JWTTokenGenerationException, String> =
-            jwtTokenUtils.generateJwtTokenForNpgNotifications(transactionIdAsClaim, walletAsClaim)
-        Assertions.assertTrue(generatedToken.isRight)
-        Assertions.assertNotNull(generatedToken)
+            jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                transactionIdAsClaim = transactionIdAsClaim,
+                walletIdAsClaim = walletAsClaim
+            )
+        assertTrue(generatedToken.isRight)
+        assertNotNull(generatedToken)
         val claims =
-            Assertions.assertDoesNotThrow<Claims> {
+            assertDoesNotThrow<Claims> {
                 Jwts.parserBuilder()
                     .setSigningKey(jwtSecretKey)
                     .build()
                     .parseClaimsJws(generatedToken.get())
                     .body
             }
-        Assertions.assertEquals(
+        assertEquals(
             transactionIdAsClaim,
             claims[JwtTokenUtils.TRANSACTION_ID_CLAIM, String::class.java]
         )
-        Assertions.assertNotNull(claims.id)
-        Assertions.assertNotNull(claims.issuedAt)
-        Assertions.assertNotNull(claims.expiration)
-        Assertions.assertEquals(
+        assertEquals(walletAsClaim, claims[JwtTokenUtils.WALLET_ID_CLAIM, String::class.java])
+        assertNotNull(claims.id)
+        assertNotNull(claims.issuedAt)
+        assertNotNull(claims.expiration)
+        assertEquals(
             Duration.ofSeconds(TOKEN_VALIDITY_TIME_SECONDS.toLong()).toMillis(),
             claims.expiration.time - claims.issuedAt.time
         )
@@ -55,28 +62,54 @@ internal class JwtTokenUtilsTests {
         val transactionIdAsClaim = UUID.randomUUID().toString()
         val walletAsClaim = UUID.randomUUID().toString()
 
-        Mockito.mockStatic(Jwts::class.java).use { mockedJwts ->
+        mockStatic(Jwts::class.java).use { mockedJwts ->
             val jwtBuilder = Mockito.mock(JwtBuilder::class.java)
             mockedJwts.`when`<Any> { Jwts.builder() }.thenReturn(jwtBuilder)
-            BDDMockito.given(jwtBuilder.setId(ArgumentMatchers.any())).willReturn(jwtBuilder)
-            BDDMockito.given(jwtBuilder.setIssuedAt(ArgumentMatchers.any())).willReturn(jwtBuilder)
-            BDDMockito.given(jwtBuilder.setExpiration(ArgumentMatchers.any()))
+            given(jwtBuilder.setId(ArgumentMatchers.any())).willReturn(jwtBuilder)
+            given(jwtBuilder.setIssuedAt(ArgumentMatchers.any())).willReturn(jwtBuilder)
+            given(jwtBuilder.setExpiration(ArgumentMatchers.any())).willReturn(jwtBuilder)
+            given(jwtBuilder.signWith(ArgumentMatchers.any())).willReturn(jwtBuilder)
+            given(jwtBuilder.claim(ArgumentMatchers.any(), ArgumentMatchers.any()))
                 .willReturn(jwtBuilder)
-            BDDMockito.given(jwtBuilder.signWith(ArgumentMatchers.any())).willReturn(jwtBuilder)
-            BDDMockito.given(jwtBuilder.claim(ArgumentMatchers.any(), ArgumentMatchers.any()))
-                .willReturn(jwtBuilder)
-            Mockito.doThrow(JwtException("Exception")).`when`(jwtBuilder).compact()
+            doThrow(JwtException("Exception")).`when`(jwtBuilder).compact()
             val generatedToken: Either<JWTTokenGenerationException, String> =
                 jwtTokenUtils.generateJwtTokenForNpgNotifications(
-                    transactionIdAsClaim,
-                    walletAsClaim
+                    transactionIdAsClaim = transactionIdAsClaim,
+                    walletIdAsClaim = walletAsClaim
                 )
-            Assertions.assertTrue(generatedToken.isLeft)
-            Assertions.assertEquals(
-                JWTTokenGenerationException::class.java,
-                generatedToken.left.javaClass
-            )
+            assertTrue(generatedToken.isLeft)
+            assertEquals(JWTTokenGenerationException::class.java, generatedToken.left.javaClass)
         }
+    }
+
+    @Test
+    fun shouldGenerateValidJwtTokenWithWithoutTransactionId() {
+        val walletAsClaim = UUID.randomUUID().toString()
+
+        val generatedToken: Either<JWTTokenGenerationException, String> =
+            jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                transactionIdAsClaim = null,
+                walletIdAsClaim = walletAsClaim
+            )
+        assertTrue(generatedToken.isRight)
+        assertNotNull(generatedToken)
+        val claims =
+            assertDoesNotThrow<Claims> {
+                Jwts.parserBuilder()
+                    .setSigningKey(jwtSecretKey)
+                    .build()
+                    .parseClaimsJws(generatedToken.get())
+                    .body
+            }
+        assertNull(claims[JwtTokenUtils.TRANSACTION_ID_CLAIM, String::class.java])
+        assertEquals(walletAsClaim, claims[JwtTokenUtils.WALLET_ID_CLAIM, String::class.java])
+        assertNotNull(claims.id)
+        assertNotNull(claims.issuedAt)
+        assertNotNull(claims.expiration)
+        assertEquals(
+            Duration.ofSeconds(TOKEN_VALIDITY_TIME_SECONDS.toLong()).toMillis(),
+            claims.expiration.time - claims.issuedAt.time
+        )
     }
 
     companion object {

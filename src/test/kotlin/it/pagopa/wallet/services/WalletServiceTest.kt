@@ -856,6 +856,13 @@ class WalletServiceTest {
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -875,6 +882,11 @@ class WalletServiceTest {
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
+                )
         }
     }
 
@@ -961,7 +973,7 @@ class WalletServiceTest {
                     )
                     .build(
                         mapOf(
-                            Pair("transactionId", TransactionId(TRANSACTION_ID).value()),
+                            Pair("transactionId", TransactionId(TRANSACTION_ID).trimmedUUIDString),
                             Pair(
                                 "walletId",
                                 walletDocumentCreatedStatusForTransactionWithContextualOnboard.id
@@ -1013,7 +1025,12 @@ class WalletServiceTest {
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
 
-            given { jwtTokenUtils.generateJwtTokenForNpgNotifications(any(), any()) }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
                 .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
 
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
@@ -1036,6 +1053,11 @@ class WalletServiceTest {
             verify(npgClient, times(1))
                 .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = TRANSACTION_ID,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
+                )
         }
     }
 
@@ -1124,6 +1146,13 @@ class WalletServiceTest {
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -1144,6 +1173,11 @@ class WalletServiceTest {
             verify(npgClient, times(1))
                 .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
+                )
         }
     }
 
@@ -1231,6 +1265,13 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(eq(npgSession)) }
                 .willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -1251,6 +1292,11 @@ class WalletServiceTest {
             verify(npgClient, times(1))
                 .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
+                )
         }
     }
 
@@ -1355,6 +1401,13 @@ class WalletServiceTest {
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -3721,12 +3774,24 @@ class WalletServiceTest {
 
             given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>("token") }
             /* test */
             walletService
                 .createSessionWallet(USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST)
                 .test()
                 .expectError(PspNotFoundException::class.java)
                 .verify()
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
+                )
         }
     }
 
