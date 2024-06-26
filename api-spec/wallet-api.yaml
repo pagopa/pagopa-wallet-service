@@ -816,6 +816,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '409':
+          description: 'Wallet update conflict status'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '429':
           description: Too many requests
           headers:
@@ -864,6 +870,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: 'ContractId or Wallet not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '409':
+          description: 'Wallet delete conflict status'
           content:
             application/json:
               schema:
