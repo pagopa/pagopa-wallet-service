@@ -4,7 +4,7 @@ import it.pagopa.generated.wallet.model.*
 import java.time.OffsetDateTime
 import java.util.*
 
-object WarmupRequests {
+object WarmupUtils {
     val mockedUUID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
     val walletCreateRequest =
@@ -26,7 +26,7 @@ object WarmupRequests {
             )
         }
 
-    val sessionInputCardDataRequest = """{"paymentMethodType":"cards"}"""
+    const val sessionInputCardDataRequest = """{"paymentMethodType":"cards"}"""
 
     val walletNotificationRequest =
         WalletNotificationRequestDto().apply {
@@ -46,6 +46,14 @@ object WarmupRequests {
             this.clientId = ClientIdDto.IO
         }
 
+    val createTransactionWalletRequestDto =
+        WalletTransactionCreateRequestDto().apply {
+            this.amount = 0
+            this.paymentMethodId = mockedUUID
+            this.useDiagnosticTracing = true
+        }
+
+    const val TRANSACTION_WALLET_URI = "http://localhost:8080/transactions/{transactionId}/wallets"
     const val WALLETS_URL = "http://localhost:8080/wallets"
 
     const val WALLETS_ID_RESOURCE_URL = "${WALLETS_URL}/{walletId}"
