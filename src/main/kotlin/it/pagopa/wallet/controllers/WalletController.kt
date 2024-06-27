@@ -14,15 +14,20 @@ import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
+import it.pagopa.wallet.warmup.annotations.WarmupFunction
+import it.pagopa.wallet.warmup.utils.WarmupRequests
 import java.net.URI
+import java.time.Duration
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
@@ -32,7 +37,8 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository
+    @Autowired private val loggingEventRepository: LoggingEventRepository,
+    private val webClient: WebClient = WebClient.create()
 ) : WalletsApi {
 
     override fun createWallet(
@@ -294,5 +300,188 @@ class WalletController(
                 .filter { header: String -> header.startsWith("Bearer ") }
                 .map { header: String -> header.substring("Bearer ".length) }
         )
+    }
+
+    @WarmupFunction
+    fun createWalletWarmup() {
+        webClient
+            .post()
+            .uri(URI.create(WarmupRequests.WALLETS_URL))
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .header(WarmupRequests.CLIENT_ID_HEADER_KEY, "IO")
+            .bodyValue(WarmupRequests.walletCreateRequest)
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun getWalletsByUserIdWarmup() {
+        webClient
+            .get()
+            .uri(URI.create(WarmupRequests.WALLETS_URL))
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun getWalletByIdWarmup() {
+        webClient
+            .get()
+            .uri(
+                WarmupRequests.WALLETS_ID_RESOURCE_URL,
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun deleteWalletWarmup() {
+        webClient
+            .delete()
+            .uri(
+                WarmupRequests.WALLETS_ID_RESOURCE_URL,
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun patchWalletWarmup() {
+        webClient
+            .patch()
+            .uri(
+                WarmupRequests.WALLETS_ID_RESOURCE_URL,
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WarmupRequests.patchWalletStatusErrorRequest)
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun updateWalletApplicationsWarmup() {
+        webClient
+            .put()
+            .uri(
+                "${WarmupRequests.WALLETS_ID_RESOURCE_URL}/applications",
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WarmupRequests.walletApplicationUpdateRequestRequest)
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun createSessionWalletWarmup() {
+        webClient
+            .post()
+            .uri(
+                WarmupRequests.WALLETS_SESSIONS_URL,
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WarmupRequests.sessionInputCardDataRequest)
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun getSessionWalletWarmup() {
+        webClient
+            .get()
+            .uri(
+                WarmupRequests.WALLETS_SESSIONS_BY_ORDER_ID_URL,
+                mapOf(
+                    "walletId" to WarmupRequests.mockedUUID,
+                    "orderId" to WarmupRequests.mockedUUID
+                )
+            )
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun postValidationWarmup() {
+        webClient
+            .post()
+            .uri(
+                "${WarmupRequests.WALLETS_SESSIONS_BY_ORDER_ID_URL}/validations",
+                mapOf(
+                    "walletId" to WarmupRequests.mockedUUID,
+                    "orderId" to WarmupRequests.mockedUUID
+                )
+            )
+            .header(WarmupRequests.USER_ID_HEADER_KEY, WarmupRequests.mockedUUID.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun postNotificationWarmup() {
+        webClient
+            .post()
+            .uri(
+                "${WarmupRequests.WALLETS_SESSIONS_BY_ORDER_ID_URL}/notifications",
+                mapOf(
+                    "walletId" to WarmupRequests.mockedUUID,
+                    "orderId" to WarmupRequests.mockedUUID
+                )
+            )
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer securityToken")
+            .bodyValue(WarmupRequests.walletNotificationRequest)
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun getWalletAuthDataWarmup() {
+        webClient
+            .get()
+            .uri(
+                "${WarmupRequests.WALLETS_ID_RESOURCE_URL}/auth-data",
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
+    }
+
+    @WarmupFunction
+    fun updateWalletUsage() {
+        webClient
+            .patch()
+            .uri(
+                "${WarmupRequests.WALLETS_ID_RESOURCE_URL}/usages",
+                mapOf("walletId" to WarmupRequests.mockedUUID)
+            )
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WarmupRequests.updateWalletUsageRequestDto)
+            .retrieve()
+            .toBodilessEntity()
+            .block(Duration.ofSeconds(10))
     }
 }
