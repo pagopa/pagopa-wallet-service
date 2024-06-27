@@ -354,7 +354,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should save wallet document for APM payment method`() {
+    fun `should save wallet document for PayPal payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
@@ -665,7 +665,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should save wallet document for payment with contextual onboard for APM payment method`() {
+    fun `should save wallet document for payment with contextual onboard for PayPal payment method`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use { uuidMockStatic ->
@@ -1301,7 +1301,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should create wallet session for transaction with APM`() {
+    fun `should create wallet session for transaction with PayPal`() {
         /* preconditions */
         val mockedUUID = WALLET_UUID.value
         val mockedInstant = Instant.now()
@@ -1555,7 +1555,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should throw error when execute validation for wallet APM`() {
+    fun `should throw error when execute validation for wallet PayPal`() {
         /* preconditions */
 
         mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
@@ -2381,11 +2381,11 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should find wallet auth data by ID with apm`() {
+    fun `should find wallet auth data by ID with PayPal`() {
         /* preconditions */
 
         val wallet = walletDocumentStatusValidatedAPM(MASKED_EMAIL.value)
-        val walletAuthDataDto = WalletTestUtils.walletAPMAuthDataDto()
+        val walletAuthDataDto = WalletTestUtils.walletPayPalAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
 
@@ -3522,7 +3522,7 @@ class WalletServiceTest {
 
     @ParameterizedTest
     @MethodSource("declinedAuthErrorCodeTestSource")
-    fun `find session should return response with final status true mapping DENIED error codes for apm wallet`(
+    fun `find session should return response with final status true mapping DENIED error codes for PayPal wallet`(
         errorCode: String?
     ) {
         /* preconditions */
@@ -3604,7 +3604,7 @@ class WalletServiceTest {
 
     @ParameterizedTest
     @MethodSource("operationResultErrorStatusMethodSource")
-    fun `find session should return response with final status true mapping NPG operation result for apm wallet`(
+    fun `find session should return response with final status true mapping NPG operation result for PayPal wallet`(
         operationResult: WalletNotificationRequestDto.OperationResultEnum,
         expectedOutcome: SessionWalletRetrieveResponseDto.OutcomeEnum
     ) {
@@ -3643,7 +3643,7 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `find session should return response with final status true mapping NPG operation result for apm wallet with DECLINED operation result`() {
+    fun `find session should return response with final status true mapping NPG operation result for PayPal wallet with DECLINED operation result`() {
         /* preconditions */
         val walletId = WALLET_UUID.value
         val userId = USER_ID.id
