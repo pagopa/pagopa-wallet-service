@@ -1,6 +1,7 @@
 package it.pagopa.wallet.config
 
 import io.netty.channel.ChannelOption
+import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.npg.api.PaymentServicesApi
@@ -20,11 +21,19 @@ class WebClientConfig {
     fun npgClient(
         @Value("\${npgService.uri}") baseUrl: String,
         @Value("\${npgService.readTimeout}") readTimeout: Int,
-        @Value("\${npgService.connectionTimeout}") connectionTimeout: Int
+        @Value("\${npgService.connectionTimeout}") connectionTimeout: Int,
+        @Value("\${npgService.tcp.keepAlive.enabled}") tcpKeepAliveEnabled: Boolean,
+        @Value("\${npgService.tcp.keepAlive.idle}") tcpKeepAliveIdle: Int,
+        @Value("\${npgService.tcp.keepAlive.intvl}") tcpKeepAliveIntvl: Int,
+        @Value("\${npgService.tcp.keepAlive.cnt}") tcpKeepAliveCnt: Int
     ): PaymentServicesApi {
         val httpClient =
             HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
+                .option(ChannelOption.SO_KEEPALIVE, tcpKeepAliveEnabled)
+                .option(EpollChannelOption.TCP_KEEPIDLE, tcpKeepAliveIdle)
+                .option(EpollChannelOption.TCP_KEEPINTVL, tcpKeepAliveIntvl)
+                .option(EpollChannelOption.TCP_KEEPCNT, tcpKeepAliveCnt)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
                         ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS)
