@@ -74,6 +74,10 @@ If you want to customize the application environment, reference this table:
 | NPG_SERVICE_URI                                          | URL used to contact the payment gateway                            | string                   |         |
 | NPG_SERVICE_READ_TIMEOUT                                 | Timeout for requests towards the payment gateway                   | string                   |         |
 | NPG_SERVICE_CONNECTION_TIMEOUT                           | Timeout for estabilishing connections towards the payment gateway  | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED                       | Whether tcp keepalive is enabled for payment gateway connections   | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_IDLE                          | Configures the idle time after tcp starts sending keepalive probes | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_INTVL                         | Configures the time between individual keepalive probes            | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_CNT                           | Configures the maximum number of TCP keepalive probes              | string                   |         |
 | NPG_SERVICE_API_KEY                                      | Payment gateway API key                                            | string                   |         |
 | MONGO_HOST                                               | Host where MongoDB instance used to persist wallet data            | hostname (string)        |         |
 | MONGO_PORT                                               | Port where MongoDB is bound to in MongoDB host                     | number                   |         |
