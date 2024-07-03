@@ -22,11 +22,7 @@ microservice-chart:
         OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
         OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-wallet-service-blue,deployment.environment=uat"
         EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue-b
-        NPG_SERVICE_URI: "https://api.uat.platform.pagopa.it/ecommerce/mock/npg/v1"
-        ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/mock/payment-methods-service/v1"
-        ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.uat.platform.pagopa.it/ecommerce/mock/payment-methods-service/v2"
-      envSecret:
-        ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-methods-load-test-api-key
+      envSecret: {}
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
     tag: "0.14.2"

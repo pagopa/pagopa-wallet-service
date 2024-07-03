@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.common.tracing.Tracing
+import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
@@ -16,9 +17,6 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
-import java.net.URI
-import java.time.Duration
-import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -31,6 +29,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Mono
+import java.net.URI
+import java.time.Duration
+import java.util.*
 
 @RestController
 @Slf4j
@@ -38,7 +39,8 @@ import reactor.core.publisher.Mono
 class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
-    private val webClient: WebClient = WebClient.create()
+    @Autowired private val walletTracing: WalletTracing,
+    private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
     override fun createWallet(
@@ -168,6 +170,11 @@ class WalletController(
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
         return walletNotificationRequestDto.flatMap { requestDto ->
+            val gatewayOutcomeResult =
+                WalletTracing.GatewayNotificationOutcomeResult(
+                    gatewayAuthorizationStatus = requestDto.operationResult.value,
+                    errorCode = requestDto.errorCode
+                )
             getAuthenticationToken(exchange)
                 .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
                 .flatMap { securityToken ->
@@ -179,6 +186,28 @@ class WalletController(
                     )
                 }
                 .flatMap { it.saveEvents(loggingEventRepository) }
+                .doOnNext {
+                    walletTracing.traceWalletUpdate(
+                        WalletTracing.WalletUpdateResult(
+                            WalletTracing.WalletNotificationOutcome.OK,
+                            it.status,
+                            WalletTracing.GatewayNotificationOutcomeResult(
+                                gatewayAuthorizationStatus = it.validationOperationResult?.value
+                                        ?: gatewayOutcomeResult.gatewayAuthorizationStatus,
+                                errorCode = it.validationErrorCode ?: gatewayOutcomeResult.errorCode
+                            )
+                        )
+                    )
+                }
+                .doOnError { error ->
+                    walletTracing.traceWalletUpdate(
+                        WalletTracing.WalletUpdateResult(
+                            errorToWalletNotificationOutcome(error),
+                            extractWalletStatusFromError(error),
+                            gatewayOutcomeResult
+                        )
+                    )
+                }
                 .map {
                     /*
                      * @formatter:off
