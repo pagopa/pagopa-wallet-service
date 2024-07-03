@@ -166,9 +166,10 @@ class MigrationService(
             WalletStatusDto.VALIDATED ->
                 if (wallet.details?.equals(cardDetails) == true) wallet.toMono()
                 else MigrationError.WalletIllegalStateTransition(wallet.id, wallet.status).toMono()
-            WalletStatusDto.ERROR,
-            WalletStatusDto.DELETED ->
+            WalletStatusDto.ERROR ->
                 MigrationError.WalletIllegalStateTransition(wallet.id, wallet.status).toMono()
+            WalletStatusDto.DELETED ->
+                MigrationError.WalletIllegalTransactionDeleteToValidated(wallet.id).toMono()
             else ->
                 wallet
                     .copy(

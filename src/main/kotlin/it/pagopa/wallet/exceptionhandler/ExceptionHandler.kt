@@ -123,5 +123,10 @@ class ExceptionHandler {
                     .detail(
                         "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"
                     )
+            is MigrationError.WalletIllegalTransactionDeleteToValidated ->
+                ProblemJsonDto()
+                    .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                    .title("Wallet delete")
+                    .detail("Cannot migrate a deleted wallet ${e.walletId.value}")
         }.let { ResponseEntity.status(it.status).body(it) }
 }
