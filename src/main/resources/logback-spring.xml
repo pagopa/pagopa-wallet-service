@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <springProperty name="OTEL_SERVICE_VERSION" source="build.version"/>
-    <springProperty name="ROOT_LOGGING_LEVEL" source="logging.level.root"/>
-    <springProperty name="PAGOPA_LOGGING_LEVEL" source="logging.level.it.pagopa"/>
-
     <appender name="ECS_JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="co.elastic.logging.logback.EcsEncoder">
             <serviceName>${OTEL_SERVICE_NAME:-undefined}</serviceName>
@@ -11,10 +8,7 @@
             <serviceEnvironment>${OTEL_SERVICE_ENVIRONMENT:-undefined}</serviceEnvironment>
         </encoder>
     </appender>
-    <root level="ROOT_LOGGING_LEVEL">
+    <root level="${ROOT_LOGGING_LEVEL}">
         <appender-ref ref="ECS_JSON_CONSOLE"/>
     </root>
-    <logger name="it.pagopa" level="PAGOPA_LOGGING_LEVEL">
-        <appender-ref ref="ECS_JSON_CONSOLE"/>
-    </logger>
 </configuration>
