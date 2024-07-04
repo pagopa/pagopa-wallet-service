@@ -4,6 +4,7 @@ import it.pagopa.generated.wallet.model.ProblemJsonDto
 import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
+import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.exception.ApiError
 import it.pagopa.wallet.exception.MigrationError
 import it.pagopa.wallet.exception.RestApiException
@@ -14,11 +15,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.bind.support.WebExchangeBindException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.ServerWebInputException
 
 /**
@@ -26,7 +29,7 @@ import org.springframework.web.server.ServerWebInputException
  * api encounter an error and throw an RestApiException
  */
 @RestControllerAdvice
-class ExceptionHandler {
+class ExceptionHandler(private val walletTracing: WalletTracing) {
 
     val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -55,8 +58,13 @@ class ExceptionHandler {
         HttpMessageNotReadableException::class,
         WebExchangeBindException::class
     )
-    fun handleRequestValidationException(e: Exception): ResponseEntity<ProblemJsonDto> {
-
+    fun handleRequestValidationException(
+        e: Exception,
+        exchange: ServerWebExchange?
+    ): ResponseEntity<ProblemJsonDto> {
+        if (e is WebExchangeBindException && exchange != null) {
+            traceInvalidRequest(exchange.request)
+        }
         logger.error("Input request is not valid", e)
         return ResponseEntity.badRequest()
             .body(
@@ -124,4 +132,15 @@ class ExceptionHandler {
                         "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"
                     )
         }.let { ResponseEntity.status(it.status).body(it) }
+
+    private fun traceInvalidRequest(request: ServerHttpRequest) {
+        val contextPath: String = request.path.value()
+        if (contextPath.endsWith("notifications")) {
+            val updateResult =
+                WalletTracing.WalletUpdateResult(
+                    WalletTracing.WalletNotificationOutcome.BAD_REQUEST,
+                )
+            walletTracing.traceWalletUpdate(updateResult)
+        }
+    }
 }

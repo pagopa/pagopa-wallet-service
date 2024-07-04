@@ -6,6 +6,7 @@ import it.pagopa.wallet.audit.ApplicationCreatedEvent
 import it.pagopa.wallet.audit.ApplicationStatusChangedEvent
 import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.audit.LoggingEvent
+import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.exception.ApplicationNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -21,6 +22,7 @@ import org.mockito.kotlin.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -29,6 +31,7 @@ import reactor.core.publisher.Mono
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(ApplicationsController::class)
+@Import(OpenTelemetryTestConfiguration::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class ApplicationsControllerTest {
 

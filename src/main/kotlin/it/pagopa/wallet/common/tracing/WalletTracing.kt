@@ -21,13 +21,13 @@ class WalletTracing(private val tracingUtils: TracingUtils) {
 
     data class WalletUpdateResult(
         val outcome: WalletNotificationOutcome,
-        val walletStatusDto: WalletStatusDto?,
-        val gatewayOutcome: GatewayNotificationOutcomeResult
+        val walletStatusDto: WalletStatusDto? = null,
+        val gatewayOutcome: GatewayNotificationOutcomeResult? = null
     )
 
     data class GatewayNotificationOutcomeResult(
         val gatewayAuthorizationStatus: String,
-        val errorCode: String?
+        val errorCode: String? = null
     )
 
     enum class WalletNotificationOutcome {
@@ -36,6 +36,7 @@ class WalletTracing(private val tracingUtils: TracingUtils) {
         WALLET_NOT_FOUND,
         SECURITY_TOKEN_MISMATCH,
         WRONG_WALLET_STATUS,
+        BAD_REQUEST,
         PROCESSING_ERROR
     }
 
@@ -47,9 +48,9 @@ class WalletTracing(private val tracingUtils: TracingUtils) {
                 UPDATE_WALLET_STATUS_OUTCOME_ATTRIBUTE_KEY,
                 updateResult.outcome.name,
                 UPDATE_WALLET_STATUS_GATEWAY_OUTCOME_ATTRIBUTE_KEY,
-                updateResult.gatewayOutcome.gatewayAuthorizationStatus,
+                updateResult.gatewayOutcome?.gatewayAuthorizationStatus ?: FIELD_NOT_AVAILABLE,
                 UPDATE_WALLET_STATUS_GATEWAY_ERROR_CODE_ATTRIBUTE_KEY,
-                updateResult.gatewayOutcome.errorCode ?: FIELD_NOT_AVAILABLE,
+                updateResult.gatewayOutcome?.errorCode ?: FIELD_NOT_AVAILABLE,
             )
         tracingUtils.addSpan(WALLET_UPDATE_RESULT_SPAN_NAME, attributes)
     }

@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletPmDeleteRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
@@ -24,6 +25,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
@@ -32,6 +34,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
+@Import(OpenTelemetryTestConfiguration::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class MigrationControllerTest {
 

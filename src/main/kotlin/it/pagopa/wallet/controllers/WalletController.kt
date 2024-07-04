@@ -194,7 +194,8 @@ class WalletController(
                             WalletTracing.GatewayNotificationOutcomeResult(
                                 gatewayAuthorizationStatus = it.validationOperationResult?.value
                                         ?: gatewayOutcomeResult.gatewayAuthorizationStatus,
-                                errorCode = it.validationErrorCode ?: gatewayOutcomeResult.errorCode
+                                errorCode = it.validationErrorCode
+                                        ?: gatewayOutcomeResult.errorCode ?: it.errorReason
                             )
                         )
                     )
