@@ -3,7 +3,6 @@ version: '3.8'
 services:
   pagopa-wallet:
     container_name: pagopa-wallet
-    privileged: true
     build:
       dockerfile: Dockerfile
       context: .
