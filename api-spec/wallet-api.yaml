@@ -822,6 +822,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '422':
+          description: 'Wallet not updatable. Caused by wallet in DELETED status.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '429':
           description: Too many requests
           headers:
