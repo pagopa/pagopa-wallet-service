@@ -190,6 +190,7 @@ class WalletController(
                     walletTracing.traceWalletUpdate(
                         WalletTracing.WalletUpdateResult(
                             WalletTracing.WalletNotificationOutcome.OK,
+                            it.details?.type,
                             it.status,
                             WalletTracing.GatewayNotificationOutcomeResult(
                                 gatewayAuthorizationStatus = it.validationOperationResult?.value
@@ -204,6 +205,7 @@ class WalletController(
                     walletTracing.traceWalletUpdate(
                         WalletTracing.WalletUpdateResult(
                             errorToWalletNotificationOutcome(error),
+                            extractWalletTypeFromError(error),
                             extractWalletStatusFromError(error),
                             gatewayOutcomeResult
                         )

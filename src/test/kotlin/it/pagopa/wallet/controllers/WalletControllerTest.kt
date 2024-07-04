@@ -17,6 +17,7 @@ import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
@@ -645,6 +646,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.OK,
+                        WalletDetailsType.CARDS,
                         WalletStatusDto.VALIDATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.EXECUTED.value
@@ -689,6 +691,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.SECURITY_TOKEN_MISMATCH,
+                        null,
                         null,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.EXECUTED.value
@@ -797,6 +800,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.OK,
+                        WalletDetailsType.CARDS,
                         WalletStatusDto.VALIDATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.EXECUTED.value
@@ -923,6 +927,7 @@ class WalletControllerTest {
                     eq(
                         WalletTracing.WalletUpdateResult(
                             WalletTracing.WalletNotificationOutcome.OK,
+                            WalletDetailsType.CARDS,
                             WalletStatusDto.ERROR,
                             WalletTracing.GatewayNotificationOutcomeResult(
                                 OperationResultEnum.EXECUTED.value
@@ -1025,7 +1030,8 @@ class WalletControllerTest {
                 Mono.error(
                     WalletConflictStatusException(
                         WalletId.create(),
-                        WalletStatusDto.VALIDATION_REQUESTED
+                        WalletStatusDto.VALIDATION_REQUESTED,
+                        WalletDetailsType.CARDS
                     )
                 )
             )
@@ -1106,6 +1112,7 @@ class WalletControllerTest {
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.WALLET_NOT_FOUND,
                         null,
+                        null,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.EXECUTED.value
                         )
@@ -1122,7 +1129,12 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
             .willReturn(
-                WalletConflictStatusException(WalletId(walletId), WalletStatusDto.DELETED).toMono()
+                WalletConflictStatusException(
+                        WalletId(walletId),
+                        WalletStatusDto.DELETED,
+                        WalletDetailsType.CARDS
+                    )
+                    .toMono()
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
@@ -1146,6 +1158,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.WRONG_WALLET_STATUS,
+                        WalletDetailsType.CARDS,
                         WalletStatusDto.DELETED,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.EXECUTED.value
@@ -1163,7 +1176,12 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
             .willReturn(
-                WalletConflictStatusException(WalletId(walletId), WalletStatusDto.DELETED).toMono()
+                WalletConflictStatusException(
+                        WalletId(walletId),
+                        WalletStatusDto.DELETED,
+                        WalletDetailsType.CARDS
+                    )
+                    .toMono()
             )
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
@@ -1185,6 +1203,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.WRONG_WALLET_STATUS,
+                        WalletDetailsType.CARDS,
                         WalletStatusDto.DELETED,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.DECLINED.value,
@@ -1247,6 +1266,7 @@ class WalletControllerTest {
                 eq(
                     WalletTracing.WalletUpdateResult(
                         WalletTracing.WalletNotificationOutcome.OK,
+                        WalletDetailsType.CARDS,
                         WalletStatusDto.CREATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
                             OperationResultEnum.DECLINED.value,

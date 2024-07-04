@@ -2,6 +2,7 @@ package it.pagopa.wallet.common.tracing
 
 import io.opentelemetry.api.common.Attributes
 import it.pagopa.generated.wallet.model.WalletStatusDto
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.times
@@ -18,6 +19,7 @@ class WalletTracingTest {
         walletTracing.traceWalletUpdate(
             WalletTracing.WalletUpdateResult(
                 walletOutcome,
+                WalletDetailsType.PAYPAL,
                 WalletStatusDto.CREATED,
                 WalletTracing.GatewayNotificationOutcomeResult("EXECUTED")
             )
@@ -29,6 +31,8 @@ class WalletTracingTest {
                 walletOutcome.name,
                 WalletTracing.UPDATE_WALLET_STATUS_CURRENT_STATE_ATTRIBUTE_KEY,
                 "CREATED",
+                WalletTracing.UPDATE_WALLET_STATUS_DETAILS_TYPE_ATTRIBUTE_KEY,
+                WalletDetailsType.PAYPAL.name,
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_OUTCOME_ATTRIBUTE_KEY,
                 "EXECUTED",
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_ERROR_CODE_ATTRIBUTE_KEY,
@@ -45,6 +49,7 @@ class WalletTracingTest {
         walletTracing.traceWalletUpdate(
             WalletTracing.WalletUpdateResult(
                 walletOutcome,
+                WalletDetailsType.CARDS,
                 WalletStatusDto.CREATED,
                 WalletTracing.GatewayNotificationOutcomeResult("EXECUTED", "GW001")
             )
@@ -56,6 +61,8 @@ class WalletTracingTest {
                 walletOutcome.name,
                 WalletTracing.UPDATE_WALLET_STATUS_CURRENT_STATE_ATTRIBUTE_KEY,
                 "CREATED",
+                WalletTracing.UPDATE_WALLET_STATUS_DETAILS_TYPE_ATTRIBUTE_KEY,
+                WalletDetailsType.CARDS.name,
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_OUTCOME_ATTRIBUTE_KEY,
                 "EXECUTED",
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_ERROR_CODE_ATTRIBUTE_KEY,

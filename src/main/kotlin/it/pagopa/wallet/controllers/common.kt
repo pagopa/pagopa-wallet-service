@@ -2,6 +2,7 @@ package it.pagopa.wallet.controllers
 
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.common.tracing.WalletTracing
+import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 
 fun errorToWalletNotificationOutcome(error: Throwable) =
@@ -20,5 +21,11 @@ fun errorToWalletNotificationOutcome(error: Throwable) =
 fun extractWalletStatusFromError(error: Throwable): WalletStatusDto? =
     when (error) {
         is WalletConflictStatusException -> error.walletStatusDto
+        else -> null
+    }
+
+fun extractWalletTypeFromError(error: Throwable): WalletDetailsType? =
+    when (error) {
+        is WalletConflictStatusException -> error.walletDetailsType
         else -> null
     }
