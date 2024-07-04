@@ -8,7 +8,7 @@
             <serviceEnvironment>${OTEL_SERVICE_ENVIRONMENT:-undefined}</serviceEnvironment>
         </encoder>
     </appender>
-    <root level="${ROOT_LOGGING_LEVEL}">
+    <root level="${DEFAULT_LOGGING_LEVEL}">
         <appender-ref ref="ECS_JSON_CONSOLE"/>
     </root>
 </configuration>
