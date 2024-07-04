@@ -85,7 +85,7 @@ If you want to customize the application environment, reference this table:
 | MONGO_PASSWORD                                           | MongoDB password used to connect to the database                   | string                   |         |
 | MONGO_SSL_ENABLED                                        | Whether SSL is enabled while connecting to MongoDB                 | string                   |         |
 | MONGO_DB_NAME                                            | Mongo database name                                                |                          |         |
-| DEFAULT_LOGGING_LEVEL                                    | Application root logger level                                      | string                   | INFO    |
+| ROOT_LOGGING_LEVEL                                       | Application root logger level                                      | string                   | INFO    |
 | APP_LOGGING_LEVEL                                        | it.pagopa logger level                                             | string                   | INFO    |
 | WEB_LOGGING_LEVEL                                        | Web logger level                                                   | string                   | DEBUG   |
 | SESSION_URL_BASEPATH                                     | NPG URL base path                                                  | string                   |         |
