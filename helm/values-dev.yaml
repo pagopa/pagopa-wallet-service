@@ -138,4 +138,4 @@
 #        tag: ""
 microservice-chart:
   image:
-    tag: 0.19.1
+    tag: 0.19.2
