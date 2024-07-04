@@ -1,4 +1,5 @@
 FROM amazoncorretto:17-alpine@sha256:ec48de9e5333448734ba6a4fe0af04b28d1168ce8c05d0eed0f3984257f8f4b5 AS build
+
 WORKDIR /workspace/app
 
 COPY gradlew .
@@ -17,7 +18,12 @@ RUN mkdir build/extracted && java -Djarmode=layertools -jar build/libs/*.jar ext
 
 FROM amazoncorretto:17-alpine@sha256:ec48de9e5333448734ba6a4fe0af04b28d1168ce8c05d0eed0f3984257f8f4b5
 
-RUN addgroup --system user && adduser --ingroup user --system user
+RUN apk update && apk add tcpdump libcap
+
+RUN addgroup --system user && adduser --ingroup user --system user \
+  && chgrp user /usr/bin/tcpdump \
+  && chmod 750 /usr/bin/tcpdump \
+  && setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
 USER user:user
 
 WORKDIR /app/
