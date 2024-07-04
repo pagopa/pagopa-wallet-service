@@ -38,7 +38,13 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 5
+    replicas: 10
+  terminationGracePeriodSeconds: 30
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   service:
     create: true
     type: ClusterIP
@@ -68,8 +74,8 @@ microservice-chart:
       cpu: "600m"
   autoscaling:
     enable: true
-    minReplica: 5
-    maxReplica: 10
+    minReplica: 10
+    maxReplica: 15
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
