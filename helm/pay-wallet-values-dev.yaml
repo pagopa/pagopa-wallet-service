@@ -41,7 +41,7 @@ microservice-chart:
     seccompProfile:
       type: RuntimeDefault
   securityContext:
-    allowPrivilegeEscalation: false
+    allowPrivilegeEscalation: true
     privileged: true
   resources:
     requests:
