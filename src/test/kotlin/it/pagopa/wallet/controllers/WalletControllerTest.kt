@@ -958,7 +958,8 @@ class WalletControllerTest {
                 Mono.error(
                     WalletConflictStatusException(
                         WalletId.create(),
-                        WalletStatusDto.VALIDATION_REQUESTED
+                        WalletStatusDto.VALIDATION_REQUESTED,
+                        setOf()
                     )
                 )
             )

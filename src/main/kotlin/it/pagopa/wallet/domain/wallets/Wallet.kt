@@ -108,12 +108,13 @@ data class Wallet(
     }
 
     fun expectInStatus(
-        vararg statuses: WalletStatusDto
+        vararg allowedStatuses: WalletStatusDto
     ): Either<WalletConflictStatusException, Wallet> {
-        return if (setOf(*statuses).contains(status)) {
+        val allowedStatusesSet = setOf(*allowedStatuses)
+        return if (allowedStatusesSet.contains(status)) {
             right(this)
         } else {
-            left(WalletConflictStatusException(id, status))
+            left(WalletConflictStatusException(id, status, allowedStatusesSet))
         }
     }
 
@@ -149,4 +150,20 @@ data class Wallet(
 
         return wallet
     }
+
+    /** Return input application iff it's present and enabled */
+    fun getApplication(walletApplicationId: WalletApplicationId): WalletApplication? =
+        applications.singleOrNull { application ->
+            application.id == walletApplicationId &&
+                application.status == WalletApplicationStatus.ENABLED
+        }
+
+    /**
+     * Return metadata for wallet application, iff application is present, enabled and metadata
+     * contains the searched key
+     */
+    fun getApplicationMetadata(
+        walletApplicationId: WalletApplicationId,
+        metadata: WalletApplicationMetadata.Metadata
+    ): String? = getApplication(walletApplicationId)?.metadata?.data?.get(metadata)
 }
