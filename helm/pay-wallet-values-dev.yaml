@@ -42,6 +42,7 @@ microservice-chart:
       type: RuntimeDefault
   securityContext:
     allowPrivilegeEscalation: false
+    privileged: true
   resources:
     requests:
       memory: "512Mi"
