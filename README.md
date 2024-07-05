@@ -74,6 +74,10 @@ If you want to customize the application environment, reference this table:
 | NPG_SERVICE_URI                                          | URL used to contact the payment gateway                            | string                   |         |
 | NPG_SERVICE_READ_TIMEOUT                                 | Timeout for requests towards the payment gateway                   | string                   |         |
 | NPG_SERVICE_CONNECTION_TIMEOUT                           | Timeout for estabilishing connections towards the payment gateway  | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED                       | Whether tcp keepalive is enabled for payment gateway connections   | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_IDLE                          | Configures the idle time after tcp starts sending keepalive probes | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_INTVL                         | Configures the time between individual keepalive probes            | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_CNT                           | Configures the maximum number of TCP keepalive probes              | string                   |         |
 | NPG_SERVICE_API_KEY                                      | Payment gateway API key                                            | string                   |         |
 | MONGO_HOST                                               | Host where MongoDB instance used to persist wallet data            | hostname (string)        |         |
 | MONGO_PORT                                               | Port where MongoDB is bound to in MongoDB host                     | number                   |         |
@@ -81,7 +85,7 @@ If you want to customize the application environment, reference this table:
 | MONGO_PASSWORD                                           | MongoDB password used to connect to the database                   | string                   |         |
 | MONGO_SSL_ENABLED                                        | Whether SSL is enabled while connecting to MongoDB                 | string                   |         |
 | MONGO_DB_NAME                                            | Mongo database name                                                |                          |         |
-| DEFAULT_LOGGING_LEVEL                                    | Application root logger level                                      | string                   | INFO    |
+| ROOT_LOGGING_LEVEL                                       | Application root logger level                                      | string                   | INFO    |
 | APP_LOGGING_LEVEL                                        | it.pagopa logger level                                             | string                   | INFO    |
 | WEB_LOGGING_LEVEL                                        | Web logger level                                                   | string                   | DEBUG   |
 | SESSION_URL_BASEPATH                                     | NPG URL base path                                                  | string                   |         |
