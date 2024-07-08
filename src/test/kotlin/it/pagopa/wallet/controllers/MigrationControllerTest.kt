@@ -172,6 +172,26 @@ class MigrationControllerTest {
     }
 
     @Test
+    fun `should return wallet not updatable error when trying to update Wallet in DELETE status`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletIllegalTransactionDeleteToValidated(
+                        WalletId.create(),
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatusCode.valueOf(422))
+    }
+
+    @Test
     fun `should return empty body with ok status when delete an existing Wallet`() {
         given { migrationService.deleteWallet(any()) }
             .willAnswer { Mono.just(WalletTestUtils.walletDocument().toDomain()) }

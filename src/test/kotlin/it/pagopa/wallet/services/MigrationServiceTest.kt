@@ -395,6 +395,39 @@ class MigrationServiceTest {
         }
     }
 
+    @Test
+    fun `should throw error when update wallet already deleted`() {
+        mockWalletMigration { walletPmDocument, contractId ->
+            val walletTest = walletPmDocument.createWalletTest(USER_ID, WalletStatusDto.CREATED)
+            given { walletRepository.findByContractId(any<String>()) }
+                .willAnswer { walletTest.toMono() }
+            given { walletRepository.save(any<Wallet>()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+            migrationService
+                .deleteWallet(contractId)
+                .test()
+                .assertNext { assertEquals(it.status, WalletStatusDto.DELETED) }
+                .verifyComplete()
+
+            given { walletRepository.findByContractId(any<String>()) }
+                .willAnswer {
+                    walletTest.copy(status = WalletStatusDto.DELETED.toString()).toMono()
+                }
+
+            migrationService
+                .updateWalletCardDetails(contractId, generateCardDetails())
+                .test()
+                .expectError(MigrationError.WalletIllegalTransactionDeleteToValidated::class.java)
+                .verify()
+
+            verify(walletRepository, times(1)).save(any())
+            argumentCaptor<Iterable<LoggingEvent>> {
+                verify(loggingEventRepository, times(1)).saveAll(capture())
+                assertInstanceOf(WalletDeletedEvent::class.java, lastValue.firstOrNull())
+            }
+        }
+    }
+
     companion object {
 
         private fun mockWalletMigration(

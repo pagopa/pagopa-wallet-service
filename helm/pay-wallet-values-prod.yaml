@@ -38,7 +38,13 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 5
+    replicas: 10
+  terminationGracePeriodSeconds: 30
+  strategy:
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   service:
     create: true
     type: ClusterIP
@@ -68,8 +74,8 @@ microservice-chart:
       cpu: "600m"
   autoscaling:
     enable: true
-    minReplica: 5
-    maxReplica: 10
+    minReplica: 10
+    maxReplica: 15
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
@@ -88,9 +94,14 @@ microservice-chart:
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
+    ROOT_LOGGING_LEVEL: "info"
     NPG_SERVICE_URI: "https://xpay.nexigroup.com/api/phoenix-0.0"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
+    NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED: "true"
+    NPG_SERVICE_TCP_KEEP_ALIVE_IDLE: "30"
+    NPG_SERVICE_TCP_KEEP_ALIVE_INTVL: "10"
+    NPG_SERVICE_TCP_KEEP_ALIVE_CNT: "5"
     OTEL_SERVICE_NAME: "pagopa-wallet-service"
     OTEL_SERVICE_ENVIRONMENT: "prod"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
