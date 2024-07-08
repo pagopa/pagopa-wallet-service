@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "pay-wallet"
-  nameOverride: ""
-  fullnameOverride: "pagopa-pay-wallet-microservice"
+  nameOverride: "b-pagopa-pay-wallet-service"
+  fullnameOverride: "b-pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
