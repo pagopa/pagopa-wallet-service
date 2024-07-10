@@ -7,9 +7,13 @@ import org.springframework.http.HttpStatus
 
 class WalletConflictStatusException(
     val walletId: WalletId,
-    val walletStatusDto: WalletStatusDto,
+    walletStatusDto: WalletStatusDto,
+    allowedStatuses: Set<WalletStatusDto>,
     val walletDetailsType: WalletDetailsType?
-) : ApiError("Conflict with walletId [${walletId.value}] with status [${walletStatusDto.value}]") {
+) :
+    ApiError(
+        "Conflict with walletId [${walletId.value}] with status [${walletStatusDto.value}]. Allowed statuses $allowedStatuses"
+    ) {
     override fun toRestException(): RestApiException =
         RestApiException(HttpStatus.CONFLICT, "Conflict", message!!)
 }

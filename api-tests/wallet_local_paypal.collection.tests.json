@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "b37e0c99-bf3c-4a4e-b647-a6733e54f25f",
+		"_postman_id": "f8a26049-bdb8-4dc7-ae0c-a16e75dce3bb",
 		"name": "Wallet PAYPAL onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "32950386"
+		"_exporter_id": "23963988"
 	},
 	"item": [
 		{
@@ -537,6 +537,69 @@
 			"response": []
 		},
 		{
+			"name": "Post sessions Idempotent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet session re-created successfully with POST /wallets/:idWallet/sessions\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    const response = pm.response.json();",
+							"    const sessionData = response.sessionData;",
+							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"apm\");",
+							"    pm.expect(sessionData.redirectUrl).to.be.a(\"string\");",
+							"    pm.expect(response.orderId).to.be.a(\"string\");",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"paypal\",\n    \"pspId\": \"pspId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Post sessions Wallet not found",
 			"event": [
 				{
@@ -643,6 +706,70 @@
 						"sessions",
 						"{{ORDER_ID}}",
 						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post sessions not allowed for wallet status different from CREATED or VALIDATION_REQUESTED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding PAYPAL] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED/VALIDATION_REQUESTED\", function () {",
+							"    pm.response.to.have.status(409);",
+							"    const walletId = pm.environment.get(\"WALLET_ID\");",
+							"    const responseBody = pm.response.json();",
+							"    const errorDetail = responseBody.detail;",
+							"    const errorTitle = responseBody.title;",
+							"    const errorStatus = responseBody.status;",
+							"    pm.expect(errorStatus).to.eq(409);",
+							"    pm.expect(errorTitle).to.eq(\"Conflict\");",
+							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATED]. Allowed statuses [CREATED, VALIDATION_REQUESTED]`);",
+							" ",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions"
 					]
 				}
 			},

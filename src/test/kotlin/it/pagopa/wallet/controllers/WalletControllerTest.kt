@@ -1031,6 +1031,7 @@ class WalletControllerTest {
                     WalletConflictStatusException(
                         WalletId.create(),
                         WalletStatusDto.VALIDATION_REQUESTED,
+                        setOf(),
                         WalletDetailsType.CARDS
                     )
                 )
