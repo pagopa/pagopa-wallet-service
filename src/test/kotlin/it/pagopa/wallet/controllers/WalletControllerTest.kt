@@ -1133,6 +1133,7 @@ class WalletControllerTest {
                 WalletConflictStatusException(
                         WalletId(walletId),
                         WalletStatusDto.DELETED,
+                        setOf(),
                         WalletDetailsType.CARDS
                     )
                     .toMono()
@@ -1180,6 +1181,7 @@ class WalletControllerTest {
                 WalletConflictStatusException(
                         WalletId(walletId),
                         WalletStatusDto.DELETED,
+                        setOf(),
                         WalletDetailsType.CARDS
                     )
                     .toMono()
