@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus
 
 class WalletConflictStatusException(
     val walletId: WalletId,
-    walletStatusDto: WalletStatusDto,
+    val walletStatusDto: WalletStatusDto,
     allowedStatuses: Set<WalletStatusDto>,
     val walletDetailsType: WalletDetailsType?
 ) :
