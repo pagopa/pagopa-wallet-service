@@ -6,10 +6,12 @@ microservice-chart:
     create: false
     ingress:
       create: true
+
       canary:
         type: bluegreen
         headerName: deployment
         headerValue: blue
+
     service:
       create: true
     deployment:
@@ -58,6 +60,8 @@ microservice-chart:
     host: "itnuat.pay-wallet.internal.uat.platform.pagopa.it"
     path: /beta/pagopa-wallet-service/(.*)
     servicePort: 8080
+    annotations:
+      nginx.ingress.kubernetes.io/load-balance: ewma
   serviceAccount:
     create: false
     annotations: { }
