@@ -138,7 +138,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
@@ -260,7 +260,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
@@ -293,7 +293,7 @@ object WalletTestUtils {
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).value().toString()
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
                                 ),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
@@ -883,6 +883,13 @@ object WalletTestUtils {
                     .type("PAYPAL")
                     .maskedEmail(MASKED_EMAIL.value)
             )
+
+    val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT_WITH_ERRORS: WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.DECLINED)
+            .timestampOperation(OffsetDateTime.now())
+            .operationId("validationOperationId")
+            .errorCode("WG001")
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()

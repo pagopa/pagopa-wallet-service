@@ -1,5 +1,11 @@
 package it.pagopa.wallet.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
@@ -10,22 +16,25 @@ import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
 import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlinx.coroutines.reactor.mono
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.given
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 class NpgClientTest {
     private val npgWebClient: PaymentServicesApi = mock()
     private val npgPspApiKeysConfig: NpgPspApiKeysConfig = mock()
-    private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig)
+    private val tracer: Tracer = mock()
+    private val spanBuilder: SpanBuilder = mock()
+    private val objectMapper = ObjectMapper()
+    private val npgClient = NpgClient(npgWebClient, npgPspApiKeysConfig, tracer, objectMapper)
 
     private val correlationId = UUID.randomUUID()
     private val sessionId = "sessionId"
@@ -54,6 +63,14 @@ class NpgClientTest {
                     .cancelUrl("cancelUrl")
                     .notificationUrl("notificationUrl")
             )
+
+    @BeforeEach
+    fun setup() {
+        given(spanBuilder.setParent(any())).willReturn(spanBuilder)
+        given(spanBuilder.setAttribute(any<AttributeKey<Any>>(), any())).willReturn(spanBuilder)
+        given(spanBuilder.startSpan()).willReturn(Span.getInvalid())
+        given(tracer.spanBuilder(anyString())).willReturn(spanBuilder)
+    }
 
     @Test
     fun `Should create payment order build successfully with cards`() {
@@ -165,15 +182,22 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with BAD_GATEWAY error for exception during communication for getCardData`() {
         // prerequisite
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ServerError()
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))
+                        ),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -188,6 +212,16 @@ class NpgClientTest {
         verify(npgWebClient, times(1))
             .pspApiV1BuildCardDataGet(correlationId, defaultApiKey, sessionId)
         verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+
+        verify(spanBuilder)
+            .setAttribute(eq(NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME), anyString())
+        verify(span).setStatus(eq(StatusCode.ERROR))
+        verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(500L))
+        verify(span)
+            .setAttribute(
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
+                eq(listOf("123"))
+            )
     }
 
     @Test
@@ -220,13 +254,15 @@ class NpgClientTest {
         val confirmPaymentRequest = ConfirmPaymentRequest().sessionId(sessionId).amount("0")
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1BuildConfirmPaymentPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -248,13 +284,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -279,13 +317,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    401,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        401,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -310,13 +350,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    500,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -341,13 +383,15 @@ class NpgClientTest {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    404,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        404,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        ByteArray(0),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -369,17 +413,24 @@ class NpgClientTest {
     @Test
     fun `Should map error response to NpgClientException with INTERNAL_SERVER_ERROR error for 400 from ecommerce-payment-methods`() {
         val createHostedOrderRequest = orderBuildRequest(WalletDetailsType.CARDS)
+        val span = spy(Span.current())
 
         // prerequisite
+        given(spanBuilder.startSpan()).willReturn(span)
         given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
         given(npgWebClient.pspApiV1OrdersBuildPost(any(), any(), any()))
-            .willThrow(
-                WebClientResponseException.create(
-                    400,
-                    "statusText",
-                    HttpHeaders.EMPTY,
-                    ByteArray(0),
-                    StandardCharsets.UTF_8
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        400,
+                        "statusText",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ClientError()
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))
+                        ),
+                        StandardCharsets.UTF_8
+                    )
                 )
             )
 
@@ -396,5 +447,14 @@ class NpgClientTest {
         verify(npgWebClient, times(1))
             .pspApiV1OrdersBuildPost(correlationId, defaultApiKey, createHostedOrderRequest)
         verify(npgPspApiKeysConfig, times(1)).defaultApiKey
+        verify(spanBuilder)
+            .setAttribute(eq(NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME), anyString())
+        verify(span).setStatus(eq(StatusCode.ERROR))
+        verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(400L))
+        verify(span)
+            .setAttribute(
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
+                eq(listOf("123"))
+            )
     }
 }

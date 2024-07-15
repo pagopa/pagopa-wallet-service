@@ -51,7 +51,7 @@ class LoggingEventDispatcherServiceTest {
                     any()
                 )
             Assertions.assertEquals(walletCreatedLoggingEvent.walletId, lastValue.walletId)
-            verify(tracingUtils, times(1)).traceMono(any(), any<TracedMono<Any>>())
+            verify(tracingUtils, times(1)).traceMonoQueue(any(), any<TracedMono<Any>>())
         }
     }
 
@@ -64,6 +64,6 @@ class LoggingEventDispatcherServiceTest {
             }
 
         loggingEventDispatcherService.dispatchEvent(walletCreatedLoggingEvent).test().expectError()
-        verify(tracingUtils, times(1)).traceMono(any(), any<TracedMono<Any>>())
+        verify(tracingUtils, times(1)).traceMonoQueue(any(), any<TracedMono<Any>>())
     }
 }

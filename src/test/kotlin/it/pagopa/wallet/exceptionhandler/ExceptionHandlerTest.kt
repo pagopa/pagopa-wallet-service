@@ -1,16 +1,23 @@
 package it.pagopa.wallet.exceptionhandler
 
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.common.tracing.TracingUtilsTest
+import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.exception.RestApiException
 import jakarta.xml.bind.ValidationException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 import org.springframework.http.HttpStatus
+import org.springframework.web.server.ServerWebExchange
 
 class ExceptionHandlerTest {
 
-    private val exceptionHandler = ExceptionHandler()
+    private val walletTracing = spy(WalletTracing(TracingUtilsTest.getMock()))
+
+    private val exceptionHandler = ExceptionHandler(walletTracing)
 
     @Test
     fun `Should handle RestApiException`() {
@@ -55,7 +62,8 @@ class ExceptionHandlerTest {
     @Test
     fun `Should handle ValidationExceptions`() {
         val exception = ValidationException("Invalid request")
-        val response = exceptionHandler.handleRequestValidationException(exception)
+        val webExchange = mock<ServerWebExchange>()
+        val response = exceptionHandler.handleRequestValidationException(exception, webExchange)
         assertEquals(
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,

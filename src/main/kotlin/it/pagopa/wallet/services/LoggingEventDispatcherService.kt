@@ -41,7 +41,7 @@ class LoggingEventDispatcherService(
         walletCreated: WalletAddedEvent
     ): Mono<Response<SendMessageResult>> =
         tracingUtils
-            .traceMono(WALLET_CREATED_EVENT_HANDLER_SPAN_NAME) { tracingInfo ->
+            .traceMonoQueue(WALLET_CREATED_EVENT_HANDLER_SPAN_NAME) { tracingInfo ->
                 logger.info(
                     "Handling wallet created event for [{}], publishing to storage queue with delay of [{}]",
                     walletCreated.walletId,

@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "bb99222d-8134-42dd-b6e3-6d8fa2b446a0",
+		"_postman_id": "6ce6d9d6-3af0-4d8c-97cd-dd525b67ce68",
 		"name": "Wallet CARDS onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "32950386"
+		"_exporter_id": "23963988"
 	},
 	"item": [
 		{
@@ -570,6 +570,96 @@
 			"response": []
 		},
 		{
+			"name": "Post sessions idempotent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding CARDS] New wallet session re-created successfully with POST /wallets/:idWallet/sessions\", function () {",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    const response = pm.response.json();",
+							"    const sessionData = response.sessionData;",
+							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"cards\");",
+							"    const cardFormFieldsDataWithoutSrc = sessionData.cardFormFields.map(form => {",
+							"        const { src, ...rest } = form;",
+							"        return rest;",
+							"    });",
+							"    const expectedCardFormFieldsDataWithoutSrc =",
+							"     [",
+							"            {",
+							"                \"type\": \"TEXT\",",
+							"                \"class\": \"CARD_FIELD\",",
+							"                \"id\": \"CARD_NUMBER\"",
+							"            },",
+							"            {",
+							"                \"type\": \"TEXT\",",
+							"                \"class\": \"CARD_FIELD\",",
+							"                \"id\": \"EXPIRATION_DATE\"",
+							"            },",
+							"            {",
+							"                \"type\": \"TEXT\",",
+							"                \"class\": \"CARD_FIELD\",",
+							"                \"id\": \"SECURITY_CODE\"",
+							"            },",
+							"            {",
+							"                \"type\": \"TEXT\",",
+							"                \"class\": \"CARD_FIELD\",",
+							"                \"id\": \"CARDHOLDER_NAME\"",
+							"            }",
+							"        ];",
+							"    pm.expect(expectedCardFormFieldsDataWithoutSrc).eql(cardFormFieldsDataWithoutSrc);",
+							"    pm.expect(response.orderId).to.be.a(\"string\");",
+							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
+							" ",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Post sessions Wallet not found",
 			"event": [
 				{
@@ -778,6 +868,70 @@
 						"sessions",
 						"{{ORDER_ID}}",
 						"validations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post sessions not allowed for wallet status different from CREATED or VALIDATION_REQUESTED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const sdk = require('postman-collection');",
+							"",
+							"pm.test(\"[Wallet for onboarding CARDS] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED/VALIDATION_REQUESTED\", function () {",
+							"    pm.response.to.have.status(409);",
+							"    const walletId = pm.environment.get(\"WALLET_ID\");",
+							"    const responseBody = pm.response.json();",
+							"    const errorDetail = responseBody.detail;",
+							"    const errorTitle = responseBody.title;",
+							"    const errorStatus = responseBody.status;",
+							"    pm.expect(errorStatus).to.eq(409);",
+							"    pm.expect(errorTitle).to.eq(\"Conflict\");",
+							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATION_REQUESTED]. Allowed statuses [CREATED, INITIALIZED]`);",
+							" ",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-user-id",
+						"value": "{{x-user-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"paymentMethodType\": \"cards\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/sessions",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"wallets",
+						"{{WALLET_ID}}",
+						"sessions"
 					]
 				}
 			},

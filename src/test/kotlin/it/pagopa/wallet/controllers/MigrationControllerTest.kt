@@ -5,6 +5,7 @@ import it.pagopa.generated.wallet.model.WalletPmCardDetailsRequestDto
 import it.pagopa.generated.wallet.model.WalletPmDeleteRequestDto
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.WalletTestUtils
+import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
 import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.Wallet
@@ -24,6 +25,8 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -31,6 +34,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @WebFluxTest(MigrationController::class)
+@Import(OpenTelemetryTestConfiguration::class)
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class MigrationControllerTest {
 
@@ -130,7 +134,7 @@ class MigrationControllerTest {
     }
 
     @Test
-    fun `should return bad request when trying to update Wallet from illegal state`() {
+    fun `should return conflict when trying to update Wallet from illegal state`() {
         val contractId = ContractId(UUID.randomUUID().toString())
         given { migrationService.updateWalletCardDetails(any(), any()) }
             .willAnswer {
@@ -147,7 +151,47 @@ class MigrationControllerTest {
             .bodyValue(createDetailRequest(contractId))
             .exchange()
             .expectStatus()
-            .isBadRequest
+            .isEqualTo(HttpStatusCode.valueOf(409))
+    }
+
+    @Test
+    fun `should return conflict when trying to update Wallet while another wallet is already onboarded`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletAlreadyOnboarded(
+                        WalletId.create(),
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatusCode.valueOf(409))
+    }
+
+    @Test
+    fun `should return wallet not updatable error when trying to update Wallet in DELETE status`() {
+        val contractId = ContractId(UUID.randomUUID().toString())
+        given { migrationService.updateWalletCardDetails(any(), any()) }
+            .willAnswer {
+                MigrationError.WalletIllegalTransactionDeleteToValidated(
+                        WalletId.create(),
+                    )
+                    .toMono<Wallet>()
+            }
+        webClient
+            .post()
+            .uri("/migrations/wallets/updateDetails")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(createDetailRequest(contractId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatusCode.valueOf(422))
     }
 
     @Test

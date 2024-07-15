@@ -12,12 +12,12 @@ class TransactionIdTest {
         val uuid = UUID.randomUUID()
         val uuidWithoutDashes = uuid.toString().replace("-", "")
         val transactionId = TransactionId(uuidWithoutDashes)
-        assertEquals(uuid, transactionId.value())
+        assertEquals(uuid, transactionId.uuid())
     }
 
     @Test
     fun `Should throw exception for invalid transaction id`() {
-        val exception = assertThrows<IllegalArgumentException> { TransactionId("a").value() }
+        val exception = assertThrows<IllegalArgumentException> { TransactionId("a").uuid() }
         assertEquals(
             "Invalid transaction id: [a]. Transaction id must be not null and 32 chars length",
             exception.message
