@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
@@ -1278,6 +1279,30 @@ class WalletControllerTest {
                     )
                 )
             )
+    }
+
+    @Test
+    fun `notify wallet should return 409 when detect optmistic lock error`() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+        given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
+            .willReturn(Mono.error(OptimisticLockingFailureException("Optimistic lock error")))
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(409)
+            .expectBody()
     }
 
     // workaround since this class is the request entrypoint and so discriminator
