@@ -94,7 +94,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
         e: OptimisticLockingFailureException
     ): ResponseEntity<ProblemJsonDto> {
         logger.error("Detected optimistic error", e)
-        return ResponseEntity.internalServerError()
+        return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(
                 ProblemJsonDto()
                     .status(HttpStatus.CONFLICT.value())
