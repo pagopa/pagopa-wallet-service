@@ -119,6 +119,9 @@ If you want to customize the application environment, reference this table:
 | EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                                                                                                         | string                   |         |
 | EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                                                                                                            |                          |         |
 
+(*): for Mongo connection string options
+see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
+
 ### Run docker container
 
 ```shell
