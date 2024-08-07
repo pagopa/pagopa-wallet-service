@@ -98,7 +98,7 @@ resources:
     - repository: pagopaWalletTests
       type: github
       name: pagopa/pagopa-wallet-tests
-      ref: main
+      ref: CHK-3121-update-wallet-api-tests-and-envs
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
@@ -195,13 +195,13 @@ stages:
     displayName: 'Build release candidate'
     dependsOn: [ ]
     condition:
-        and(
-        succeeded(),
-        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        or(
-        eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-        startsWith(variables['Build.SourceBranch'], 'refs/tags')
-        ))
+      and(
+      succeeded(),
+      eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+      or(
+      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      startsWith(variables['Build.SourceBranch'], 'refs/tags')
+      ))
     jobs:
       - job: "build"
         displayName: 'Build release candidate docker image'
