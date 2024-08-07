@@ -188,21 +188,21 @@ stages:
               WALLET_TOKEN_TEST: $(MIGRATION_WALLET_TOKEN_TEST_DEV)
               MIGRATION_API_KEY_TEST: $(MIGRATION_API_KEY_TEST_DEV)
               MIGRATION_CSTAR_API_KEY_TEST: $(MIGRATION_CSTAR_API_KEY_TEST_DEV)
-      - stage: "API_DEV_test_clean"
-        displayName: 'Clean wallet after API test on dev app'
-        dependsOn: API_DEV_test
-        jobs:
-          - job: newman_api_test_cards
-            displayName: 'API Tests: Wallet Cards'
-            steps:
-              - checkout: pagopaWalletTests
-              - template: azure-templates/api-tests.yml
-                parameters:
-                  TEST_DISPLAY_NAME: "Wallet clean tests"
-                  ENV_FILE: "api-tests/dev.cards.envs.json"
-                  TEST_FILE_PREFIX: "DEV-wallet-clean-cards"
-                  API_TEST_FILE: "api-tests/wallet_payment_api.clean_wallet.tests.json"
-                  WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+  - stage: "API_DEV_test_clean"
+    displayName: 'Clean wallet after API test on dev app'
+    dependsOn: API_DEV_test
+    jobs:
+      - job: newman_api_test_cards
+        displayName: 'API Tests: Wallet Cards Clean'
+        steps:
+          - checkout: pagopaWalletTests
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "Wallet clean tests"
+              ENV_FILE: "api-tests/dev.cards.envs.json"
+              TEST_FILE_PREFIX: "DEV-wallet-clean-cards"
+              API_TEST_FILE: "api-tests/wallet_payment_api.clean_wallet.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
   # --- END Deploy DEV --- #
 
   # --- START Deploy UAT --- #
