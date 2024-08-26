@@ -101,7 +101,7 @@ microservice-chart:
     OTEL_METRICS_EXPORTER: otlp
     OTEL_LOGS_EXPORTER: otlp
     OTEL_TRACES_SAMPLER: "always_on"
-    WALLET_SESSION_TTL: "100000"
+    WALLET_SESSION_TTL_SECONDS: "1800"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WALLET_ONBOARDING_CARD_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/creditcard
     WALLET_ONBOARDING_APM_RETURN_URL: https://dev.payment-wallet.pagopa.it/onboarding/apm
