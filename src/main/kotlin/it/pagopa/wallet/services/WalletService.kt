@@ -793,14 +793,19 @@ class WalletService(
                 )
             }
             .map { wallet ->
+                val domainWallet = wallet.toDomain()
                 LoggedAction(
-                    wallet.toDomain(),
+                    domainWallet,
                     WalletNotificationEvent(
-                        walletId.value.toString(),
-                        walletNotificationRequestDto.operationId,
-                        walletNotificationRequestDto.operationResult.value,
-                        walletNotificationRequestDto.timestampOperation.toString(),
-                        wallet.validationErrorCode
+                        auditWallet =
+                            domainWallet.let {
+                                val auditWallet = domainWallet.toAudit()
+                                auditWallet.validationOperationId =
+                                    walletNotificationRequestDto.operationId
+                                auditWallet.validationOperationTimestamp =
+                                    walletNotificationRequestDto.timestampOperation.toString()
+                                return@let auditWallet
+                            }
                     )
                 )
             }
