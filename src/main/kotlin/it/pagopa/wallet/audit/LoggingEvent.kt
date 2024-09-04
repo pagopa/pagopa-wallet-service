@@ -22,7 +22,8 @@ data class WalletPatchEvent(val walletId: String) : LoggingEvent()
 
 data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
 
-data class WalletNotificationEvent(val auditWallet: AuditWallet) : LoggingEvent()
+data class WalletNotificationEvent(val walletId: String, val auditWallet: AuditWallet) :
+    LoggingEvent()
 
 data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
 

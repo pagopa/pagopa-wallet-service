@@ -30,6 +30,7 @@ class LoggedActionTests {
             LoggedAction(
                 it,
                 WalletNotificationEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
                             it.validationOperationId =
@@ -122,6 +123,7 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletNotificationEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
                             it.validationOperationId =
@@ -151,6 +153,7 @@ class LoggedActionTests {
             listOf(
                 WalletAddedEvent(walletId),
                 WalletNotificationEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
                             it.validationOperationId =
@@ -182,6 +185,7 @@ class LoggedActionTests {
             listOf(
                 WalletAddedEvent(walletId),
                 WalletNotificationEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
                             it.validationOperationId =

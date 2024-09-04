@@ -619,6 +619,7 @@ class WalletControllerTest {
                     LoggedAction(
                         wallet,
                         WalletNotificationEvent(
+                            walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
                                     it.validationOperationId =
@@ -775,6 +776,7 @@ class WalletControllerTest {
                     LoggedAction(
                         wallet,
                         WalletNotificationEvent(
+                            walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
                                     it.validationOperationId =
@@ -840,6 +842,7 @@ class WalletControllerTest {
                     LoggedAction(
                         wallet,
                         WalletNotificationEvent(
+                            walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
                                     it.validationOperationId =
@@ -910,6 +913,7 @@ class WalletControllerTest {
                         LoggedAction(
                             wallet,
                             WalletNotificationEvent(
+                                walletId = wallet.id.toString(),
                                 auditWallet =
                                     wallet.toAudit().let {
                                         it.validationOperationId =
@@ -1259,6 +1263,7 @@ class WalletControllerTest {
                     LoggedAction(
                         wallet,
                         WalletNotificationEvent(
+                            walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
                                     it.validationOperationId =

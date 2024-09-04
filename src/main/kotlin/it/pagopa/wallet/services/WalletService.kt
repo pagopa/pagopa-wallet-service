@@ -797,6 +797,7 @@ class WalletService(
                 LoggedAction(
                     domainWallet,
                     WalletNotificationEvent(
+                        walletId = domainWallet.id.value.toString(),
                         auditWallet =
                             domainWallet.let {
                                 val auditWallet = domainWallet.toAudit()

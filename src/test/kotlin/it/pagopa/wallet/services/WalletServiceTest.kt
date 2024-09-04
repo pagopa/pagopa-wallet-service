@@ -2987,6 +2987,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3042,6 +3043,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3091,6 +3093,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3140,6 +3143,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3314,6 +3318,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3351,6 +3356,7 @@ class WalletServiceTest {
         LoggedAction(
             walletDocumentWithError.toDomain(),
             WalletNotificationEvent(
+                walletId = walletDocumentWithError.id.toString(),
                 auditWallet =
                     walletDocumentWithError.toDomain().toAudit().let {
                         it.validationOperationId = operationId
@@ -3401,6 +3407,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
@@ -3451,6 +3458,7 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
+                    walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
