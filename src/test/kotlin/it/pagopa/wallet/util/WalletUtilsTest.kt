@@ -55,7 +55,7 @@ class WalletUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["MAE", "UNK", "OTHER"])
+    @ValueSource(strings = ["UNK", "OTHER"])
     fun `should fallback to unknown logo when brand is unknown`(unknownBrand: String) {
         val walletWithUnknownBrand =
             WalletTestUtils.walletDocumentStatusValidatedCard(CardBrand(unknownBrand)).toDomain()
