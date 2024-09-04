@@ -40,6 +40,19 @@ class WalletUtilsTest {
         assertTrue(logoURI.toString().endsWith("/${(wallet.details as CardDetails).brand.value}"))
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["MAE", "MC"])
+    fun `should retrieve right logo for brand alias`(brand: String) {
+        val walletWithAliasBrand =
+            WalletTestUtils.walletDocumentStatusValidatedCard(CardBrand(brand)).toDomain()
+        val logoURI = walletUtils.getLogo(walletWithAliasBrand)
+        assertTrue(
+            logoURI
+                .toString()
+                .endsWith("/${(walletWithAliasBrand.details as CardDetails).brand.value}")
+        )
+    }
+
     @Test
     fun `should retrieve logo for input apm wallet successfully`() {
         val wallet = WalletTestUtils.walletDocumentStatusValidatedAPM("test@test.it").toDomain()
