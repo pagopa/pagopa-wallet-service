@@ -18,7 +18,10 @@ data class WalletDeletedEvent(val walletId: String) : LoggingEvent()
 
 data class SessionWalletCreatedEvent(val walletId: String) : LoggingEvent()
 
-data class WalletPatchEvent(val walletId: String) : LoggingEvent()
+data class WalletPatchEvent(
+    val walletId: String,
+    val updatedApplications: List<AuditWalletApplication>
+) : LoggingEvent()
 
 data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
 

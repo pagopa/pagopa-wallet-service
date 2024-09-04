@@ -1160,7 +1160,23 @@ class WalletService(
                     }
             }
             .flatMap { walletRepository.save(it.updatedWallet).thenReturn(it) }
-            .map { LoggedAction(it, WalletPatchEvent(it.updatedWallet.id)) }
+            .map {
+                LoggedAction(
+                    it,
+                    WalletPatchEvent(
+                        it.updatedWallet.id,
+                        it.updatedWallet.applications.map { app ->
+                            AuditWalletApplication(
+                                app.id,
+                                app.status,
+                                app.creationDate,
+                                app.updateDate,
+                                app.metadata.mapKeys { m -> m.key }
+                            )
+                        }
+                    )
+                )
+            }
     }
 
     /**

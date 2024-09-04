@@ -2448,32 +2448,44 @@ class WalletServiceTest {
                 val wallet = walletDomainEmptyServicesNullDetailsNoPaymentInstrument()
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyCreatedStatus()
-
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
+                val updatedWallet =
+                    wallet
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        mockedInstant,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
+
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                wallet
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    mockedInstant,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to newWalletApplicationStatus),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletPatchEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id.toString(),
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2524,38 +2536,50 @@ class WalletServiceTest {
 
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
                 val applicationCreationDate = TIMESTAMP
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        applicationCreationDate,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    ),
+                                    WalletApplication(
+                                        OTHER_WALLET_APPLICATION_ID,
+                                        WalletApplicationStatus.DISABLED,
+                                        TIMESTAMP,
+                                        TIMESTAMP,
+                                        WalletApplicationMetadata(mapOf())
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    applicationCreationDate,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                ),
-                                                WalletApplication(
-                                                    OTHER_WALLET_APPLICATION_ID,
-                                                    WalletApplicationStatus.DISABLED,
-                                                    TIMESTAMP,
-                                                    TIMESTAMP,
-                                                    WalletApplicationMetadata(mapOf())
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletPatchEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2613,22 +2637,33 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val walletDocument = walletDocument()
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications = walletDocument.applications.map { it.toDomain() },
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            walletDocument.applications.map { it.toDomain() },
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications = mapOf(),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletPatchEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2696,33 +2731,34 @@ class WalletServiceTest {
 
                 val walletDocument = walletDocument()
                 val applicationCreationDate = TIMESTAMP
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        applicationCreationDate,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    ),
+                                    WalletApplication(
+                                        OTHER_WALLET_APPLICATION_ID,
+                                        WalletApplicationStatus.DISABLED,
+                                        TIMESTAMP,
+                                        TIMESTAMP,
+                                        WalletApplicationMetadata(mapOf())
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    applicationCreationDate,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                ),
-                                                WalletApplication(
-                                                    OTHER_WALLET_APPLICATION_ID,
-                                                    WalletApplicationStatus.DISABLED,
-                                                    TIMESTAMP,
-                                                    TIMESTAMP,
-                                                    WalletApplicationMetadata(mapOf())
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed =
@@ -2730,7 +2766,18 @@ class WalletServiceTest {
                                     disabledWalletApplicationId to WalletApplicationStatus.INCOMING
                                 )
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletPatchEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()

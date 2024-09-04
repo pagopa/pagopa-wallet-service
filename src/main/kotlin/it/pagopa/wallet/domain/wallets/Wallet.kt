@@ -155,7 +155,6 @@ data class Wallet(
 
     fun toAudit(): AuditWallet {
         return AuditWallet(
-            id = this.id.value.toString(),
             userId = this.userId.id.toString(),
             status = this.status.name,
             paymentMethodId = this.paymentMethodId.value.toString(),

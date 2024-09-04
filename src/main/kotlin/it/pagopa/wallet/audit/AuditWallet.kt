@@ -1,7 +1,6 @@
 package it.pagopa.wallet.audit
 
 data class AuditWallet(
-    val id: String,
     val paymentMethodId: String,
     val userId: String,
     val creationDate: String,

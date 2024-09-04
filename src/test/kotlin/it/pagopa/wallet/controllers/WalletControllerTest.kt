@@ -469,7 +469,18 @@ class WalletControllerTest {
                             applicationsWithUpdateFailed = mapOf(),
                             updatedWallet = WALLET_DOMAIN.toDocument()
                         ),
-                        WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                        WalletPatchEvent(
+                            WALLET_DOMAIN.id.value.toString(),
+                            listOf(
+                                AuditWalletApplication(
+                                    WALLET_SERVICE_1.name,
+                                    WALLET_SERVICE_1.status.name,
+                                    Instant.now().toString(),
+                                    Instant.now().toString(),
+                                    mapOf()
+                                )
+                            )
+                        )
                     )
                 }
             )
@@ -517,7 +528,18 @@ class WalletControllerTest {
                     mono {
                         LoggedAction(
                             walletApplicationUpdateData,
-                            WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                            WalletPatchEvent(
+                                WALLET_DOMAIN.id.value.toString(),
+                                listOf(
+                                    AuditWalletApplication(
+                                        WALLET_SERVICE_1.name,
+                                        WALLET_SERVICE_1.status.name,
+                                        Instant.now().toString(),
+                                        Instant.now().toString(),
+                                        mapOf()
+                                    )
+                                )
+                            )
                         )
                     }
                 )
@@ -604,7 +626,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -761,7 +782,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -827,7 +847,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -898,7 +917,6 @@ class WalletControllerTest {
             val walletId = UUID.randomUUID()
             val orderId = WalletTestUtils.ORDER_ID
             val sessionToken = "sessionToken"
-            val operationId = "validationOperationId"
             given {
                     walletService.notifyWallet(
                         eq(WalletId(walletId)),
@@ -1244,7 +1262,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
