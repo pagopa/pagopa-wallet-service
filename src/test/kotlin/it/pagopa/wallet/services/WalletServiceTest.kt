@@ -2989,9 +2989,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3044,9 +3044,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3093,9 +3093,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3142,9 +3142,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3316,9 +3316,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3353,9 +3353,9 @@ class WalletServiceTest {
             WalletNotificationEvent(
                 auditWallet =
                     walletDocumentWithError.toDomain().toAudit().let {
-                        it.validationOperationId =
-                            operationId
-                        it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                        it.validationOperationId = operationId
+                        it.validationOperationTimestamp =
+                            notifyRequestDto.timestampOperation.toString()
                         return@let it
                     }
             )
@@ -3403,9 +3403,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
@@ -3453,9 +3453,9 @@ class WalletServiceTest {
                 WalletNotificationEvent(
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
-                            it.validationOperationId =
-                                operationId
-                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
                             return@let it
                         }
                 )
