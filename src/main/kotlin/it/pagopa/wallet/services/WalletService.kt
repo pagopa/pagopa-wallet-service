@@ -1034,7 +1034,7 @@ class WalletService(
                     .type(details.type)
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
-                    .brand(details.brand)
+                    .brand(CardBrand(details.brand).value)
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
@@ -1067,7 +1067,7 @@ class WalletService(
         return WalletAuthDataDto()
             .walletId(UUID.fromString(wallet.id))
             .contractId(wallet.contractId)
-            .brand(brand)
+            .brand(CardBrand(brand).value)
             .paymentMethodData(paymentMethodData)
     }
 
