@@ -615,14 +615,18 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
-                        WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED),
+                        wallet,
                         WalletNotificationEvent(
-                            walletId = walletId.toString(),
-                            validationOperationId = operationId,
-                            validationOperationResult = OperationResultEnum.EXECUTED.value,
-                            validationErrorCode = null,
-                            validationOperationTimestamp = Instant.now().toString()
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -767,14 +771,18 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
-                        WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED),
+                        wallet,
                         WalletNotificationEvent(
-                            walletId.toString(),
-                            operationId,
-                            OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString(),
-                            null,
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -828,14 +836,18 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN
                     LoggedAction(
-                        WALLET_DOMAIN,
+                        wallet,
                         WalletNotificationEvent(
-                            walletId.toString(),
-                            operationId,
-                            OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString(),
-                            null,
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -894,14 +906,18 @@ class WalletControllerTest {
                 }
                 .willReturn(
                     mono {
+                        val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR)
                         LoggedAction(
-                            WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR),
+                            wallet,
                             WalletNotificationEvent(
-                                walletId.toString(),
-                                operationId,
-                                OperationResultEnum.EXECUTED.value,
-                                Instant.now().toString(),
-                                null,
+                                auditWallet =
+                                    wallet.toAudit().let {
+                                        it.validationOperationId =
+                                            WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                        it.validationOperationTimestamp =
+                                            WalletTestUtils.TIMESTAMP.toString()
+                                        return@let it
+                                    }
                             )
                         )
                     }
@@ -1235,17 +1251,22 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
-                    LoggedAction(
+                    val wallet =
                         WALLET_DOMAIN.copy(
                             validationOperationResult = OperationResultEnum.DECLINED,
                             validationErrorCode = "WG001"
-                        ),
+                        )
+                    LoggedAction(
+                        wallet,
                         WalletNotificationEvent(
-                            walletId = walletId.toString(),
-                            validationOperationId = operationId,
-                            validationOperationResult = OperationResultEnum.DECLINED.value,
-                            validationErrorCode = "WG001",
-                            validationOperationTimestamp = Instant.now().toString()
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }

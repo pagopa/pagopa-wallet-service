@@ -1,6 +1,5 @@
 package it.pagopa.wallet.audit
 
-import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.wallets.LoggingEventDispatcher
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -27,15 +26,17 @@ class LoggedActionTests {
     }
 
     fun saveWalletNotificationEventWithLogging(id: String): Mono<LoggedAction<String>> {
-        return Mono.just(id).map {
+        return Mono.just(id).map { it ->
             LoggedAction(
                 it,
                 WalletNotificationEvent(
-                    walletId = it,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         }
@@ -121,11 +122,13 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -148,11 +151,13 @@ class LoggedActionTests {
             listOf(
                 WalletAddedEvent(walletId),
                 WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         given(mongoRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
@@ -177,11 +182,13 @@ class LoggedActionTests {
             listOf(
                 WalletAddedEvent(walletId),
                 WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         given { loggingEventDispatcher.dispatchEvent(any()) }

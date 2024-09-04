@@ -2987,11 +2987,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.DECLINED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3040,11 +3042,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3087,11 +3091,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3134,11 +3140,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3306,11 +3314,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.DECLINED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3341,11 +3351,13 @@ class WalletServiceTest {
         LoggedAction(
             walletDocumentWithError.toDomain(),
             WalletNotificationEvent(
-                WALLET_UUID.value.toString(),
-                operationId,
-                OperationResult.DECLINED.value,
-                notifyRequestDto.timestampOperation.toString(),
-                null,
+                auditWallet =
+                    walletDocumentWithError.toDomain().toAudit().let {
+                        it.validationOperationId =
+                            operationId
+                        it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                        return@let it
+                    }
             )
         )
 
@@ -3389,11 +3401,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentWithError.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3437,11 +3451,13 @@ class WalletServiceTest {
             LoggedAction(
                 walletDocumentValidated.toDomain(),
                 WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId =
+                                operationId
+                            it.validationOperationTimestamp = notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 

@@ -34,6 +34,7 @@ object WalletTestUtils {
     val OTHER_WALLET_APPLICATION_ID = WalletApplicationId("PARI")
     val PAYMENT_METHOD_ID_CARDS = PaymentMethodId(UUID.randomUUID())
     val PAYMENT_METHOD_ID_APM = PaymentMethodId(UUID.randomUUID())
+    val VALIDATION_OPERATION_ID: UUID = UUID.randomUUID()
     val TEST_DEFAULT_CLIENTS: Map<Client.Id, Client> =
         mapOf(
             Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
