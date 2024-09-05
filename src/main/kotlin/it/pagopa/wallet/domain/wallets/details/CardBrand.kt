@@ -1,16 +1,13 @@
 package it.pagopa.wallet.domain.wallets.details
 
 class CardBrand(rawValue: String) {
-    val value: String
 
-    init {
-        value =
-            if (rawValue == "MC") {
-                "MASTERCARD"
-            } else {
-                rawValue
-            }
-    }
+    val value: String =
+        when (rawValue) {
+            "MC" -> "MASTERCARD"
+            "MAE" -> "MAESTRO"
+            else -> rawValue
+        }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
