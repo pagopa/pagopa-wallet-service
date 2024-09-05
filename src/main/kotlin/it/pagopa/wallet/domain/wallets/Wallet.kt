@@ -155,7 +155,6 @@ data class Wallet(
 
     fun toAudit(): AuditWallet {
         return AuditWallet(
-            userId = this.userId.id.toString(),
             status = this.status.name,
             paymentMethodId = this.paymentMethodId.value.toString(),
             applications =
@@ -171,7 +170,6 @@ data class Wallet(
             details = this.details?.toAudit(),
             creationDate = this.creationDate.toString(),
             updateDate = this.updateDate.toString(),
-            onboardingChannel = this.onboardingChannel.toString(),
             validationOperationResult = this.validationOperationResult?.value,
             validationErrorCode = this.validationErrorCode,
             validationOperationId = null,

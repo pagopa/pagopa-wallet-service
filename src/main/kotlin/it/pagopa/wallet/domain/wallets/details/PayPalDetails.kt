@@ -19,11 +19,6 @@ data class PayPalDetails(
         )
 
     override fun toAudit(): AuditWalletDetails {
-        return AuditWalletDetails(
-            type = this.type.name,
-            expiryDate = null,
-            cardBrand = null,
-            pspId = this.pspId
-        )
+        return AuditWalletDetails(type = this.type.name, cardBrand = null, pspId = this.pspId)
     }
 }

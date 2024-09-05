@@ -25,11 +25,6 @@ data class CardDetails(
         )
 
     override fun toAudit(): AuditWalletDetails {
-        return AuditWalletDetails(
-            type = this.type.name,
-            expiryDate = this.expiryDate.expDate,
-            cardBrand = this.brand.value,
-            pspId = null
-        )
+        return AuditWalletDetails(type = this.type.name, cardBrand = this.brand.value, pspId = null)
     }
 }
