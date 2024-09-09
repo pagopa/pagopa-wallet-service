@@ -469,7 +469,7 @@ class WalletControllerTest {
                             applicationsWithUpdateFailed = mapOf(),
                             updatedWallet = WALLET_DOMAIN.toDocument()
                         ),
-                        WalletPatchEvent(
+                        WalletApplicationsUpdatedEvent(
                             WALLET_DOMAIN.id.value.toString(),
                             listOf(
                                 AuditWalletApplication(
@@ -528,7 +528,7 @@ class WalletControllerTest {
                     mono {
                         LoggedAction(
                             walletApplicationUpdateData,
-                            WalletPatchEvent(
+                            WalletApplicationsUpdatedEvent(
                                 WALLET_DOMAIN.id.value.toString(),
                                 listOf(
                                     AuditWalletApplication(
@@ -639,7 +639,7 @@ class WalletControllerTest {
                     val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
                         wallet,
-                        WalletNotificationEvent(
+                        WalletOnboardCompletedEvent(
                             walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
@@ -795,7 +795,7 @@ class WalletControllerTest {
                     val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
                         wallet,
-                        WalletNotificationEvent(
+                        WalletOnboardCompletedEvent(
                             walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
@@ -860,7 +860,7 @@ class WalletControllerTest {
                     val wallet = WALLET_DOMAIN
                     LoggedAction(
                         wallet,
-                        WalletNotificationEvent(
+                        WalletOnboardCompletedEvent(
                             walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {
@@ -930,7 +930,7 @@ class WalletControllerTest {
                         val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR)
                         LoggedAction(
                             wallet,
-                            WalletNotificationEvent(
+                            WalletOnboardCompletedEvent(
                                 walletId = wallet.id.toString(),
                                 auditWallet =
                                     wallet.toAudit().let {
@@ -1279,7 +1279,7 @@ class WalletControllerTest {
                         )
                     LoggedAction(
                         wallet,
-                        WalletNotificationEvent(
+                        WalletOnboardCompletedEvent(
                             walletId = wallet.id.toString(),
                             auditWallet =
                                 wallet.toAudit().let {

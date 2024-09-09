@@ -25,11 +25,11 @@ class LoggedActionTests {
         return Mono.just(id).map { LoggedAction(it, WalletAddedEvent(it)) }
     }
 
-    fun saveWalletNotificationEventWithLogging(id: String): Mono<LoggedAction<String>> {
+    fun saveWalletOnboardCompletedEventWithLogging(id: String): Mono<LoggedAction<String>> {
         return Mono.just(id).map { it ->
             LoggedAction(
                 it,
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
@@ -118,11 +118,11 @@ class LoggedActionTests {
     }
 
     @Test
-    fun `saveEvents saves WalletNotificationEvent events correctly`() {
+    fun `saveEvents saves WalletOnboardCompletedEvent events correctly`() {
         val walletId = "walletId"
         val expectedSavedEvents =
             listOf(
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
@@ -137,7 +137,7 @@ class LoggedActionTests {
         given(mongoRepository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
 
         val actualId =
-            saveWalletNotificationEventWithLogging(walletId)
+            saveWalletOnboardCompletedEventWithLogging(walletId)
                 .flatMap { it.saveEvents(repository) }
                 .block()
 
@@ -152,7 +152,7 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletAddedEvent(walletId),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
@@ -167,7 +167,7 @@ class LoggedActionTests {
             Flux.fromIterable(expectedSavedEvents)
         }
         val actualId =
-            saveWalletNotificationEventWithLogging(walletId)
+            saveWalletOnboardCompletedEventWithLogging(walletId)
                 .flatMap { it.saveEvents(repository) }
                 .block()
         assertEquals(walletId, actualId)
@@ -184,7 +184,7 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletAddedEvent(walletId),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = WalletTestUtils.walletDomain().id.toString(),
                     auditWallet =
                         WalletTestUtils.walletDomain().toAudit().let {
@@ -203,7 +203,7 @@ class LoggedActionTests {
             Flux.fromIterable(expectedSavedEvents)
         }
 
-        saveWalletNotificationEventWithLogging(walletId)
+        saveWalletOnboardCompletedEventWithLogging(walletId)
             .flatMap { it.saveEvents(repository) }
             .test()
             .assertNext {

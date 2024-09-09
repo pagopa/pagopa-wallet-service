@@ -2474,7 +2474,7 @@ class WalletServiceTest {
                                 mapOf(WALLET_APPLICATION_ID to newWalletApplicationStatus),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(
+                        WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
                                 AuditWalletApplication(
@@ -2568,7 +2568,7 @@ class WalletServiceTest {
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(
+                        WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
                                 AuditWalletApplication(
@@ -2652,7 +2652,7 @@ class WalletServiceTest {
                             successfullyUpdatedApplications = mapOf(),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(
+                        WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
                                 AuditWalletApplication(
@@ -2766,7 +2766,7 @@ class WalletServiceTest {
                                     disabledWalletApplicationId to WalletApplicationStatus.INCOMING
                                 )
                         ),
-                        WalletPatchEvent(
+                        WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
                                 AuditWalletApplication(
@@ -3033,7 +3033,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
@@ -3089,7 +3089,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
@@ -3139,7 +3139,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
@@ -3189,7 +3189,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {
@@ -3364,7 +3364,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
@@ -3402,7 +3402,7 @@ class WalletServiceTest {
 
         LoggedAction(
             walletDocumentWithError.toDomain(),
-            WalletNotificationEvent(
+            WalletOnboardCompletedEvent(
                 walletId = walletDocumentWithError.id.toString(),
                 auditWallet =
                     walletDocumentWithError.toDomain().toAudit().let {
@@ -3453,7 +3453,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
                     auditWallet =
                         walletDocumentWithError.toDomain().toAudit().let {
@@ -3504,7 +3504,7 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
+                WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
                     auditWallet =
                         walletDocumentValidated.toDomain().toAudit().let {

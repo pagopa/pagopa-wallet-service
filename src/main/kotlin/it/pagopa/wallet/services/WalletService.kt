@@ -796,7 +796,7 @@ class WalletService(
                 val domainWallet = wallet.toDomain()
                 LoggedAction(
                     domainWallet,
-                    WalletNotificationEvent(
+                    WalletOnboardCompletedEvent(
                         walletId = domainWallet.id.value.toString(),
                         auditWallet =
                             domainWallet.let {
@@ -1163,7 +1163,7 @@ class WalletService(
             .map {
                 LoggedAction(
                     it,
-                    WalletPatchEvent(
+                    WalletApplicationsUpdatedEvent(
                         it.updatedWallet.id,
                         it.updatedWallet.applications.map { app ->
                             AuditWalletApplication(

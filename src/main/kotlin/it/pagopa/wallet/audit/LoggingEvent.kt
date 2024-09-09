@@ -18,14 +18,14 @@ data class WalletDeletedEvent(val walletId: String) : LoggingEvent()
 
 data class SessionWalletCreatedEvent(val walletId: String) : LoggingEvent()
 
-data class WalletPatchEvent(
+data class WalletApplicationsUpdatedEvent(
     val walletId: String,
     val updatedApplications: List<AuditWalletApplication>
 ) : LoggingEvent()
 
 data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
 
-data class WalletNotificationEvent(val walletId: String, val auditWallet: AuditWallet) :
+data class WalletOnboardCompletedEvent(val walletId: String, val auditWallet: AuditWallet) :
     LoggingEvent()
 
 data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
