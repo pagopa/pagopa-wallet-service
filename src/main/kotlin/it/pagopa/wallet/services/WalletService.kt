@@ -793,14 +793,20 @@ class WalletService(
                 )
             }
             .map { wallet ->
+                val domainWallet = wallet.toDomain()
                 LoggedAction(
-                    wallet.toDomain(),
-                    WalletNotificationEvent(
-                        walletId.value.toString(),
-                        walletNotificationRequestDto.operationId,
-                        walletNotificationRequestDto.operationResult.value,
-                        walletNotificationRequestDto.timestampOperation.toString(),
-                        wallet.validationErrorCode
+                    domainWallet,
+                    WalletOnboardCompletedEvent(
+                        walletId = domainWallet.id.value.toString(),
+                        auditWallet =
+                            domainWallet.let {
+                                val auditWallet = domainWallet.toAudit()
+                                auditWallet.validationOperationId =
+                                    walletNotificationRequestDto.operationId
+                                auditWallet.validationOperationTimestamp =
+                                    walletNotificationRequestDto.timestampOperation.toString()
+                                return@let auditWallet
+                            }
                     )
                 )
             }
@@ -1154,7 +1160,23 @@ class WalletService(
                     }
             }
             .flatMap { walletRepository.save(it.updatedWallet).thenReturn(it) }
-            .map { LoggedAction(it, WalletPatchEvent(it.updatedWallet.id)) }
+            .map {
+                LoggedAction(
+                    it,
+                    WalletApplicationsUpdatedEvent(
+                        it.updatedWallet.id,
+                        it.updatedWallet.applications.map { app ->
+                            AuditWalletApplication(
+                                app.id,
+                                app.status,
+                                app.creationDate,
+                                app.updateDate,
+                                app.metadata.mapKeys { m -> m.key }
+                            )
+                        }
+                    )
+                )
+            }
     }
 
     /**
