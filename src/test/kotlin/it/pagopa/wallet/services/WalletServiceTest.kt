@@ -3888,7 +3888,7 @@ class WalletServiceTest {
 
     @ParameterizedTest
     @MethodSource("walletFinalState")
-    fun `when patching to error a wallet in final state should throw error`(
+    fun `when patching to error a wallet in final state should not throw error`(
         state: WalletStatusDto
     ) {
         val wallet = walletDocument().copy(status = state.value)
@@ -3898,8 +3898,8 @@ class WalletServiceTest {
         walletService
             .patchWalletStateToError(walletId = WalletId.of(wallet.id), reason = "Any reason")
             .test()
-            .expectError(WalletConflictStatusException::class.java)
-            .verify()
+            .assertNext { assertEquals(it.status, wallet.status) }
+            .verifyComplete()
     }
 
     @ParameterizedTest

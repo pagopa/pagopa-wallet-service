@@ -75,14 +75,20 @@ data class Wallet(
                 WalletStatusDto.INITIALIZED,
                 WalletStatusDto.VALIDATION_REQUESTED
             )
+        val FINAL_STATUSES =
+            setOf(WalletStatusDto.VALIDATED, WalletStatusDto.ERROR, WalletStatusDto.DELETED)
+    }
+
+    fun isFinalStatus(): Boolean {
+        return FINAL_STATUSES.contains(status)
+    }
+
+    fun isTransientStatus(): Boolean {
+        return TRANSIENT_STATUSES.contains(status)
     }
 
     fun error(reason: String?): Wallet {
-        return if (TRANSIENT_STATUSES.contains(status)) {
-            copy(status = WalletStatusDto.ERROR, errorReason = reason)
-        } else {
-            this
-        }
+        return copy(status = WalletStatusDto.ERROR, errorReason = reason)
     }
 
     fun updateUsageForClient(clientId: ClientIdDto, usageTime: Instant): Wallet {
