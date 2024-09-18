@@ -75,12 +75,6 @@ data class Wallet(
                 WalletStatusDto.INITIALIZED,
                 WalletStatusDto.VALIDATION_REQUESTED
             )
-        val FINAL_STATUSES =
-            setOf(WalletStatusDto.VALIDATED, WalletStatusDto.ERROR, WalletStatusDto.DELETED)
-    }
-
-    fun isFinalStatus(): Boolean {
-        return FINAL_STATUSES.contains(status)
     }
 
     fun isTransientStatus(): Boolean {
