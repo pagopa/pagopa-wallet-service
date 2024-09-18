@@ -839,17 +839,8 @@ class WalletService(
             .flatMap {
                 if (it.isTransientStatus()) {
                     walletRepository.save(it.error(reason).toDocument())
-                } else if (it.isFinalStatus()) {
-                    Mono.just(it.toDocument())
                 } else {
-                    Mono.error(
-                        WalletConflictStatusException(
-                            it.id,
-                            it.status,
-                            Wallet.TRANSIENT_STATUSES,
-                            it.details?.type
-                        )
-                    )
+                    Mono.just(it.toDocument())
                 }
             }
             .doOnNext {
