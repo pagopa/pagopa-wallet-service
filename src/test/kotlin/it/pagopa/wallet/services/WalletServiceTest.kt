@@ -3906,6 +3906,8 @@ class WalletServiceTest {
             .test()
             .assertNext { assertEquals(it.status, wallet.status) }
             .verifyComplete()
+
+        argumentCaptor<Wallet> { verify(walletRepository, times(0)).save(capture()) }
     }
 
     @ParameterizedTest
