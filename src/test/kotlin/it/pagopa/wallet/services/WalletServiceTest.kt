@@ -127,6 +127,12 @@ class WalletServiceTest {
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
+    class SessionInputInvalidDataDto : SessionInputDataDto {
+        override fun getPaymentMethodType(): String {
+            return "Not yet implemented"
+        }
+    }
+
     companion object {
 
         @JvmStatic
@@ -4495,6 +4501,216 @@ class WalletServiceTest {
                 .generateJwtTokenForNpgNotifications(
                     transactionIdAsClaim = anyOrNull(),
                     walletIdAsClaim = any()
+                )
+        }
+    }
+
+    @Test
+    fun `should throw error on invalid session input data`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockedStatic ->
+            instantMockedStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString() + "%20"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
+                            )
+                    }
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
+
+            val sessionToken = "sessionToken"
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>(sessionToken) }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputInvalidDataDto()
+                    )
+                )
+                .verifyError(InternalServerErrorException::class.java)
+        }
+    }
+
+    @Test
+    fun `should create new wallet session with PayPal wallet`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockedStatic ->
+            instantMockedStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString() + "%20"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
+
+            val sessionResponseDto =
+                SessionWalletCreateResponseDto()
+                    .orderId(orderId)
+                    .sessionData(SessionWalletCreateResponseAPMDataDto().paymentMethodType("apm"))
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDocumentValidationRequestedStatus =
+                walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDetails = walletDocumentValidationRequestedStatus.details as PayPalDetails
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentValidationRequestedStatus.toDomain(),
+                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                )
+
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val sessionToken = "sessionToken"
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
+                            Pair("sessionToken", sessionToken)
+                        )
+                    )
+
+            val npgCorrelationId = WALLET_UUID.value
+
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("PAYPAL")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>(sessionToken) }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputPayPalDataDto().pspId(walletDetails.pspId)
+                    )
+                )
+                .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                .verifyComplete()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(
+                    npgCorrelationId,
+                    npgCreateHostedOrderRequest,
+                    walletDetails.pspId
+                )
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
                 )
         }
     }
