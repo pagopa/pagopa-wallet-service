@@ -835,15 +835,23 @@ class WalletService(
         return walletRepository
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { it.toDomain().error(reason) }
-            .flatMap { it.expectInStatus(WalletStatusDto.ERROR).toMono() }
-            .flatMap { walletRepository.save(it.toDocument()) }
-            .doOnNext {
-                logger.info(
-                    "Wallet [{}] moved to error state with reason: [{}]",
-                    walletId.value.toString(),
-                    reason
-                )
+            .map { it.toDomain() }
+            .flatMap {
+                if (it.isTransientStatus()) {
+                    logger.info(
+                        "Patching Wallet [{}] in error state with reason: [{}]",
+                        walletId.value.toString(),
+                        reason
+                    )
+                    walletRepository.save(it.error(reason).toDocument())
+                } else {
+                    logger.info(
+                        "Wallet [{}] already in the final state {}",
+                        walletId.value.toString(),
+                        it.status.value
+                    )
+                    Mono.just(it.toDocument())
+                }
             }
             .doOnError {
                 logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)

@@ -77,12 +77,12 @@ data class Wallet(
             )
     }
 
+    fun isTransientStatus(): Boolean {
+        return TRANSIENT_STATUSES.contains(status)
+    }
+
     fun error(reason: String?): Wallet {
-        return if (TRANSIENT_STATUSES.contains(status)) {
-            copy(status = WalletStatusDto.ERROR, errorReason = reason)
-        } else {
-            this
-        }
+        return copy(status = WalletStatusDto.ERROR, errorReason = reason)
     }
 
     fun updateUsageForClient(clientId: ClientIdDto, usageTime: Instant): Wallet {
