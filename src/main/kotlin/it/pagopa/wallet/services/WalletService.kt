@@ -838,17 +838,20 @@ class WalletService(
             .map { it.toDomain() }
             .flatMap {
                 if (it.isTransientStatus()) {
+                    logger.info(
+                        "Patching Wallet [{}] in error state with reason: [{}]",
+                        walletId.value.toString(),
+                        reason
+                    )
                     walletRepository.save(it.error(reason).toDocument())
                 } else {
+                    logger.info(
+                        "Wallet [{}] already in the final state {}",
+                        walletId.value.toString(),
+                        it.status.value
+                    )
                     Mono.just(it.toDocument())
                 }
-            }
-            .doOnNext {
-                logger.info(
-                    "Wallet [{}] moved to error state with reason: [{}]",
-                    walletId.value.toString(),
-                    reason
-                )
             }
             .doOnError {
                 logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)
