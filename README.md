@@ -69,47 +69,58 @@ to get a good default configuration.
 
 If you want to customize the application environment, reference this table:
 
-| Variable name                                            | Description                                                        | type                     | default |
-|----------------------------------------------------------|--------------------------------------------------------------------|--------------------------|---------|
-| NPG_SERVICE_URI                                          | URL used to contact the payment gateway                            | string                   |         |
-| NPG_SERVICE_READ_TIMEOUT                                 | Timeout for requests towards the payment gateway                   | string                   |         |
-| NPG_SERVICE_CONNECTION_TIMEOUT                           | Timeout for estabilishing connections towards the payment gateway  | string                   |         |
-| NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED                       | Whether tcp keepalive is enabled for payment gateway connections   | string                   |         |
-| NPG_SERVICE_TCP_KEEP_ALIVE_IDLE                          | Configures the idle time after tcp starts sending keepalive probes | string                   |         |
-| NPG_SERVICE_TCP_KEEP_ALIVE_INTVL                         | Configures the time between individual keepalive probes            | string                   |         |
-| NPG_SERVICE_TCP_KEEP_ALIVE_CNT                           | Configures the maximum number of TCP keepalive probes              | string                   |         |
-| NPG_SERVICE_API_KEY                                      | Payment gateway API key                                            | string                   |         |
-| MONGO_HOST                                               | Host where MongoDB instance used to persist wallet data            | hostname (string)        |         |
-| MONGO_PORT                                               | Port where MongoDB is bound to in MongoDB host                     | number                   |         |
-| MONGO_USERNAME                                           | MongoDB username used to connect to the database                   | string                   |         |
-| MONGO_PASSWORD                                           | MongoDB password used to connect to the database                   | string                   |         |
-| MONGO_SSL_ENABLED                                        | Whether SSL is enabled while connecting to MongoDB                 | string                   |         |
-| MONGO_DB_NAME                                            | Mongo database name                                                |                          |         |
-| ROOT_LOGGING_LEVEL                                       | Application root logger level                                      | string                   | INFO    |
-| APP_LOGGING_LEVEL                                        | it.pagopa logger level                                             | string                   | INFO    |
-| WEB_LOGGING_LEVEL                                        | Web logger level                                                   | string                   | DEBUG   |
-| SESSION_URL_BASEPATH                                     | NPG URL base path                                                  | string                   |         |
-| SESSION_URL_OUTCOME_SUFFIX                               | NPG outcome url suffix                                             | string                   |         |
-| SESSION_URL_CANCEL_SUFFIX                                | NPG user cancel operation return url suffix                        | string                   |         |
-| SESSION_URL_NOTIFICATION_URL                             | NPG notification URL                                               | string                   |         |
-| SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL | NPG notification URL for transaction with contextual onboard       | string                   |         |
-| WALLET_ONBOARDING_CARD_RETURN_URL                        | Onboarding wallet front-end return url for card method             | string                   |         |
-| WALLET_ONBOARDING_APM_RETURN_URL                         | Onboarding wallet front-end return url for other methods than card | string                   |         |
-| WALLET_ONBOARDING_PAYPAL_PSP_API_KEY                     | Onboarding PSP API key for PayPal                                  | string                   |         |
-| WALLET_PAYMENT_CARD_RETURN_URL                           | Payment with contextual onboarding credit card                     | string                   |         |
-| ECOMMERCE_PAYMENT_METHODS_URI                            | eCommerce payment methods uri                                      | string                   |         |
-| ECOMMERCE_PAYMENT_METHODS_TIMEOUT                        | eCommerce payment methods read and connection timeout              | string                   |         |
-| ECOMMERCE_PAYMENT_METHODS_API_KEY                        | eCommerce payment methods api key                                  | string                   |         |
-| REDIS_HOST                                               | Redis host name                                                    | string                   |         |
-| REDIS_PASSWORD                                           | Redis password                                                     | string                   |         |
-| REDIS_PORT                                               | Redis port                                                         | string                   |         |
-| REDIS_SSL_ENABLED                                        | Whether SSL is enabled while connecting to  Redis                  | string                   |         |
-| WALLET_SESSION_TTL                                       | Wallet session TTL in minutes                                      | int                      |         |
-| WALLET_LOGO_MAPPING                                      | Wallet logo map parameter that handles wallet type to logo mapping | string (Map<string,URI>) |         |
-| EXPIRATION_QUEUE_NAME                                    | Name of expiration queue                                           | string                   |         |
-| EXPIRATION_QUEUE_TTL_SECONDS                             | TTL in seconds for published message                               | string                   |         |
-| EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                 | string                   |         |
-| EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                    |                          |         |
+| Variable name                                            | Description                                                                                                                                                | type                     | default |
+|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|---------|
+| NPG_SERVICE_URI                                          | URL used to contact the payment gateway                                                                                                                    | string                   |         |
+| NPG_SERVICE_READ_TIMEOUT                                 | Timeout for requests towards the payment gateway                                                                                                           | string                   |         |
+| NPG_SERVICE_CONNECTION_TIMEOUT                           | Timeout for estabilishing connections towards the payment gateway                                                                                          | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED                       | Whether tcp keepalive is enabled for payment gateway connections                                                                                           | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_IDLE                          | Configures the idle time after tcp starts sending keepalive probes                                                                                         | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_INTVL                         | Configures the time between individual keepalive probes                                                                                                    | string                   |         |
+| NPG_SERVICE_TCP_KEEP_ALIVE_CNT                           | Configures the maximum number of TCP keepalive probes                                                                                                      | string                   |         |
+| NPG_SERVICE_API_KEY                                      | Payment gateway API key                                                                                                                                    | string                   |         |
+| MONGO_HOST                                               | Host where MongoDB instance used to persist wallet data                                                                                                    | hostname (string)        |         |
+| MONGO_PORT                                               | Port where MongoDB is bound to in MongoDB host                                                                                                             | number                   |         |
+| MONGO_USERNAME                                           | MongoDB username used to connect to the database                                                                                                           | string                   |         |
+| MONGO_PASSWORD                                           | MongoDB password used to connect to the database                                                                                                           | string                   |         |
+| MONGO_SSL_ENABLED                                        | Whether SSL is enabled while connecting to MongoDB                                                                                                         | string                   |         |
+| MONGO_DB_NAME                                            | Mongo database name                                                                                                                                        | string                   |         |
+| MONGO_MIN_POOL_SIZE                                      | Min amount of connections to be retained into connection pool. See docs *                                                                                  | string                   |         |
+| MONGO_MAX_POOL_SIZE                                      | Max amount of connections to be retained into connection pool.See docs *                                                                                   | string                   |         |
+| MONGO_MAX_IDLE_TIMEOUT_MS                                | Max timeout after which an idle connection is killed in milliseconds. See docs *                                                                           | string                   |         |
+| MONGO_CONNECTION_TIMEOUT_MS                              | Max time to wait for a connection to be opened. See docs *                                                                                                 | string                   |         |
+| MONGO_SOCKET_TIMEOUT_MS                                  | Max time to wait for a command send or receive before timing out. See docs *                                                                               | string                   |         |
+| MONGO_SERVER_SELECTION_TIMEOUT_MS                        | Max time to wait for a server to be selected while performing a communication with Mongo in milliseconds. See docs *                                       | string                   |         |
+| MONGO_WAITING_QUEUE_MS                                   | Max time a thread has to wait for a connection to be available in milliseconds. See docs *                                                                 | string                   |         |
+| MONGO_HEARTBEAT_FREQUENCY_MS                             | Hearth beat frequency in milliseconds. This is an hello command that is sent periodically on each active connection to perform an health check. See docs * | string                   |         |
+| ROOT_LOGGING_LEVEL                                       | Application root logger level                                                                                                                              | string                   | INFO    |
+| APP_LOGGING_LEVEL                                        | it.pagopa logger level                                                                                                                                     | string                   | INFO    |
+| WEB_LOGGING_LEVEL                                        | Web logger level                                                                                                                                           | string                   | DEBUG   |
+| SESSION_URL_BASEPATH                                     | NPG URL base path                                                                                                                                          | string                   |         |
+| SESSION_URL_OUTCOME_SUFFIX                               | NPG outcome url suffix                                                                                                                                     | string                   |         |
+| SESSION_URL_CANCEL_SUFFIX                                | NPG user cancel operation return url suffix                                                                                                                | string                   |         |
+| SESSION_URL_NOTIFICATION_URL                             | NPG notification URL                                                                                                                                       | string                   |         |
+| SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL | NPG notification URL for transaction with contextual onboard                                                                                               | string                   |         |
+| WALLET_ONBOARDING_CARD_RETURN_URL                        | Onboarding wallet front-end return url for card method                                                                                                     | string                   |         |
+| WALLET_ONBOARDING_APM_RETURN_URL                         | Onboarding wallet front-end return url for other methods than card                                                                                         | string                   |         |
+| WALLET_ONBOARDING_PAYPAL_PSP_API_KEY                     | Onboarding PSP API key for PayPal                                                                                                                          | string                   |         |
+| WALLET_PAYMENT_CARD_RETURN_URL                           | Payment with contextual onboarding credit card                                                                                                             | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_URI                            | eCommerce payment methods uri                                                                                                                              | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_TIMEOUT                        | eCommerce payment methods read and connection timeout                                                                                                      | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_API_KEY                        | eCommerce payment methods api key                                                                                                                          | string                   |         |
+| REDIS_HOST                                               | Redis host name                                                                                                                                            | string                   |         |
+| REDIS_PASSWORD                                           | Redis password                                                                                                                                             | string                   |         |
+| REDIS_PORT                                               | Redis port                                                                                                                                                 | string                   |         |
+| REDIS_SSL_ENABLED                                        | Whether SSL is enabled while connecting to  Redis                                                                                                          | string                   |         |
+| WALLET_SESSION_TTL_SECONDS                               | Wallet session TTL in seconds                                                                                                                              | int                      |         |
+| WALLET_LOGO_MAPPING                                      | Wallet logo map parameter that handles wallet type to logo mapping                                                                                         | string (Map<string,URI>) |         |
+| EXPIRATION_QUEUE_NAME                                    | Name of expiration queue                                                                                                                                   | string                   |         |
+| EXPIRATION_QUEUE_TTL_SECONDS                             | TTL in seconds for published message                                                                                                                       | string                   |         |
+| EXPIRATION_QUEUE_CONNECTION_STRING                       | Connection string to storage queue                                                                                                                         | string                   |         |
+| EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                                                                                                            |                          |         |
+
+(*): for Mongo connection string options
+see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
 
 ### Run docker container
 

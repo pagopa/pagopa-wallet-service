@@ -1,5 +1,6 @@
 package it.pagopa.wallet.domain.wallets.details
 
+import it.pagopa.wallet.audit.AuditWalletDetails
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 
 /** Data class that maps WalletDetails for CARD instrument type */
@@ -22,4 +23,8 @@ data class CardDetails(
             this.brand.value,
             this.paymentInstrumentGatewayId.paymentInstrumentGatewayId
         )
+
+    override fun toAudit(): AuditWalletDetails {
+        return AuditWalletDetails(type = this.type.name, cardBrand = this.brand.value, pspId = null)
+    }
 }

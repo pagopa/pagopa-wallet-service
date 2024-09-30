@@ -127,6 +127,12 @@ class WalletServiceTest {
 
     private val onboardingPaymentWalletCreditCardReturnUrl = "http://localhost/payment/creditcard"
 
+    class SessionInputInvalidDataDto : SessionInputDataDto {
+        override fun getPaymentMethodType(): String {
+            return "Not yet implemented"
+        }
+    }
+
     companion object {
 
         @JvmStatic
@@ -2448,32 +2454,44 @@ class WalletServiceTest {
                 val wallet = walletDomainEmptyServicesNullDetailsNoPaymentInstrument()
                 val walletDocumentEmptyServicesNullDetailsNoPaymentInstrument =
                     walletDocumentEmptyCreatedStatus()
-
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
+                val updatedWallet =
+                    wallet
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        mockedInstant,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
+
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                wallet
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    mockedInstant,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to newWalletApplicationStatus),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletApplicationsUpdatedEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id.toString(),
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2524,38 +2542,50 @@ class WalletServiceTest {
 
                 val newWalletApplicationStatus = WalletApplicationStatus.ENABLED
                 val applicationCreationDate = TIMESTAMP
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        applicationCreationDate,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    ),
+                                    WalletApplication(
+                                        OTHER_WALLET_APPLICATION_ID,
+                                        WalletApplicationStatus.DISABLED,
+                                        TIMESTAMP,
+                                        TIMESTAMP,
+                                        WalletApplicationMetadata(mapOf())
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    applicationCreationDate,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                ),
-                                                WalletApplication(
-                                                    OTHER_WALLET_APPLICATION_ID,
-                                                    WalletApplicationStatus.DISABLED,
-                                                    TIMESTAMP,
-                                                    TIMESTAMP,
-                                                    WalletApplicationMetadata(mapOf())
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletApplicationsUpdatedEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2613,22 +2643,33 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val walletDocument = walletDocument()
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications = walletDocument.applications.map { it.toDomain() },
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            walletDocument.applications.map { it.toDomain() },
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications = mapOf(),
                             applicationsWithUpdateFailed = mapOf()
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletApplicationsUpdatedEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2696,33 +2737,34 @@ class WalletServiceTest {
 
                 val walletDocument = walletDocument()
                 val applicationCreationDate = TIMESTAMP
+                val updatedWallet =
+                    walletDomain()
+                        .copy(
+                            applications =
+                                listOf(
+                                    WalletApplication(
+                                        WALLET_APPLICATION_ID,
+                                        newWalletApplicationStatus,
+                                        applicationCreationDate,
+                                        mockedInstant,
+                                        APPLICATION_METADATA
+                                    ),
+                                    WalletApplication(
+                                        OTHER_WALLET_APPLICATION_ID,
+                                        WalletApplicationStatus.DISABLED,
+                                        TIMESTAMP,
+                                        TIMESTAMP,
+                                        WalletApplicationMetadata(mapOf())
+                                    )
+                                ),
+                            updateDate = mockedInstant
+                        )
+                        .toDocument()
 
                 val expectedLoggedAction =
                     LoggedAction(
                         WalletApplicationUpdateData(
-                            updatedWallet =
-                                walletDomain()
-                                    .copy(
-                                        applications =
-                                            listOf(
-                                                WalletApplication(
-                                                    WALLET_APPLICATION_ID,
-                                                    newWalletApplicationStatus,
-                                                    applicationCreationDate,
-                                                    mockedInstant,
-                                                    APPLICATION_METADATA
-                                                ),
-                                                WalletApplication(
-                                                    OTHER_WALLET_APPLICATION_ID,
-                                                    WalletApplicationStatus.DISABLED,
-                                                    TIMESTAMP,
-                                                    TIMESTAMP,
-                                                    WalletApplicationMetadata(mapOf())
-                                                )
-                                            ),
-                                        updateDate = mockedInstant
-                                    )
-                                    .toDocument(),
+                            updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed =
@@ -2730,7 +2772,18 @@ class WalletServiceTest {
                                     disabledWalletApplicationId to WalletApplicationStatus.INCOMING
                                 )
                         ),
-                        WalletPatchEvent(WALLET_UUID.value.toString())
+                        WalletApplicationsUpdatedEvent(
+                            WALLET_UUID.value.toString(),
+                            updatedWallet.applications.map { app ->
+                                AuditWalletApplication(
+                                    app.id,
+                                    app.status,
+                                    app.creationDate.toString(),
+                                    app.updateDate.toString(),
+                                    app.metadata.mapKeys { m -> m.key }
+                                )
+                            }
+                        )
                     )
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
@@ -2986,12 +3039,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.DECLINED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentWithError.id.toString(),
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3039,12 +3095,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentWithError.id.toString(),
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3086,12 +3145,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentValidated.id.toString(),
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3133,12 +3195,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentValidated.id.toString(),
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3305,12 +3370,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.DECLINED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentWithError.id.toString(),
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3340,12 +3408,15 @@ class WalletServiceTest {
 
         LoggedAction(
             walletDocumentWithError.toDomain(),
-            WalletNotificationEvent(
-                WALLET_UUID.value.toString(),
-                operationId,
-                OperationResult.DECLINED.value,
-                notifyRequestDto.timestampOperation.toString(),
-                null,
+            WalletOnboardCompletedEvent(
+                walletId = walletDocumentWithError.id.toString(),
+                auditWallet =
+                    walletDocumentWithError.toDomain().toAudit().let {
+                        it.validationOperationId = operationId
+                        it.validationOperationTimestamp =
+                            notifyRequestDto.timestampOperation.toString()
+                        return@let it
+                    }
             )
         )
 
@@ -3388,12 +3459,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentWithError.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentWithError.id.toString(),
+                    auditWallet =
+                        walletDocumentWithError.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3436,12 +3510,15 @@ class WalletServiceTest {
         val expectedLoggedAction =
             LoggedAction(
                 walletDocumentValidated.toDomain(),
-                WalletNotificationEvent(
-                    WALLET_UUID.value.toString(),
-                    operationId,
-                    OperationResult.EXECUTED.value,
-                    notifyRequestDto.timestampOperation.toString(),
-                    null,
+                WalletOnboardCompletedEvent(
+                    walletId = walletDocumentValidated.id.toString(),
+                    auditWallet =
+                        walletDocumentValidated.toDomain().toAudit().let {
+                            it.validationOperationId = operationId
+                            it.validationOperationTimestamp =
+                                notifyRequestDto.timestampOperation.toString()
+                            return@let it
+                        }
                 )
             )
 
@@ -3817,7 +3894,7 @@ class WalletServiceTest {
 
     @ParameterizedTest
     @MethodSource("walletFinalState")
-    fun `when patching to error a wallet in final state should throw error`(
+    fun `when patching to error a wallet in final state should not throw error`(
         state: WalletStatusDto
     ) {
         val wallet = walletDocument().copy(status = state.value)
@@ -3827,8 +3904,10 @@ class WalletServiceTest {
         walletService
             .patchWalletStateToError(walletId = WalletId.of(wallet.id), reason = "Any reason")
             .test()
-            .expectError(WalletConflictStatusException::class.java)
-            .verify()
+            .assertNext { assertEquals(it.status, wallet.status) }
+            .verifyComplete()
+
+        argumentCaptor<Wallet> { verify(walletRepository, times(0)).save(capture()) }
     }
 
     @ParameterizedTest
@@ -4424,6 +4503,216 @@ class WalletServiceTest {
                 .generateJwtTokenForNpgNotifications(
                     transactionIdAsClaim = anyOrNull(),
                     walletIdAsClaim = any()
+                )
+        }
+    }
+
+    @Test
+    fun `should throw error on invalid session input data`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockedStatic ->
+            instantMockedStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString() + "%20"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c")
+                            )
+                    }
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
+
+            val sessionToken = "sessionToken"
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>(sessionToken) }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputInvalidDataDto()
+                    )
+                )
+                .verifyError(InternalServerErrorException::class.java)
+        }
+    }
+
+    @Test
+    fun `should create new wallet session with PayPal wallet`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+        val contractId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { instantMockedStatic ->
+            instantMockedStatic.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString() + "%20"
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
+
+            val sessionResponseDto =
+                SessionWalletCreateResponseDto()
+                    .orderId(orderId)
+                    .sessionData(SessionWalletCreateResponseAPMDataDto().paymentMethodType("apm"))
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+
+            val walletDocumentCreatedStatus = walletDocumentCreatedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDocumentValidationRequestedStatus =
+                walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
+            val walletDetails = walletDocumentValidationRequestedStatus.details as PayPalDetails
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentValidationRequestedStatus.toDomain(),
+                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                )
+
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            val merchantUrl = sessionUrlConfig.basePath
+            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
+            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val sessionToken = "sessionToken"
+            val notificationUrl =
+                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                    .build(
+                        mapOf(
+                            Pair("walletId", walletDocumentCreatedStatus.id),
+                            Pair("orderId", orderId),
+                            Pair("sessionToken", sessionToken)
+                        )
+                    )
+
+            val npgCorrelationId = WALLET_UUID.value
+
+            val npgCreateHostedOrderRequest =
+                CreateHostedOrderRequest()
+                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                    .merchantUrl(merchantUrl)
+                    .order(
+                        Order()
+                            .orderId(orderId)
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                    )
+                    .paymentSession(
+                        PaymentSession()
+                            .actionType(ActionType.VERIFY)
+                            .recurrence(
+                                RecurringSettings()
+                                    .action(RecurringAction.CONTRACT_CREATION)
+                                    .contractId(contractId)
+                                    .contractType(RecurringContractType.CIT)
+                            )
+                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
+                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                            .captureType(CaptureType.IMPLICIT)
+                            .paymentService("PAYPAL")
+                            .resultUrl(resultUrl.toString())
+                            .cancelUrl(cancelUrl.toString())
+                            .notificationUrl(notificationUrl.toString())
+                    )
+
+            given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentCreatedStatus))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given {
+                    jwtTokenUtils.generateJwtTokenForNpgNotifications(
+                        transactionIdAsClaim = anyOrNull(),
+                        walletIdAsClaim = any()
+                    )
+                }
+                .willAnswer { Either.right<JWTTokenGenerationException, String>(sessionToken) }
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID,
+                        WALLET_UUID,
+                        SessionInputPayPalDataDto().pspId(walletDetails.pspId)
+                    )
+                )
+                .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
+                .verifyComplete()
+
+            verify(ecommercePaymentMethodsClient, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(npgClient, times(1))
+                .createNpgOrderBuild(
+                    npgCorrelationId,
+                    npgCreateHostedOrderRequest,
+                    walletDetails.pspId
+                )
+            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(jwtTokenUtils, times(1))
+                .generateJwtTokenForNpgNotifications(
+                    transactionIdAsClaim = null,
+                    walletIdAsClaim = WALLET_UUID.value.toString()
                 )
         }
     }

@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
@@ -468,7 +469,18 @@ class WalletControllerTest {
                             applicationsWithUpdateFailed = mapOf(),
                             updatedWallet = WALLET_DOMAIN.toDocument()
                         ),
-                        WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                        WalletApplicationsUpdatedEvent(
+                            WALLET_DOMAIN.id.value.toString(),
+                            listOf(
+                                AuditWalletApplication(
+                                    WALLET_SERVICE_1.name,
+                                    WALLET_SERVICE_1.status.name,
+                                    Instant.now().toString(),
+                                    Instant.now().toString(),
+                                    mapOf()
+                                )
+                            )
+                        )
                     )
                 }
             )
@@ -516,7 +528,18 @@ class WalletControllerTest {
                     mono {
                         LoggedAction(
                             walletApplicationUpdateData,
-                            WalletPatchEvent(WALLET_DOMAIN.id.value.toString())
+                            WalletApplicationsUpdatedEvent(
+                                WALLET_DOMAIN.id.value.toString(),
+                                listOf(
+                                    AuditWalletApplication(
+                                        WALLET_SERVICE_1.name,
+                                        WALLET_SERVICE_1.status.name,
+                                        Instant.now().toString(),
+                                        Instant.now().toString(),
+                                        mapOf()
+                                    )
+                                )
+                            )
                         )
                     }
                 )
@@ -603,7 +626,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -614,14 +636,19 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
-                        WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED),
-                        WalletNotificationEvent(
-                            walletId = walletId.toString(),
-                            validationOperationId = operationId,
-                            validationOperationResult = OperationResultEnum.EXECUTED.value,
-                            validationErrorCode = null,
-                            validationOperationTimestamp = Instant.now().toString()
+                        wallet,
+                        WalletOnboardCompletedEvent(
+                            walletId = wallet.id.toString(),
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -755,7 +782,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -766,14 +792,19 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
                     LoggedAction(
-                        WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED),
-                        WalletNotificationEvent(
-                            walletId.toString(),
-                            operationId,
-                            OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString(),
-                            null,
+                        wallet,
+                        WalletOnboardCompletedEvent(
+                            walletId = wallet.id.toString(),
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -816,7 +847,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -827,14 +857,19 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
+                    val wallet = WALLET_DOMAIN
                     LoggedAction(
-                        WALLET_DOMAIN,
-                        WalletNotificationEvent(
-                            walletId.toString(),
-                            operationId,
-                            OperationResultEnum.EXECUTED.value,
-                            Instant.now().toString(),
-                            null,
+                        wallet,
+                        WalletOnboardCompletedEvent(
+                            walletId = wallet.id.toString(),
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -882,7 +917,6 @@ class WalletControllerTest {
             val walletId = UUID.randomUUID()
             val orderId = WalletTestUtils.ORDER_ID
             val sessionToken = "sessionToken"
-            val operationId = "validationOperationId"
             given {
                     walletService.notifyWallet(
                         eq(WalletId(walletId)),
@@ -893,14 +927,19 @@ class WalletControllerTest {
                 }
                 .willReturn(
                     mono {
+                        val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR)
                         LoggedAction(
-                            WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR),
-                            WalletNotificationEvent(
-                                walletId.toString(),
-                                operationId,
-                                OperationResultEnum.EXECUTED.value,
-                                Instant.now().toString(),
-                                null,
+                            wallet,
+                            WalletOnboardCompletedEvent(
+                                walletId = wallet.id.toString(),
+                                auditWallet =
+                                    wallet.toAudit().let {
+                                        it.validationOperationId =
+                                            WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                        it.validationOperationTimestamp =
+                                            WalletTestUtils.TIMESTAMP.toString()
+                                        return@let it
+                                    }
                             )
                         )
                     }
@@ -1223,7 +1262,6 @@ class WalletControllerTest {
         val walletId = UUID.randomUUID()
         val orderId = WalletTestUtils.ORDER_ID
         val sessionToken = "sessionToken"
-        val operationId = "validationOperationId"
         given {
                 walletService.notifyWallet(
                     eq(WalletId(walletId)),
@@ -1234,17 +1272,23 @@ class WalletControllerTest {
             }
             .willReturn(
                 mono {
-                    LoggedAction(
+                    val wallet =
                         WALLET_DOMAIN.copy(
                             validationOperationResult = OperationResultEnum.DECLINED,
                             validationErrorCode = "WG001"
-                        ),
-                        WalletNotificationEvent(
-                            walletId = walletId.toString(),
-                            validationOperationId = operationId,
-                            validationOperationResult = OperationResultEnum.DECLINED.value,
-                            validationErrorCode = "WG001",
-                            validationOperationTimestamp = Instant.now().toString()
+                        )
+                    LoggedAction(
+                        wallet,
+                        WalletOnboardCompletedEvent(
+                            walletId = wallet.id.toString(),
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }
                         )
                     )
                 }
@@ -1278,6 +1322,30 @@ class WalletControllerTest {
                     )
                 )
             )
+    }
+
+    @Test
+    fun `notify wallet should return 409 when detect optmistic lock error`() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+        given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
+            .willReturn(Mono.error(OptimisticLockingFailureException("Optimistic lock error")))
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(409)
+            .expectBody()
     }
 
     // workaround since this class is the request entrypoint and so discriminator

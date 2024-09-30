@@ -8,6 +8,8 @@ import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationRe
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
+import it.pagopa.wallet.audit.AuditWallet
+import it.pagopa.wallet.audit.AuditWalletApplication
 import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
 import it.pagopa.wallet.exception.WalletClientConfigurationException
@@ -75,12 +77,12 @@ data class Wallet(
             )
     }
 
+    fun isTransientStatus(): Boolean {
+        return TRANSIENT_STATUSES.contains(status)
+    }
+
     fun error(reason: String?): Wallet {
-        return if (TRANSIENT_STATUSES.contains(status)) {
-            copy(status = WalletStatusDto.ERROR, errorReason = reason)
-        } else {
-            this
-        }
+        return copy(status = WalletStatusDto.ERROR, errorReason = reason)
     }
 
     fun updateUsageForClient(clientId: ClientIdDto, usageTime: Instant): Wallet {
@@ -149,6 +151,30 @@ data class Wallet(
             )
 
         return wallet
+    }
+
+    fun toAudit(): AuditWallet {
+        return AuditWallet(
+            status = this.status.name,
+            paymentMethodId = this.paymentMethodId.value.toString(),
+            applications =
+                this.applications.map { app ->
+                    AuditWalletApplication(
+                        app.id.id,
+                        app.status.name,
+                        app.creationDate.toString(),
+                        app.updateDate.toString(),
+                        app.metadata.data.mapKeys { it.key.value }
+                    )
+                },
+            details = this.details?.toAudit(),
+            creationDate = this.creationDate.toString(),
+            updateDate = this.updateDate.toString(),
+            validationOperationResult = this.validationOperationResult?.value,
+            validationErrorCode = this.validationErrorCode,
+            validationOperationId = null,
+            validationOperationTimestamp = null
+        )
     }
 
     /** Return input application iff it's present and enabled */

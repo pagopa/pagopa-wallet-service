@@ -793,14 +793,20 @@ class WalletService(
                 )
             }
             .map { wallet ->
+                val domainWallet = wallet.toDomain()
                 LoggedAction(
-                    wallet.toDomain(),
-                    WalletNotificationEvent(
-                        walletId.value.toString(),
-                        walletNotificationRequestDto.operationId,
-                        walletNotificationRequestDto.operationResult.value,
-                        walletNotificationRequestDto.timestampOperation.toString(),
-                        wallet.validationErrorCode
+                    domainWallet,
+                    WalletOnboardCompletedEvent(
+                        walletId = domainWallet.id.value.toString(),
+                        auditWallet =
+                            domainWallet.let {
+                                val auditWallet = domainWallet.toAudit()
+                                auditWallet.validationOperationId =
+                                    walletNotificationRequestDto.operationId
+                                auditWallet.validationOperationTimestamp =
+                                    walletNotificationRequestDto.timestampOperation.toString()
+                                return@let auditWallet
+                            }
                     )
                 )
             }
@@ -829,15 +835,23 @@ class WalletService(
         return walletRepository
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { it.toDomain().error(reason) }
-            .flatMap { it.expectInStatus(WalletStatusDto.ERROR).toMono() }
-            .flatMap { walletRepository.save(it.toDocument()) }
-            .doOnNext {
-                logger.info(
-                    "Wallet [{}] moved to error state with reason: [{}]",
-                    walletId.value.toString(),
-                    reason
-                )
+            .map { it.toDomain() }
+            .flatMap {
+                if (it.isTransientStatus()) {
+                    logger.info(
+                        "Patching Wallet [{}] in error state with reason: [{}]",
+                        walletId.value.toString(),
+                        reason
+                    )
+                    walletRepository.save(it.error(reason).toDocument())
+                } else {
+                    logger.info(
+                        "Wallet [{}] already in the final state {}",
+                        walletId.value.toString(),
+                        it.status.value
+                    )
+                    Mono.just(it.toDocument())
+                }
             }
             .doOnError {
                 logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)
@@ -1034,7 +1048,7 @@ class WalletService(
                     .type(details.type)
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
-                    .brand(details.brand)
+                    .brand(CardBrand(details.brand).value)
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
@@ -1074,7 +1088,7 @@ class WalletService(
         return WalletAuthDataDto()
             .walletId(UUID.fromString(wallet.id))
             .contractId(wallet.contractId)
-            .brand(brand)
+            .brand(CardBrand(brand).value)
             .paymentMethodData(paymentMethodData)
     }
 
@@ -1161,7 +1175,23 @@ class WalletService(
                     }
             }
             .flatMap { walletRepository.save(it.updatedWallet).thenReturn(it) }
-            .map { LoggedAction(it, WalletPatchEvent(it.updatedWallet.id)) }
+            .map {
+                LoggedAction(
+                    it,
+                    WalletApplicationsUpdatedEvent(
+                        it.updatedWallet.id,
+                        it.updatedWallet.applications.map { app ->
+                            AuditWalletApplication(
+                                app.id,
+                                app.status,
+                                app.creationDate,
+                                app.updateDate,
+                                app.metadata.mapKeys { m -> m.key }
+                            )
+                        }
+                    )
+                )
+            }
     }
 
     /**

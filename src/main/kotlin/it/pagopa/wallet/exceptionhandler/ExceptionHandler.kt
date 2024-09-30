@@ -12,6 +12,7 @@ import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import jakarta.xml.bind.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -85,6 +86,20 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .title("Error processing the request")
                     .detail("An internal error occurred processing the request")
+            )
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException::class)
+    fun handleOptimisticLockingFailureException(
+        e: OptimisticLockingFailureException
+    ): ResponseEntity<ProblemJsonDto> {
+        logger.error("Detected optimistic error", e)
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                ProblemJsonDto()
+                    .status(HttpStatus.CONFLICT.value())
+                    .title("Error processing the request due to concurrent request detected")
+                    .detail("Optimistic lock has detected multiple concurrent requests")
             )
     }
 
