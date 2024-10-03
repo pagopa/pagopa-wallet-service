@@ -3933,12 +3933,11 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should allow re-create wallet session for CARD wallet in INITIALIZED status`() {
+    fun `deny allow re-create wallet session for CARD wallet in INITIALIZED status`() {
         /* preconditions */
 
         val uniqueId = getUniqueId()
         val orderId = uniqueId
-        val contractId = uniqueId
 
         mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { mockedStaticInstant ->
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
@@ -3968,21 +3967,7 @@ class WalletServiceTest {
                                     .propertyClass("c")
                             )
                     }
-            val sessionResponseDto =
-                SessionWalletCreateResponseDto()
-                    .orderId(orderId)
-                    .sessionData(
-                        SessionWalletCreateResponseCardDataDto()
-                            .paymentMethodType("cards")
-                            .cardFormFields(
-                                npgFields.fields!!.map {
-                                    FieldDto()
-                                        .propertyClass(it.propertyClass)
-                                        .src(URI.create(it.src))
-                                        .id(it.id)
-                                }
-                            )
-                    )
+
             given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
@@ -3992,55 +3977,7 @@ class WalletServiceTest {
 
             val walletDocumentInitialized = walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
-            val expectedLoggedAction =
-                LoggedAction(
-                    walletDocumentInitialized.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
-                )
-
-            val basePath = URI.create(sessionUrlConfig.basePath)
-            val merchantUrl = sessionUrlConfig.basePath
-            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
             val sessionToken = "sessionToken"
-            val notificationUrl =
-                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                    .build(
-                        mapOf(
-                            Pair("walletId", walletDocumentInitialized.id),
-                            Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
-
-            val npgCorrelationId = WALLET_UUID.value
-            val npgCreateHostedOrderRequest =
-                CreateHostedOrderRequest()
-                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                    .merchantUrl(merchantUrl)
-                    .order(
-                        Order()
-                            .orderId(orderId)
-                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
-                    .paymentSession(
-                        PaymentSession()
-                            .actionType(ActionType.VERIFY)
-                            .recurrence(
-                                RecurringSettings()
-                                    .action(RecurringAction.CONTRACT_CREATION)
-                                    .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
-                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                            .captureType(CaptureType.IMPLICIT)
-                            .paymentService("CARDS")
-                            .resultUrl(resultUrl.toString())
-                            .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
 
             given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                 .willAnswer { mono { npgFields } }
@@ -4070,32 +4007,34 @@ class WalletServiceTest {
                         SessionInputCardDataDto()
                     )
                 )
-                .assertNext { assertEquals((Pair(sessionResponseDto, expectedLoggedAction)), it) }
-                .verifyComplete()
+                .expectErrorMatches {
+                    assertTrue(it is WalletConflictStatusException)
+                    assertEquals(
+                        "Conflict with walletId [${walletDocumentInitialized.id}] with status [${walletDocumentInitialized.status}]. Allowed statuses [CREATED]",
+                        it.message
+                    )
+                    true
+                }
+                .verify()
 
             verify(ecommercePaymentMethodsClient, times(1))
                 .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
-            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-            verify(npgClient, times(1))
-                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
-            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            verify(jwtTokenUtils, times(1))
+            verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
+            verify(npgSessionRedisTemplate, times(0)).save(any())
+            verify(jwtTokenUtils, times(0))
                 .generateJwtTokenForNpgNotifications(
-                    transactionIdAsClaim = null,
-                    walletIdAsClaim = WALLET_UUID.value.toString()
+                    transactionIdAsClaim = anyOrNull(),
+                    walletIdAsClaim = any()
                 )
         }
     }
 
     @ParameterizedTest
-    @EnumSource(
-        value = WalletStatusDto::class,
-        mode = EnumSource.Mode.EXCLUDE,
-        names = ["CREATED", "INITIALIZED"]
-    )
-    fun `should deny re-create wallet session for CARD wallet in status different from CREATED and INITIALIZED`(
+    @EnumSource(value = WalletStatusDto::class, mode = EnumSource.Mode.EXCLUDE, names = ["CREATED"])
+    fun `should re-create wallet session for CARD wallet in status different from CREATED`(
         walletStatus: WalletStatusDto
     ) {
         /* preconditions */
@@ -4139,7 +4078,7 @@ class WalletServiceTest {
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
-                        "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED, INITIALIZED]",
+                        "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
                         it.message
                     )
                     true
@@ -4162,12 +4101,11 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should allow re-create wallet session for APM wallet in VALIDATION_REQUESTED status`() {
+    fun `deny re-create wallet session for APM wallet in VALIDATION_REQUESTED status`() {
         /* preconditions */
 
         val uniqueId = getUniqueId()
         val orderId = uniqueId
-        val contractId = uniqueId
 
         mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use { mockedStaticInstant ->
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
@@ -4180,14 +4118,6 @@ class WalletServiceTest {
                     .url(apmRedirectUrl)
                     .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
 
-            val sessionResponseDto =
-                SessionWalletCreateResponseDto()
-                    .orderId(orderId)
-                    .sessionData(
-                        SessionWalletCreateResponseAPMDataDto()
-                            .redirectUrl(apmRedirectUrl)
-                            .paymentMethodType("apm")
-                    )
             given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
@@ -4198,55 +4128,7 @@ class WalletServiceTest {
             val walletDocumentValidationRequested =
                 walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_APM)
 
-            val expectedLoggedAction =
-                LoggedAction(
-                    walletDocumentValidationRequested.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
-                )
-
-            val basePath = URI.create(sessionUrlConfig.basePath)
-            val merchantUrl = sessionUrlConfig.basePath
-            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
             val sessionToken = "sessionToken"
-            val notificationUrl =
-                UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                    .build(
-                        mapOf(
-                            Pair("walletId", walletDocumentValidationRequested.id),
-                            Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
-
-            val npgCorrelationId = WALLET_UUID.value
-            val npgCreateHostedOrderRequest =
-                CreateHostedOrderRequest()
-                    .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                    .merchantUrl(merchantUrl)
-                    .order(
-                        Order()
-                            .orderId(orderId)
-                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
-                    .paymentSession(
-                        PaymentSession()
-                            .actionType(ActionType.VERIFY)
-                            .recurrence(
-                                RecurringSettings()
-                                    .action(RecurringAction.CONTRACT_CREATION)
-                                    .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
-                            .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                            .captureType(CaptureType.IMPLICIT)
-                            .paymentService("PAYPAL")
-                            .resultUrl(resultUrl.toString())
-                            .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
 
             given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                 .willAnswer { mono { npgFields } }
@@ -4276,32 +4158,34 @@ class WalletServiceTest {
                         SessionInputCardDataDto()
                     )
                 )
-                .assertNext { assertEquals((Pair(sessionResponseDto, expectedLoggedAction)), it) }
-                .verifyComplete()
+                .expectErrorMatches {
+                    assertTrue(it is WalletConflictStatusException)
+                    assertEquals(
+                        "Conflict with walletId [${walletDocumentValidationRequested.id}] with status [${walletDocumentValidationRequested.status}]. Allowed statuses [CREATED]",
+                        it.message
+                    )
+                    true
+                }
+                .verify()
 
             verify(ecommercePaymentMethodsClient, times(1))
                 .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
-            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
-            verify(npgClient, times(1))
-                .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
-            verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            verify(jwtTokenUtils, times(1))
+            verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
+            verify(npgSessionRedisTemplate, times(0)).save(any())
+            verify(jwtTokenUtils, times(0))
                 .generateJwtTokenForNpgNotifications(
-                    transactionIdAsClaim = null,
-                    walletIdAsClaim = WALLET_UUID.value.toString()
+                    transactionIdAsClaim = anyOrNull(),
+                    walletIdAsClaim = any()
                 )
         }
     }
 
     @ParameterizedTest
-    @EnumSource(
-        value = WalletStatusDto::class,
-        mode = EnumSource.Mode.EXCLUDE,
-        names = ["CREATED", "VALIDATION_REQUESTED"]
-    )
-    fun `should deny re-create wallet session for APM wallet in status different from CREATED and VALIDATION_REQUESTED`(
+    @EnumSource(value = WalletStatusDto::class, mode = EnumSource.Mode.EXCLUDE, names = ["CREATED"])
+    fun `should deny re-create wallet session for APM wallet in status different from CREATED`(
         walletStatus: WalletStatusDto
     ) {
         /* preconditions */
@@ -4345,7 +4229,7 @@ class WalletServiceTest {
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
-                        "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED, VALIDATION_REQUESTED]",
+                        "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
                         it.message
                     )
                     true
