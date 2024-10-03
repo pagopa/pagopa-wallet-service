@@ -317,9 +317,13 @@ class WalletService(
                         setOf(WalletStatusDto.CREATED)
                     } else {
                         if (isApm) {
-                            setOf(WalletStatusDto.CREATED, WalletStatusDto.VALIDATION_REQUESTED)
+                            // CHK-3294 hotfix step 1 - avoid retry for order/build given a walletId
+                            // setOf(WalletStatusDto.CREATED, WalletStatusDto.VALIDATION_REQUESTED)
+                            setOf(WalletStatusDto.CREATED)
                         } else {
-                            setOf(WalletStatusDto.CREATED, WalletStatusDto.INITIALIZED)
+                            // CHK-3294 hotfix step 1 - avoid retry for order/build given a walletId
+                            // setOf(WalletStatusDto.CREATED, WalletStatusDto.INITIALIZED)
+                            setOf(WalletStatusDto.CREATED)
                         }
                     }
                 logger.info(
