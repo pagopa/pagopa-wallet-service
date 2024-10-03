@@ -311,7 +311,7 @@ class WalletService(
                         )
                         .toBoolean()
                 val isApm = paymentMethod.paymentTypeCode != "CP"
-                val allowedStatusesForRetryCreate = WalletStatusDto.CREATED
+                val allowedStatusesForRetryCreate = setOf(WalletStatusDto.CREATED)
                 // CHK-3294 hotfix step 1 - avoid retry for order/build given a walletId
                 // if (isTransactionWithContextualOnboard) {
                 // allow for retry on createSessionWallet only for onboarding
