@@ -311,17 +311,18 @@ class WalletService(
                         )
                         .toBoolean()
                 val isApm = paymentMethod.paymentTypeCode != "CP"
-                val allowedStatusesForRetryCreate =
-                    if (isTransactionWithContextualOnboard) {
-                        // allow for retry on createSessionWallet only for onboarding
-                        setOf(WalletStatusDto.CREATED)
-                    } else {
-                        if (isApm) {
-                            setOf(WalletStatusDto.CREATED, WalletStatusDto.VALIDATION_REQUESTED)
-                        } else {
-                            setOf(WalletStatusDto.CREATED, WalletStatusDto.INITIALIZED)
-                        }
-                    }
+                val allowedStatusesForRetryCreate = setOf(WalletStatusDto.CREATED)
+                // CHK-3294 hotfix step 1 - avoid retry for order/build given a walletId
+                // if (isTransactionWithContextualOnboard) {
+                // allow for retry on createSessionWallet only for onboarding
+                //                      setOf(WalletStatusDto.CREATED)
+                //  } else {
+                // if (isApm) {
+                //  setOf(WalletStatusDto.CREATED, WalletStatusDto.VALIDATION_REQUESTED)
+                //       } else {
+                //  setOf(WalletStatusDto.CREATED, WalletStatusDto.INITIALIZED)
+                //       }
+                //   }
                 logger.info(
                     "Wallet: [${walletId.value}], isApm: [$isApm], isTransactionWithContextualOnboard: [$isTransactionWithContextualOnboard] -> allowed statuses for retry create -> $allowedStatusesForRetryCreate"
                 )
