@@ -784,7 +784,7 @@
 			"response": []
 		},
 		{
-			"name": "Post sessions not allowed for wallet status different from CREATED or VALIDATION_REQUESTED",
+			"name": "Post sessions not allowed for wallet status different from CREATED",
 			"event": [
 				{
 					"listen": "test",
@@ -792,7 +792,7 @@
 						"exec": [
 							"const sdk = require('postman-collection');",
 							"",
-							"pm.test(\"[Wallet for onboarding CARDS] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED/VALIDATION_REQUESTED\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED\", function () {",
 							"    pm.response.to.have.status(409);",
 							"    const walletId = pm.environment.get(\"WALLET_ID\");",
 							"    const responseBody = pm.response.json();",
@@ -801,7 +801,7 @@
 							"    const errorStatus = responseBody.status;",
 							"    pm.expect(errorStatus).to.eq(409);",
 							"    pm.expect(errorTitle).to.eq(\"Conflict\");",
-							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATION_REQUESTED]. Allowed statuses [CREATED, INITIALIZED]`);",
+							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATION_REQUESTED]. Allowed statuses [CREATED]`);",
 							" ",
 							"});",
 							"",
