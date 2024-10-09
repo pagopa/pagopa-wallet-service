@@ -537,7 +537,7 @@
 			"response": []
 		},
 		{
-			"name": "Post sessions Idempotent",
+			"name": "Post sessions No Idempotent",
 			"event": [
 				{
 					"listen": "test",
@@ -545,15 +545,17 @@
 						"exec": [
 							"const sdk = require('postman-collection');",
 							"",
-							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet session re-created successfully with POST /wallets/:idWallet/sessions\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"[Wallet for onboarding PAYPAL] New wallet session faild with 409 with POST /wallets/:idWallet/sessions\", function () {",
+							"    pm.response.to.have.status(409);",
+							"    const walletId = pm.environment.get(\"WALLET_ID\");",
+							"    const responseBody = pm.response.json();",
+							"    const errorDetail = responseBody.detail;",
+							"    const errorTitle = responseBody.title;",
+							"    const errorStatus = responseBody.status;",
+							"    pm.expect(errorStatus).to.eq(409);",
+							"    pm.expect(errorTitle).to.eq(\"Conflict\");",
+							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATION_REQUESTED]. Allowed statuses [CREATED]`);",
 							"",
-							"    const response = pm.response.json();",
-							"    const sessionData = response.sessionData;",
-							"    pm.expect(sessionData.paymentMethodType).to.be.eq(\"apm\");",
-							"    pm.expect(sessionData.redirectUrl).to.be.a(\"string\");",
-							"    pm.expect(response.orderId).to.be.a(\"string\");",
-							"    pm.environment.set(\"ORDER_ID\", response.orderId);",
 							"});",
 							"",
 							"",
@@ -720,7 +722,7 @@
 						"exec": [
 							"const sdk = require('postman-collection');",
 							"",
-							"pm.test(\"[Wallet for onboarding PAYPAL] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED/VALIDATION_REQUESTED\", function () {",
+							"pm.test(\"[Wallet for onboarding PAYPAL] Cannot create new wallet session with POST /wallets/:idWallet/sessions for wallet status != CREATED\", function () {",
 							"    pm.response.to.have.status(409);",
 							"    const walletId = pm.environment.get(\"WALLET_ID\");",
 							"    const responseBody = pm.response.json();",
@@ -729,7 +731,7 @@
 							"    const errorStatus = responseBody.status;",
 							"    pm.expect(errorStatus).to.eq(409);",
 							"    pm.expect(errorTitle).to.eq(\"Conflict\");",
-							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATED]. Allowed statuses [CREATED, VALIDATION_REQUESTED]`);",
+							"    pm.expect(errorDetail).to.eq(`Conflict with walletId [${walletId}] with status [VALIDATED]. Allowed statuses [CREATED]`);",
 							" ",
 							"});",
 							"",
