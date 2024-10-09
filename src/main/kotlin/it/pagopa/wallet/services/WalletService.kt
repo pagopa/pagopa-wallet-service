@@ -1066,9 +1066,16 @@ class WalletService(
             when (wallet.details) {
                 is CardDetails ->
                     wallet.details.brand to
-                        WalletAuthCardDataDto().paymentMethodType("cards").bin(wallet.details.bin)
+                        WalletAuthCardDataDto()
+                            .paymentMethodType("cards")
+                            .bin(wallet.details.bin)
+                            .lastFourDigits(wallet.details.lastFourDigits)
                 is PayPalDetailsDocument ->
-                    "PAYPAL" to WalletAuthAPMDataDto().paymentMethodType("apm")
+                    "PAYPAL" to
+                        WalletAuthPayPalDataDto()
+                            .paymentMethodType("paypal")
+                            .maskedEmail(wallet.details.maskedEmail!!)
+                            .pspId(wallet.details.pspId)
                 null ->
                     throw RuntimeException(
                         "Called getAuthData on null wallet details for wallet id: ${wallet.id}!"
