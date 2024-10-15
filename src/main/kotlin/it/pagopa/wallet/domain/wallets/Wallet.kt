@@ -8,7 +8,7 @@ import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationRe
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
-import it.pagopa.wallet.audit.AuditWallet
+import it.pagopa.wallet.audit.completed.event.AuditWallet
 import it.pagopa.wallet.audit.AuditWalletApplication
 import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
 import it.pagopa.wallet.domain.wallets.details.WalletDetails

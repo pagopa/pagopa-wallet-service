@@ -1,4 +1,7 @@
-package it.pagopa.wallet.audit
+package it.pagopa.wallet.audit.completed.event
+
+import it.pagopa.wallet.audit.AuditWalletApplication
+import it.pagopa.wallet.audit.AuditWalletDetails
 
 /** Data class that contains wallet details for a log event */
 data class AuditWallet(

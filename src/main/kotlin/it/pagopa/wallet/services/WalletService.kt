@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.audit.created.event.AuditWallet
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
@@ -372,7 +373,9 @@ class WalletService(
                             WalletApplicationMetadata.Metadata.TRANSACTION_ID
                         )
                     )
-
+                logger.info(
+                    "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
+                )
                 npgClient
                     .createNpgOrderBuild(
                         correlationId = walletId.value,
@@ -495,11 +498,14 @@ class WalletService(
                             .orderId(orderId)
                             .sessionData(buildResponseSessionData(hostedOrderResponse, isAPM))
                     }
-                    .map { it to wallet }
+                    .map { Triple(it, wallet, orderId) } // Include orderId in the Triple
             }
-            .map { (sessionResponseDto, wallet) ->
+            .map { (sessionResponseDto, wallet, orderId) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
+                    LoggedAction(wallet, SessionWalletCreatedEvent(
+                        walletId = wallet.id.value.toString(),
+                        auditWallet = AuditWallet(orderId = orderId)
+                    ))
             }
     }
 
