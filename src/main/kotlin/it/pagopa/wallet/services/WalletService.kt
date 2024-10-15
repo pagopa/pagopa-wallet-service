@@ -502,10 +502,13 @@ class WalletService(
             }
             .map { (sessionResponseDto, wallet, orderId) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletCreatedEvent(
-                        walletId = wallet.id.value.toString(),
-                        auditWallet = AuditWallet(orderId = orderId)
-                    ))
+                    LoggedAction(
+                        wallet,
+                        SessionWalletCreatedEvent(
+                            walletId = wallet.id.value.toString(),
+                            auditWallet = AuditWallet(orderId = orderId)
+                        )
+                    )
             }
     }
 
