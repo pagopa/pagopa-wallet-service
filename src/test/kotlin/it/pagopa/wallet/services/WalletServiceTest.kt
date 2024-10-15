@@ -52,6 +52,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentWithError
 import it.pagopa.wallet.WalletTestUtils.walletDomain
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.audit.created.event.AuditWallet
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
@@ -802,7 +803,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentInitializedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWallet(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
@@ -970,7 +974,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentInitializedStatusForTransactionWithContextualOnboard.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWallet(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
