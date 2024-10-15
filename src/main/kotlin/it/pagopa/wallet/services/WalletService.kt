@@ -587,21 +587,6 @@ class WalletService(
             }
     }
 
-    fun updateWalletUsage(
-        walletId: UUID,
-        clientId: ClientIdDto,
-        usageTime: Instant
-    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
-        walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { it.toDomain() }
-            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATED).toMono() }
-            .flatMap {
-                walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
-            }
-            .doOnNext { logger.info("Update last usage for walletId [{}]", it.id) }
-
     private fun confirmPaymentCard(
         sessionId: String,
         correlationId: UUID,

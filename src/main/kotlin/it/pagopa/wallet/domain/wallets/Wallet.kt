@@ -3,7 +3,6 @@ package it.pagopa.wallet.domain.wallets
 import io.vavr.control.Either
 import io.vavr.control.Either.left
 import io.vavr.control.Either.right
-import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
@@ -12,7 +11,6 @@ import it.pagopa.wallet.audit.AuditWallet
 import it.pagopa.wallet.audit.AuditWalletApplication
 import it.pagopa.wallet.documents.wallets.Wallet as WalletDocument
 import it.pagopa.wallet.domain.wallets.details.WalletDetails
-import it.pagopa.wallet.exception.WalletClientConfigurationException
 import it.pagopa.wallet.exception.WalletConflictStatusException
 import java.time.Instant
 import org.slf4j.LoggerFactory
@@ -83,30 +81,6 @@ data class Wallet(
 
     fun error(reason: String?): Wallet {
         return copy(status = WalletStatusDto.ERROR, errorReason = reason)
-    }
-
-    fun updateUsageForClient(clientId: ClientIdDto, usageTime: Instant): Wallet {
-        val newClients = clients.toMutableMap()
-        val client = Client.Id.fromString(clientId.name)
-        val clientData = clients[client]
-
-        if (clientData != null) {
-            newClients[client] = clientData.copy(lastUsage = usageTime)
-        } else {
-            if (client is Client.WellKnown) {
-                newClients[client] = Client(Client.Status.ENABLED, usageTime)
-            } else {
-                logger.error(
-                    "Missing unknown client {}: requested usage update to wallet with id {}!",
-                    id.value,
-                    clientId
-                )
-
-                throw WalletClientConfigurationException(this.id, client)
-            }
-        }
-
-        return this.copy(clients = newClients)
     }
 
     fun expectInStatus(
