@@ -1362,7 +1362,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentValidationRequestedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWallet(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
@@ -4506,7 +4509,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentValidationRequestedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWallet(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
