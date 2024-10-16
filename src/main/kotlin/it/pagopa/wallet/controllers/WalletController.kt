@@ -296,18 +296,6 @@ class WalletController(
             .map { ResponseEntity.noContent().build() }
     }
 
-    override fun updateWalletUsage(
-        walletId: UUID,
-        updateWalletUsageRequestDto: Mono<UpdateWalletUsageRequestDto>,
-        exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void>> {
-        return updateWalletUsageRequestDto
-            .flatMap {
-                walletService.updateWalletUsage(walletId, it.clientId, it.usageTime.toInstant())
-            }
-            .map { ResponseEntity.noContent().build() }
-    }
-
     override fun postWalletValidations(
         xUserId: UUID,
         walletId: UUID,
@@ -476,21 +464,6 @@ class WalletController(
                 "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/auth-data",
                 mapOf("walletId" to WarmupUtils.mockedUUID)
             )
-            .retrieve()
-            .toBodilessEntity()
-            .block(Duration.ofSeconds(10))
-    }
-
-    @WarmupFunction
-    fun updateWalletUsage() {
-        webClient
-            .patch()
-            .uri(
-                "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/usages",
-                mapOf("walletId" to WarmupUtils.mockedUUID)
-            )
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(WarmupUtils.updateWalletUsageRequestDto)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))

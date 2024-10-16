@@ -231,7 +231,7 @@ class MigrationService(
                     applications = listOf(application),
                     clients =
                         Client.WellKnown.values().associateWith { _ ->
-                            Client(Client.Status.ENABLED, null)
+                            Client(Client.Status.ENABLED)
                         },
                     creationDate = creationTime,
                     updateDate = creationTime,

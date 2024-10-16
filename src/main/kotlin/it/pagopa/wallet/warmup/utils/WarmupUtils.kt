@@ -40,12 +40,6 @@ object WarmupUtils {
                 }
         }
 
-    val updateWalletUsageRequestDto =
-        UpdateWalletUsageRequestDto().apply {
-            this.usageTime = OffsetDateTime.now()
-            this.clientId = ClientIdDto.IO
-        }
-
     val createTransactionWalletRequestDto =
         WalletTransactionCreateRequestDto().apply {
             this.amount = 0
