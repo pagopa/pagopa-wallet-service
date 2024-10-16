@@ -955,9 +955,6 @@ components:
           $ref: '#/components/schemas/WalletApplicationId'
         status:
           $ref: '#/components/schemas/WalletApplicationStatus'
-        lastUsage:
-          type: string
-          format: date-time
       required:
         - name
         - status
@@ -1120,10 +1117,6 @@ components:
       properties:
         status:
           $ref: '#/components/schemas/WalletClientStatus'
-        lastUsage:
-          type: string
-          description: Time of last usage of this wallet by the client
-          format: date-time
       required:
         - status
     WalletInfo:

@@ -12,7 +12,6 @@ import it.pagopa.wallet.WalletTestUtils.APPLICATION_DESCRIPTION
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_DOCUMENT
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_ID
 import it.pagopa.wallet.WalletTestUtils.APPLICATION_METADATA
-import it.pagopa.wallet.WalletTestUtils.BRAND
 import it.pagopa.wallet.WalletTestUtils.CARD_ID_4
 import it.pagopa.wallet.WalletTestUtils.MASKED_EMAIL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
@@ -24,7 +23,6 @@ import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.PSP_BUSINESS_NAME
 import it.pagopa.wallet.WalletTestUtils.PSP_ID
-import it.pagopa.wallet.WalletTestUtils.TEST_FULL_INFO_CLIENTS
 import it.pagopa.wallet.WalletTestUtils.TIMESTAMP
 import it.pagopa.wallet.WalletTestUtils.TRANSACTION_ID
 import it.pagopa.wallet.WalletTestUtils.USER_ID
@@ -58,7 +56,6 @@ import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
-import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -80,7 +77,6 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -2139,73 +2135,6 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should find wallet document with client info about last usage`() {
-        /* preconditions */
-
-        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
-            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
-
-            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
-                print("Mocked instant: $mockedInstant")
-                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
-
-                val wallet = walletDocumentStatusValidatedCard(BRAND, TEST_FULL_INFO_CLIENTS)
-
-                val walletClientInfo = HashMap<String, WalletClientDto>()
-                walletClientInfo["IO"] =
-                    WalletClientDto()
-                        .status(WalletClientStatusDto.ENABLED)
-                        .lastUsage(OffsetDateTime.parse(wallet.clients["IO"]!!.lastUsage))
-                walletClientInfo["unknownClient"] =
-                    WalletClientDto()
-                        .status(WalletClientStatusDto.DISABLED)
-                        .lastUsage(OffsetDateTime.parse(wallet.clients["unknownClient"]?.lastUsage))
-
-                val walletInfoDto =
-                    WalletInfoDto()
-                        .walletId(UUID.fromString(wallet.id))
-                        .status(WalletStatusDto.valueOf(wallet.status))
-                        .paymentMethodId(wallet.paymentMethodId)
-                        .userId(wallet.userId)
-                        .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
-                        .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
-                        .applications(
-                            wallet.applications.map { application ->
-                                WalletApplicationInfoDto()
-                                    .name(application.id)
-                                    .status(WalletApplicationStatusDto.valueOf(application.status))
-                                    .lastUsage(
-                                        OffsetDateTime.parse(wallet.clients["IO"]?.lastUsage)
-                                    )
-                            }
-                        )
-                        .details(
-                            WalletCardDetailsDto()
-                                .type((wallet.details as CardDetails).type)
-                                .brand((wallet.details as CardDetails).brand)
-                                .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
-                        )
-                        .clients(walletClientInfo)
-
-                given {
-                        walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
-                    }
-                    .willAnswer { Mono.just(wallet) }
-
-                /* test */
-
-                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
-                    .expectNext(walletInfoDto)
-                    .verifyComplete()
-            }
-        }
-    }
-
-    @Test
     fun `should find wallet document with paypal with email`() {
         /* preconditions */
 
@@ -3791,33 +3720,6 @@ class WalletServiceTest {
         /* test */
         StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
             .expectNext(responseDto)
-            .verifyComplete()
-    }
-
-    @Test
-    fun `should return last usage for application if Wallet has it`() = runTest {
-        val lastUsageTime = Instant.now().toString()
-        val wallet =
-            walletDocument()
-                .copy(
-                    clients =
-                        mapOf(
-                            Client.WellKnown.IO.name to
-                                ClientDocument(Client.Status.ENABLED.name, lastUsageTime)
-                        )
-                )
-        given { walletRepository.findByIdAndUserId(any<String>(), any<String>()) }
-            .willReturn(Mono.just(wallet))
-
-        walletService
-            .findWallet(UUID.fromString(wallet.id), USER_ID.id)
-            .test()
-            .assertNext {
-                assertEquals(
-                    OffsetDateTime.parse(lastUsageTime),
-                    it.applications?.first()?.lastUsage
-                )
-            }
             .verifyComplete()
     }
 

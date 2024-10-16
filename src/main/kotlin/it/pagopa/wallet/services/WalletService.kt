@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.YearMonth
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -166,8 +165,8 @@ class WalletService(
                             applications = apps,
                             version = 0,
                             clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
+                                Client.WellKnown.values().associateWith { _ ->
+                                    Client(Client.Status.ENABLED)
                                 },
                             creationDate = creationTime,
                             updateDate = creationTime,
@@ -257,8 +256,8 @@ class WalletService(
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
                             clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
+                                Client.WellKnown.values().associateWith { _ ->
+                                    Client(Client.Status.ENABLED)
                                 },
                             onboardingChannel = onboardingChannel
                         ),
@@ -999,13 +998,6 @@ class WalletService(
                     WalletApplicationInfoDto()
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
-                        .lastUsage(
-                            wallet
-                                .toDomain()
-                                .clients[Client.WellKnown.IO]
-                                ?.lastUsage
-                                ?.atOffset(ZoneOffset.UTC)
-                        )
                 }
             )
             .clients(
@@ -1018,14 +1010,7 @@ class WalletService(
 
     private fun buildWalletClientDto(
         clientInfo: it.pagopa.wallet.documents.wallets.Client
-    ): WalletClientDto {
-        val walletClient =
-            WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
-        Optional.ofNullable(clientInfo.lastUsage).ifPresent { lastUsage ->
-            walletClient.lastUsage(OffsetDateTime.parse(lastUsage))
-        }
-        return walletClient
-    }
+    ): WalletClientDto = WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {
@@ -1253,17 +1238,6 @@ class WalletService(
         } else {
             SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
         }
-
-    private fun isWalletForTransactionWithContextualOnboard(
-        application: WalletApplication?
-    ): Boolean {
-        if (application != null) {
-            return application.metadata.data[
-                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
-                .toBoolean()
-        }
-        return false
-    }
 
     private fun buildNotificationUrl(
         isTransactionWithContextualOnboard: Boolean,
