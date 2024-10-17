@@ -52,7 +52,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentWithError
 import it.pagopa.wallet.WalletTestUtils.walletDomain
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.audit.created.event.AuditWallet
+import it.pagopa.wallet.audit.AuditWalletCreated
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
@@ -805,7 +805,7 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWallet(orderId = orderId)
+                        AuditWalletCreated = AuditWalletCreatedCreated(orderId = orderId)
                     )
                 )
 
@@ -976,7 +976,7 @@ class WalletServiceTest {
                     walletDocumentInitializedStatusForTransactionWithContextualOnboard.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWallet(orderId = orderId)
+                        AuditWalletCreated = AuditWalletCreated(orderId = orderId)
                     )
                 )
 
@@ -1364,7 +1364,7 @@ class WalletServiceTest {
                     walletDocumentValidationRequestedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWallet(orderId = orderId)
+                        AuditWalletCreated = AuditWalletCreated(orderId = orderId)
                     )
                 )
 
@@ -2493,7 +2493,7 @@ class WalletServiceTest {
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
-                                AuditWalletApplication(
+                                AuditWalletCreatedApplication(
                                     app.id.toString(),
                                     app.status,
                                     app.creationDate.toString(),
@@ -2587,7 +2587,7 @@ class WalletServiceTest {
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
-                                AuditWalletApplication(
+                                AuditWalletCreatedApplication(
                                     app.id,
                                     app.status,
                                     app.creationDate.toString(),
@@ -2671,7 +2671,7 @@ class WalletServiceTest {
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
-                                AuditWalletApplication(
+                                AuditWalletCreatedApplication(
                                     app.id,
                                     app.status,
                                     app.creationDate.toString(),
@@ -2785,7 +2785,7 @@ class WalletServiceTest {
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
-                                AuditWalletApplication(
+                                AuditWalletCreatedApplication(
                                     app.id,
                                     app.status,
                                     app.creationDate.toString(),
@@ -3051,7 +3051,7 @@ class WalletServiceTest {
                 walletDocumentWithError.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3107,7 +3107,7 @@ class WalletServiceTest {
                 walletDocumentWithError.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3157,7 +3157,7 @@ class WalletServiceTest {
                 walletDocumentValidated.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3207,7 +3207,7 @@ class WalletServiceTest {
                 walletDocumentValidated.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3382,7 +3382,7 @@ class WalletServiceTest {
                 walletDocumentWithError.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3420,7 +3420,7 @@ class WalletServiceTest {
             walletDocumentWithError.toDomain(),
             WalletOnboardCompletedEvent(
                 walletId = walletDocumentWithError.id.toString(),
-                auditWallet =
+                AuditWalletCreated =
                     walletDocumentWithError.toDomain().toAudit().let {
                         it.validationOperationId = operationId
                         it.validationOperationTimestamp =
@@ -3471,7 +3471,7 @@ class WalletServiceTest {
                 walletDocumentWithError.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentWithError.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentWithError.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -3522,7 +3522,7 @@ class WalletServiceTest {
                 walletDocumentValidated.toDomain(),
                 WalletOnboardCompletedEvent(
                     walletId = walletDocumentValidated.id.toString(),
-                    auditWallet =
+                    AuditWalletCreated =
                         walletDocumentValidated.toDomain().toAudit().let {
                             it.validationOperationId = operationId
                             it.validationOperationTimestamp =
@@ -4511,7 +4511,7 @@ class WalletServiceTest {
                     walletDocumentValidationRequestedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWallet(orderId = orderId)
+                        AuditWalletCreated = AuditWalletCreated(orderId = orderId)
                     )
                 )
 

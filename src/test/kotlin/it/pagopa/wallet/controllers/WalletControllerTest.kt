@@ -14,7 +14,6 @@ import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
 import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.audit.created.event.AuditWallet
 import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
 import it.pagopa.wallet.domain.applications.ApplicationId
@@ -166,7 +165,7 @@ class WalletControllerTest {
                             WALLET_DOMAIN,
                             SessionWalletCreatedEvent(
                                 walletId = walletId.toString(),
-                                auditWallet = AuditWallet(orderId = orderId)
+                                auditWallet = AuditWalletCreated(orderId = orderId)
                             )
                         )
                     )
@@ -214,7 +213,7 @@ class WalletControllerTest {
                             WALLET_DOMAIN,
                             SessionWalletCreatedEvent(
                                 walletId = walletId.toString(),
-                                auditWallet = AuditWallet(orderId = orderId)
+                                auditWallet = AuditWalletCreated(orderId = orderId)
                             )
                         )
                     )

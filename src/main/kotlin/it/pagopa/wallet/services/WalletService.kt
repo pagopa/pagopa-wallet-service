@@ -3,7 +3,6 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.audit.created.event.AuditWallet
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
@@ -506,7 +505,7 @@ class WalletService(
                         wallet,
                         SessionWalletCreatedEvent(
                             walletId = wallet.id.value.toString(),
-                            auditWallet = AuditWallet(orderId = orderId)
+                            auditWallet = AuditWalletCreated(orderId = orderId)
                         )
                     )
             }

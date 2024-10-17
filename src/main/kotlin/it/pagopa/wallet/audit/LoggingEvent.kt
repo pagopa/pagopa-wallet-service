@@ -1,7 +1,5 @@
 package it.pagopa.wallet.audit
 
-import it.pagopa.wallet.audit.completed.event.AuditWallet as AuditWalletCompleted
-import it.pagopa.wallet.audit.created.event.AuditWallet as AuditWalletCreated
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import java.time.Instant
 import java.util.*
