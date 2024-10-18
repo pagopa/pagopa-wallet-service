@@ -372,7 +372,9 @@ class WalletService(
                             WalletApplicationMetadata.Metadata.TRANSACTION_ID
                         )
                     )
-
+                logger.info(
+                    "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
+                )
                 npgClient
                     .createNpgOrderBuild(
                         correlationId = walletId.value,
@@ -495,11 +497,17 @@ class WalletService(
                             .orderId(orderId)
                             .sessionData(buildResponseSessionData(hostedOrderResponse, isAPM))
                     }
-                    .map { it to wallet }
+                    .map { Triple(it, wallet, orderId) } // Include orderId in the Triple
             }
-            .map { (sessionResponseDto, wallet) ->
+            .map { (sessionResponseDto, wallet, orderId) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
+                    LoggedAction(
+                        wallet,
+                        SessionWalletCreatedEvent(
+                            walletId = wallet.id.value.toString(),
+                            auditWallet = AuditWalletCreated(orderId = orderId)
+                        )
+                    )
             }
     }
 

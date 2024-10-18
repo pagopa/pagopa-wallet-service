@@ -1,7 +1,13 @@
 package it.pagopa.wallet.audit
 
+/** Data class base */
+sealed class AuditWallet()
+
 /** Data class that contains wallet details for a log event */
-data class AuditWallet(
+data class AuditWalletCreated(val orderId: String) : AuditWallet()
+
+/** Data class that contains wallet details for a log event */
+data class AuditWalletCompleted(
     val paymentMethodId: String,
     val creationDate: String,
     val updateDate: String,
@@ -12,4 +18,4 @@ data class AuditWallet(
     var validationOperationResult: String?,
     var validationOperationTimestamp: String?,
     var validationErrorCode: String?
-)
+) : AuditWallet()
