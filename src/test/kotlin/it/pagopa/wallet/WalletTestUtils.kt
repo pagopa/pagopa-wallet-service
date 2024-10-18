@@ -62,7 +62,7 @@ object WalletTestUtils {
     const val ORDER_ID = "WFHDJFIRUT48394832"
     private val TYPE = WalletDetailsType.CARDS
     val TIMESTAMP: Instant = Instant.now()
-    val MASKED_EMAIL = MaskedEmail("maskedEmail")
+    val MASKED_EMAIL = MaskedEmail("p*******@p*******.it")
     val creationDate: Instant = Instant.now()
     const val TRANSACTION_ID = "0cbd232af3464a6985921cf437510e03"
     const val AMOUNT = 100
@@ -760,14 +760,24 @@ object WalletTestUtils {
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
             .brand(BRAND.value)
-            .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
+            .paymentMethodData(
+                WalletAuthCardDataDto()
+                    .bin(BIN.bin)
+                    .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
+                    .paymentMethodType("cards")
+            )
 
-    fun walletAPMAuthDataDto() =
+    fun walletPayPalAuthDataDto() =
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
             .brand("PAYPAL")
-            .paymentMethodData(WalletAuthAPMDataDto().paymentMethodType("apm"))
+            .paymentMethodData(
+                WalletAuthPayPalDataDto()
+                    .paymentMethodType("paypal")
+                    .maskedEmail(MASKED_EMAIL.value)
+                    .pspId(PSP_ID)
+            )
 
     val APPLICATION_DOCUMENT: Application =
         Application(
