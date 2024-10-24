@@ -1,10 +1,9 @@
 package it.pagopa.wallet.domain.wallets
 
 import it.pagopa.wallet.documents.wallets.Client
-import java.time.Instant
 
-data class Client(val status: Status, val lastUsage: Instant?) {
-    fun toDocument(): Client = Client(status.name, lastUsage?.toString())
+data class Client(val status: Status) {
+    fun toDocument(): Client = Client(status.name)
 
     enum class Status {
         ENABLED,

@@ -37,16 +37,10 @@ object WalletTestUtils {
     val VALIDATION_OPERATION_ID: UUID = UUID.randomUUID()
     val TEST_DEFAULT_CLIENTS: Map<Client.Id, Client> =
         mapOf(
-            Client.WellKnown.IO to Client(Client.Status.ENABLED, null),
-            Client.Unknown("unknownClient") to Client(Client.Status.DISABLED, null)
+            Client.WellKnown.IO to Client(Client.Status.ENABLED),
+            Client.Unknown("unknownClient") to Client(Client.Status.DISABLED)
         )
-    val TEST_FULL_INFO_CLIENTS: Map<Client.Id, Client> =
-        mapOf(
-            Client.WellKnown.IO to Client(Client.Status.ENABLED, Instant.now()),
-            Client.Unknown("unknownClient") to
-                Client(Client.Status.DISABLED, Instant.now().minusMillis(10000))
-        )
-    val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
+    private val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
     val APPLICATION_METADATA =
         WalletApplicationMetadata(
             APPLICATION_METADATA_HASHMAP.mapKeys {
@@ -107,7 +101,7 @@ object WalletTestUtils {
             details = null,
             clients =
                 mapOf(
-                    Client.WellKnown.IO.name to ClientDocument(Client.Status.ENABLED.name, null),
+                    Client.WellKnown.IO.name to ClientDocument(Client.Status.ENABLED.name),
                 ),
             version = 0,
             creationDate = creationDate,
@@ -156,8 +150,7 @@ object WalletTestUtils {
                                     Client.Status.ENABLED.name
                                 } else {
                                     Client.Status.DISABLED.name
-                                },
-                                null
+                                }
                             )
                     }
             )
@@ -391,58 +384,54 @@ object WalletTestUtils {
         brand: String,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.VALIDATION_REQUESTED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details =
-                    CardDetailsDocument(
-                        WalletDetailsType.CARDS.name,
-                        bin,
-                        lastFourDigits,
-                        expiryDate,
-                        brand,
-                        paymentInstrumentGatewayId
-                    ),
-                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.VALIDATION_REQUESTED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details =
+                CardDetailsDocument(
+                    WalletDetailsType.CARDS.name,
+                    bin,
+                    lastFourDigits,
+                    expiryDate,
+                    brand,
+                    paymentInstrumentGatewayId
+                ),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentVerifiedWithAPM(
         details: WalletDetails<*>,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.VALIDATION_REQUESTED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = details,
-                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.VALIDATION_REQUESTED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = details,
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentWithError(
@@ -471,205 +460,190 @@ object WalletTestUtils {
     }
 
     fun walletDocumentValidated(clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.VALIDATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = OperationResultEnum.EXECUTED.toString(),
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = null,
-                clients = clients.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.VALIDATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = OperationResultEnum.EXECUTED.toString(),
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = null,
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentEmptyCreatedStatus(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = null,
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentEmptyApplicationsNullDetails(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = null,
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentEmptyContractId(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = null,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = null,
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = null,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentWithEmptyValidationOperationResult(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = null,
-                validationOperationResult = OperationResultEnum.EXECUTED.value,
-                validationErrorCode = null,
-                errorReason = null,
-                applications = listOf(),
-                details = null,
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = null,
+            validationOperationResult = OperationResultEnum.EXECUTED.value,
+            validationErrorCode = null,
+            errorReason = null,
+            applications = listOf(),
+            details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDocumentNullDetails(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                errorReason = null,
-                applications =
-                    listOf(
-                        WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.DISABLED.toString(),
-                            TIMESTAMP.toString(),
-                            TIMESTAMP.toString(),
-                            APPLICATION_METADATA.data.mapKeys { it.key.value }
-                        )
-                    ),
-                details = null,
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.DISABLED.toString(),
+                        TIMESTAMP.toString(),
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA.data.mapKeys { it.key.value }
+                    )
+                ),
+            details = null,
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     fun walletDomain(): it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet = WALLET_DOMAIN
-        return wallet
+        return WALLET_DOMAIN
     }
 
     fun walletDocument(): Wallet {
-        val wallet =
-            Wallet(
-                id = WALLET_UUID.value.toString(),
-                userId = USER_ID.id.toString(),
-                status = WalletStatusDto.CREATED.name,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                contractId = CONTRACT_ID.contractId,
-                validationOperationResult = OperationResultEnum.EXECUTED.value,
-                validationErrorCode = null,
-                errorReason = null,
-                applications =
-                    listOf(
-                        WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.DISABLED.toString(),
-                            TIMESTAMP.toString(),
-                            TIMESTAMP.toString(),
-                            APPLICATION_METADATA_HASHMAP
-                        ),
-                        WalletApplicationDocument(
-                            OTHER_WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.DISABLED.toString(),
-                            TIMESTAMP.toString(),
-                            TIMESTAMP.toString(),
-                            mapOf()
-                        )
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.CREATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = OperationResultEnum.EXECUTED.value,
+            validationErrorCode = null,
+            errorReason = null,
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.DISABLED.toString(),
+                        TIMESTAMP.toString(),
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA_HASHMAP
                     ),
-                details =
-                    CardDetailsDocument(
-                        TYPE.toString(),
-                        BIN.bin,
-                        LAST_FOUR_DIGITS.lastFourDigits,
-                        EXP_DATE.expDate,
-                        BRAND.value,
-                        PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
-                    ),
-                clients =
-                    TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
-        return wallet
+                    WalletApplicationDocument(
+                        OTHER_WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.DISABLED.toString(),
+                        TIMESTAMP.toString(),
+                        TIMESTAMP.toString(),
+                        mapOf()
+                    )
+                ),
+            details =
+                CardDetailsDocument(
+                    TYPE.toString(),
+                    BIN.bin,
+                    LAST_FOUR_DIGITS.lastFourDigits,
+                    EXP_DATE.expDate,
+                    BRAND.value,
+                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
+                ),
+            clients =
+                TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString()
+        )
     }
 
     val WALLET_DOMAIN =
-        it.pagopa.wallet.domain.wallets.Wallet(
+        Wallet(
             id = WALLET_UUID,
             userId = USER_ID,
             status = WalletStatusDto.CREATED,
@@ -705,27 +679,25 @@ object WalletTestUtils {
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
-        val wallet =
-            it.pagopa.wallet.domain.wallets.Wallet(
-                id = WALLET_UUID,
-                userId = USER_ID,
-                status = WalletStatusDto.CREATED,
-                paymentMethodId = PAYMENT_METHOD_ID_CARDS,
-                applications = listOf(),
-                contractId = CONTRACT_ID,
-                validationOperationResult = null,
-                validationErrorCode = null,
-                details = null,
-                clients = TEST_DEFAULT_CLIENTS,
-                version = 0,
-                creationDate = creationDate,
-                updateDate = creationDate,
-                onboardingChannel = OnboardingChannel.IO
-            )
-        return wallet
+        return Wallet(
+            id = WALLET_UUID,
+            userId = USER_ID,
+            status = WalletStatusDto.CREATED,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS,
+            applications = listOf(),
+            contractId = CONTRACT_ID,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            details = null,
+            clients = TEST_DEFAULT_CLIENTS,
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO
+        )
     }
 
-    fun walletInfoDto() =
+    fun walletInfoDto(): WalletInfoDto =
         WalletInfoDto()
             .walletId(WALLET_UUID.value)
             .status(WalletStatusDto.CREATED)
@@ -742,7 +714,7 @@ object WalletTestUtils {
                     .expiryDate(EXP_DATE.expDate)
             )
 
-    fun walletInfoDtoAPM() =
+    fun walletInfoDtoAPM(): WalletInfoDto =
         WalletInfoDto()
             .walletId(WALLET_UUID.value)
             .status(WalletStatusDto.CREATED)
@@ -755,14 +727,14 @@ object WalletTestUtils {
                 WalletPaypalDetailsDto().type("PAYPAL").maskedEmail("maskedEmail").pspId(PSP_ID)
             )
 
-    fun walletCardAuthDataDto() =
+    fun walletCardAuthDataDto(): WalletAuthDataDto =
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
             .brand(BRAND.value)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
 
-    fun walletAPMAuthDataDto() =
+    fun walletAPMAuthDataDto(): WalletAuthDataDto =
         WalletAuthDataDto()
             .walletId(WALLET_UUID.value)
             .contractId(CONTRACT_ID.contractId)
@@ -806,7 +778,7 @@ object WalletTestUtils {
         WalletApplicationUpdateRequestDto().applications(listOf(WALLET_SERVICE_1, WALLET_SERVICE_2))
 
     val PSP_ID = UUID.randomUUID().toString()
-    val PSP_BUSINESS_NAME = "pspBusinessName"
+    const val PSP_BUSINESS_NAME = "pspBusinessName"
 
     val APM_SESSION_CREATE_REQUEST =
         SessionInputPayPalDataDto().apply {
