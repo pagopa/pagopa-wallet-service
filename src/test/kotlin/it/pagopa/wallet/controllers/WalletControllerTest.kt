@@ -11,6 +11,7 @@ import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.WalletTestUtils.WALLET_DOMAIN
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_1
 import it.pagopa.wallet.WalletTestUtils.WALLET_SERVICE_2
+import it.pagopa.wallet.WalletTestUtils.getUniqueId
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.common.tracing.WalletTracing
@@ -132,6 +133,7 @@ class WalletControllerTest {
     @Test
     fun testCreateSessionWalletWithCard() = runTest {
         /* preconditions */
+        val orderId = getUniqueId()
         val walletId = WalletId(UUID.randomUUID())
         val userId = UserId(UUID.randomUUID())
         val sessionResponseDto =
@@ -156,7 +158,13 @@ class WalletControllerTest {
                 mono {
                     Pair(
                         sessionResponseDto,
-                        LoggedAction(WALLET_DOMAIN, SessionWalletCreatedEvent(walletId.toString()))
+                        LoggedAction(
+                            WALLET_DOMAIN,
+                            SessionWalletCreatedEvent(
+                                walletId = walletId.toString(),
+                                auditWallet = AuditWalletCreated(orderId = orderId)
+                            )
+                        )
                     )
                 }
             )
@@ -182,6 +190,7 @@ class WalletControllerTest {
     @Test
     fun testCreateSessionWalletWithAPM() = runTest {
         /* preconditions */
+        val orderId = getUniqueId()
         val walletId = WalletId(UUID.randomUUID())
         val userId = UserId(UUID.randomUUID())
         val sessionResponseDto =
@@ -197,7 +206,13 @@ class WalletControllerTest {
                 mono {
                     Pair(
                         sessionResponseDto,
-                        LoggedAction(WALLET_DOMAIN, SessionWalletCreatedEvent(walletId.toString()))
+                        LoggedAction(
+                            WALLET_DOMAIN,
+                            SessionWalletCreatedEvent(
+                                walletId = walletId.toString(),
+                                auditWallet = AuditWalletCreated(orderId = orderId)
+                            )
+                        )
                     )
                 }
             )

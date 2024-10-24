@@ -798,7 +798,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentInitializedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWalletCreated(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
@@ -966,7 +969,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentInitializedStatusForTransactionWithContextualOnboard.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWalletCreated(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
@@ -1351,7 +1357,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentValidationRequestedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWalletCreated(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)
@@ -4401,7 +4410,10 @@ class WalletServiceTest {
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentValidationRequestedStatus.toDomain(),
-                    SessionWalletCreatedEvent(WALLET_UUID.value.toString())
+                    SessionWalletCreatedEvent(
+                        walletId = WALLET_UUID.value.toString(),
+                        auditWallet = AuditWalletCreated(orderId = orderId)
+                    )
                 )
 
             val basePath = URI.create(sessionUrlConfig.basePath)

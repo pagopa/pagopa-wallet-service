@@ -16,7 +16,8 @@ data class WalletMigratedAddedEvent(val walletId: String) : LoggingEvent()
 
 data class WalletDeletedEvent(val walletId: String) : LoggingEvent()
 
-data class SessionWalletCreatedEvent(val walletId: String) : LoggingEvent()
+data class SessionWalletCreatedEvent(val walletId: String, val auditWallet: AuditWalletCreated) :
+    LoggingEvent()
 
 data class WalletApplicationsUpdatedEvent(
     val walletId: String,
@@ -25,8 +26,10 @@ data class WalletApplicationsUpdatedEvent(
 
 data class WalletDetailsAddedEvent(val walletId: String) : LoggingEvent()
 
-data class WalletOnboardCompletedEvent(val walletId: String, val auditWallet: AuditWallet) :
-    LoggingEvent()
+data class WalletOnboardCompletedEvent(
+    val walletId: String,
+    val auditWallet: AuditWalletCompleted
+) : LoggingEvent()
 
 data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
 
