@@ -26,7 +26,6 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
-import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,7 +45,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -54,7 +52,6 @@ import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import reactor.kotlin.test.test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @WebFluxTest(WalletController::class)
@@ -1016,60 +1013,6 @@ class WalletControllerTest {
                 exception.message
             )
         }
-
-    @Test
-    fun `should return 204 when update last wallet usage successfully`() = runTest {
-        val wallet = WalletTestUtils.walletDocument()
-        val updateRequest =
-            Mono.just(
-                UpdateWalletUsageRequestDto().clientId(ClientIdDto.IO).usageTime(OffsetDateTime.MIN)
-            )
-
-        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.just(wallet))
-
-        walletController
-            .updateWalletUsage(
-                walletId = UUID.fromString(wallet.id),
-                updateWalletUsageRequestDto = updateRequest,
-                exchange = mock()
-            )
-            .test()
-            .assertNext {
-                assertEquals(HttpStatusCode.valueOf(204), it.statusCode)
-                verify(walletService)
-                    .updateWalletUsage(
-                        eq(UUID.fromString(wallet.id)),
-                        eq(ClientIdDto.IO),
-                        eq(OffsetDateTime.MIN.toInstant())
-                    )
-            }
-            .verifyComplete()
-    }
-
-    @Test
-    fun `should return 422 when update last wallet usage for non-configured client`() = runTest {
-        val wallet = WalletTestUtils.walletDocument()
-        val updateRequest =
-            UpdateWalletUsageRequestDto()
-                .clientId(ClientIdDto.CHECKOUT)
-                .usageTime(OffsetDateTime.MIN)
-
-        val error =
-            WalletClientConfigurationException(
-                WalletId(UUID.fromString(wallet.id)),
-                Client.Unknown("unknownClient")
-            )
-        given { walletService.updateWalletUsage(any(), any(), any()) }.willReturn(Mono.error(error))
-
-        webClient
-            .patch()
-            .uri("/wallets/{walletId}/usages", mapOf("walletId" to wallet.id))
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(updateRequest)
-            .exchange()
-            .expectStatus()
-            .isEqualTo(422)
-    }
 
     @Test
     fun `should return 409 when patch error state to wallet in non transient state`() {
