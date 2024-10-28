@@ -1,6 +1,7 @@
 package it.pagopa.wallet.common.tracing
 
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.Tracer
@@ -14,6 +15,12 @@ class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer:
         const val TRACEPARENT: String = "traceparent"
         const val TRACESTATE: String = "tracestate"
         const val BAGGAGE: String = "baggage"
+    }
+
+    fun addSpan(spanName: String, attributes: Attributes) {
+        val span: Span = tracer.spanBuilder(spanName).startSpan()
+        span.setAllAttributes(attributes)
+        span.end()
     }
 
     fun <T> traceMonoQueue(spanName: String, traced: TracedMono<T>) =

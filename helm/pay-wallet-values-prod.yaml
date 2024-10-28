@@ -90,6 +90,14 @@ microservice-chart:
     MONGO_PORT: "10255"
     MONGO_SSL_ENABLED: "true"
     MONGO_DB_NAME: "payment-wallet"
+    MONGO_MIN_POOL_SIZE: "0"
+    MONGO_MAX_POOL_SIZE: "50"
+    MONGO_MAX_IDLE_TIMEOUT_MS: "600000"
+    MONGO_CONNECTION_TIMEOUT_MS: "2000"
+    MONGO_SOCKET_TIMEOUT_MS: "10000"
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: "2000"
+    MONGO_WAITING_QUEUE_MS: "2000"
+    MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
     REDIS_HOST: pagopa-p-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
@@ -111,7 +119,7 @@ microservice-chart:
     OTEL_METRICS_EXPORTER: otlp
     OTEL_LOGS_EXPORTER: otlp
     OTEL_TRACES_SAMPLER: "always_on"
-    WALLET_SESSION_TTL: "100000"
+    WALLET_SESSION_TTL_SECONDS: "1800"
     WEBSITE_SITE_NAME: 'wallet-service' # required to show cloud role name in application insights
     WALLET_ONBOARDING_CARD_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/creditcard
     WALLET_ONBOARDING_APM_RETURN_URL: https://payment-wallet.pagopa.it/onboarding/apm
@@ -125,7 +133,7 @@ microservice-chart:
     ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v2"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
-    NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "300"
+    NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "900"
     WALLET_MIGRATION_CARD_PAYMENT_METHOD_ID: "6920b555-c972-4e2b-980c-b0e0037a111a"
     WALLET_MIGRATION_DEFAULT_APPLICATION_ID: "PAGOPA"
     WALLET_LOGO_MAPPING: >

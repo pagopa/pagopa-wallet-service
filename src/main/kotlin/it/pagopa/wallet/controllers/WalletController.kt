@@ -3,6 +3,7 @@ package it.pagopa.wallet.controllers
 import it.pagopa.generated.wallet.api.WalletsApi
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.common.tracing.Tracing
+import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
@@ -38,7 +39,8 @@ import reactor.core.publisher.Mono
 class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
-    private val webClient: WebClient = WebClient.create()
+    @Autowired private val walletTracing: WalletTracing,
+    private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
     override fun createWallet(
@@ -168,6 +170,11 @@ class WalletController(
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
         return walletNotificationRequestDto.flatMap { requestDto ->
+            val gatewayOutcomeResult =
+                WalletTracing.GatewayNotificationOutcomeResult(
+                    gatewayAuthorizationStatus = requestDto.operationResult.value,
+                    errorCode = requestDto.errorCode
+                )
             getAuthenticationToken(exchange)
                 .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
                 .flatMap { securityToken ->
@@ -179,6 +186,31 @@ class WalletController(
                     )
                 }
                 .flatMap { it.saveEvents(loggingEventRepository) }
+                .doOnNext {
+                    walletTracing.traceWalletUpdate(
+                        WalletTracing.WalletUpdateResult(
+                            WalletTracing.WalletNotificationOutcome.OK,
+                            it.details?.type,
+                            it.status,
+                            WalletTracing.GatewayNotificationOutcomeResult(
+                                gatewayAuthorizationStatus = it.validationOperationResult?.value
+                                        ?: gatewayOutcomeResult.gatewayAuthorizationStatus,
+                                errorCode = it.validationErrorCode
+                                        ?: gatewayOutcomeResult.errorCode ?: it.errorReason
+                            )
+                        )
+                    )
+                }
+                .doOnError { error ->
+                    walletTracing.traceWalletUpdate(
+                        WalletTracing.WalletUpdateResult(
+                            errorToWalletNotificationOutcome(error),
+                            extractWalletTypeFromError(error),
+                            extractWalletStatusFromError(error),
+                            gatewayOutcomeResult
+                        )
+                    )
+                }
                 .map {
                     /*
                      * @formatter:off
@@ -260,18 +292,6 @@ class WalletController(
                 } else {
                     Mono.just(it)
                 }
-            }
-            .map { ResponseEntity.noContent().build() }
-    }
-
-    override fun updateWalletUsage(
-        walletId: UUID,
-        updateWalletUsageRequestDto: Mono<UpdateWalletUsageRequestDto>,
-        exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<Void>> {
-        return updateWalletUsageRequestDto
-            .flatMap {
-                walletService.updateWalletUsage(walletId, it.clientId, it.usageTime.toInstant())
             }
             .map { ResponseEntity.noContent().build() }
     }
@@ -444,21 +464,6 @@ class WalletController(
                 "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/auth-data",
                 mapOf("walletId" to WarmupUtils.mockedUUID)
             )
-            .retrieve()
-            .toBodilessEntity()
-            .block(Duration.ofSeconds(10))
-    }
-
-    @WarmupFunction
-    fun updateWalletUsage() {
-        webClient
-            .patch()
-            .uri(
-                "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/usages",
-                mapOf("walletId" to WarmupUtils.mockedUUID)
-            )
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(WarmupUtils.updateWalletUsageRequestDto)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))

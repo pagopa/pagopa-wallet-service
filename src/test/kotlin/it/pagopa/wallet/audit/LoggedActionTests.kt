@@ -1,6 +1,5 @@
 package it.pagopa.wallet.audit
 
-import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.domain.wallets.LoggingEventDispatcher
 import it.pagopa.wallet.repositories.LoggingEventRepository
@@ -26,16 +25,19 @@ class LoggedActionTests {
         return Mono.just(id).map { LoggedAction(it, WalletAddedEvent(it)) }
     }
 
-    fun saveWalletNotificationEventWithLogging(id: String): Mono<LoggedAction<String>> {
-        return Mono.just(id).map {
+    fun saveWalletOnboardCompletedEventWithLogging(id: String): Mono<LoggedAction<String>> {
+        return Mono.just(id).map { it ->
             LoggedAction(
                 it,
-                WalletNotificationEvent(
-                    walletId = it,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                WalletOnboardCompletedEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         }
@@ -116,23 +118,26 @@ class LoggedActionTests {
     }
 
     @Test
-    fun `saveEvents saves WalletNotificationEvent events correctly`() {
+    fun `saveEvents saves WalletOnboardCompletedEvent events correctly`() {
         val walletId = "walletId"
         val expectedSavedEvents =
             listOf(
-                WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                WalletOnboardCompletedEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
 
         given(mongoRepository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
 
         val actualId =
-            saveWalletNotificationEventWithLogging(walletId)
+            saveWalletOnboardCompletedEventWithLogging(walletId)
                 .flatMap { it.saveEvents(repository) }
                 .block()
 
@@ -147,19 +152,22 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletAddedEvent(walletId),
-                WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                WalletOnboardCompletedEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         given(mongoRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
             Flux.fromIterable(expectedSavedEvents)
         }
         val actualId =
-            saveWalletNotificationEventWithLogging(walletId)
+            saveWalletOnboardCompletedEventWithLogging(walletId)
                 .flatMap { it.saveEvents(repository) }
                 .block()
         assertEquals(walletId, actualId)
@@ -176,12 +184,15 @@ class LoggedActionTests {
         val expectedSavedEvents =
             listOf(
                 WalletAddedEvent(walletId),
-                WalletNotificationEvent(
-                    walletId = walletId,
-                    validationOperationId = "validationOperationId",
-                    validationOperationResult = OperationResultEnum.EXECUTED.value,
-                    validationErrorCode = null,
-                    validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                WalletOnboardCompletedEvent(
+                    walletId = WalletTestUtils.walletDomain().id.toString(),
+                    auditWallet =
+                        WalletTestUtils.walletDomain().toAudit().let {
+                            it.validationOperationId =
+                                WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                            it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
+                            return@let it
+                        }
                 )
             )
         given { loggingEventDispatcher.dispatchEvent(any()) }
@@ -192,7 +203,7 @@ class LoggedActionTests {
             Flux.fromIterable(expectedSavedEvents)
         }
 
-        saveWalletNotificationEventWithLogging(walletId)
+        saveWalletOnboardCompletedEventWithLogging(walletId)
             .flatMap { it.saveEvents(repository) }
             .test()
             .assertNext {

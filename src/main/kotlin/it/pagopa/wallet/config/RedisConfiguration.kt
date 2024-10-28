@@ -21,7 +21,7 @@ class RedisConfiguration {
     @Bean
     fun npgSessionRedisTemplate(
         redisConnectionFactory: RedisConnectionFactory,
-        @Value("\${wallet.session.ttl}") ttl: Long,
+        @Value("\${wallet.session.ttlSeconds}") ttlSeconds: Long,
     ): NpgSessionsTemplateWrapper {
         val npgSessionRedisTemplate = RedisTemplate<String, NpgSession>()
         npgSessionRedisTemplate.connectionFactory = redisConnectionFactory
@@ -29,7 +29,7 @@ class RedisConfiguration {
         npgSessionRedisTemplate.valueSerializer = jackson2JsonRedisSerializer
         npgSessionRedisTemplate.keySerializer = StringRedisSerializer()
         npgSessionRedisTemplate.afterPropertiesSet()
-        return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofMinutes(ttl))
+        return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofSeconds(ttlSeconds))
     }
 
     @Bean

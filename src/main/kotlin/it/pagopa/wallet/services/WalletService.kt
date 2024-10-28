@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.YearMonth
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.reactor.mono
@@ -112,6 +111,7 @@ class WalletService(
             )
         val walletExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMM")
         val npgExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/yy")
+        val pagopaWalletApplicationId = WalletApplicationId("PAGOPA")
     }
 
     /*
@@ -165,8 +165,8 @@ class WalletService(
                             applications = apps,
                             version = 0,
                             clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
+                                Client.WellKnown.values().associateWith { _ ->
+                                    Client(Client.Status.ENABLED)
                                 },
                             creationDate = creationTime,
                             updateDate = creationTime,
@@ -256,8 +256,8 @@ class WalletService(
                             updateDate = creationTime,
                             applications = listOf(walletApplication),
                             clients =
-                                Client.WellKnown.values().associateWith { clientId ->
-                                    Client(Client.Status.ENABLED, null)
+                                Client.WellKnown.values().associateWith { _ ->
+                                    Client(Client.Status.ENABLED)
                                 },
                             onboardingChannel = onboardingChannel
                         ),
@@ -296,11 +296,42 @@ class WalletService(
             .findByIdAndUserId(walletId.value.toString(), xUserId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
-            .flatMap { it.expectInStatus(WalletStatusDto.CREATED).toMono() }
             .flatMap {
                 ecommercePaymentMethodsClient
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
                     .map { paymentMethod -> paymentMethod to it }
+            }
+            .flatMap { (paymentMethod, wallet) ->
+                val isTransactionWithContextualOnboard =
+                    wallet
+                        .getApplicationMetadata(
+                            pagopaWalletApplicationId,
+                            WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                        )
+                        .toBoolean()
+                val isApm = paymentMethod.paymentTypeCode != "CP"
+                val allowedStatusesForRetryCreate = setOf(WalletStatusDto.CREATED)
+                // CHK-3294 hotfix step 1 - avoid retry for order/build given a walletId
+                // if (isTransactionWithContextualOnboard) {
+                // allow for retry on createSessionWallet only for onboarding
+                //                      setOf(WalletStatusDto.CREATED)
+                //  } else {
+                // if (isApm) {
+                //  setOf(WalletStatusDto.CREATED, WalletStatusDto.VALIDATION_REQUESTED)
+                //       } else {
+                //  setOf(WalletStatusDto.CREATED, WalletStatusDto.INITIALIZED)
+                //       }
+                //   }
+                logger.info(
+                    "Wallet: [${walletId.value}], isApm: [$isApm], isTransactionWithContextualOnboard: [$isTransactionWithContextualOnboard] -> allowed statuses for retry create -> $allowedStatusesForRetryCreate"
+                )
+                Mono.just(paymentMethod)
+                    .zipWith(
+                        wallet
+                            .expectInStatus(*allowedStatusesForRetryCreate.toTypedArray())
+                            .toMono()
+                    )
+                    .map { Pair(it.t1, it.t2) }
             }
             .flatMap { (paymentMethodResponse, wallet) ->
                 generateNPGUniqueIdentifiers().map { (orderId, contractId) ->
@@ -308,21 +339,23 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
-                val pagopaApplication =
-                    wallet.applications.singleOrNull { application ->
-                        application.id == WalletApplicationId("PAGOPA") &&
-                            application.status == WalletApplicationStatus.ENABLED
-                    }
                 val isTransactionWithContextualOnboard =
-                    isWalletForTransactionWithContextualOnboard(pagopaApplication)
+                    wallet
+                        .getApplicationMetadata(
+                            pagopaWalletApplicationId,
+                            WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                        )
+                        .toBoolean()
                 val orderId = uniqueIds.first
                 val amount =
-                    if (isTransactionWithContextualOnboard)
-                        pagopaApplication
-                            ?.metadata
-                            ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.AMOUNT)
-                    else null
+                    if (isTransactionWithContextualOnboard) {
+                        wallet.getApplicationMetadata(
+                            pagopaWalletApplicationId,
+                            WalletApplicationMetadata.Metadata.AMOUNT
+                        )
+                    } else {
+                        null
+                    }
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
@@ -333,12 +366,14 @@ class WalletService(
                         isTransactionWithContextualOnboard,
                         wallet.id.value,
                         orderId,
-                        pagopaApplication
-                            ?.metadata
-                            ?.data
-                            ?.get(WalletApplicationMetadata.Metadata.TRANSACTION_ID)
+                        wallet.getApplicationMetadata(
+                            pagopaWalletApplicationId,
+                            WalletApplicationMetadata.Metadata.TRANSACTION_ID
+                        )
                     )
-
+                logger.info(
+                    "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
+                )
                 npgClient
                     .createNpgOrderBuild(
                         correlationId = walletId.value,
@@ -350,8 +385,11 @@ class WalletService(
                                     Order()
                                         .orderId(orderId)
                                         .amount(
-                                            if (isTransactionWithContextualOnboard) amount
-                                            else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                            if (isTransactionWithContextualOnboard) {
+                                                amount
+                                            } else {
+                                                CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                            }
                                         )
                                         .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
                                     // TODO customerId must be valorised with the one coming from
@@ -359,8 +397,11 @@ class WalletService(
                                 .paymentSession(
                                     PaymentSession()
                                         .actionType(
-                                            if (isTransactionWithContextualOnboard) ActionType.PAY
-                                            else ActionType.VERIFY
+                                            if (isTransactionWithContextualOnboard) {
+                                                ActionType.PAY
+                                            } else {
+                                                ActionType.VERIFY
+                                            }
                                         )
                                         .recurrence(
                                             RecurringSettings()
@@ -369,8 +410,11 @@ class WalletService(
                                                 .contractType(RecurringContractType.CIT)
                                         )
                                         .amount(
-                                            if (isTransactionWithContextualOnboard) amount
-                                            else CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                            if (isTransactionWithContextualOnboard) {
+                                                amount
+                                            } else {
+                                                CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                            }
                                         )
                                         .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                         .captureType(CaptureType.IMPLICIT)
@@ -452,11 +496,17 @@ class WalletService(
                             .orderId(orderId)
                             .sessionData(buildResponseSessionData(hostedOrderResponse, isAPM))
                     }
-                    .map { it to wallet }
+                    .map { Triple(it, wallet, orderId) } // Include orderId in the Triple
             }
-            .map { (sessionResponseDto, wallet) ->
+            .map { (sessionResponseDto, wallet, orderId) ->
                 sessionResponseDto to
-                    LoggedAction(wallet, SessionWalletCreatedEvent(wallet.id.value.toString()))
+                    LoggedAction(
+                        wallet,
+                        SessionWalletCreatedEvent(
+                            walletId = wallet.id.value.toString(),
+                            auditWallet = AuditWalletCreated(orderId = orderId)
+                        )
+                    )
             }
     }
 
@@ -543,21 +593,6 @@ class WalletService(
                     }
             }
     }
-
-    fun updateWalletUsage(
-        walletId: UUID,
-        clientId: ClientIdDto,
-        usageTime: Instant
-    ): Mono<it.pagopa.wallet.documents.wallets.Wallet> =
-        walletRepository
-            .findById(walletId.toString())
-            .switchIfEmpty { Mono.error(WalletNotFoundException(WalletId(walletId))) }
-            .map { it.toDomain() }
-            .flatMap { it.expectInStatus(WalletStatusDto.VALIDATED).toMono() }
-            .flatMap {
-                walletRepository.save(it.updateUsageForClient(clientId, usageTime).toDocument())
-            }
-            .doOnNext { logger.info("Update last usage for walletId [{}]", it.id) }
 
     private fun confirmPaymentCard(
         sessionId: String,
@@ -751,14 +786,20 @@ class WalletService(
                 )
             }
             .map { wallet ->
+                val domainWallet = wallet.toDomain()
                 LoggedAction(
-                    wallet.toDomain(),
-                    WalletNotificationEvent(
-                        walletId.value.toString(),
-                        walletNotificationRequestDto.operationId,
-                        walletNotificationRequestDto.operationResult.value,
-                        walletNotificationRequestDto.timestampOperation.toString(),
-                        wallet.validationErrorCode
+                    domainWallet,
+                    WalletOnboardCompletedEvent(
+                        walletId = domainWallet.id.value.toString(),
+                        auditWallet =
+                            domainWallet.let {
+                                val auditWallet = domainWallet.toAudit()
+                                auditWallet.validationOperationId =
+                                    walletNotificationRequestDto.operationId
+                                auditWallet.validationOperationTimestamp =
+                                    walletNotificationRequestDto.timestampOperation.toString()
+                                return@let auditWallet
+                            }
                     )
                 )
             }
@@ -787,15 +828,23 @@ class WalletService(
         return walletRepository
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { it.toDomain().error(reason) }
-            .flatMap { it.expectInStatus(WalletStatusDto.ERROR).toMono() }
-            .flatMap { walletRepository.save(it.toDocument()) }
-            .doOnNext {
-                logger.info(
-                    "Wallet [{}] moved to error state with reason: [{}]",
-                    walletId.value.toString(),
-                    reason
-                )
+            .map { it.toDomain() }
+            .flatMap {
+                if (it.isTransientStatus()) {
+                    logger.info(
+                        "Patching Wallet [{}] in error state with reason: [{}]",
+                        walletId.value.toString(),
+                        reason
+                    )
+                    walletRepository.save(it.error(reason).toDocument())
+                } else {
+                    logger.info(
+                        "Wallet [{}] already in the final state {}",
+                        walletId.value.toString(),
+                        it.status.value
+                    )
+                    Mono.just(it.toDocument())
+                }
             }
             .doOnError {
                 logger.error("Failed to patch wallet state for [${walletId.value.toString()}]", it)
@@ -957,13 +1006,6 @@ class WalletService(
                     WalletApplicationInfoDto()
                         .name(application.id)
                         .status(WalletApplicationStatusDto.valueOf(application.status))
-                        .lastUsage(
-                            wallet
-                                .toDomain()
-                                .clients[Client.WellKnown.IO]
-                                ?.lastUsage
-                                ?.atOffset(ZoneOffset.UTC)
-                        )
                 }
             )
             .clients(
@@ -976,14 +1018,7 @@ class WalletService(
 
     private fun buildWalletClientDto(
         clientInfo: it.pagopa.wallet.documents.wallets.Client
-    ): WalletClientDto {
-        val walletClient =
-            WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
-        Optional.ofNullable(clientInfo.lastUsage).ifPresent { lastUsage ->
-            walletClient.lastUsage(OffsetDateTime.parse(lastUsage))
-        }
-        return walletClient
-    }
+    ): WalletClientDto = WalletClientDto().status(WalletClientStatusDto.valueOf(clientInfo.status))
 
     private fun toWalletInfoDetailsDto(details: WalletDetails<*>?): WalletInfoDetailsDto? {
         return when (details) {
@@ -992,7 +1027,7 @@ class WalletService(
                     .type(details.type)
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
-                    .brand(details.brand)
+                    .brand(CardBrand(details.brand).value)
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
@@ -1025,7 +1060,7 @@ class WalletService(
         return WalletAuthDataDto()
             .walletId(UUID.fromString(wallet.id))
             .contractId(wallet.contractId)
-            .brand(brand)
+            .brand(CardBrand(brand).value)
             .paymentMethodData(paymentMethodData)
     }
 
@@ -1112,7 +1147,23 @@ class WalletService(
                     }
             }
             .flatMap { walletRepository.save(it.updatedWallet).thenReturn(it) }
-            .map { LoggedAction(it, WalletPatchEvent(it.updatedWallet.id)) }
+            .map {
+                LoggedAction(
+                    it,
+                    WalletApplicationsUpdatedEvent(
+                        it.updatedWallet.id,
+                        it.updatedWallet.applications.map { app ->
+                            AuditWalletApplication(
+                                app.id,
+                                app.status,
+                                app.creationDate,
+                                app.updateDate,
+                                app.metadata.mapKeys { m -> m.key }
+                            )
+                        }
+                    )
+                )
+            }
     }
 
     /**
@@ -1195,17 +1246,6 @@ class WalletService(
         } else {
             SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
         }
-
-    private fun isWalletForTransactionWithContextualOnboard(
-        application: it.pagopa.wallet.domain.wallets.WalletApplication?
-    ): Boolean {
-        if (application != null) {
-            return application.metadata.data[
-                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD]
-                .toBoolean()
-        }
-        return false
-    }
 
     private fun buildNotificationUrl(
         isTransactionWithContextualOnboard: Boolean,
