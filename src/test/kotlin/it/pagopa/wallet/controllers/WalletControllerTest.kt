@@ -119,6 +119,13 @@ class WalletControllerTest {
             .expectStatus()
             .isCreated
             .expectBody()
+            .jsonPath("$.walletId")
+            .value<String> { walletId ->
+                // Assert that the walletId is as expected
+                assert(walletId.startsWith(WALLET_DOMAIN.id.value.toString().trim())) {
+                    "walletId is not the expected value"
+                }
+            }
             .jsonPath("$.redirectUrl")
             .value<String> { redirectUrl ->
                 // Assert that the redirectUrl starts with the expected base URL
