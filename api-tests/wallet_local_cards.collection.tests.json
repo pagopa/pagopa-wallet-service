@@ -80,7 +80,7 @@
 							"    pm.response.to.have.status(201);",
 							"    const redirectUrl = pm.response.json().redirectUrl;",
 							"    pm.expect(redirectUrl).to.be.a(\"string\");",
-							"    pm.expect(redirectUrl).to.be.include(\"creditcard#\");",
+							"    pm.expect(redirectUrl).to.be.include(\"creditcard\");",
 							"    const fragment = redirectUrl.split(\"#\")[1];",
 							"    const fragmentSplits = fragment.split(\"&\");",
 							"    const walletId = fragmentSplits[0].split(\"=\")[1];",
