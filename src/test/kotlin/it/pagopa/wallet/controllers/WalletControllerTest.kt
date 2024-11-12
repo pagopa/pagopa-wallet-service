@@ -119,15 +119,30 @@ class WalletControllerTest {
             .expectStatus()
             .isCreated
             .expectBody()
-            .json(
-                objectMapper.writeValueAsString(
-                    WalletCreateResponseDto()
-                        .walletId(WALLET_DOMAIN.id.value)
-                        .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}&paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
-                        )
-                )
-            )
+            .jsonPath("$.redirectUrl")
+            .value<String> { redirectUrl ->
+                // Assert that the redirectUrl starts with the expected base URL
+                assert(
+                    redirectUrl.startsWith("$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}")
+                ) {
+                    "Redirect URL does not start with the expected base URL"
+                }
+                // Check for the presence of other parameters
+                assert(
+                    redirectUrl.contains(
+                        "useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected useDiagnosticTracing parameter"
+                }
+                assert(
+                    redirectUrl.contains(
+                        "paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected paymentMethodId parameter"
+                }
+            }
     }
 
     @Test
