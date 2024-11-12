@@ -49,7 +49,6 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-
         return walletCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -66,10 +65,13 @@ class WalletController(
                     }
             }
             .map { (walletId, request, returnUri) ->
+                // Generate a random integer for the query parameter
+                val randomInt = Random.nextInt(1, 100000000)
                 WalletCreateResponseDto()
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
+                            .queryParam("v", randomInt) // Add the random query parameter
                             .fragment(
                                 "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
