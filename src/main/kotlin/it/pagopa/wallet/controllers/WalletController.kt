@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
+import kotlin.random.Random
 import reactor.core.publisher.Mono
 
 @RestController
@@ -49,7 +50,6 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-        
         return walletCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -66,14 +66,12 @@ class WalletController(
                     }
             }
             .map { (walletId, request, returnUri) ->
-                // Generate a random integer for the query parameter
-                val randomInt = Random.nextInt(1, 100000000)
                 WalletCreateResponseDto()
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}&v=${randomInt}"
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}&v=${Random.nextInt(1, 100000000)}"
                             )
                             .build()
                             .toUriString()
