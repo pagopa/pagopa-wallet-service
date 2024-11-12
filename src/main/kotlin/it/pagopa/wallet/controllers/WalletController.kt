@@ -70,7 +70,7 @@ class WalletController(
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
-                            .queryParam("t", Instant.now().toEpochMilli())
+                            .queryParam("v", Instant.now().toEpochMilli())
                             .fragment(
                                 "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
