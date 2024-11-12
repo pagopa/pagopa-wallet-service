@@ -19,8 +19,8 @@ import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
 import java.net.URI
 import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.random.Random
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -70,8 +70,9 @@ class WalletController(
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
+                            .queryParam("t", Instant.now().toEpochMilli())
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}&v=${Random.nextInt(1, 100000000)}"
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
                             .build()
                             .toUriString()

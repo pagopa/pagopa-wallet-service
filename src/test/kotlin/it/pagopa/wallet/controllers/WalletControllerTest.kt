@@ -129,10 +129,8 @@ class WalletControllerTest {
             .jsonPath("$.redirectUrl")
             .value<String> { redirectUrl ->
                 // Assert that the redirectUrl starts with the expected base URL
-                assert(
-                    redirectUrl.startsWith("$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}")
-                ) {
-                    "Redirect URL does not start with the expected base URL"
+                assert(redirectUrl.contains("#walletId=${WALLET_DOMAIN.id.value}")) {
+                    "Redirect URL does not contains the expected walletId in fragment"
                 }
                 // Check for the presence of other parameters
                 assert(
