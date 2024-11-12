@@ -44,6 +44,17 @@ class WalletController(
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun createWallet(
         xUserId: UUID,
         xClientIdDto: ClientIdDto,
