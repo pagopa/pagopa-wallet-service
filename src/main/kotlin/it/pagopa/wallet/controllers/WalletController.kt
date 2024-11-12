@@ -244,7 +244,6 @@ class WalletController(
      *
      * @formatter:on
      */
-    @SuppressWarnings("kotlin:S6508")
     override fun patchWallet(
         walletId: UUID,
         walletStatusPatchRequestDto: Mono<WalletStatusPatchRequestDto>,
