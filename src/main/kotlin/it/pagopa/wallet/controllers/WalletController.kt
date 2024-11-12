@@ -20,6 +20,7 @@ import it.pagopa.wallet.warmup.utils.WarmupUtils
 import java.net.URI
 import java.time.Duration
 import java.util.*
+import kotlin.random.Random
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.util.UriComponentsBuilder
-import kotlin.random.Random
 import reactor.core.publisher.Mono
 
 @RestController
