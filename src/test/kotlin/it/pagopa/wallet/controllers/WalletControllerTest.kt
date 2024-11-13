@@ -32,6 +32,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -119,15 +120,41 @@ class WalletControllerTest {
             .expectStatus()
             .isCreated
             .expectBody()
-            .json(
-                objectMapper.writeValueAsString(
-                    WalletCreateResponseDto()
-                        .walletId(WALLET_DOMAIN.id.value)
-                        .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}&paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
-                        )
-                )
-            )
+            .jsonPath("$.walletId")
+            .value<String> { walletId ->
+                // Assert that the walletId is as expected
+                assert(walletId.startsWith(WALLET_DOMAIN.id.value.toString().trim())) {
+                    "walletId is not the expected value"
+                }
+            }
+            .jsonPath("$.redirectUrl")
+            .value<String> { redirectUrl ->
+
+                // Assert that the redirectUrl starts with the webviewPaymentUrl
+                assertTrue(redirectUrl.startsWith("${webviewPaymentUrl}")) {
+                    "Redirect URL does not contains the expected walletId in fragment"
+                }
+
+                // Assert that the redirectUrl contains the expected base URL
+                assertTrue(redirectUrl.contains("#walletId=${WALLET_DOMAIN.id.value}")) {
+                    "Redirect URL does not contains the expected walletId in fragment"
+                }
+                // Check for the presence of other parameters
+                assertTrue(
+                    redirectUrl.contains(
+                        "useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected useDiagnosticTracing parameter"
+                }
+                assertTrue(
+                    redirectUrl.contains(
+                        "paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected paymentMethodId parameter"
+                }
+            }
     }
 
     @Test

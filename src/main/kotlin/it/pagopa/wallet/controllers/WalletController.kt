@@ -19,6 +19,7 @@ import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
 import java.net.URI
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,7 +50,6 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-
         return walletCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -70,6 +70,7 @@ class WalletController(
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
+                            .queryParam("v", Instant.now().toEpochMilli())
                             .fragment(
                                 "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
@@ -232,6 +233,17 @@ class WalletController(
         }
     }
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun patchWallet(
         walletId: UUID,
         walletStatusPatchRequestDto: Mono<WalletStatusPatchRequestDto>,
