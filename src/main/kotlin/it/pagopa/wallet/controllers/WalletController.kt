@@ -44,7 +44,6 @@ class WalletController(
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
-    @SuppressWarnings("kotlin:S6508")
     override fun createWallet(
         xUserId: UUID,
         xClientIdDto: ClientIdDto,
@@ -244,6 +243,7 @@ class WalletController(
      *
      * @formatter:on
      */
+    @SuppressWarnings("kotlin:S6508")
     override fun patchWallet(
         walletId: UUID,
         walletStatusPatchRequestDto: Mono<WalletStatusPatchRequestDto>,
