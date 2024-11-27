@@ -13,6 +13,7 @@ import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
@@ -41,6 +42,7 @@ class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Autowired private val walletTracing: WalletTracing,
+    @Autowired private val walletEventSinksService: WalletEventSinksService,
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
@@ -60,8 +62,8 @@ class WalletController(
                         onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
-                        loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request, returnUri)
+                        walletEventSinksService.tryEmitEvent(loggedAction).map {
+                            Triple(it.data.id.value, request, returnUri)
                         }
                     }
             }
