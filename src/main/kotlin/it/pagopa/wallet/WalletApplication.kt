@@ -5,6 +5,7 @@ import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
+import it.pagopa.wallet.config.properties.RetrySavePolicyConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
@@ -16,7 +17,8 @@ import reactor.core.publisher.Hooks
     OnboardingConfig::class,
     WalletMigrationConfig::class,
     PaymentMethodsConfigProperties::class,
-    ExpirationQueueConfig::class
+    ExpirationQueueConfig::class,
+    RetrySavePolicyConfig::class
 )
 class WalletApplication
 
