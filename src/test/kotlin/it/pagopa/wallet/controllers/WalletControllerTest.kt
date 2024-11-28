@@ -1338,6 +1338,172 @@ class WalletControllerTest {
             .expectBody()
     }
 
+    @Test
+    fun testCreateWalletOkWhenLoggingEventFails() = runTest {
+        /* preconditions */
+        val pairLoggedActionUri =
+            Pair(
+                LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString())),
+                webviewPaymentUrl
+            )
+        given { walletService.createWallet(any(), any(), any(), any()) }
+            .willReturn(mono { pairLoggedActionUri })
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willThrow(RuntimeException())
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-client-id", "IO")
+            .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isCreated
+            .expectBody()
+            .jsonPath("$.walletId")
+            .value<String> { walletId ->
+                // Assert that the walletId is as expected
+                assert(walletId.startsWith(WALLET_DOMAIN.id.value.toString().trim())) {
+                    "walletId is not the expected value"
+                }
+            }
+            .jsonPath("$.redirectUrl")
+            .value<String> { redirectUrl ->
+
+                // Assert that the redirectUrl starts with the webviewPaymentUrl
+                assertTrue(redirectUrl.startsWith("${webviewPaymentUrl}")) {
+                    "Redirect URL does not contains the expected walletId in fragment"
+                }
+
+                // Assert that the redirectUrl contains the expected base URL
+                assertTrue(redirectUrl.contains("#walletId=${WALLET_DOMAIN.id.value}")) {
+                    "Redirect URL does not contains the expected walletId in fragment"
+                }
+                // Check for the presence of other parameters
+                assertTrue(
+                    redirectUrl.contains(
+                        "useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected useDiagnosticTracing parameter"
+                }
+                assertTrue(
+                    redirectUrl.contains(
+                        "paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
+                    )
+                ) {
+                    "Redirect URL does not contain the expected paymentMethodId parameter"
+                }
+            }
+    }
+
+    @Test
+    fun testCreateSessionWalletWithCardOkWhenLoggingEventFails() = runTest {
+        /* preconditions */
+        val orderId = getUniqueId()
+        val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
+        val sessionResponseDto =
+            SessionWalletCreateResponseDto()
+                .orderId("W3948594857645ruey")
+                .sessionData(
+                    SessionWalletCreateResponseCardDataDto()
+                        .paymentMethodType("cards")
+                        .cardFormFields(
+                            listOf(
+                                FieldDto()
+                                    .id(UUID.randomUUID().toString())
+                                    .src(URI.create("https://test.it/h"))
+                                    .propertyClass("holder")
+                                    .propertyClass("h")
+                                    .type("type"),
+                            )
+                        )
+                )
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willThrow(RuntimeException())
+        given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
+            .willReturn(
+                mono {
+                    Pair(
+                        sessionResponseDto,
+                        LoggedAction(
+                            WALLET_DOMAIN,
+                            SessionWalletCreatedEvent(
+                                walletId = walletId.toString(),
+                                auditWallet = AuditWalletCreated(orderId = orderId)
+                            )
+                        )
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId.value}/sessions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", userId.id.toString())
+            .bodyValue(
+                SessionInputCardDataDto()
+                    .serializeRootDiscriminator(SessionInputCardDataDto::class, "cards")
+            )
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<SessionWalletCreateResponseDto>()
+            .consumeWith { assertEquals(sessionResponseDto, it.responseBody) }
+    }
+
+    @Test
+    fun testValidateWalletOkWhenLoggingEventFails() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        val orderId = Instant.now().toString() + "ABCDE"
+        val userId = UserId(UUID.randomUUID())
+        val wallet = walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
+        val response =
+            WalletVerifyRequestsResponseDto()
+                .orderId(orderId)
+                .details(
+                    WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
+                )
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willThrow(RuntimeException())
+        given { walletService.validateWalletSession(orderId, walletId, userId) }
+            .willReturn(
+                mono {
+                    Pair(
+                        response,
+                        LoggedAction(
+                            wallet.toDomain(),
+                            WalletDetailsAddedEvent(walletId.toString())
+                        )
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+
+        val stringTest = objectMapper.writeValueAsString(response)
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId.value}/sessions/${orderId}/validations")
+            .header("x-user-id", userId.id.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .json(stringTest)
+    }
+
     // workaround since this class is the request entrypoint and so discriminator
     // mapping annotation is not read during serialization
     private fun <K : Any> Any.serializeRootDiscriminator(
