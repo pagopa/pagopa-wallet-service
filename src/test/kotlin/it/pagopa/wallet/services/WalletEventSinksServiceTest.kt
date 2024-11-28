@@ -15,12 +15,13 @@ import reactor.test.StepVerifier
 
 class WalletEventSinksServiceTest {
     private var loggingEventRepository: LoggingEventRepository = mock()
-    private var retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1,1)
+    private var retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1)
     private lateinit var walletEventSinksService: WalletEventSinksService
 
     @BeforeEach
     fun setup() {
-        walletEventSinksService = WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig)
+        walletEventSinksService =
+            WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig)
     }
 
     @Test
