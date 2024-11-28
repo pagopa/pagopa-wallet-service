@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
+import reactor.core.scheduler.Schedulers
 import reactor.util.retry.Retry
 
 @Service
@@ -32,7 +33,7 @@ class WalletEventSinksService(
             .onErrorReturn(loggedAction)
 
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
-        consumeSinksEvent().subscribe()
+        consumeSinksEvent().subscribeOn(Schedulers.parallel()).subscribe()
     }
 
     fun consumeSinksEvent(): Flux<Any> =
