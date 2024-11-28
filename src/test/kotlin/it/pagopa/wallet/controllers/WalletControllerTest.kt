@@ -22,6 +22,7 @@ import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.WalletApplicationUpdateData
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
@@ -61,6 +62,8 @@ import reactor.kotlin.core.publisher.toMono
 class WalletControllerTest {
     @MockBean private lateinit var walletService: WalletService
 
+    @MockBean private lateinit var walletEventSinksService: WalletEventSinksService
+
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
 
     @MockBean private lateinit var uniqueIdUtils: UniqueIdUtils
@@ -93,19 +96,15 @@ class WalletControllerTest {
     @Test
     fun testCreateWallet() = runTest {
         /* preconditions */
-
-        given { walletService.createWallet(any(), any(), any(), any()) }
-            .willReturn(
-                mono {
-                    Pair(
-                        LoggedAction(
-                            WALLET_DOMAIN,
-                            WalletAddedEvent(WALLET_DOMAIN.id.value.toString())
-                        ),
-                        webviewPaymentUrl
-                    )
-                }
+        val pairLoggedActionUri =
+            Pair(
+                LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString())),
+                webviewPaymentUrl
             )
+        given { walletService.createWallet(any(), any(), any(), any()) }
+            .willReturn(mono { pairLoggedActionUri })
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */
@@ -180,6 +179,8 @@ class WalletControllerTest {
                             )
                         )
                 )
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
             .willReturn(
                 mono {
@@ -228,6 +229,8 @@ class WalletControllerTest {
                         .paymentMethodType("apm")
                         .redirectUrl("https://apm-redirect.url")
                 )
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
             .willReturn(
                 mono {
@@ -278,6 +281,8 @@ class WalletControllerTest {
                 .details(
                     WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
                 )
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.validateWalletSession(orderId, walletId, userId) }
             .willReturn(
                 mono {
