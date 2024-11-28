@@ -27,7 +27,7 @@ class WalletQueueClientTest {
 
     private val walletQueueClient =
         WalletQueueClient(
-            expirationQueueClient = azureQueueClient,
+            queueClient = azureQueueClient,
             jsonSerializer = jsonSerializer,
             ttl = Duration.ZERO
         )
@@ -47,7 +47,11 @@ class WalletQueueClientTest {
             .willReturn(AzureQueueTestUtils.QUEUE_SUCCESSFUL_RESPONSE)
 
         walletQueueClient
-            .sendWalletCreatedEvent(expiredEvent, delay = Duration.ofSeconds(10), tracingInfo)
+            .sendQueueEventWithTracingInfo(
+                expiredEvent,
+                delay = Duration.ofSeconds(10),
+                tracingInfo
+            )
             .test()
             .assertNext { Assertions.assertEquals(200, it.statusCode) }
             .verifyComplete()

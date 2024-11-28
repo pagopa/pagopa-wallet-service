@@ -12,19 +12,19 @@ import java.time.Duration
 import reactor.core.publisher.Mono
 
 class WalletQueueClient(
-    private val expirationQueueClient: QueueAsyncClient,
+    private val queueClient: QueueAsyncClient,
     private val jsonSerializer: JsonSerializer,
     private val ttl: Duration
 ) {
 
-    fun sendWalletCreatedEvent(
+    fun sendQueueEventWithTracingInfo(
         event: WalletCreatedEvent,
         delay: Duration,
         tracingInfo: QueueTracingInfo
     ): Mono<Response<SendMessageResult>> {
         val queueEvent = QueueEvent(event, tracingInfo)
         return BinaryData.fromObjectAsync(queueEvent, jsonSerializer).flatMap {
-            expirationQueueClient.sendMessageWithResponse(it, delay, ttl)
+            queueClient.sendMessageWithResponse(it, delay, ttl)
         }
     }
 }

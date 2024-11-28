@@ -4,13 +4,13 @@ import it.pagopa.wallet.domain.wallets.WalletId
 import java.time.Instant
 import java.util.*
 
-sealed interface WalletEvent
+sealed interface WalletQueueEvent
 
 data class WalletCreatedEvent(
     val eventId: String,
     val creationDate: Instant,
     val walletId: String
-) : WalletEvent {
+) : WalletQueueEvent {
     companion object {
         fun of(walletId: WalletId) =
             WalletCreatedEvent(
