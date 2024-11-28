@@ -92,7 +92,7 @@ class WalletController(
         return sessionInputDataDto
             .flatMap { walletService.createSessionWallet(UserId(xUserId), WalletId(walletId), it) }
             .flatMap { (createSessionResponse, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
+                walletEventSinksService.tryEmitEvent(walletEvent).map { createSessionResponse }
             }
             .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
             .onErrorMap(PspNotFoundException::class.java) {
@@ -319,7 +319,7 @@ class WalletController(
         return walletService
             .validateWalletSession(orderId, WalletId(walletId), UserId(xUserId))
             .flatMap { (response, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map {
+                walletEventSinksService.tryEmitEvent(walletEvent).map {
                     ResponseEntity.ok().body(response)
                 }
             }
