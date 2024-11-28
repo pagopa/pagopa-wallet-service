@@ -62,9 +62,9 @@ class WalletController(
                         onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
-                        walletEventSinksService.tryEmitEvent(loggedAction).map {
-                            Triple(it.data.id.value, request, returnUri)
-                        }
+                        Mono.defer { walletEventSinksService.tryEmitEvent(loggedAction) }
+                            .map { Triple(it.data.id.value, request, returnUri) }
+                            .onErrorReturn(Triple(loggedAction.data.id.value, request, returnUri))
                     }
             }
             .map { (walletId, request, returnUri) ->
@@ -92,7 +92,9 @@ class WalletController(
         return sessionInputDataDto
             .flatMap { walletService.createSessionWallet(UserId(xUserId), WalletId(walletId), it) }
             .flatMap { (createSessionResponse, walletEvent) ->
-                walletEventSinksService.tryEmitEvent(walletEvent).map { createSessionResponse }
+                Mono.defer { walletEventSinksService.tryEmitEvent(walletEvent) }
+                    .map { createSessionResponse }
+                    .onErrorReturn(createSessionResponse)
             }
             .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
             .onErrorMap(PspNotFoundException::class.java) {
@@ -319,9 +321,9 @@ class WalletController(
         return walletService
             .validateWalletSession(orderId, WalletId(walletId), UserId(xUserId))
             .flatMap { (response, walletEvent) ->
-                walletEventSinksService.tryEmitEvent(walletEvent).map {
-                    ResponseEntity.ok().body(response)
-                }
+                Mono.defer { walletEventSinksService.tryEmitEvent(walletEvent) }
+                    .map { ResponseEntity.ok().body(response) }
+                    .onErrorReturn(ResponseEntity.ok().body(response))
             }
     }
 
