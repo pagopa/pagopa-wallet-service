@@ -7,5 +7,5 @@ data class LoggedActionDeadLetterQueueConfig(
     val storageConnectionString: String,
     val storageQueueName: String,
     val ttlSeconds: Long,
-    val timeoutWalletExpired: Long
+    val visibilityTimeoutSeconds: Long
 )

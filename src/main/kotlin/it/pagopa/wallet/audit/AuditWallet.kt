@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
     JsonSubTypes.Type(value = AuditWalletCreated::class, name = "AuditWalletCreated"),
     JsonSubTypes.Type(value = AuditWalletCompleted::class, name = "AuditWalletCompleted"),
 )
-sealed class AuditWallet()
+sealed class AuditWallet
 
 /** Data class that contains wallet details for a log event */
 data class AuditWalletCreated(val orderId: String) : AuditWallet()
