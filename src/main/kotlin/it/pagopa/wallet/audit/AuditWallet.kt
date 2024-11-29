@@ -1,6 +1,14 @@
 package it.pagopa.wallet.audit
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+
 /** Data class base */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = AuditWalletCreated::class, name = "AuditWalletCreated"),
+    JsonSubTypes.Type(value = AuditWalletCompleted::class, name = "AuditWalletCompleted"),
+)
 sealed class AuditWallet()
 
 /** Data class that contains wallet details for a log event */
