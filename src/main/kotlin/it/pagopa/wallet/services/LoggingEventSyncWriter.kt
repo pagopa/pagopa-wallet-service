@@ -27,8 +27,9 @@ class LoggingEventSyncWriter(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     /**
-     * Perform save operation for input logged action synchronously. If an error occurs writing
-     * event to collection a dead letter event is then written for each of the logging event
+     * Perform save operation for input logged action synchronously to the caller invocation (so the
+     * incoming HTTP request processing). If an error occurs writing event to collection a dead
+     * letter event is then written for each of the logging event
      */
     fun <T : Any> saveEventSyncWithDLQWrite(loggedAction: LoggedAction<T>): Mono<T> {
         val walletId = extractWalletIdFromLoggingEvents(loggingEvents = loggedAction.events)
