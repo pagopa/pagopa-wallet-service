@@ -4,7 +4,6 @@ import it.pagopa.wallet.audit.LoggedAction
 import it.pagopa.wallet.config.properties.RetrySavePolicyConfig
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import java.time.Duration
-import kotlin.RuntimeException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
