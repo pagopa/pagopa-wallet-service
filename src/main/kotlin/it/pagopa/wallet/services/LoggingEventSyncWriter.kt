@@ -2,7 +2,7 @@ package it.pagopa.wallet.services
 
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.WalletQueueClient
-import it.pagopa.wallet.common.tracing.QueueTracingInfo
+import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import java.time.Duration
@@ -16,8 +16,13 @@ import reactor.core.publisher.Mono
 class LoggingEventSyncWriter(
     @Autowired private val paymentWalletLoggedActionDeadLetterQueueClient: WalletQueueClient,
     @Autowired private val queueConfig: LoggedActionDeadLetterQueueConfig,
-    @Autowired private val loggingEventRepository: LoggingEventRepository
+    @Autowired private val loggingEventRepository: LoggingEventRepository,
+    @Autowired private val tracingUtils: TracingUtils
 ) {
+
+    companion object {
+        const val WALLET_ERROR_SAVING_LOGGING_EVENT_SPAN_NAME = "Error saving wallet logging event"
+    }
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -28,48 +33,47 @@ class LoggingEventSyncWriter(
     fun <T : Any> saveEventSyncWithDLQWrite(loggedAction: LoggedAction<T>): Mono<T> {
         val walletId =
             extractWalletIdFromLoggingEvents(loggingEvents = loggedAction.events) ?: "N/A"
-        return loggedAction
-            .saveEvents(loggingEventRepository)
-            .doOnNext { _ ->
-                val events = loggedAction.events
-                logger.debug(
-                    "Saved logging events: [{}], for wallet with id: [{}]",
-                    events.map { it.javaClass.simpleName },
-                    walletId
-                )
-            }
-            .thenReturn(Unit)
-            .onErrorResume {
-                logger.error("Error saving logging event to collection", it)
-                Flux.fromIterable(loggedAction.events)
-                    .flatMap { loggingEvent ->
-                        paymentWalletLoggedActionDeadLetterQueueClient
-                            .sendQueueEventWithTracingInfo(
-                                event =
-                                    WalletLoggingErrorEvent(
-                                        loggingEvent = loggingEvent,
-                                        eventId = loggingEvent.id
-                                    ),
-                                delay = Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds),
-                                tracingInfo =
-                                    QueueTracingInfo(
-                                        traceparent = null,
-                                        tracestate = null,
-                                        baggage = null
-                                    )
-                            )
-                            .doOnNext {
-                                logger.warn(
-                                    "Written event into dead letter for error saving wallet logging event: [{}] for wallet with id: [{}]",
-                                    loggingEvent.javaClass,
-                                    walletId
+        return tracingUtils.traceMonoQueue(WALLET_ERROR_SAVING_LOGGING_EVENT_SPAN_NAME) {
+            tracingInfo ->
+            loggedAction
+                .saveEvents(loggingEventRepository)
+                .doOnNext { _ ->
+                    val events = loggedAction.events
+                    logger.debug(
+                        "Saved logging events: [{}], for wallet with id: [{}]",
+                        events.map { it.javaClass.simpleName },
+                        walletId
+                    )
+                }
+                .thenReturn(Unit)
+                .onErrorResume {
+                    logger.error("Error saving logging event to collection", it)
+                    Flux.fromIterable(loggedAction.events)
+                        .flatMap { loggingEvent ->
+                            paymentWalletLoggedActionDeadLetterQueueClient
+                                .sendQueueEventWithTracingInfo(
+                                    event =
+                                        WalletLoggingErrorEvent(
+                                            loggingEvent = loggingEvent,
+                                            eventId = loggingEvent.id
+                                        ),
+                                    delay =
+                                        Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds),
+                                    tracingInfo = tracingInfo
                                 )
-                            }
-                    }
-                    .collectList()
-                    .thenReturn(Unit)
-            }
-            .thenReturn(loggedAction.data)
+                                .doOnNext {
+                                    logger.warn(
+                                        "Written event into dead letter for error saving wallet logging event: [{}] for wallet with id: [{}]",
+                                        loggingEvent.javaClass,
+                                        walletId
+                                    )
+                                }
+                        }
+                        .collectList()
+                        .thenReturn(Unit)
+                }
+                .thenReturn(loggedAction.data)
+        }
     }
 
     fun extractWalletIdFromLoggingEvents(loggingEvents: List<LoggingEvent>): String? =

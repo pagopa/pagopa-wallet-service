@@ -294,7 +294,7 @@ class WalletController(
                     }
                 )
             }
-            .flatMap { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .flatMap {
                 return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
                     Mono.error(
