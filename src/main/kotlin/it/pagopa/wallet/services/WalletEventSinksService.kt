@@ -39,8 +39,8 @@ class WalletEventSinksService(
     fun consumeSinksEvent(): Flux<Any> =
         walletEventSink
             .asFlux()
-            .flatMap { it ->
-                Mono.defer { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggedAction ->
+                Mono.defer { loggedAction.saveEvents(loggingEventRepository) }
                     .retryWhen(
                         Retry.backoff(
                                 retrySavePolicyConfig.maxAttempts,
@@ -54,7 +54,7 @@ class WalletEventSinksService(
                             }
                     )
                     .doOnError { logger.error("Exception while processing wallet event: ", it) }
-                    .onErrorReturn(it)
+                    .onErrorReturn(loggedAction)
             }
             .doOnNext { logger.debug("Logging event saved") }
 }
