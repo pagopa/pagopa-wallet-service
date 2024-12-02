@@ -1,17 +1,23 @@
 package it.pagopa.wallet.services
 
 import it.pagopa.wallet.WalletTestUtils
-import it.pagopa.wallet.audit.LoggedAction
-import it.pagopa.wallet.audit.WalletDeletedEvent
-import it.pagopa.wallet.audit.WalletLoggingErrorEvent
+import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.common.tracing.TracingUtils
 import it.pagopa.wallet.common.tracing.TracingUtilsTest
 import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
+import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.util.AzureQueueTestUtils
 import java.time.Duration
+import java.time.OffsetDateTime
+import java.util.*
+import java.util.stream.Stream
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -138,6 +144,93 @@ class LoggingEventSyncWriterTest {
                 event = eq(expectedDLQEvent),
                 delay = eq(Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds)),
                 tracingInfo = any()
+            )
+    }
+
+    @ParameterizedTest
+    @MethodSource("extract wallet id method source")
+    fun `should extract wallet id from event`(
+        loggingEvents: List<LoggingEvent>,
+        expectedWalletId: String?
+    ) {
+        val walletId = loggingEventSyncWriter.extractWalletIdFromLoggingEvents(loggingEvents)
+        assertEquals(expectedWalletId, walletId)
+    }
+
+    companion object {
+        val walletId = UUID.randomUUID().toString()
+
+        @JvmStatic
+        fun `extract wallet id method source`(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(listOf(ApplicationCreatedEvent(serviceId = "serviceId")), null),
+                Arguments.of(
+                    listOf(
+                        ApplicationStatusChangedEvent(
+                            serviceId = "serviceId",
+                            oldStatus = ApplicationStatus.ENABLED,
+                            newStatus = ApplicationStatus.DISABLED
+                        )
+                    ),
+                    null
+                ),
+                Arguments.of(listOf(WalletAddedEvent(walletId = walletId)), walletId),
+                Arguments.of(
+                    listOf(
+                        SessionWalletCreatedEvent(
+                            walletId = walletId,
+                            auditWallet = AuditWalletCreated(orderId = "orderId")
+                        )
+                    ),
+                    walletId
+                ),
+                Arguments.of(
+                    listOf(
+                        WalletApplicationsUpdatedEvent(
+                            walletId = walletId,
+                            updatedApplications = listOf()
+                        )
+                    ),
+                    walletId
+                ),
+                Arguments.of(listOf(WalletDeletedEvent(walletId = walletId)), walletId),
+                Arguments.of(listOf(WalletDetailsAddedEvent(walletId = walletId)), walletId),
+                Arguments.of(listOf(WalletMigratedAddedEvent(walletId = walletId)), walletId),
+                Arguments.of(
+                    listOf(
+                        WalletOnboardCompletedEvent(
+                            walletId = walletId,
+                            auditWallet =
+                                AuditWalletCompleted(
+                                    paymentMethodId = "paymentMethodId",
+                                    creationDate = OffsetDateTime.now().toString(),
+                                    updateDate = OffsetDateTime.now().toString(),
+                                    applications = listOf(),
+                                    details = null,
+                                    status = "VALIDATED",
+                                    validationOperationId = "validationOperationId",
+                                    validationOperationResult = "EXECUTED",
+                                    validationOperationTimestamp = OffsetDateTime.now().toString(),
+                                    validationErrorCode = null
+                                )
+                        )
+                    ),
+                    walletId
+                ),
+                Arguments.of(
+                    listOf(
+                        WalletDeletedEvent(walletId = walletId),
+                        ApplicationCreatedEvent(serviceId = "serviceId")
+                    ),
+                    walletId
+                ),
+                Arguments.of(
+                    listOf(
+                        ApplicationCreatedEvent(serviceId = "serviceId"),
+                        WalletDeletedEvent(walletId = walletId)
+                    ),
+                    walletId
+                ),
             )
     }
 }
