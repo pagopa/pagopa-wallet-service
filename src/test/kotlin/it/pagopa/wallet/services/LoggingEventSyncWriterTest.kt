@@ -163,7 +163,7 @@ class LoggingEventSyncWriterTest {
         @JvmStatic
         fun `extract wallet id method source`(): Stream<Arguments> =
             Stream.of(
-                Arguments.of(listOf(ApplicationCreatedEvent(serviceId = "serviceId")), null),
+                Arguments.of(listOf(ApplicationCreatedEvent(serviceId = "serviceId")), "N/A"),
                 Arguments.of(
                     listOf(
                         ApplicationStatusChangedEvent(
@@ -172,7 +172,7 @@ class LoggingEventSyncWriterTest {
                             newStatus = ApplicationStatus.DISABLED
                         )
                     ),
-                    null
+                    "N/A"
                 ),
                 Arguments.of(listOf(WalletAddedEvent(walletId = walletId)), walletId),
                 Arguments.of(

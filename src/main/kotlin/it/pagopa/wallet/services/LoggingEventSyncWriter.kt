@@ -31,8 +31,7 @@ class LoggingEventSyncWriter(
      * event to collection a dead letter event is then written for each of the logging event
      */
     fun <T : Any> saveEventSyncWithDLQWrite(loggedAction: LoggedAction<T>): Mono<T> {
-        val walletId =
-            extractWalletIdFromLoggingEvents(loggingEvents = loggedAction.events) ?: "N/A"
+        val walletId = extractWalletIdFromLoggingEvents(loggingEvents = loggedAction.events)
         return tracingUtils.traceMonoQueue(WALLET_ERROR_SAVING_LOGGING_EVENT_SPAN_NAME) {
             tracingInfo ->
             loggedAction
@@ -76,7 +75,7 @@ class LoggingEventSyncWriter(
         }
     }
 
-    fun extractWalletIdFromLoggingEvents(loggingEvents: List<LoggingEvent>): String? =
+    fun extractWalletIdFromLoggingEvents(loggingEvents: List<LoggingEvent>): String =
         loggingEvents.firstNotNullOfOrNull {
             when (it) {
                 is ApplicationCreatedEvent -> null
@@ -90,4 +89,5 @@ class LoggingEventSyncWriter(
                 is WalletOnboardCompletedEvent -> it.walletId
             }
         }
+            ?: "N/A"
 }
