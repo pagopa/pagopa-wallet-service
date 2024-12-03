@@ -14,15 +14,15 @@ import reactor.core.publisher.Sinks
 import reactor.test.StepVerifier
 
 class WalletEventSinksServiceTest {
-    private var loggingEventRepository: LoggingEventRepository = mock()
-    private var retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1)
-    private val walletEventSink: Sinks.Many<LoggedAction<*>> = mock()
-    private lateinit var walletEventSinksService: WalletEventSinksService
+    private val loggingEventRepository: LoggingEventRepository = mock()
+    private val retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1)
+    private val walletEventSink: Sinks.Many<LoggedAction<*>> = Sinks.many().unicast().onBackpressureBuffer()
+    private val walletEventSinkSpy: Sinks.Many<LoggedAction<*>> = spy(walletEventSink)
+    private val walletEventSinksService: WalletEventSinksService =
+        WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig, walletEventSinkSpy)
 
     @Test
     fun testEmitEventAndReadEvent() {
-        walletEventSinksService =
-            WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig)
         /* preconditions */
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn { Flux.empty() }
@@ -42,8 +42,6 @@ class WalletEventSinksServiceTest {
 
     @Test
     fun testEmitEventAndReadEventWithRetry() {
-        walletEventSinksService =
-            WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig)
         /* preconditions */
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willThrow(RuntimeException())
@@ -64,10 +62,8 @@ class WalletEventSinksServiceTest {
 
     @Test
     fun testEmitEventResultKOShouldReturnLoggedAction() {
-        walletEventSinksService =
-            WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig, walletEventSink)
         /* preconditions */
-        given { walletEventSink.tryEmitNext(any()) }.willReturn { Sinks.EmitResult.FAIL_CANCELLED }
+        doReturn(Sinks.EmitResult.FAIL_CANCELLED).`when`(walletEventSinkSpy).tryEmitNext(any())
 
         val loggedAction =
             LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
@@ -81,10 +77,8 @@ class WalletEventSinksServiceTest {
 
     @Test
     fun testEmitEventKOShouldReturnLoggedAction() {
-        walletEventSinksService =
-            WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig, walletEventSink)
         /* preconditions */
-        given { walletEventSink.tryEmitNext(any()) }.willThrow { RuntimeException("Test error") }
+        doThrow(RuntimeException("Test error")).`when`(walletEventSinkSpy).tryEmitNext(any())
 
         val loggedAction =
             LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
