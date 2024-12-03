@@ -154,6 +154,8 @@ class WalletControllerTest {
                     "Redirect URL does not contain the expected paymentMethodId parameter"
                 }
             }
+
+        verify(walletEventSinksService, times(1)).tryEmitEvent(pairLoggedActionUri.first)
     }
 
     @Test
@@ -1367,7 +1369,7 @@ class WalletControllerTest {
             .jsonPath("$.walletId")
             .value<String> { walletId ->
                 // Assert that the walletId is as expected
-                assert(walletId.startsWith(WALLET_DOMAIN.id.value.toString().trim())) {
+                assertTrue(walletId.startsWith(WALLET_DOMAIN.id.value.toString().trim())) {
                     "walletId is not the expected value"
                 }
             }
@@ -1399,6 +1401,8 @@ class WalletControllerTest {
                     "Redirect URL does not contain the expected paymentMethodId parameter"
                 }
             }
+
+        verify(walletEventSinksService, times(1)).tryEmitEvent(pairLoggedActionUri.first)
     }
 
     @Test
@@ -1424,23 +1428,21 @@ class WalletControllerTest {
                             )
                         )
                 )
+        val pairResponseLoggedAction =
+            Pair(
+                sessionResponseDto,
+                LoggedAction(
+                    WALLET_DOMAIN,
+                    SessionWalletCreatedEvent(
+                        walletId = walletId.toString(),
+                        auditWallet = AuditWalletCreated(orderId = orderId)
+                    )
+                )
+            )
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willThrow(RuntimeException())
         given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
-            .willReturn(
-                mono {
-                    Pair(
-                        sessionResponseDto,
-                        LoggedAction(
-                            WALLET_DOMAIN,
-                            SessionWalletCreatedEvent(
-                                walletId = walletId.toString(),
-                                auditWallet = AuditWalletCreated(orderId = orderId)
-                            )
-                        )
-                    )
-                }
-            )
+            .willReturn(mono { pairResponseLoggedAction })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */
@@ -1458,6 +1460,8 @@ class WalletControllerTest {
             .isOk
             .expectBody<SessionWalletCreateResponseDto>()
             .consumeWith { assertEquals(sessionResponseDto, it.responseBody) }
+
+        verify(walletEventSinksService, times(1)).tryEmitEvent(pairResponseLoggedAction.second)
     }
 
     @Test
@@ -1473,20 +1477,15 @@ class WalletControllerTest {
                 .details(
                     WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
                 )
+        val pairResponseLoggedAction =
+            Pair(
+                response,
+                LoggedAction(wallet.toDomain(), WalletDetailsAddedEvent(walletId.toString()))
+            )
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willThrow(RuntimeException())
         given { walletService.validateWalletSession(orderId, walletId, userId) }
-            .willReturn(
-                mono {
-                    Pair(
-                        response,
-                        LoggedAction(
-                            wallet.toDomain(),
-                            WalletDetailsAddedEvent(walletId.toString())
-                        )
-                    )
-                }
-            )
+            .willReturn(mono { pairResponseLoggedAction })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
 
@@ -1502,6 +1501,8 @@ class WalletControllerTest {
             .isOk
             .expectBody()
             .json(stringTest)
+
+        verify(walletEventSinksService, times(1)).tryEmitEvent(pairResponseLoggedAction.second)
     }
 
     // workaround since this class is the request entrypoint and so discriminator
