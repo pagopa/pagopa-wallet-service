@@ -26,14 +26,9 @@ class WalletEventSinksService(
 
     fun <T : Any> tryEmitEvent(loggedAction: LoggedAction<T>): Mono<LoggedAction<T>> =
         Mono.fromCallable { walletEventSink.tryEmitNext(loggedAction) }
-            .flatMap {
-                if (it.isFailure)
-                    Mono.error(
-                        RuntimeException(
-                            "Sink failed to emit new wallet event: error code ${it.name}"
-                        )
-                    )
-                else Mono.just(loggedAction)
+            .map {
+                it.orThrow()
+                loggedAction
             }
             .doOnNext { logger.debug("Logging event emitted") }
             .doOnError { logger.error("Exception while emitting new wallet event: ", it) }
