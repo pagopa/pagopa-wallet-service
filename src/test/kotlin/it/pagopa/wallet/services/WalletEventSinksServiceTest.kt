@@ -16,7 +16,8 @@ import reactor.test.StepVerifier
 class WalletEventSinksServiceTest {
     private val loggingEventRepository: LoggingEventRepository = mock()
     private val retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1)
-    private val walletEventSink: Sinks.Many<LoggedAction<*>> = Sinks.many().unicast().onBackpressureBuffer()
+    private val walletEventSink: Sinks.Many<LoggedAction<*>> =
+        Sinks.many().unicast().onBackpressureBuffer()
     private val walletEventSinkSpy: Sinks.Many<LoggedAction<*>> = spy(walletEventSink)
     private val walletEventSinksService: WalletEventSinksService =
         WalletEventSinksService(loggingEventRepository, retrySavePolicyConfig, walletEventSinkSpy)
