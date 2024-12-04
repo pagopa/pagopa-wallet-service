@@ -29,7 +29,7 @@ class LoggingEventDispatcherServiceTest {
 
     @BeforeEach
     fun setup() {
-        given { walletQueueClient.sendWalletCreatedEvent(any(), any(), any()) }
+        given { walletQueueClient.sendQueueEventWithTracingInfo(any(), any(), any()) }
             .willAnswer { AzureQueueTestUtils.QUEUE_SUCCESSFUL_RESPONSE }
     }
 
@@ -45,7 +45,7 @@ class LoggingEventDispatcherServiceTest {
 
         argumentCaptor<WalletCreatedEvent> {
             verify(walletQueueClient, times(1))
-                .sendWalletCreatedEvent(
+                .sendQueueEventWithTracingInfo(
                     capture(),
                     eq(Duration.ofSeconds(config.timeoutWalletExpired)),
                     any()
@@ -58,7 +58,7 @@ class LoggingEventDispatcherServiceTest {
     @Test
     fun `should return error if queue dispatching fails`() {
         val walletCreatedLoggingEvent = WalletAddedEvent(walletId = UUID.randomUUID().toString())
-        given { walletQueueClient.sendWalletCreatedEvent(any(), any(), any()) }
+        given { walletQueueClient.sendQueueEventWithTracingInfo(any(), any(), any()) }
             .willAnswer {
                 Mono.error<Response<SendMessageResult>>(RuntimeException("Fail to publish message"))
             }

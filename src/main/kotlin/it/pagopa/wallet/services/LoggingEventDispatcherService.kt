@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 
 @Component
 class LoggingEventDispatcherService(
-    private val walletQueueClient: WalletQueueClient,
+    private val expirationQueueClient: WalletQueueClient,
     private val tracingUtils: TracingUtils,
     private val expirationQueueConfig: ExpirationQueueConfig,
 ) : LoggingEventDispatcher {
@@ -48,7 +48,7 @@ class LoggingEventDispatcherService(
                     walletExpireTimeout
                 )
                 val walletCreatedEvent = WalletCreatedEvent.of(WalletId.of(walletCreated.walletId))
-                walletQueueClient.sendWalletCreatedEvent(
+                expirationQueueClient.sendQueueEventWithTracingInfo(
                     event = walletCreatedEvent,
                     delay = walletExpireTimeout,
                     tracingInfo = tracingInfo
