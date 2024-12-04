@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
+import reactor.core.publisher.Sinks.EmitFailureHandler
 import reactor.core.scheduler.Schedulers
 import reactor.util.retry.Retry
 
@@ -25,11 +26,15 @@ class WalletEventSinksService(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun <T : Any> tryEmitEvent(loggedAction: LoggedAction<T>): Mono<LoggedAction<T>> =
-        Mono.fromCallable { walletEventSink.tryEmitNext(loggedAction) }
-            .map {
-                it.orThrow()
-                loggedAction
+        Mono.fromCallable {
+                walletEventSink.emitNext(
+                    loggedAction,
+                    EmitFailureHandler.busyLooping(
+                        Duration.ofMillis(retrySavePolicyConfig.emitBusyLoopDurationInMillis)
+                    )
+                )
             }
+            .map { loggedAction }
             .doOnNext { logger.debug("Logging event emitted") }
             .doOnError { logger.error("Exception while emitting new wallet event: ", it) }
             .onErrorReturn(loggedAction)

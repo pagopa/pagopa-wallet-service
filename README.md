@@ -120,6 +120,8 @@ If you want to customize the application environment, reference this table:
 | EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC                  | Visibility timeout in seconds for expired event                                                                                                            |                          |         |
 | LOGGING_EVENT_RETRY_MAX_ATTEMPTS                         | Max configurable attempts for performing retries of the logging event save step                                                                            |                          |         |
 | LOGGING_EVENT_RETRY_INTERVAL_SECONDS                     | Configurable interval in seconds between retries attempts                                                                                                  |                          |         |
+| LOGGING_EVENT_RETRY_EMIT_BUSY_LOOP_MILLIS                | Configurable duration in milliseconds used to compute the deadline for retrying emitting a value in a Sink in case of Sinks.EmitResult FAIL_NON_SERIALIZED |                          |         |
+
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
