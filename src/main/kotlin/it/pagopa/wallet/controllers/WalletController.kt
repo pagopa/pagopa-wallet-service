@@ -13,6 +13,7 @@ import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
 import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.LoggingEventSyncWriter
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
@@ -41,6 +42,7 @@ class WalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Autowired private val walletTracing: WalletTracing,
+    @Autowired private val loggingEventSyncWriter: LoggingEventSyncWriter,
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
@@ -116,7 +118,7 @@ class WalletController(
     ): Mono<ResponseEntity<Void>> {
         return walletService
             .deleteWallet(WalletId(walletId), UserId(xUserId))
-            .flatMap { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .map { ResponseEntity.noContent().build() }
     }
 
@@ -186,7 +188,7 @@ class WalletController(
                         requestDto
                     )
                 }
-                .flatMap { it.saveEvents(loggingEventRepository) }
+                .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
                 .doOnNext {
                     walletTracing.traceWalletUpdate(
                         WalletTracing.WalletUpdateResult(
@@ -292,7 +294,7 @@ class WalletController(
                     }
                 )
             }
-            .flatMap { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .flatMap {
                 return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
                     Mono.error(

@@ -4,6 +4,7 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
+import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -16,7 +17,8 @@ import reactor.core.publisher.Hooks
     OnboardingConfig::class,
     WalletMigrationConfig::class,
     PaymentMethodsConfigProperties::class,
-    ExpirationQueueConfig::class
+    ExpirationQueueConfig::class,
+    LoggedActionDeadLetterQueueConfig::class
 )
 class WalletApplication
 

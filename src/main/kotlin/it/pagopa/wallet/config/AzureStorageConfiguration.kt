@@ -7,6 +7,7 @@ import com.azure.storage.queue.QueueClientBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import it.pagopa.wallet.client.WalletQueueClient
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
+import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
 import java.time.Duration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +22,28 @@ class AzureStorageConfiguration {
         JsonSerializerProvider {
             JacksonJsonSerializerBuilder().serializer(objectMapper).build()
         }
+
+    @Bean
+    fun paymentWalletLoggedActionDeadLetterQueueClient(
+        queueConfig: LoggedActionDeadLetterQueueConfig,
+        jsonSerializerProvider: JsonSerializerProvider
+    ): WalletQueueClient {
+        val serializer = jsonSerializerProvider.createInstance()
+        val queue =
+            QueueClientBuilder()
+                .connectionString(queueConfig.storageConnectionString)
+                .queueName(queueConfig.storageQueueName)
+                .httpClient(
+                    NettyAsyncHttpClientBuilder(
+                            HttpClient.create().resolver { nameResolverSpec ->
+                                nameResolverSpec.ndots(1)
+                            }
+                        )
+                        .build()
+                )
+                .buildAsyncClient()
+        return WalletQueueClient(queue, serializer, Duration.ofSeconds(queueConfig.ttlSeconds))
+    }
 
     @Bean
     fun expirationQueueClient(
