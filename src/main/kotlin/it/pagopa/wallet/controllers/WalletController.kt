@@ -12,9 +12,8 @@ import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
-import it.pagopa.wallet.repositories.LoggingEventRepository
-import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.LoggingEventSyncWriter
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction

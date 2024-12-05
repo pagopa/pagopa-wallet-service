@@ -20,7 +20,6 @@ import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.LoggingEventSyncWriter
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletEventSinksService
@@ -51,7 +50,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
@@ -63,8 +61,6 @@ class WalletControllerTest {
     @MockBean private lateinit var walletService: WalletService
 
     @MockBean private lateinit var walletEventSinksService: WalletEventSinksService
-
-    @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
 
     @MockBean private lateinit var uniqueIdUtils: UniqueIdUtils
 
@@ -109,8 +105,6 @@ class WalletControllerTest {
             .willReturn(mono { pairLoggedActionUri })
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willAnswer { Mono.just(it.arguments[0]) }
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -202,8 +196,6 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -252,8 +244,6 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -301,8 +291,6 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
 
         val stringTest = objectMapper.writeValueAsString(response)
         /* test */
@@ -773,8 +761,6 @@ class WalletControllerTest {
                 )
             }
             .willReturn(Mono.error(SecurityTokenMatchException()))
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -955,8 +941,6 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -1163,8 +1147,6 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
             .willReturn(WalletNotFoundException(WalletId(walletId)).toMono())
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -1211,8 +1193,6 @@ class WalletControllerTest {
                     )
                     .toMono()
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -1259,8 +1239,6 @@ class WalletControllerTest {
                     )
                     .toMono()
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
@@ -1372,8 +1350,6 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
             .willReturn(Mono.error(OptimisticLockingFailureException("Optimistic lock error")))
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
         /* test */
         webClient
             .post()
