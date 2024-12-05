@@ -19,7 +19,7 @@ import reactor.core.publisher.Hooks
     WalletMigrationConfig::class,
     PaymentMethodsConfigProperties::class,
     ExpirationQueueConfig::class,
-    RetrySavePolicyConfig::class
+    RetrySavePolicyConfig::class,
     ExpirationQueueConfig::class,
     LoggedActionDeadLetterQueueConfig::class
 )

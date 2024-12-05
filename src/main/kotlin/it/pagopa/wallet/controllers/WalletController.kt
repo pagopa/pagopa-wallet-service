@@ -41,7 +41,6 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Autowired private val walletTracing: WalletTracing,
     @Autowired private val loggingEventSyncWriter: LoggingEventSyncWriter,
     @Autowired private val walletEventSinksService: WalletEventSinksService,
