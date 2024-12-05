@@ -33,20 +33,20 @@ class LoggingEventSyncWriter(
      */
     fun <T : Any> saveEventSyncWithDLQWrite(loggedAction: LoggedAction<T>): Mono<T> {
         val walletId = extractWalletIdFromLoggingEvents(loggingEvents = loggedAction.events)
-        return tracingUtils.traceMonoQueue(WALLET_ERROR_SAVING_LOGGING_EVENT_SPAN_NAME) {
-            tracingInfo ->
-            loggedAction
-                .saveEvents(loggingEventRepository)
-                .doOnNext { _ ->
-                    val events = loggedAction.events
-                    logger.debug(
-                        "Saved logging events: [{}], for wallet with id: [{}]",
-                        events.map { it.javaClass.simpleName },
-                        walletId
-                    )
-                }
-                .thenReturn(Unit)
-                .onErrorResume {
+        return loggedAction
+            .saveEvents(loggingEventRepository)
+            .doOnNext { _ ->
+                val events = loggedAction.events
+                logger.debug(
+                    "Saved logging events: [{}], for wallet with id: [{}]",
+                    events.map { it.javaClass.simpleName },
+                    walletId
+                )
+            }
+            .thenReturn(Unit)
+            .onErrorResume {
+                tracingUtils.traceMonoQueue(WALLET_ERROR_SAVING_LOGGING_EVENT_SPAN_NAME) {
+                    tracingInfo ->
                     logger.error("Error saving logging event to collection", it)
                     Flux.fromIterable(loggedAction.events)
                         .flatMap { loggingEvent ->
@@ -72,8 +72,8 @@ class LoggingEventSyncWriter(
                         .collectList()
                         .thenReturn(Unit)
                 }
-                .thenReturn(loggedAction.data)
-        }
+            }
+            .thenReturn(loggedAction.data)
     }
 
     fun extractWalletIdFromLoggingEvents(loggingEvents: List<LoggingEvent>): String =
