@@ -15,7 +15,7 @@ import reactor.test.StepVerifier
 
 class WalletEventSinksServiceTest {
     private val loggingEventRepository: LoggingEventRepository = mock()
-    private val retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1)
+    private val retrySavePolicyConfig: RetrySavePolicyConfig = RetrySavePolicyConfig(1, 1, 150)
     private val walletEventSink: Sinks.Many<LoggedAction<*>> =
         Sinks.many().unicast().onBackpressureBuffer()
     private val walletEventSinkSpy: Sinks.Many<LoggedAction<*>> = spy(walletEventSink)
@@ -62,30 +62,14 @@ class WalletEventSinksServiceTest {
     }
 
     @Test
-    fun testEmitEventResultKOShouldReturnLoggedAction() {
-        /* preconditions */
-        doReturn(Sinks.EmitResult.FAIL_CANCELLED).`when`(walletEventSinkSpy).tryEmitNext(any())
-
-        val loggedAction =
-            LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
-
-        /* test */
-
-        StepVerifier.create(walletEventSinksService.tryEmitEvent(loggedAction))
-            .expectNext(loggedAction)
-            .verifyComplete()
-    }
-
-    @Test
     fun testEmitEventKOShouldReturnLoggedAction() {
         /* preconditions */
-        doThrow(RuntimeException("Test error")).`when`(walletEventSinkSpy).tryEmitNext(any())
+        doThrow(RuntimeException("Test error")).`when`(walletEventSinkSpy).emitNext(any(), any())
 
         val loggedAction =
             LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString()))
 
         /* test */
-
         StepVerifier.create(walletEventSinksService.tryEmitEvent(loggedAction))
             .expectNext(loggedAction)
             .verifyComplete()

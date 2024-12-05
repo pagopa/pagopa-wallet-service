@@ -125,6 +125,8 @@ If you want to customize the application environment, reference this table:
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_TTL_SECONDS                | Payment wallet log event error dead letter queue events time to live in seconds                                                                            | number                   |         |
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_VISIBILITY_TIMEOUT_SECONDS | Payment wallet log event error dead letter queue events visibility timeout in seconds                                                                      | number                   |         |
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_CONNECTION_STRING          | Payment wallet log event error dead letter queue storage account connection string                                                                         | string                   |         |
+| LOGGING_EVENT_RETRY_EMIT_BUSY_LOOP_MILLIS                | Configurable duration in milliseconds used to compute the deadline for retrying emitting a value in a Sink in case of Sinks.EmitResult FAIL_NON_SERIALIZED |                          |         |
+
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
