@@ -21,6 +21,7 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.LoggingEventSyncWriter
 import it.pagopa.wallet.services.WalletApplicationUpdateData
 import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
@@ -32,8 +33,7 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.reactor.mono
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -74,7 +74,11 @@ class WalletControllerTest {
 
     @Autowired private lateinit var webClient: WebTestClient
 
+    @MockBean private lateinit var loggingEventSyncWriter: LoggingEventSyncWriter
+
     private val webviewPaymentUrl = URI.create("https://dev.payment-wallet.pagopa.it/onboarding")
+
+    private val loggedActionCaptor = argumentCaptor<LoggedAction<*>>()
 
     private val objectMapper =
         JsonMapper.builder()
@@ -325,8 +329,8 @@ class WalletControllerTest {
                 Mono.just(LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())))
             )
 
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
 
         /* test */
         webClient
@@ -336,6 +340,12 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isNoContent
+
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletDeletedEvent
+        assertEquals(walletId.value.toString(), loggedEvent.walletId)
     }
 
     @Test
@@ -530,8 +540,8 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
 
         /* test */
         webClient
@@ -542,6 +552,12 @@ class WalletControllerTest {
             .exchange()
             .expectStatus()
             .isNoContent
+
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletApplicationsUpdatedEvent
+        assertEquals("PAGOPA", loggedEvent.updatedApplications[0].id)
     }
 
     @Test
@@ -553,7 +569,7 @@ class WalletControllerTest {
 
             /* preconditions */
             val walletId = WalletId(UUID.randomUUID())
-            val userId = UserId(java.util.UUID.randomUUID())
+            val userId = UserId(UUID.randomUUID())
             val walletApplicationUpdateData =
                 WalletApplicationUpdateData(
                     successfullyUpdatedApplications =
@@ -589,8 +605,8 @@ class WalletControllerTest {
                         )
                     }
                 )
-            given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-                .willReturn(Flux.empty())
+            given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+                .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
 
             /* test */
             val expectedResponse =
@@ -622,6 +638,13 @@ class WalletControllerTest {
                 .isEqualTo(HttpStatus.CONFLICT)
                 .expectBody(WalletApplicationsPartialUpdateDto::class.java)
                 .isEqualTo(expectedResponse)
+
+            verify(loggingEventSyncWriter, times(1))
+                .saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+            val loggedAction = loggedActionCaptor.firstValue
+            assertEquals(1, loggedAction.events.size)
+            val loggedEvent = loggedAction.events[0] as WalletApplicationsUpdatedEvent
+            assertEquals("PAGOPA", loggedEvent.updatedApplications[0].id)
         }
     }
 
@@ -699,8 +722,8 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
         webClient
             .post()
@@ -727,6 +750,12 @@ class WalletControllerTest {
                     )
                 )
             )
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletOnboardCompletedEvent
+        assertNull(loggedEvent.auditWallet.validationErrorCode)
+        assertEquals("EXECUTED", loggedEvent.auditWallet.validationOperationResult)
     }
 
     @Test
@@ -855,8 +884,8 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
         webClient
             .post()
@@ -885,6 +914,12 @@ class WalletControllerTest {
                     )
                 )
             )
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletOnboardCompletedEvent
+        assertNull(loggedEvent.auditWallet.validationErrorCode)
+        assertEquals("EXECUTED", loggedEvent.auditWallet.validationOperationResult)
     }
 
     @Test
@@ -990,8 +1025,8 @@ class WalletControllerTest {
                         )
                     }
                 )
-            given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-                .willReturn(Flux.empty())
+            given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+                .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
             /* test */
             webClient
                 .post()
@@ -1020,6 +1055,13 @@ class WalletControllerTest {
                         )
                     )
                 )
+            verify(loggingEventSyncWriter, times(1))
+                .saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+            val loggedAction = loggedActionCaptor.firstValue
+            assertEquals(1, loggedAction.events.size)
+            val loggedEvent = loggedAction.events[0] as WalletOnboardCompletedEvent
+            assertNull(loggedEvent.auditWallet.validationErrorCode)
+            assertEquals("EXECUTED", loggedEvent.auditWallet.validationOperationResult)
         }
 
     @Test
@@ -1285,8 +1327,8 @@ class WalletControllerTest {
                     )
                 }
             )
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
         webClient
             .post()
@@ -1314,6 +1356,12 @@ class WalletControllerTest {
                     )
                 )
             )
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletOnboardCompletedEvent
+        assertEquals("WG001", loggedEvent.auditWallet.validationErrorCode)
+        assertEquals("DECLINED", loggedEvent.auditWallet.validationOperationResult)
     }
 
     @Test
