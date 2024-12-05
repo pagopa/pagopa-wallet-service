@@ -12,8 +12,8 @@ import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
-import it.pagopa.wallet.repositories.LoggingEventRepository
 import it.pagopa.wallet.services.LoggingEventSyncWriter
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
@@ -40,9 +40,9 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Autowired private val walletTracing: WalletTracing,
     @Autowired private val loggingEventSyncWriter: LoggingEventSyncWriter,
+    @Autowired private val walletEventSinksService: WalletEventSinksService,
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
@@ -62,8 +62,8 @@ class WalletController(
                         onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
-                        loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request, returnUri)
+                        walletEventSinksService.tryEmitEvent(loggedAction).map {
+                            Triple(it.data.id.value, request, returnUri)
                         }
                     }
             }
@@ -92,7 +92,7 @@ class WalletController(
         return sessionInputDataDto
             .flatMap { walletService.createSessionWallet(UserId(xUserId), WalletId(walletId), it) }
             .flatMap { (createSessionResponse, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
+                walletEventSinksService.tryEmitEvent(walletEvent).map { createSessionResponse }
             }
             .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
             .onErrorMap(PspNotFoundException::class.java) {
@@ -319,7 +319,7 @@ class WalletController(
         return walletService
             .validateWalletSession(orderId, WalletId(walletId), UserId(xUserId))
             .flatMap { (response, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map {
+                walletEventSinksService.tryEmitEvent(walletEvent).map {
                     ResponseEntity.ok().body(response)
                 }
             }
