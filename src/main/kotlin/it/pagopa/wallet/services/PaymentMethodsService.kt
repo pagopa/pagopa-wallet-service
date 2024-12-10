@@ -29,7 +29,7 @@ class PaymentMethodsService(
                 paymentMethodsRedisTemplate.findById(paymentMethodId)
             }
             .map {
-                logger.info("Payment method founded on cache: [$paymentMethodId]")
+                logger.info("Cache hit for payment method with id: [$paymentMethodId]")
                 PaymentMethodResponse().apply {
                     id = it.id
                     name = it.name
