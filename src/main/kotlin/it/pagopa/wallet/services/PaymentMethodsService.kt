@@ -43,7 +43,7 @@ class PaymentMethodsService(
                 }
             }
             .switchIfEmpty {
-                logger.info("Not found payment method on cache: [$paymentMethodId]")
+                logger.info("Cache miss for payment method: [$paymentMethodId]")
                 retrievePaymentMethodById(paymentMethodId)
             }
 
