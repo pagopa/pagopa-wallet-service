@@ -12,13 +12,15 @@ import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
 import it.pagopa.wallet.exception.WalletSecurityTokenNotFoundException
-import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.LoggingEventSyncWriter
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
 import java.net.URI
 import java.time.Duration
+import java.time.Instant
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,8 +40,9 @@ import reactor.core.publisher.Mono
 @Validated
 class WalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository,
     @Autowired private val walletTracing: WalletTracing,
+    @Autowired private val loggingEventSyncWriter: LoggingEventSyncWriter,
+    @Autowired private val walletEventSinksService: WalletEventSinksService,
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
@@ -49,7 +52,6 @@ class WalletController(
         walletCreateRequestDto: Mono<WalletCreateRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletCreateResponseDto>> {
-
         return walletCreateRequestDto
             .flatMap { request ->
                 walletService
@@ -60,8 +62,8 @@ class WalletController(
                         onboardingChannel = xClientIdDto.toOnboardingChannel()
                     )
                     .flatMap { (loggedAction, returnUri) ->
-                        loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request, returnUri)
+                        walletEventSinksService.tryEmitEvent(loggedAction).map {
+                            Triple(it.data.id.value, request, returnUri)
                         }
                     }
             }
@@ -70,6 +72,7 @@ class WalletController(
                     .walletId(walletId)
                     .redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri)
+                            .queryParam("v", Instant.now().toEpochMilli())
                             .fragment(
                                 "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
                             )
@@ -89,7 +92,7 @@ class WalletController(
         return sessionInputDataDto
             .flatMap { walletService.createSessionWallet(UserId(xUserId), WalletId(walletId), it) }
             .flatMap { (createSessionResponse, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map { createSessionResponse }
+                walletEventSinksService.tryEmitEvent(walletEvent).map { createSessionResponse }
             }
             .map { createSessionResponse -> ResponseEntity.ok().body(createSessionResponse) }
             .onErrorMap(PspNotFoundException::class.java) {
@@ -115,7 +118,7 @@ class WalletController(
     ): Mono<ResponseEntity<Void>> {
         return walletService
             .deleteWallet(WalletId(walletId), UserId(xUserId))
-            .flatMap { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .map { ResponseEntity.noContent().build() }
     }
 
@@ -185,7 +188,7 @@ class WalletController(
                         requestDto
                     )
                 }
-                .flatMap { it.saveEvents(loggingEventRepository) }
+                .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
                 .doOnNext {
                     walletTracing.traceWalletUpdate(
                         WalletTracing.WalletUpdateResult(
@@ -232,6 +235,17 @@ class WalletController(
         }
     }
 
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
     override fun patchWallet(
         walletId: UUID,
         walletStatusPatchRequestDto: Mono<WalletStatusPatchRequestDto>,
@@ -280,7 +294,7 @@ class WalletController(
                     }
                 )
             }
-            .flatMap { it.saveEvents(loggingEventRepository) }
+            .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .flatMap {
                 return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
                     Mono.error(
@@ -305,7 +319,7 @@ class WalletController(
         return walletService
             .validateWalletSession(orderId, WalletId(walletId), UserId(xUserId))
             .flatMap { (response, walletEvent) ->
-                walletEvent.saveEvents(loggingEventRepository).map {
+                walletEventSinksService.tryEmitEvent(walletEvent).map {
                     ResponseEntity.ok().body(response)
                 }
             }
