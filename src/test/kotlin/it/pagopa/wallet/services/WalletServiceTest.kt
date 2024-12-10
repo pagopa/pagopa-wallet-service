@@ -54,6 +54,7 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
+import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -68,6 +69,12 @@ import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.*
+import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -87,13 +94,6 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
-import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
-import java.util.stream.Stream
-import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
