@@ -100,6 +100,7 @@ class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
     private val applicationRepository: ApplicationRepository = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
+    private val paymentMethodsService: PaymentMethodsService = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
     private val uniqueIdUtils: UniqueIdUtils = mock()
@@ -235,7 +236,7 @@ class WalletServiceTest {
         WalletService(
             walletRepository = walletRepository,
             applicationRepository = applicationRepository,
-            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
+            paymentMethodsService = paymentMethodsService,
             npgClient = npgClient,
             npgSessionRedisTemplate = npgSessionRedisTemplate,
             sessionUrlConfig = sessionUrlConfig,
