@@ -18,7 +18,7 @@ class RedisConfiguration {
     @Bean
     fun paymentMethodsRedisTemplate(
         redisConnectionFactory: RedisConnectionFactory,
-        @Value("\${payment-methods.cache.ttlSeconds}") ttlSeconds: Long,
+        @Value("\${redis.payment-methods.ttlSeconds}") ttlSeconds: Long,
     ): PaymentMethodsTemplateWrapper {
         val paymentMethodsRedisTemplate = RedisTemplate<String, PaymentMethod>()
         paymentMethodsRedisTemplate.connectionFactory = redisConnectionFactory
