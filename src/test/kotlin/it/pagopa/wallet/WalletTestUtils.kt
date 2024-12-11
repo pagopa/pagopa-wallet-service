@@ -1,5 +1,6 @@
 package it.pagopa.wallet
 
+import it.pagopa.generated.ecommerce.model.PaymentMethodManagementType
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
@@ -16,6 +17,7 @@ import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
+import it.pagopa.wallet.repositories.PaymentMethod
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -786,12 +788,29 @@ object WalletTestUtils {
             paymentMethodType = "paypal"
         }
 
+    fun getPaymentMethodCacheFromResponse(response: PaymentMethodResponse): PaymentMethod {
+        return PaymentMethod(
+            id = response.id,
+            name = response.name,
+            description = response.description,
+            asset = response.asset,
+            status = response.status,
+            paymentTypeCode = response.paymentTypeCode,
+            methodManagement = response.methodManagement,
+            ranges = response.ranges,
+            brandAssets = response.brandAssets
+        )
+    }
+
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
             .id(PAYMENT_METHOD_ID_CARDS.value.toString())
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("CARDS")
+            .description("CARDS description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getValidAPMPaymentMethod(): PaymentMethodResponse {
@@ -800,6 +819,9 @@ object WalletTestUtils {
             .paymentTypeCode("PPAL")
             .status(PaymentMethodStatus.ENABLED)
             .name("PAYPAL")
+            .description("PAYPAL description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getDisabledCardsPaymentMethod(): PaymentMethodResponse {
@@ -808,6 +830,9 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.DISABLED)
             .name("CARDS")
+            .description("CARDS description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
@@ -816,6 +841,9 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("INVALID")
+            .description("INVALID description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getUniqueId(): String {

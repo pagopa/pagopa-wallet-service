@@ -47,7 +47,7 @@ class PaymentMethodsService(
                 retrievePaymentMethodById(paymentMethodId)
             }
 
-    fun retrievePaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
+    private fun retrievePaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
             .doOnSuccess {
