@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "pay-wallet"
-  nameOverride: ""
-  fullnameOverride: "pagopa-pay-wallet-microservice"
+  nameOverride: "b-pagopa-pay-wallet-service"
+  fullnameOverride: "b-pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
@@ -52,7 +52,7 @@ microservice-chart:
   ingress:
     create: true
     host: "itnuat.pay-wallet.internal.uat.platform.pagopa.it"
-    path: /pagopa-wallet-service/(.*)
+    path: /beta/pagopa-wallet-service/(.*)
     servicePort: 8080
   serviceAccount:
     create: false
