@@ -17,7 +17,6 @@ import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
-import it.pagopa.wallet.repositories.PaymentMethod
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -787,20 +786,6 @@ object WalletTestUtils {
             pspId = PSP_ID
             paymentMethodType = "paypal"
         }
-
-    fun getPaymentMethodCacheFromResponse(response: PaymentMethodResponse): PaymentMethod {
-        return PaymentMethod(
-            id = response.id,
-            name = response.name,
-            description = response.description,
-            asset = response.asset,
-            status = response.status,
-            paymentTypeCode = response.paymentTypeCode,
-            methodManagement = response.methodManagement,
-            ranges = response.ranges,
-            brandAssets = response.brandAssets
-        )
-    }
 
     fun getValidCardsPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()

@@ -3,7 +3,6 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
-import it.pagopa.wallet.WalletTestUtils.getPaymentMethodCacheFromResponse
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
@@ -50,8 +49,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        val paymentMethodCache = getPaymentMethodCacheFromResponse(paymentMethodResponse)
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(paymentMethodCache)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(paymentMethodResponse)
 
         // Test
         paymentMethodsService

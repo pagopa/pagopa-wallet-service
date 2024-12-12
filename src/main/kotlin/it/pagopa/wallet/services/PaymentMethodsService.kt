@@ -2,7 +2,6 @@ package it.pagopa.wallet.services
 
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
-import it.pagopa.wallet.repositories.PaymentMethod
 import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
@@ -25,23 +24,10 @@ class PaymentMethodsService(
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
         mono {
-                logger.info("Try to retrieve payment method from cache: [$paymentMethodId]")
+                logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]")
                 paymentMethodsRedisTemplate.findById(paymentMethodId)
             }
-            .map {
-                logger.info("Cache hit for payment method with id: [$paymentMethodId]")
-                PaymentMethodResponse().apply {
-                    id = it.id
-                    name = it.name
-                    description = it.description
-                    asset = it.asset
-                    status = it.status
-                    paymentTypeCode = it.paymentTypeCode
-                    methodManagement = it.methodManagement
-                    ranges = it.ranges
-                    brandAssets = it.brandAssets
-                }
-            }
+            .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
                 retrievePaymentMethodById(paymentMethodId)
@@ -51,20 +37,8 @@ class PaymentMethodsService(
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
             .doOnSuccess {
-                logger.info("Save payment method into cache: [$paymentMethodId]")
-                paymentMethodsRedisTemplate.save(
-                    PaymentMethod(
-                        id = it.id,
-                        name = it.name,
-                        description = it.description,
-                        asset = it.asset,
-                        status = it.status,
-                        paymentTypeCode = it.paymentTypeCode,
-                        methodManagement = it.methodManagement,
-                        ranges = it.ranges,
-                        brandAssets = it.brandAssets
-                    )
-                )
+                logger.debug("Save payment method into cache: [$paymentMethodId]")
+                paymentMethodsRedisTemplate.save(it)
             }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
 }
