@@ -3,7 +3,6 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
-import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
@@ -48,7 +47,7 @@ import reactor.kotlin.core.publisher.toMono
 class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val applicationRepository: ApplicationRepository,
-    @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
+    @Autowired private val paymentMethodsService: PaymentMethodsService,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
@@ -154,7 +153,7 @@ class WalletService(
             }
             .collectList()
             .flatMap { apps ->
-                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
+                paymentMethodsService.getPaymentMethodById(paymentMethodId.toString()).map {
                     val creationTime = Instant.now()
                     return@map Pair(
                         Wallet(
@@ -244,7 +243,7 @@ class WalletService(
                 )
             }
             .flatMap { walletApplication ->
-                ecommercePaymentMethodsClient.getPaymentMethodById(paymentMethodId.toString()).map {
+                paymentMethodsService.getPaymentMethodById(paymentMethodId.toString()).map {
                     return@map Pair(
                         Wallet(
                             id = WalletId(UUID.randomUUID()),
@@ -297,7 +296,7 @@ class WalletService(
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
             .map { it.toDomain() }
             .flatMap {
-                ecommercePaymentMethodsClient
+                paymentMethodsService
                     .getPaymentMethodById(it.paymentMethodId.value.toString())
                     .map { paymentMethod -> paymentMethod to it }
             }
@@ -567,7 +566,7 @@ class WalletService(
                     }
                     .flatMap { it.toDomain().expectInStatus(WalletStatusDto.INITIALIZED).toMono() }
                     .flatMap { wallet ->
-                        ecommercePaymentMethodsClient
+                        paymentMethodsService
                             .getPaymentMethodById(wallet.paymentMethodId.value.toString())
                             .flatMap {
                                 when (it.paymentTypeCode) {
