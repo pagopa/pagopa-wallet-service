@@ -43,7 +43,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 2
+    replicas: 5
   service:
     create: true
     type: ClusterIP
@@ -73,7 +73,7 @@ microservice-chart:
       cpu: "600m"
   autoscaling:
     enable: true
-    minReplica: 2
+    minReplica: 5
     maxReplica: 10
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
@@ -108,16 +108,16 @@ microservice-chart:
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
     ROOT_LOGGING_LEVEL: "info"
-    NPG_SERVICE_URI: "https://stg-ta.nexigroup.com/api/phoenix-0.0"
+    NPG_SERVICE_URI: "https://api.uat.platform.pagopa.it/ecommerce/mock/npg/v1"
     NPG_SERVICE_READ_TIMEOUT: "10000"
     NPG_SERVICE_CONNECTION_TIMEOUT: "10000"
     NPG_SERVICE_TCP_KEEP_ALIVE_ENABLED: "true"
     NPG_SERVICE_TCP_KEEP_ALIVE_IDLE: "5"
     NPG_SERVICE_TCP_KEEP_ALIVE_INTVL: "2"
     NPG_SERVICE_TCP_KEEP_ALIVE_CNT: "10"
-    OTEL_SERVICE_NAME: "pagopa-wallet-service"
+    OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
     OTEL_SERVICE_ENVIRONMENT: "uat"
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-wallet-service-blue,deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "https://weuuat.kibana.internal.uat.platform.pagopa.it/apm"
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_TRACES_EXPORTER: otlp
@@ -134,8 +134,8 @@ microservice-chart:
     SESSION_URL_CANCEL_SUFFIX: "/esito"
     SESSION_URL_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.uat.platform.pagopa.it/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
-    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v1"
-    ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.uat.platform.pagopa.it/ecommerce/payment-methods-service/v2"
+    ECOMMERCE_PAYMENT_METHODS_URI: "https://api.uat.platform.pagopa.it/ecommerce/mock/payment-methods-service/v1"
+    ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.uat.platform.pagopa.it/ecommerce/mock/payment-methods-service/v2"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
     ECOMMERCE_PAYMENT_METHODS_CONNECTION_TIMEOUT: "10000"
     NPG_NOTIFICATIONS_JWT_VALIDITY_TIME_SECONDS: "300"
@@ -145,7 +145,7 @@ microservice-chart:
       { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
     WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX"
-    EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue
+    EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue-b
     EXPIRATION_QUEUE_TTL_SECONDS: "3600"
     EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC: "1800"
     LOGGING_EVENT_RETRY_MAX_ATTEMPTS: "10"
@@ -158,7 +158,7 @@ microservice-chart:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
     REDIS_PASSWORD: redis-wallet-password
-    ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
+    ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-methods-load-test-api-key
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
