@@ -30,15 +30,20 @@ class PaymentMethodsService(
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
-                retrievePaymentMethodById(paymentMethodId)
+                retrievePaymentMethodByApi(paymentMethodId)
             }
 
-    private fun retrievePaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
+    private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodResponse> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
-            .doOnSuccess {
-                logger.debug("Save payment method into cache: [$paymentMethodId]")
-                paymentMethodsRedisTemplate.save(it)
-            }
+            .doOnSuccess { savePaymentMethodIntoCache(it) }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
+
+    private fun savePaymentMethodIntoCache(paymentMethodResponse: PaymentMethodResponse) =
+        try {
+            logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
+            paymentMethodsRedisTemplate.save(paymentMethodResponse)
+        } catch (e: Exception) {
+            logger.error("Error saving payment method into cache: [${paymentMethodResponse.id}]")
+        }
 }
