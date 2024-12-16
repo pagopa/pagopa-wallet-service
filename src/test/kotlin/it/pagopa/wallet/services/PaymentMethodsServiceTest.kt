@@ -61,6 +61,7 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
+        verify(paymentMethodsRedisTemplate, times(0)).save(any())
     }
 
     @ParameterizedTest
@@ -84,6 +85,7 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
+        verify(paymentMethodsRedisTemplate, times(1)).save(paymentMethodResponse)
     }
 
     @ParameterizedTest
@@ -114,5 +116,32 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
+        verify(paymentMethodsRedisTemplate, times(0)).save(any())
+    }
+
+    @ParameterizedTest
+    @MethodSource("paymentMethodsSource")
+    fun `should return payment method even if fail cache update`(
+        paymentMethodId: String,
+        paymentMethodResponse: PaymentMethodResponse
+    ) {
+        // pre-requisites
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+            .willReturn(mono { paymentMethodResponse })
+        given { paymentMethodsRedisTemplate.save(any()) }
+            .willThrow(RuntimeException("Error during redis save"))
+
+        // Test
+        paymentMethodsService
+            .getPaymentMethodById(paymentMethodId)
+            .test()
+            .expectNext(paymentMethodResponse)
+            .verifyComplete()
+
+        // verifications
+        verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
+        verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
+        verify(paymentMethodsRedisTemplate, times(1)).save(paymentMethodResponse)
     }
 }
