@@ -14,7 +14,7 @@ class PaymentMethodsTemplateWrapper
 (redisTemplate: RedisTemplate<String, PaymentMethodResponse>, ttl: Duration) :
     RedisTemplateWrapper<PaymentMethodResponse>(
         redisTemplate = redisTemplate,
-        "payment-methods",
+        "wallet-service:payment-methods",
         ttl
     ) {
     override fun getKeyFromEntity(value: PaymentMethodResponse): String = value.id
