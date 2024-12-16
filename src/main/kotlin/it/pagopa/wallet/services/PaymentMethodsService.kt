@@ -3,6 +3,7 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,7 +24,7 @@ class PaymentMethodsService(
     var logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
-        mono {
+        mono(Dispatchers.IO) {
                 logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]")
                 paymentMethodsRedisTemplate.findById(paymentMethodId)
             }
@@ -36,14 +37,19 @@ class PaymentMethodsService(
     private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodResponse> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
-            .doOnSuccess { savePaymentMethodIntoCache(it) }
+            .flatMap { savePaymentMethodIntoCache(it) }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
 
     private fun savePaymentMethodIntoCache(paymentMethodResponse: PaymentMethodResponse) =
-        try {
-            logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
-            paymentMethodsRedisTemplate.save(paymentMethodResponse)
-        } catch (e: Exception) {
-            logger.error("Error saving payment method into cache: [${paymentMethodResponse.id}]")
-        }
+        mono(Dispatchers.IO) {
+                logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
+                paymentMethodsRedisTemplate.save(paymentMethodResponse)
+            }
+            .onErrorResume {
+                logger.error(
+                    "Error saving payment method into cache: [${paymentMethodResponse.id}]"
+                )
+                Mono.just(Unit)
+            }
+            .map { paymentMethodResponse }
 }
