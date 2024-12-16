@@ -181,7 +181,7 @@ class WalletServiceTest {
             Stream.of(
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
@@ -197,7 +197,7 @@ class WalletServiceTest {
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.PENDING,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.CANCELED,
@@ -205,15 +205,15 @@ class WalletServiceTest {
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.VOIDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.REFUNDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.FAILED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
             )
 

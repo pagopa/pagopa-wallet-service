@@ -1202,7 +1202,7 @@ class WalletService(
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
                     }
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
                         decodeCardsOnboardingNpgErrorCode(errorCode)
@@ -1216,15 +1216,15 @@ class WalletService(
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
                 WalletNotificationRequestDto.OperationResultEnum.PENDING ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
                 WalletNotificationRequestDto.OperationResultEnum.VOIDED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.REFUNDED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.FAILED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
