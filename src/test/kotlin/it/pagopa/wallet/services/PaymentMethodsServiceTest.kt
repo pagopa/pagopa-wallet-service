@@ -16,17 +16,21 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import org.springframework.http.HttpStatus
 import reactor.core.publisher.Mono
+import reactor.core.publisher.Sinks
 import reactor.kotlin.test.test
 
 class PaymentMethodsServiceTest {
 
     private val paymentMethodsRedisTemplate: PaymentMethodsTemplateWrapper = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
+    private val paymentMethodCacheSaveSink: Sinks.Many<PaymentMethodResponse> =
+        Sinks.many().unicast().onBackpressureBuffer()
 
     private val paymentMethodsService: PaymentMethodsService =
         PaymentMethodsService(
             paymentMethodsRedisTemplate = paymentMethodsRedisTemplate,
-            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient
+            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
+            paymentMethodCacheSaveSink = paymentMethodCacheSaveSink
         )
 
     companion object {
@@ -51,6 +55,8 @@ class PaymentMethodsServiceTest {
         // pre-requisites
         given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(paymentMethodResponse)
 
+        paymentMethodsService.subscribePaymentMethodCacheSaveSink()
+
         // Test
         paymentMethodsService
             .getPaymentMethodById(paymentMethodId)
@@ -61,7 +67,7 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(0)).getPaymentMethodById(any())
-        verify(paymentMethodsRedisTemplate, times(0)).save(any())
+        verify(paymentMethodsRedisTemplate, timeout(100).times(0)).save(any())
     }
 
     @ParameterizedTest
@@ -75,6 +81,8 @@ class PaymentMethodsServiceTest {
         given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
             .willReturn(mono { paymentMethodResponse })
 
+        paymentMethodsService.subscribePaymentMethodCacheSaveSink()
+
         // Test
         paymentMethodsService
             .getPaymentMethodById(paymentMethodId)
@@ -85,7 +93,7 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
-        verify(paymentMethodsRedisTemplate, times(1)).save(paymentMethodResponse)
+        verify(paymentMethodsRedisTemplate, timeout(100).times(1)).save(paymentMethodResponse)
     }
 
     @ParameterizedTest
@@ -106,6 +114,8 @@ class PaymentMethodsServiceTest {
                 )
             )
 
+        paymentMethodsService.subscribePaymentMethodCacheSaveSink()
+
         // Test
         paymentMethodsService
             .getPaymentMethodById(paymentMethodId)
@@ -116,7 +126,7 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
-        verify(paymentMethodsRedisTemplate, times(0)).save(any())
+        verify(paymentMethodsRedisTemplate, timeout(100).times(0)).save(any())
     }
 
     @ParameterizedTest
@@ -132,6 +142,8 @@ class PaymentMethodsServiceTest {
         given { paymentMethodsRedisTemplate.save(any()) }
             .willThrow(RuntimeException("Error during redis save"))
 
+        paymentMethodsService.subscribePaymentMethodCacheSaveSink()
+
         // Test
         paymentMethodsService
             .getPaymentMethodById(paymentMethodId)
@@ -142,6 +154,6 @@ class PaymentMethodsServiceTest {
         // verifications
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
-        verify(paymentMethodsRedisTemplate, times(1)).save(paymentMethodResponse)
+        verify(paymentMethodsRedisTemplate, timeout(100).times(1)).save(paymentMethodResponse)
     }
 }
