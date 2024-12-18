@@ -47,7 +47,7 @@ class PaymentMethodsService(
     private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodResponse> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
-            .doOnSuccess { emitPaymentMethodCacheSaveSink(it) }
+            .flatMap { emitPaymentMethodCacheSaveSink(it) }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
 
     private fun emitPaymentMethodCacheSaveSink(paymentMethodResponse: PaymentMethodResponse) =
