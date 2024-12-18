@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service
 import reactor.core.Disposable
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
-import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
@@ -48,11 +47,15 @@ class PaymentMethodsService(
     private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodResponse> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
-            .doOnSuccess {
-                val emitResult = paymentMethodCacheSaveSink.tryEmitNext(it)
-                logger.debug("Emit paymentMethodCacheSaveSink result: {}", emitResult)
-            }
+            .doOnSuccess { emitPaymentMethodCacheSaveSink(it) }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
+
+    private fun emitPaymentMethodCacheSaveSink(paymentMethodResponse: PaymentMethodResponse) =
+        mono { paymentMethodCacheSaveSink.tryEmitNext(paymentMethodResponse) }
+            .doOnNext { logger.debug("Emit paymentMethodCacheSaveSink result: {}", it) }
+            .doOnError { logger.error("Exception while emitting cache save: ", it) }
+            .map { paymentMethodResponse }
+            .onErrorReturn(paymentMethodResponse)
 
     fun subscribePaymentMethodCacheSaveSink(): Disposable =
         paymentMethodCacheSaveSink
