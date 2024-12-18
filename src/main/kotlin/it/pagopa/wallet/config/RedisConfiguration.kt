@@ -2,10 +2,8 @@ package it.pagopa.wallet.config
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import it.pagopa.wallet.repositories.NpgSession
-import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
-import it.pagopa.wallet.repositories.UniqueIdDocument
-import it.pagopa.wallet.repositories.UniqueIdTemplateWrapper
+import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.wallet.repositories.*
 import java.time.Duration
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -17,6 +15,24 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
 class RedisConfiguration {
+
+    @Bean
+    fun paymentMethodsRedisTemplate(
+        redisConnectionFactory: RedisConnectionFactory,
+        @Value("\${payment-methods.cache.ttlSeconds}") ttlSeconds: Long,
+    ): PaymentMethodsTemplateWrapper {
+        val paymentMethodsRedisTemplate = RedisTemplate<String, PaymentMethodResponse>()
+        paymentMethodsRedisTemplate.connectionFactory = redisConnectionFactory
+        val jackson2JsonRedisSerializer =
+            buildJackson2RedisSerializer(PaymentMethodResponse::class.java)
+        paymentMethodsRedisTemplate.valueSerializer = jackson2JsonRedisSerializer
+        paymentMethodsRedisTemplate.keySerializer = StringRedisSerializer()
+        paymentMethodsRedisTemplate.afterPropertiesSet()
+        return PaymentMethodsTemplateWrapper(
+            paymentMethodsRedisTemplate,
+            Duration.ofSeconds(ttlSeconds)
+        )
+    }
 
     @Bean
     fun npgSessionRedisTemplate(

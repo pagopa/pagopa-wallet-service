@@ -1,5 +1,6 @@
 package it.pagopa.wallet
 
+import it.pagopa.generated.ecommerce.model.PaymentMethodManagementType
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
@@ -792,6 +793,9 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("CARDS")
+            .description("CARDS description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getValidAPMPaymentMethod(): PaymentMethodResponse {
@@ -800,6 +804,9 @@ object WalletTestUtils {
             .paymentTypeCode("PPAL")
             .status(PaymentMethodStatus.ENABLED)
             .name("PAYPAL")
+            .description("PAYPAL description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getDisabledCardsPaymentMethod(): PaymentMethodResponse {
@@ -808,6 +815,9 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.DISABLED)
             .name("CARDS")
+            .description("CARDS description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
@@ -816,6 +826,9 @@ object WalletTestUtils {
             .paymentTypeCode("CP")
             .status(PaymentMethodStatus.ENABLED)
             .name("INVALID")
+            .description("INVALID description")
+            .methodManagement(PaymentMethodManagementType.ONBOARDABLE)
+            .ranges(listOf())
     }
 
     fun getUniqueId(): String {
