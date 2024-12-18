@@ -70,6 +70,5 @@ class PaymentMethodsService(
                         )
                     }
             }
-            .subscribeOn(Schedulers.parallel())
             .subscribe()
 }
