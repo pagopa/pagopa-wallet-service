@@ -23,10 +23,14 @@ class PaymentMethodsServiceTest {
 
     private val paymentMethodsRedisTemplate: PaymentMethodsTemplateWrapper = mock()
     private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient = mock()
-    private val paymentMethodCacheSaveSink: Sinks.Many<PaymentMethodResponse> =
-        Sinks.many().unicast().onBackpressureBuffer()
+    private val paymentMethodCacheSaveSink: Sinks.Many<PaymentMethodResponse> = mock()
 
     private val paymentMethodsService: PaymentMethodsService =
+        PaymentMethodsService(
+            paymentMethodsRedisTemplate = paymentMethodsRedisTemplate,
+            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient
+        )
+    private val paymentMethodsServiceMockSink: PaymentMethodsService =
         PaymentMethodsService(
             paymentMethodsRedisTemplate = paymentMethodsRedisTemplate,
             ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
@@ -155,5 +159,32 @@ class PaymentMethodsServiceTest {
         verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
         verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
         verify(paymentMethodsRedisTemplate, timeout(100).times(1)).save(paymentMethodResponse)
+    }
+
+    @ParameterizedTest
+    @MethodSource("paymentMethodsSource")
+    fun `should return payment method even if fail sink emit`(
+        paymentMethodId: String,
+        paymentMethodResponse: PaymentMethodResponse
+    ) {
+        // pre-requisites
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
+            .willReturn(mono { paymentMethodResponse })
+        given { paymentMethodCacheSaveSink.tryEmitNext(any()) }
+            .willThrow(RuntimeException("Error during sink emit"))
+
+        // Test
+        paymentMethodsServiceMockSink
+            .getPaymentMethodById(paymentMethodId)
+            .test()
+            .expectNext(paymentMethodResponse)
+            .verifyComplete()
+
+        // verifications
+        verify(paymentMethodsRedisTemplate, times(1)).findById(paymentMethodId)
+        verify(ecommercePaymentMethodsClient, times(1)).getPaymentMethodById(paymentMethodId)
+        verify(paymentMethodCacheSaveSink, times(1)).tryEmitNext(paymentMethodResponse)
+        verify(paymentMethodsRedisTemplate, timeout(100).times(0)).save(any())
     }
 }
