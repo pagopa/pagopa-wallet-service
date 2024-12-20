@@ -1240,10 +1240,10 @@ class WalletService(
         if (errorCode != null) {
             NPG_CARDS_ONBOARDING_ERROR_CODE_MAPPING.getOrDefault(
                 errorCode,
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
             )
         } else {
-            SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+            SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
         }
 
     private fun buildNotificationUrl(
