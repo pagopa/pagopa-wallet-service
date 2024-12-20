@@ -138,16 +138,16 @@ class WalletServiceTest {
                 Arguments.of("102", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("104", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3),
                 Arguments.of("106", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
-                Arguments.of("109", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
+                Arguments.of("109", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of("110", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3),
                 Arguments.of("111", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_7),
-                Arguments.of("115", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("116", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
-                Arguments.of("117", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
+                Arguments.of("115", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("116", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_116),
+                Arguments.of("117", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_117),
                 Arguments.of("118", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3),
                 Arguments.of("119", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("120", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
-                Arguments.of("121", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
+                Arguments.of("121", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_121),
                 Arguments.of("122", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("123", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("124", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
@@ -164,15 +164,15 @@ class WalletServiceTest {
                 Arguments.of("888", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("902", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of("903", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
-                Arguments.of("904", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("906", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("907", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("908", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("909", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("911", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("913", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of("999", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
-                Arguments.of(null, SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1),
+                Arguments.of("904", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("906", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("907", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("908", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("909", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("911", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("913", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of("999", SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of(null, SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
             )
 
         @JvmStatic
@@ -180,7 +180,7 @@ class WalletServiceTest {
             Stream.of(
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
@@ -196,7 +196,7 @@ class WalletServiceTest {
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.PENDING,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.CANCELED,
@@ -204,15 +204,15 @@ class WalletServiceTest {
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.VOIDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.REFUNDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.FAILED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 ),
             )
 
