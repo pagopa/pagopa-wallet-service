@@ -5,10 +5,7 @@ import it.pagopa.generated.wallet.model.WalletApplicationDto
 import it.pagopa.generated.wallet.model.WalletApplicationStatusDto
 import it.pagopa.generated.wallet.model.WalletApplicationsPartialUpdateDto
 import it.pagopa.wallet.common.tracing.WalletTracing
-import it.pagopa.wallet.exception.ApiError
-import it.pagopa.wallet.exception.MigrationError
-import it.pagopa.wallet.exception.RestApiException
-import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
+import it.pagopa.wallet.exception.*
 import jakarta.xml.bind.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -152,6 +149,15 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                     .title("Wallet delete")
                     .detail("Cannot migrate a deleted wallet ${e.walletId.value}")
         }.let { ResponseEntity.status(it.status).body(it) }
+
+    /** Handler for wallet already deleted exception */
+    @ExceptionHandler(WalletAlreadyDeletedException::class)
+    fun handleWalletAlreadyDeletedException(
+        e: WalletAlreadyDeletedException
+    ): ResponseEntity<Void> {
+        logger.error("Exception processing the request", e)
+        return ResponseEntity.noContent().build()
+    }
 
     private fun traceInvalidRequest(request: ServerHttpRequest) {
         val contextPath: String = request.path.value()

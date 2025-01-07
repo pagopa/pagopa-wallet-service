@@ -337,6 +337,27 @@ class WalletControllerTest {
     }
 
     @Test
+    fun `deleteWalletById returns 204 when wallet is already deleted`() = runTest {
+        /* preconditions */
+        val walletId = WalletId(UUID.randomUUID())
+        val userId = UserId(UUID.randomUUID())
+
+        given { walletService.deleteWallet(walletId, userId) }
+            .willReturn(Mono.error(WalletAlreadyDeletedException(walletId)))
+
+        /* test */
+        webClient
+            .delete()
+            .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-user-id", userId.id.toString())
+            .exchange()
+            .expectStatus()
+            .isNoContent
+
+        verify(loggingEventSyncWriter, times(0)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+    }
+
+    @Test
     fun `deleteWalletById returns 400 on invalid wallet id`() = runTest {
         /* preconditions */
         val walletId = "invalidWalletId"
