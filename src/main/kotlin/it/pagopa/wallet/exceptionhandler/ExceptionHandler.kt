@@ -154,7 +154,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
     @ExceptionHandler(WalletAlreadyDeletedException::class)
     fun handleWalletAlreadyDeletedException(
         e: WalletAlreadyDeletedException
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         logger.error("Exception processing the request", e)
         return ResponseEntity.noContent().build()
     }
