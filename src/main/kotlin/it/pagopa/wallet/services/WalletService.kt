@@ -816,6 +816,8 @@ class WalletService(
         walletRepository
             .findByIdAndUserId(walletId.value.toString(), userId.id.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .filter { it.status != WalletStatusDto.DELETED.toString() }
+            .switchIfEmpty { Mono.error(WalletAlreadyDeletedException(walletId)) }
             .flatMap { walletRepository.save(it.copy(status = WalletStatusDto.DELETED.toString())) }
             .map { LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())) }
 

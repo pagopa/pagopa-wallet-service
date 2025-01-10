@@ -3500,6 +3500,35 @@ class WalletServiceTest {
         verify(walletRepository, times(1)).save(expectedUpdatedWallet)
     }
 
+    @Test
+    fun `should not update wallet status to DELETED when calling deleteWalletById on deleted wallet`() {
+        val walletDocument =
+            walletDocumentVerifiedWithAPM(
+                    PayPalDetails(
+                        maskedEmail = MASKED_EMAIL.value,
+                        pspId = "pspId",
+                        pspBusinessName = PSP_BUSINESS_NAME
+                    )
+                )
+                .copy(status = WalletStatusDto.DELETED.value)
+
+        /* preconditions */
+        given { walletRepository.findByIdAndUserId(any(), any()) }
+            .willReturn(Mono.just(walletDocument))
+        given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
+
+        /* test */
+        StepVerifier.create(
+                walletService.deleteWallet(
+                    WalletId(UUID.fromString(walletDocument.id)),
+                    UserId(UUID.fromString(walletDocument.userId))
+                )
+            )
+            .verifyError(WalletAlreadyDeletedException::class.java)
+
+        verify(walletRepository, times(0)).save(any())
+    }
+
     @ParameterizedTest
     @MethodSource("declinedAuthErrorCodeTestSource")
     fun `find session should return response with final status true mapping DENIED error codes for card wallet`(
