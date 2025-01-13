@@ -73,16 +73,16 @@ class WalletService(
                 "102" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "104" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
                 "106" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
-                "109" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "109" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
                 "110" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
                 "111" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_7,
-                "115" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "116" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
-                "117" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "115" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "116" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_116,
+                "117" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_117,
                 "118" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_3,
                 "119" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "120" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
-                "121" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
+                "121" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_121,
                 "122" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "123" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "124" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
@@ -99,14 +99,14 @@ class WalletService(
                 "888" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "902" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
                 "903" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2,
-                "904" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "906" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "907" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "908" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "909" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "911" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "913" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
-                "999" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1,
+                "904" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "906" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "907" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "908" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "909" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "911" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "913" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
+                "999" to SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25,
             )
         val walletExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMM")
         val npgExpiryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/yy")
@@ -1203,7 +1203,7 @@ class WalletService(
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
                     }
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
                         decodeCardsOnboardingNpgErrorCode(errorCode)
@@ -1217,15 +1217,15 @@ class WalletService(
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
                 WalletNotificationRequestDto.OperationResultEnum.PENDING ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
                 WalletNotificationRequestDto.OperationResultEnum.VOIDED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.REFUNDED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 WalletNotificationRequestDto.OperationResultEnum.FAILED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
@@ -1242,10 +1242,10 @@ class WalletService(
         if (errorCode != null) {
             NPG_CARDS_ONBOARDING_ERROR_CODE_MAPPING.getOrDefault(
                 errorCode,
-                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+                SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
             )
         } else {
-            SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
+            SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
         }
 
     private fun buildNotificationUrl(

@@ -1362,6 +1362,10 @@ components:
             - 8  # CANCELED_BY_USER
             - 14 # INVALID_SESSION
             - 15 # ALREADY_ONBOARDED
+            - 25 # PSP_ERROR
+            - 116 # BALANCE_LIMIT
+            - 117 # CVV_ERROR
+            - 121 # LIMIT_EXCEEDED
       required:
         - orderId
         - walletId
