@@ -38,7 +38,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 10
+    replicas: 5
   terminationGracePeriodSeconds: 30
   strategy:
     type: "RollingUpdate"
@@ -74,7 +74,7 @@ microservice-chart:
       cpu: "600m"
   autoscaling:
     enable: true
-    minReplica: 10
+    minReplica: 5
     maxReplica: 15
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
