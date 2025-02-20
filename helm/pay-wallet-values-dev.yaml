@@ -11,11 +11,11 @@ microservice-chart:
       headerName: deployment
       headerValue: blue
       weightPercent: 10
-      image:
-        repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
-        tag: "latest"
-      envConfig: { }
-      envSecret: { }
+    image:
+      repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
+      tag: "latest"
+    envConfig: { }
+    envSecret: { }
   image:
     repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
     tag: "0.14.2"
