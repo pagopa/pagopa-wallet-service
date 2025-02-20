@@ -5,24 +5,20 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      create: true
-      canary:
-        type: bluegreen
-        headerName: deployment
-        headerValue: blue
-    service:
-      create: true
-    deployment:
-      create: true
-      image:
-        repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
-        tag: "latest"
-        pullPolicy: Always
-      envConfig:
-        OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
-        OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-wallet-service-blue,deployment.environment=uat"
-        EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue-b
-      envSecret: { }
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
+    image:
+      repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
+      tag: "latest"
+    envConfig:
+      OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-wallet-service-blue,deployment.environment=uat"
+      EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue-b
+    envSecret: { }
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
     tag: "0.14.2"
@@ -57,7 +53,7 @@ microservice-chart:
   serviceAccount:
     create: false
     annotations: { }
-    name: ""
+    name: "pay-wallet-workload-identity"
   podAnnotations: { }
   podSecurityContext:
     seccompProfile:
@@ -189,6 +185,8 @@ microservice-chart:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                aadpodidbinding: pay-wallet-pod-identity
+                app.kubernetes.io/instance: pagopawalletservice
             namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
+  azure:
+    workloadIdentityClientId: 928bc159-85e9-4f09-ba08-1e71851166f1

@@ -5,17 +5,15 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      create: true
-      canary:
-        type: bluegreen
-    service:
-      create: true
-    deployment:
-      create: true
+      bluegreen: false
+      #set canary deployment with traffic balancing see https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md#canary for more info
+      header: true
+      headerName: deployment
+      headerValue: blue
+      weightPercent: 10
       image:
         repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
         tag: "latest"
-        pullPolicy: Always
       envConfig: { }
       envSecret: { }
   image:
@@ -58,7 +56,7 @@ microservice-chart:
   serviceAccount:
     create: false
     annotations: { }
-    name: ""
+    name: "pay-wallet-workload-identity"
   podAnnotations: { }
   podSecurityContext:
     seccompProfile:
@@ -184,6 +182,8 @@ microservice-chart:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                aadpodidbinding: pay-wallet-pod-identity
+                app.kubernetes.io/instance: pagopawalletservice
             namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
+  azure:
+    workloadIdentityClientId: 48a74dad-26f3-4916-ba45-ddda27d950b1
