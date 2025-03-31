@@ -98,7 +98,7 @@ resources:
     - repository: pagopaWalletTests
       type: github
       name: pagopa/pagopa-wallet-tests
-      ref: main
+      ref: CHK-3121-update-wallet-api-tests-and-envs
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
