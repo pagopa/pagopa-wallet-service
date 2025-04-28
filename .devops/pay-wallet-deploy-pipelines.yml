@@ -147,8 +147,8 @@ stages:
     dependsOn: [ ]
     condition:
       and(
-      succeeded(),,
-      eq(${{parameters.SKIP_BUILD}}, false)
+      succeeded(),
+      eq(${{parameters.SKIP_BUILD}}, false),
       eq(${{parameters.UAT_PROD_DEPLOY}}, true),
       or(
       eq(variables['Build.SourceBranch'], 'refs/heads/main'),
