@@ -12,6 +12,8 @@ steps:
         CHART_FILE="helm/Chart.yaml"
         version=$(yq -r '.version' $CHART_FILE)
         appVersion=$(yq -r '.appVersion' $CHART_FILE)
+        echo "Chart version: $version"
+        echo "App version: $appVersion"
         trimmed_repo_url=$(echo $(Build.Repository.Uri) | sed -e "s/\.git//g")
         releaseUrl=$(echo $trimmed_repo_url/releases/tag/$appVersion)
         commitUrl=$(echo $trimmed_repo_url/commit/$(Build.SourceVersion))
