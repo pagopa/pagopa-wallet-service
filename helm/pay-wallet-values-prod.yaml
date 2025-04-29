@@ -14,11 +14,11 @@ microservice-chart:
     image:
       repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
       tag: "latest"
-    envConfig: { }
-    envSecret: { }
+    envConfig: {}
+    envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
-    tag: "0.14.2"
+    tag: "1.9.3"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -55,9 +55,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: "pay-wallet-workload-identity"
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -161,7 +161,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -183,7 +183,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: pagopawalletservice
-            namespaces: [ "pay-wallet" ]
+            namespaces: ["pay-wallet"]
             topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 48a74dad-26f3-4916-ba45-ddda27d950b1
