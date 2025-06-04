@@ -7,9 +7,11 @@ import it.pagopa.wallet.exception.JWTTokenGenerationException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 
+@Component
 class JwtTokenIssuerClient(
     @Autowired
     @Qualifier("jwtTokenIssuerWebClient")

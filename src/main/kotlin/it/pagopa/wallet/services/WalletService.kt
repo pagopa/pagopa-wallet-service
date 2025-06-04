@@ -350,17 +350,6 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
-                jwtTokenIssuerClient
-                    .createToken(
-                        CreateTokenRequest()
-                            .audience(NPG_AUDIENCE)
-                            .duration(tokenValidityTimeSeconds)
-                            .privateClaims(mapOf(WALLET_ID_CLAIM to walletId.value.toString()))
-                    )
-                    .map { Triple(uniqueIds, paymentMethod, Pair(wallet, it.token)) }
-            }
-            .flatMap { (uniqueIds, paymentMethod, walletAndToken) ->
-                val wallet = walletAndToken.first
                 val isTransactionWithContextualOnboard =
                     wallet
                         .getApplicationMetadata(
@@ -383,77 +372,79 @@ class WalletService(
                 val merchantUrl = sessionUrlConfig.basePath
                 val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
                 val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
-                val notificationUrl =
-                    buildNotificationUrl(
+                logger.info(
+                    "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
+                )
+                createTokenAndBuildNotificationUri(
                         isTransactionWithContextualOnboard,
-                        wallet.id.value,
+                        walletId.value,
                         orderId,
                         wallet.getApplicationMetadata(
                             pagopaWalletApplicationId,
                             WalletApplicationMetadata.Metadata.TRANSACTION_ID
-                        ),
-                        walletAndToken.second
+                        )
                     )
-                logger.info(
-                    "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
-                )
-                npgClient
-                    .createNpgOrderBuild(
-                        correlationId = walletId.value,
-                        createHostedOrderRequest =
-                            CreateHostedOrderRequest()
-                                .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
-                                .merchantUrl(merchantUrl)
-                                .order(
-                                    Order()
-                                        .orderId(orderId)
-                                        .amount(
-                                            if (isTransactionWithContextualOnboard) {
-                                                amount
-                                            } else {
-                                                CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
-                                            }
+                    .flatMap { notificationUrl ->
+                        npgClient.createNpgOrderBuild(
+                            correlationId = walletId.value,
+                            createHostedOrderRequest =
+                                CreateHostedOrderRequest()
+                                    .version(CREATE_HOSTED_ORDER_REQUEST_VERSION)
+                                    .merchantUrl(merchantUrl)
+                                    .order(
+                                        Order()
+                                            .orderId(orderId)
+                                            .amount(
+                                                if (isTransactionWithContextualOnboard) {
+                                                    amount
+                                                } else {
+                                                    CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                                }
+                                            )
+                                            .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
+                                        // TODO customerId must be valorised with the one coming
+                                        // from
+                                    )
+                                    .paymentSession(
+                                        PaymentSession()
+                                            .actionType(
+                                                if (isTransactionWithContextualOnboard) {
+                                                    ActionType.PAY
+                                                } else {
+                                                    ActionType.VERIFY
+                                                }
+                                            )
+                                            .recurrence(
+                                                RecurringSettings()
+                                                    .action(RecurringAction.CONTRACT_CREATION)
+                                                    .contractId(contractId)
+                                                    .contractType(RecurringContractType.CIT)
+                                            )
+                                            .amount(
+                                                if (isTransactionWithContextualOnboard) {
+                                                    amount
+                                                } else {
+                                                    CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
+                                                }
+                                            )
+                                            .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
+                                            .captureType(CaptureType.IMPLICIT)
+                                            .paymentService(paymentMethod.name)
+                                            .resultUrl(resultUrl.toString())
+                                            .cancelUrl(cancelUrl.toString())
+                                            .notificationUrl(notificationUrl.toString())
+                                    ),
+                            pspId =
+                                when (sessionInputDataDto) {
+                                    is SessionInputCardDataDto -> null
+                                    is SessionInputPayPalDataDto -> sessionInputDataDto.pspId
+                                    else ->
+                                        throw InternalServerErrorException(
+                                            "Unhandled session input"
                                         )
-                                        .currency(CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                                    // TODO customerId must be valorised with the one coming from
-                                )
-                                .paymentSession(
-                                    PaymentSession()
-                                        .actionType(
-                                            if (isTransactionWithContextualOnboard) {
-                                                ActionType.PAY
-                                            } else {
-                                                ActionType.VERIFY
-                                            }
-                                        )
-                                        .recurrence(
-                                            RecurringSettings()
-                                                .action(RecurringAction.CONTRACT_CREATION)
-                                                .contractId(contractId)
-                                                .contractType(RecurringContractType.CIT)
-                                        )
-                                        .amount(
-                                            if (isTransactionWithContextualOnboard) {
-                                                amount
-                                            } else {
-                                                CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT
-                                            }
-                                        )
-                                        .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
-                                        .captureType(CaptureType.IMPLICIT)
-                                        .paymentService(paymentMethod.name)
-                                        .resultUrl(resultUrl.toString())
-                                        .cancelUrl(cancelUrl.toString())
-                                        .notificationUrl(notificationUrl.toString())
-                                ),
-                        pspId =
-                            when (sessionInputDataDto) {
-                                is SessionInputCardDataDto -> null
-                                is SessionInputPayPalDataDto -> sessionInputDataDto.pspId
-                                else ->
-                                    throw InternalServerErrorException("Unhandled session input")
-                            }
-                    )
+                                }
+                        )
+                    }
                     .flatMap { hostedOrderResponse ->
                         val isAPM = paymentMethod.paymentTypeCode != "CP"
                         /*
@@ -1271,6 +1262,39 @@ class WalletService(
         } else {
             SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
         }
+
+    private fun createTokenAndBuildNotificationUri(
+        isTransactionWithContextualOnboard: Boolean,
+        walletId: UUID,
+        orderId: String,
+        transactionId: String?
+    ): Mono<URI> {
+        return jwtTokenIssuerClient
+            .createToken(
+                CreateTokenRequest()
+                    .audience(NPG_AUDIENCE)
+                    .duration(tokenValidityTimeSeconds)
+                    .privateClaims(
+                        if (!isTransactionWithContextualOnboard) {
+                            mapOf(WALLET_ID_CLAIM to walletId.toString())
+                        } else {
+                            mapOf(
+                                WALLET_ID_CLAIM to walletId.toString(),
+                                TRANSACTION_ID_CLAIM to transactionId
+                            )
+                        }
+                    )
+            )
+            .map { response ->
+                buildNotificationUrl(
+                    isTransactionWithContextualOnboard,
+                    walletId,
+                    orderId,
+                    transactionId,
+                    response.token
+                )
+            }
+    }
 
     private fun buildNotificationUrl(
         isTransactionWithContextualOnboard: Boolean,
