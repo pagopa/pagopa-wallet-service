@@ -4,6 +4,7 @@ import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.config.WalletMigrationConfig
 import it.pagopa.wallet.config.properties.ExpirationQueueConfig
+import it.pagopa.wallet.config.properties.JwtTokenIssuerConfigProperties
 import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
 import it.pagopa.wallet.config.properties.RetrySavePolicyConfig
@@ -21,7 +22,8 @@ import reactor.core.publisher.Hooks
     ExpirationQueueConfig::class,
     RetrySavePolicyConfig::class,
     ExpirationQueueConfig::class,
-    LoggedActionDeadLetterQueueConfig::class
+    LoggedActionDeadLetterQueueConfig::class,
+    JwtTokenIssuerConfigProperties::class
 )
 class WalletApplication
 

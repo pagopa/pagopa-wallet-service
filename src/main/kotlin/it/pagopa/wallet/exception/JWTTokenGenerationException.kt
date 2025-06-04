@@ -3,7 +3,7 @@ package it.pagopa.wallet.exception
 /**
  * Exception class wrapping checked exceptions that can occur during jwt generation
  *
- * @see it.pagopa.wallet.util.JwtTokenUtils
+ * @see it.pagopa.wallet.client.JwtTokenIssuerClient
  */
 class JWTTokenGenerationException
 /**

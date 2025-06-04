@@ -1,8 +1,10 @@
 package it.pagopa.wallet.services
 
+import it.pagopa.generated.jwtIssuer.model.CreateTokenRequest
 import it.pagopa.generated.npg.model.*
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
+import it.pagopa.wallet.client.JwtTokenIssuerClient
 import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
@@ -53,15 +55,25 @@ class WalletService(
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
-    @Autowired private val jwtTokenUtils: JwtTokenUtils,
+    @Autowired private val jwtTokenIssuerClient: JwtTokenIssuerClient,
     @Autowired
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
     @Autowired private val walletUtils: WalletUtils,
     private val pspDetailClient: PspDetailClient,
+    @Value("\${npg.notifications.jwt.validityTimeSeconds}")
+    private val tokenValidityTimeSeconds: Int
 ) {
-
     companion object {
+        /** The claim transactionId */
+        const val TRANSACTION_ID_CLAIM = "transactionId"
+
+        /** The claim walletId */
+        const val WALLET_ID_CLAIM = "walletId"
+
+        /** Nog audience * */
+        const val NPG_AUDIENCE = "npg"
+
         const val CREATE_HOSTED_ORDER_REQUEST_VERSION: String = "2"
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
@@ -1262,11 +1274,16 @@ class WalletService(
                         Pair("orderId", orderId),
                         Pair(
                             "sessionToken",
-                            jwtTokenUtils
-                                .generateJwtTokenForNpgNotifications(
-                                    walletIdAsClaim = walletId.toString()
+                            jwtTokenIssuerClient
+                                .createToken(
+                                    CreateTokenRequest()
+                                        .audience(NPG_AUDIENCE)
+                                        .duration(tokenValidityTimeSeconds)
+                                        .privateClaims(
+                                            mapOf(WALLET_ID_CLAIM to walletId.toString())
+                                        )
                                 )
-                                .fold({ throw it }, { token -> token })
+                                .map { it.token }
                         )
                     )
                 )
@@ -1281,12 +1298,16 @@ class WalletService(
                         Pair("orderId", orderId),
                         Pair(
                             "sessionToken",
-                            jwtTokenUtils
-                                .generateJwtTokenForNpgNotifications(
-                                    walletIdAsClaim = walletId.toString(),
-                                    transactionIdAsClaim = transactionId
+                            jwtTokenIssuerClient
+                                .createToken(
+                                    CreateTokenRequest()
+                                        .audience(NPG_AUDIENCE)
+                                        .duration(tokenValidityTimeSeconds)
+                                        .privateClaims(
+                                            mapOf(WALLET_ID_CLAIM to walletId.toString())
+                                        )
                                 )
-                                .fold({ throw it }, { token -> token })
+                                .map { it.token }
                         )
                     )
                 )
