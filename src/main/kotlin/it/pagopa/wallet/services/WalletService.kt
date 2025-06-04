@@ -350,6 +350,17 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
+                jwtTokenIssuerClient
+                    .createToken(
+                        CreateTokenRequest()
+                            .audience(NPG_AUDIENCE)
+                            .duration(tokenValidityTimeSeconds)
+                            .privateClaims(mapOf(WALLET_ID_CLAIM to walletId.value.toString()))
+                    )
+                    .map { Triple(uniqueIds, paymentMethod, Pair(wallet, it.token)) }
+            }
+            .flatMap { (uniqueIds, paymentMethod, walletAndToken) ->
+                val wallet = walletAndToken.first
                 val isTransactionWithContextualOnboard =
                     wallet
                         .getApplicationMetadata(
@@ -380,7 +391,8 @@ class WalletService(
                         wallet.getApplicationMetadata(
                             pagopaWalletApplicationId,
                             WalletApplicationMetadata.Metadata.TRANSACTION_ID
-                        )
+                        ),
+                        walletAndToken.second
                     )
                 logger.info(
                     "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]"
@@ -1264,7 +1276,8 @@ class WalletService(
         isTransactionWithContextualOnboard: Boolean,
         walletId: UUID,
         orderId: String,
-        transactionId: String?
+        transactionId: String?,
+        sessionToken: String
     ): URI {
         return if (!isTransactionWithContextualOnboard) {
             UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
@@ -1272,19 +1285,7 @@ class WalletService(
                     mapOf(
                         Pair("walletId", walletId),
                         Pair("orderId", orderId),
-                        Pair(
-                            "sessionToken",
-                            jwtTokenIssuerClient
-                                .createToken(
-                                    CreateTokenRequest()
-                                        .audience(NPG_AUDIENCE)
-                                        .duration(tokenValidityTimeSeconds)
-                                        .privateClaims(
-                                            mapOf(WALLET_ID_CLAIM to walletId.toString())
-                                        )
-                                )
-                                .map { it.token }
-                        )
+                        Pair("sessionToken", sessionToken)
                     )
                 )
         } else {
@@ -1296,19 +1297,7 @@ class WalletService(
                         Pair("transactionId", transactionId),
                         Pair("walletId", walletId),
                         Pair("orderId", orderId),
-                        Pair(
-                            "sessionToken",
-                            jwtTokenIssuerClient
-                                .createToken(
-                                    CreateTokenRequest()
-                                        .audience(NPG_AUDIENCE)
-                                        .duration(tokenValidityTimeSeconds)
-                                        .privateClaims(
-                                            mapOf(WALLET_ID_CLAIM to walletId.toString())
-                                        )
-                                )
-                                .map { it.token }
-                        )
+                        Pair("sessionToken", sessionToken)
                     )
                 )
         }

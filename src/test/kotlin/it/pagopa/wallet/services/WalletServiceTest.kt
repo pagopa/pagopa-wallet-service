@@ -1289,8 +1289,8 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(eq(npgSession)) }
                 .willAnswer { mono { npgSession } }
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
+            given { jwtTokenIssuerClient.createToken(createTokenRequest = anyOrNull()) }
+                .willAnswer { mono { CreateTokenResponse().token(sessionToken) } }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -1311,7 +1311,7 @@ class WalletServiceTest {
             verify(npgClient, times(1))
                 .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, null)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
-            verify(jwtTokenIssuerClient, times(0))
+            verify(jwtTokenIssuerClient, times(1))
                 .createToken(
                     createTokenRequest =
                         CreateTokenRequest()
@@ -3819,7 +3819,7 @@ class WalletServiceTest {
                         CreateTokenRequest()
                             .duration(TOKEN_VALIDITY_TIME_SECONDS)
                             .audience("npg")
-                            .privateClaims(mapOf("transactionId" to null))
+                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
                 )
         }
     }
