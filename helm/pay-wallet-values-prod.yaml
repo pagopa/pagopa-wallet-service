@@ -148,6 +148,9 @@ microservice-chart:
     LOGGING_EVENT_RETRY_MAX_ATTEMPTS: "10"
     LOGGING_EVENT_RETRY_INTERVAL_SECONDS: "60"
     LOGGING_EVENT_RETRY_EMIT_BUSY_LOOP_MILLIS: "150"
+    JWT_ISSUER_URI: "https://itnprod.pay-wallet.internal.platform.pagopa.it/pagopa-jwt-issuer-service"
+    JWT_ISSUER_READ_TIMEOUT: "10000"
+    JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
