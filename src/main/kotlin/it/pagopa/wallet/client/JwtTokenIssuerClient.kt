@@ -7,6 +7,7 @@ import it.pagopa.wallet.exception.JWTTokenGenerationException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
@@ -25,6 +26,22 @@ class JwtTokenIssuerClient(
             .doOnError(WebClientResponseException::class.java) {
                 logger.error("Error communicating with Jwt Issuer")
             }
-            .onErrorMap { JWTTokenGenerationException() }
+            .onErrorMap { error -> exceptionToJWTTokenGenerationException(error) }
+    }
+
+    private fun exceptionToJWTTokenGenerationException(
+        err: Throwable,
+    ): JWTTokenGenerationException {
+        if (err is WebClientResponseException) {
+            return JWTTokenGenerationException(
+                httpStatus = HttpStatus.valueOf(err.statusCode.value()),
+                description = err.message.orEmpty()
+            )
+        }
+
+        return JWTTokenGenerationException(
+            "Unexpected error while invoking jwtIssuer",
+            HttpStatus.INTERNAL_SERVER_ERROR
+        )
     }
 }
