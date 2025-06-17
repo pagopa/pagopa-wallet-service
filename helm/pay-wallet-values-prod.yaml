@@ -18,7 +18,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
-    tag: "1.9.4"
+    tag: "1.9.5"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -96,6 +96,7 @@ microservice-chart:
     MONGO_SERVER_SELECTION_TIMEOUT_MS: "2000"
     MONGO_WAITING_QUEUE_MS: "2000"
     MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
+    MONGO_REPLICA_SET_OPTION: "&replicaSet=globaldb"
     REDIS_HOST: pagopa-p-itn-pay-wallet-redis.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
