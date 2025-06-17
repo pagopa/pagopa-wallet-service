@@ -177,11 +177,16 @@ stages:
 
   - stage: "Deploy_UAT_Blue"
     displayName: 'UAT blue deployment'
-    dependsOn: Get_Release_Version
-    condition:
+    dependsOn: [ Tag_Docker_Release, Get_Release_Version ]
+    condition: |
       and(
-      succeeded(),
-      eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+        succeeded(),
+        eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+        in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
+        or(
+          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+          startsWith(variables['Build.SourceBranch'], 'refs/tags')
+        )
       )
     variables:
       green_app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
@@ -220,7 +225,27 @@ stages:
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    dependsOn: Deploy_UAT_Blue
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: [ Get_Release_Version, Tag_Docker_Release ]
+      condition: |
+        and(
+          in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
+          or(
+            eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+            startsWith(variables['Build.SourceBranch'], 'refs/tags')
+          )
+        )
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: [ Deploy_UAT_Blue ]
+      condition: |
+        and(
+          eq(dependencies.Deploy_UAT_Blue.result, 'Succeeded'),
+          in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
+          or(
+            eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+            startsWith(variables['Build.SourceBranch'], 'refs/tags')
+          )
+        )
     variables:
       commitUrl: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.commitUrl'] ]
     jobs:
