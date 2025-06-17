@@ -523,7 +523,7 @@ stages:
               instructions: "Please approve or reject PROD canary traffic to 50 percent"
               onTimeout: "reject"
 
-  - stage: "CanaryTrafficWeight10Percent"
+  - stage: "CanaryTrafficWeight50Percent"
     displayName: "Canary Traffic weight to 50%"
     dependsOn: [ ApproveCanaryTrafficWeight50Percent ]
     condition: eq(dependencies.ApproveCanaryTrafficWeight50Percent.result, 'Succeeded')
