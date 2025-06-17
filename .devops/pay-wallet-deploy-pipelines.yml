@@ -373,6 +373,119 @@ stages:
               instructions: "Please approve or reject PROD promotions for release $(release_url)"
               onTimeout: 'reject'
 
+  - stage: "PROD_Green_WaitForApproval"
+    displayName: 'PROD green approval deployment'
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+      dependsOn: Prod_WaitForApproval
+      condition: |
+        and(
+          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+          in(dependencies.Prod_WaitForApproval.result, 'Succeeded')
+        )
+    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+      dependsOn: [ UninstallCanaryDeployment, Prod_WaitForApproval ]
+      condition: |
+        and(
+          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+          in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
+          in(dependencies.UninstallCanaryDeployment.result, 'Succeeded')
+        )
+    variables:
+      release_url: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.releaseUrl'] ]
+    jobs:
+      - job: Bluegreen_PROD_WaitForApproval
+        displayName: Manual green deploy approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 4320 # 3 days
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD green promotions for release $(release_url)"
+              onTimeout: 'reject'
+
+  - stage: "Build_PROD_Green"
+    displayName: 'PROD green Build'
+    dependsOn: [ PROD_Green_WaitForApproval,Get_Release_Version ]
+    variables:
+      prod_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
+    condition: |
+      and(
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        eq(dependencies.PROD_Green_WaitForApproval.result, 'Succeeded'),
+        eq(dependencies.Get_Release_Version.result, 'Succeeded')
+      )
+    jobs:
+      - job: "PROD_image"
+        displayName: 'Build PROD image'
+        steps:
+          - task: Docker@2
+            displayName: "docker login for UAT"
+            inputs:
+              containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
+              command: "login"
+          - task: Bash@3
+            displayName: "docker tag new version for PROD"
+            inputs:
+              targetType: "inline"
+              script: |
+                docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+          - task: Docker@2
+            displayName: "docker login for PROD"
+            inputs:
+              containerRegistry: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
+              command: "login"
+          - task: Bash@3
+            displayName: "docker tag new version for PROD"
+            inputs:
+              targetType: "inline"
+              script: |
+                docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+                docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+  - stage: "Deploy_PROD_Green"
+    displayName: 'PROD green deployment'
+    dependsOn: [ Build_PROD_Green,Get_Release_Version ]
+    condition: |
+      and(
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        eq(dependencies.Build_PROD_Green.result, 'Succeeded'),
+        eq(dependencies.Get_Release_Version.result, 'Succeeded')
+      )
+    variables:
+      prod_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
+    jobs:
+      - deployment: "Green_PROD_deployment"
+        displayName: "Green PROD deployment"
+        pool:
+          name: pagopa-prod-linux
+        environment: 'PROD'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: "Checkout"
+                - task: Bash@3
+                  name: update_chart_version
+                  displayName: 'Setup helm microservice chart'
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+                      helm dep build helm
+                - template: azure-templates/helm-microservice-chart-deploy.yml
+                  parameters:
+                    DO_DEPLOY: true
+                    DO_BLUE_GREEN_DEPLOY: false
+                    ENV: 'PROD'
+                    KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
+                    NAMESPACE: pay-wallet
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    VALUE_FILE: "helm/pay-wallet-values-prod.yaml"
+                    GREEN_VERSION: $(prod_version)
+
+
   - stage: "Build_PROD_Blue"
     displayName: 'PROD blue Build'
     dependsOn: [ Prod_WaitForApproval,Get_Release_Version ]
@@ -644,118 +757,6 @@ stages:
           - script: |
               kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=0 --overwrite
             displayName: Remove canary traffic
-
-  - stage: "PROD_Green_WaitForApproval"
-    displayName: 'PROD green approval deployment'
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
-      dependsOn: Prod_WaitForApproval
-      condition: |
-        and(
-          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-          in(dependencies.Prod_WaitForApproval.result, 'Succeeded')
-        )
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: [UninstallCanaryDeployment, Prod_WaitForApproval]
-      condition: |
-        and(
-          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-          in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
-          in(dependencies.UninstallCanaryDeployment.result, 'Succeeded')
-        )
-    variables:
-      release_url: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.releaseUrl'] ]
-    jobs:
-      - job: Bluegreen_PROD_WaitForApproval
-        displayName: Manual green deploy approval
-        pool: server
-        timeoutInMinutes: 4320 # 3 days
-        steps:
-          - task: ManualValidation@0
-            timeoutInMinutes: 4320 # 3 days
-            inputs:
-              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-              instructions: "Please approve or reject PROD green promotions for release $(release_url)"
-              onTimeout: 'reject'
-
-  - stage: "Build_PROD_Green"
-    displayName: 'PROD green Build'
-    dependsOn: [ PROD_Green_WaitForApproval,Get_Release_Version ]
-    variables:
-      prod_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
-    condition: |
-      and(
-        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(dependencies.PROD_Green_WaitForApproval.result, 'Succeeded'),
-        eq(dependencies.Get_Release_Version.result, 'Succeeded')
-      )
-    jobs:
-      - job: "PROD_image"
-        displayName: 'Build PROD image'
-        steps:
-          - task: Docker@2
-            displayName: "docker login for UAT"
-            inputs:
-              containerRegistry: $(UAT_CONTAINER_REGISTRY_SERVICE_CONN)
-              command: "login"
-          - task: Bash@3
-            displayName: "docker tag new version for PROD"
-            inputs:
-              targetType: "inline"
-              script: |
-                docker pull $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
-          - task: Docker@2
-            displayName: "docker login for PROD"
-            inputs:
-              containerRegistry: $(PROD_CONTAINER_REGISTRY_SERVICE_CONN)
-              command: "login"
-          - task: Bash@3
-            displayName: "docker tag new version for PROD"
-            inputs:
-              targetType: "inline"
-              script: |
-                docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
-                docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
-  - stage: "Deploy_PROD_Green"
-    displayName: 'PROD green deployment'
-    dependsOn: [ Build_PROD_Green,Get_Release_Version ]
-    condition: |
-      and(
-        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(dependencies.Build_PROD_Green.result, 'Succeeded'),
-        eq(dependencies.Get_Release_Version.result, 'Succeeded')
-      )
-    variables:
-      prod_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
-    jobs:
-      - deployment: "Green_PROD_deployment"
-        displayName: "Green PROD deployment"
-        pool:
-          name: pagopa-prod-linux
-        environment: 'PROD'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                  displayName: "Checkout"
-                - task: Bash@3
-                  name: update_chart_version
-                  displayName: 'Setup helm microservice chart'
-                  inputs:
-                    targetType: "inline"
-                    script: |
-                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
-                      helm dep build helm
-                - template: azure-templates/helm-microservice-chart-deploy.yml
-                  parameters:
-                    DO_DEPLOY: true
-                    DO_BLUE_GREEN_DEPLOY: false
-                    ENV: 'PROD'
-                    KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
-                    NAMESPACE: pay-wallet
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
-                    VALUE_FILE: "helm/pay-wallet-values-prod.yaml"
-                    GREEN_VERSION: $(prod_version)
   # --- END Deploy PROD --- #
 
   # --- START ROLLBACK PROD --- #
