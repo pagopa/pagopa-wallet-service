@@ -151,6 +151,9 @@ microservice-chart:
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_STORAGE_QUEUE_NAME: "pagopa-u-itn-pay-wallet-logged-action-dead-letter-queue"
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_TTL_SECONDS: "2592000" #30 days
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_VISIBILITY_TIMEOUT_SECONDS: "0"
+    JWT_ISSUER_URI: "https://itnuat.pay-wallet.internal.uat.platform.pagopa.it/pagopa-jwt-issuer-service"
+    JWT_ISSUER_READ_TIMEOUT: "10000"
+    JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
@@ -161,9 +164,6 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     EXPIRATION_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
-    JWT_ISSUER_URI: "https://itnuat.pay-wallet.internal.uat.platform.pagopa.it/pagopa-jwt-issuer-service"
-    JWT_ISSUER_READ_TIMEOUT: "10000"
-    JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
