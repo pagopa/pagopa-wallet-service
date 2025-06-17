@@ -225,7 +225,7 @@ stages:
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
       dependsOn: [ Get_Release_Version, Tag_Docker_Release ]
       condition: |
         and(
@@ -235,7 +235,7 @@ stages:
             startsWith(variables['Build.SourceBranch'], 'refs/tags')
           )
         )
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
+    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
       dependsOn: [ Deploy_UAT_Blue ]
       condition: |
         and(
