@@ -588,7 +588,7 @@ stages:
 
   - stage: "CanaryTrafficWeight90Percent"
     displayName: "Canary Traffic weight to 90%"
-    dependsOn: [ ApproveCanaryTrafficWeight50Percent ]
+    dependsOn: [ ApproveCanaryTrafficWeight90Percent ]
     condition: eq(dependencies.ApproveCanaryTrafficWeight90Percent.result, 'Succeeded')
     jobs:
       - job: Set_TrafficCanaryTo90Percent
