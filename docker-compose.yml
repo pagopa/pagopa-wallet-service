@@ -85,6 +85,20 @@ services:
     networks:
       - pagopa-wallet-net
 
+  pagopa-jwt-issuer-mock:
+    build:
+      context: .
+      dockerfile: ./docker/config/pagopa-jwt-issuer-mock/Dockerfile.jwt-issuer-mock
+    volumes:
+      - type: bind
+        source: ./docker/config/pagopa-jwt-issuer-mock
+        target: /config
+        read_only: true
+    ports:
+      - "8088:8080"
+    networks:
+      - pagopa-wallet-net
+
   storage:
     image: mcr.microsoft.com/azure-storage/azurite:latest@sha256:d449d953a1c5bd1e26c800744a65c451e88f3387b696e02e3e2e79a995c3105b
     container_name: pagopa-wallet-azurite

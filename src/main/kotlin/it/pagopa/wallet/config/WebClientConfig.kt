@@ -5,6 +5,7 @@ import io.netty.channel.epoll.EpollChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
 import it.pagopa.generated.npg.api.PaymentServicesApi
+import it.pagopa.wallet.config.properties.JwtTokenIssuerConfigProperties
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
 import java.util.concurrent.TimeUnit
 import org.springframework.beans.factory.annotation.Value
@@ -96,5 +97,28 @@ class WebClientConfig {
                 .setBasePath(config.uriV2)
         apiClient.setApiKey(config.apiKey)
         return it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi(apiClient)
+    }
+
+    @Bean(name = ["jwtTokenIssuerWebClient"])
+    fun jwtTokenIssuerWebClient(
+        config: JwtTokenIssuerConfigProperties
+    ): it.pagopa.generated.jwtIssuer.api.JwtIssuerApi {
+        val httpClient =
+            HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
+                .doOnConnected { connection: Connection ->
+                    connection.addHandlerLast(
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
+                    )
+                }
+                .resolver { it.ndots(1) }
+        val webClient =
+            it.pagopa.generated.jwtIssuer.ApiClient.buildWebClientBuilder()
+                .clientConnector(ReactorClientHttpConnector(httpClient))
+                .baseUrl(config.uri)
+                .build()
+        val apiClient = it.pagopa.generated.jwtIssuer.ApiClient(webClient).setBasePath(config.uri)
+
+        return it.pagopa.generated.jwtIssuer.api.JwtIssuerApi(apiClient)
     }
 }

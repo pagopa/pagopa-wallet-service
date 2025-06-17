@@ -1,0 +1,16 @@
+{
+  "keys": {"keys": [
+    {
+      "alg": "string",
+      "kty": "RSA",
+      "use": "string",
+      "n": "string",
+      "e": "string",
+      "kid": "string"
+    }
+  ]
+  },
+  "tokens": {
+    "token":"testToken"
+  }
+}
