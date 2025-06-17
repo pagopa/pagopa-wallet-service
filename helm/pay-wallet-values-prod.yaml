@@ -10,11 +10,12 @@ microservice-chart:
       header: true
       headerName: deployment
       headerValue: blue
-      weightPercent: 10
+      weightPercent: 0
     image:
       repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
       tag: "latest"
-    envConfig: {}
+    envConfig:
+      OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
     envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice

@@ -213,7 +213,7 @@ stages:
                     ENV: 'UAT'
                     KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: pay-wallet
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                     VALUE_FILE: "helm/pay-wallet-values-uat.yaml"
                     GREEN_VERSION: $(green_app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
@@ -266,12 +266,13 @@ stages:
 
   - stage: "Deploy_UAT_Green"
     displayName: 'UAT green deployment'
-    dependsOn: [ tag_docker_release,Get_Release_Version ]
+    dependsOn: [ tag_docker_release,Get_Release_Version, Bluegreen_WaitForApproval ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
         in(dependencies.tag_docker_release.result, 'Succeeded', 'Skipped'),
         eq(dependencies.Get_Release_Version.result, 'Succeeded'),
+        eq(dependencies.Bluegreen_WaitForApproval.result, 'Succeeded'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           startsWith(variables['Build.SourceBranch'], 'refs/tags')
@@ -289,6 +290,16 @@ stages:
           runOnce:
             deploy:
               steps:
+                - ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
+                    # uninstall helm release used for blue instance
+                    - task: HelmDeploy@0
+                      displayName: Un-install UAT blue version
+                      continueOnError: false
+                      inputs:
+                        kubernetesServiceEndpoint: $(UAT_KUBERNETES_SERVICE_CONN)
+                        namespace: pay-wallet
+                        command: uninstall
+                        arguments: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                 - checkout: self
                   displayName: "Checkout"
                 - task: KubectlInstaller@0
@@ -415,10 +426,199 @@ stages:
                     ENV: 'PROD'
                     KUBERNETES_SERVICE_CONN: $(PROD_KUBERNETES_SERVICE_CONN)
                     NAMESPACE: pay-wallet
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)
+                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                     VALUE_FILE: "helm/pay-wallet-values-prod.yaml"
                     GREEN_VERSION: $(app_version)
                     BLUE_VERSION: $(Build.SourceVersion)
+
+  - stage: "ApproveUninstallCanaryDeployment"
+    displayName: "Approve uninstall of Canary instance"
+    dependsOn: [ Deploy_PROD_Blue ]
+    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    jobs:
+      - job: UninstallCanaryDeployment_WaitForApproval
+        displayName: Uninstall canary deployment approval
+        pool: server
+        timeoutInMinutes: 180 # 3 hours
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 180 # 3 hours
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary uninstall"
+              onTimeout: "reject"
+
+  - stage: "UninstallCanaryDeployment"
+    displayName: "Uninstall Canary Instance"
+    dependsOn: [ ApproveUninstallCanaryDeployment ]
+    condition: eq(dependencies.ApproveUninstallCanaryDeployment.result, 'Succeeded')
+    jobs:
+      - job: Uninstall_CanaryInstance
+        displayName: Uninstall canary instance
+        pool:
+          name: pagopa-prod-linux
+        steps:
+          # uninstall helm release used for blue instance
+          - task: HelmDeploy@0
+            displayName: Un-install PROD blue version
+            continueOnError: false
+            inputs:
+              kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+              namespace: pay-wallet
+              command: uninstall
+              arguments: $(K8S_IMAGE_REPOSITORY_NAME)-blue
+
+  - stage: "ApproveCanaryTrafficWeight10Percent"
+    displayName: "Approve Canary Traffic weight to 10%"
+    dependsOn: [ Deploy_PROD_Blue ]
+    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    jobs:
+      - job: TrafficCanaryTo10Percent_WaitForApproval
+        displayName: Canary traffic to 10 percent approval
+        pool: server
+        timeoutInMinutes: 180 # 3 hours
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 180 # 3 hours
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary traffic to 10 percent"
+              onTimeout: "reject"
+
+  - stage: "CanaryTrafficWeight10Percent"
+    displayName: "Canary Traffic weight to 10%"
+    dependsOn: [ ApproveCanaryTrafficWeight10Percent ]
+    condition: eq(dependencies.ApproveCanaryTrafficWeight10Percent.result, 'Succeeded')
+    jobs:
+      - job: Set_TrafficCanaryTo10Percent
+        displayName: Set canary traffic to 10 percent
+        pool:
+          name: pagopa-prod-linux
+        steps:
+          - task: Kubernetes@1
+            displayName: 'Kubernetes Login'
+            # This is needed to run kubectl command from bash.
+            inputs:
+              connectionType: Kubernetes Service Connection
+              kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+              command: 'login'
+          - script: |
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=10 --overwrite
+            displayName: Execute kubectl annotate to set traffic weight to 10 percent
+
+  - stage: "ApproveCanaryTrafficWeight50Percent"
+    displayName: "Approve Canary Traffic weight to 50%"
+    dependsOn: [ Deploy_PROD_Blue ]
+    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    jobs:
+      - job: TrafficCanaryTo50Percent_WaitForApproval
+        displayName: Canary traffic to 50 percent approval
+        pool: server
+        timeoutInMinutes: 180 # 3 hours
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 180 # 3 hours
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary traffic to 50 percent"
+              onTimeout: "reject"
+
+  - stage: "CanaryTrafficWeight10Percent"
+    displayName: "Canary Traffic weight to 50%"
+    dependsOn: [ ApproveCanaryTrafficWeight50Percent ]
+    condition: eq(dependencies.ApproveCanaryTrafficWeight50Percent.result, 'Succeeded')
+    jobs:
+      - job: Set_TrafficCanaryTo50Percent
+        displayName: Set canary traffic to 50 percent
+        pool:
+          name: pagopa-prod-linux
+        steps:
+          - task: Kubernetes@1
+            displayName: 'Kubernetes Login'
+            # This is needed to run kubectl command from bash.
+            inputs:
+              connectionType: Kubernetes Service Connection
+              kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+              command: 'login'
+          - script: |
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=50 --overwrite
+            displayName: Execute kubectl annotate to set traffic weight to 50 percent
+
+  - stage: "ApproveCanaryTrafficWeight90Percent"
+    displayName: "Approve Canary Traffic weight to 90%"
+    dependsOn: [ Deploy_PROD_Blue ]
+    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    jobs:
+      - job: TrafficCanaryTo90Percent_WaitForApproval
+        displayName: Canary traffic to 90 percent approval
+        pool: server
+        timeoutInMinutes: 180 # 3 hours
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 180 # 3 hours
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary traffic to 90 percent"
+              onTimeout: "reject"
+
+  - stage: "CanaryTrafficWeight10Percent"
+    displayName: "Canary Traffic weight to 90%"
+    dependsOn: [ ApproveCanaryTrafficWeight50Percent ]
+    condition: eq(dependencies.ApproveCanaryTrafficWeight90Percent.result, 'Succeeded')
+    jobs:
+      - job: Set_TrafficCanaryTo90Percent
+        displayName: Set canary traffic to 90 percent
+        pool:
+          name: pagopa-prod-linux
+        steps:
+          - task: Kubernetes@1
+            displayName: 'Kubernetes Login'
+            # This is needed to run kubectl command from bash.
+            inputs:
+              connectionType: Kubernetes Service Connection
+              kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+              command: 'login'
+          - script: |
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=90 --overwrite
+            displayName: Execute kubectl annotate to set traffic weight to 90 percent
+
+  - stage: "ApproveCanaryTrafficWeight0Percent"
+    displayName: "Approve removal of Canary Traffic"
+    dependsOn: [ Deploy_PROD_Blue ]
+    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    jobs:
+      - job: RemoveCanaryTraffic_WaitForApproval
+        displayName: Canary traffic to 0 percent approval
+        pool: server
+        timeoutInMinutes: 180 # 3 hours
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 180 # 3 hours
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary traffic to 0 percent"
+              onTimeout: "reject"
+
+  - stage: "CanaryTrafficWeight0Percent"
+    displayName: "Remove Canary Traffic"
+    dependsOn: [ ApproveCanaryTrafficWeight0Percent ]
+    condition: eq(dependencies.ApproveCanaryTrafficWeight0Percent.result, 'Succeeded')
+    jobs:
+      - job: Set_TrafficCanaryTo10Percent
+        displayName: Remove canary traffic
+        pool:
+          name: pagopa-prod-linux
+        steps:
+          - task: Kubernetes@1
+            displayName: 'Kubernetes Login'
+            # This is needed to run kubectl command from bash.
+            inputs:
+              connectionType: Kubernetes Service Connection
+              kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
+              command: 'login'
+          - script: |
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=0 --overwrite
+            displayName: Remove canary traffic
 
   - stage: "PROD_Green_WaitForApproval"
     displayName: 'PROD green approval deployment'
@@ -430,7 +630,13 @@ stages:
           in(dependencies.Prod_WaitForApproval.result, 'Succeeded')
         )
     ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: Deploy_PROD_Blue
+      dependsOn: [UninstallCanaryDeployment, Prod_WaitForApproval]
+      condition: |
+        and(
+          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+          in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
+          in(dependencies.UninstallCanaryDeployment.result, 'Succeeded')
+        )
     variables:
       release_url: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.releaseUrl'] ]
     jobs:
