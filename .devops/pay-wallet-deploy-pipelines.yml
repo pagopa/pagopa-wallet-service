@@ -181,7 +181,7 @@ stages:
     condition: |
       and(
         succeeded(),
-        eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False)
+        eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False),
         in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
