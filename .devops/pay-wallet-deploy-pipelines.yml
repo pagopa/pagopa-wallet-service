@@ -40,7 +40,7 @@ parameters:
   - name: "UAT_SKIP_BLUE_DEPLOYMENT"
     displayName: "Skip blue/green UAT deployment strategy: activating this parameter no blue version will be created and the pipeline proceed building and deploy artifact green version"
     type: boolean
-    default: True
+    default: False
     values:
       - False
       - True
