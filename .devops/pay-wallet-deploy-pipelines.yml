@@ -238,6 +238,7 @@ stages:
               ENV_FILE: "api-tests/uat.cards.envs.json"
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
 
       - job: newman_api_test_paypal
         displayName: "API Test: Wallet PayPal"
@@ -249,6 +250,7 @@ stages:
               ENV_FILE: "api-tests/uat.paypal.envs.json"
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
 
   - stage: "Bluegreen_WaitForApproval"
     displayName: 'UAT green approval deployment'
@@ -389,6 +391,7 @@ stages:
               ENV_FILE: "api-tests/uat.cards.envs.json"
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
 
       - job: newman_api_test_paypal
         displayName: "API Test: Wallet PayPal"
@@ -400,6 +403,7 @@ stages:
               ENV_FILE: "api-tests/uat.paypal.envs.json"
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
   # --- END Deploy UAT --- #
 
   # --- START Deploy PROD --- #
