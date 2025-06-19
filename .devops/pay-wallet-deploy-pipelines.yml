@@ -530,7 +530,7 @@ stages:
         steps:
           # uninstall helm release used for blue instance
           - task: HelmDeploy@0
-            displayName: Un-install PROD blue version
+            displayName: Un-install PROD canary version
             continueOnError: false
             inputs:
               kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
