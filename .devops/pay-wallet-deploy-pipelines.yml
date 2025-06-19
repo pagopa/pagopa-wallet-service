@@ -175,121 +175,6 @@ stages:
         steps:
           - template: azure-templates/chart-current-version.yml
 
-  - stage: "Deploy_UAT_Blue"
-    displayName: 'UAT blue deployment'
-    dependsOn: [ Tag_Docker_Release, Get_Release_Version ]
-    condition: |
-      and(
-        succeeded(),
-        eq(${{parameters.UAT_SKIP_BLUE_DEPLOYMENT}}, False),
-        in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-          startsWith(variables['Build.SourceBranch'], 'refs/tags')
-        )
-      )
-    variables:
-      green_app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
-    jobs:
-      - deployment: "Blue_deployment"
-        displayName: "Blue deployment"
-        pool:
-          name: pagopa-uat-linux
-        environment: 'UAT'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - checkout: self
-                  displayName: "Checkout"
-                - task: KubectlInstaller@0
-                - task: Bash@3
-                  name: update_chart_version
-                  displayName: 'Setup helm microservice chart'
-                  inputs:
-                    targetType: "inline"
-                    script: |
-                      helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
-                      helm dep build helm
-                - template: azure-templates/helm-microservice-chart-deploy.yml
-                  parameters:
-                    DO_DEPLOY: true
-                    DO_BLUE_GREEN_DEPLOY: true
-                    ENV: 'UAT'
-                    KUBERNETES_SERVICE_CONN: $(UAT_KUBERNETES_SERVICE_CONN)
-                    NAMESPACE: pay-wallet
-                    APP_NAME: $(K8S_IMAGE_REPOSITORY_NAME)-blue
-                    VALUE_FILE: "helm/pay-wallet-values-uat.yaml"
-                    GREEN_VERSION: $(green_app_version)
-                    BLUE_VERSION: $(Build.SourceVersion)
-
-  - stage: "API_UAT_BLUE_test"
-    displayName: 'Running API test on uat blue app'
-    dependsOn: Deploy_UAT_Blue
-    condition: eq(dependencies.Deploy_UAT_Blue.result, 'Succeeded')
-    jobs:
-      - job: newman_api_test_cards
-        displayName: 'API Tests: Wallet Cards'
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
-              TEST_DISPLAY_NAME: "Wallet cards tests"
-              ENV_FILE: "api-tests/uat.cards.envs.json"
-              TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards"
-              API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
-              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-
-      - job: newman_api_test_paypal
-        displayName: "API Test: Wallet PayPal"
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
-              TEST_DISPLAY_NAME: "Wallet PayPal tests"
-              ENV_FILE: "api-tests/uat.paypal.envs.json"
-              TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
-              API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
-              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-
-  - stage: "Bluegreen_WaitForApproval"
-    displayName: 'UAT green approval deployment'
-    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], True) }}:
-      dependsOn: [ Get_Release_Version, Tag_Docker_Release ]
-      condition: |
-        and(
-          in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
-          or(
-            eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags')
-          )
-        )
-    ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: [ Deploy_UAT_Blue ]
-      condition: |
-        and(
-          eq(dependencies.Deploy_UAT_Blue.result, 'Succeeded'),
-          in(dependencies.Tag_Docker_Release.result, 'Succeeded', 'Skipped'),
-          or(
-            eq(variables['Build.SourceBranch'], 'refs/heads/main'),
-            startsWith(variables['Build.SourceBranch'], 'refs/tags')
-          )
-        )
-    variables:
-      commitUrl: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.commitUrl'] ]
-    jobs:
-      - job: Bluegreen_WaitForApproval
-        displayName: Manual blue deploy approval
-        pool: server
-        timeoutInMinutes: 4320 # 3 days
-        steps:
-          - task: ManualValidation@0
-            timeoutInMinutes: 4320 # 3 days
-            inputs:
-              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-              instructions: "Please approve or reject UAT blue green promotions for $(commitUrl)"
-              onTimeout: 'reject'
-
   - stage: "tag_docker_release"
     displayName: 'Tag Docker image to be release'
     dependsOn: Get_Release_Version
@@ -318,15 +203,14 @@ stages:
                 docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion) $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version)
                 docker push $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(app_version)
 
-  - stage: "Deploy_UAT_Green"
-    displayName: 'UAT green deployment'
-    dependsOn: [ tag_docker_release,Get_Release_Version, Bluegreen_WaitForApproval ]
+  - stage: "Deploy_UAT"
+    displayName: 'UAT deployment'
+    dependsOn: [ tag_docker_release,Get_Release_Version ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
         in(dependencies.tag_docker_release.result, 'Succeeded', 'Skipped'),
         eq(dependencies.Get_Release_Version.result, 'Succeeded'),
-        eq(dependencies.Bluegreen_WaitForApproval.result, 'Succeeded'),
         or(
           eq(variables['Build.SourceBranch'], 'refs/heads/main'),
           startsWith(variables['Build.SourceBranch'], 'refs/tags')
@@ -335,8 +219,8 @@ stages:
     variables:
       app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
     jobs:
-      - deployment: "Green_deployment"
-        displayName: "Green deployment"
+      - deployment: "UAT_deployment"
+        displayName: "UAT deployment job"
         pool:
           name: pagopa-uat-linux
         environment: 'UAT'
@@ -344,16 +228,6 @@ stages:
           runOnce:
             deploy:
               steps:
-                - ${{ if eq(parameters['UAT_SKIP_BLUE_DEPLOYMENT'], False) }}:
-                    # uninstall helm release used for blue instance
-                    - task: HelmDeploy@0
-                      displayName: Un-install UAT blue version
-                      continueOnError: false
-                      inputs:
-                        kubernetesServiceEndpoint: $(UAT_KUBERNETES_SERVICE_CONN)
-                        namespace: pay-wallet
-                        command: uninstall
-                        arguments: $(K8S_IMAGE_REPOSITORY_NAME)-blue
                 - checkout: self
                   displayName: "Checkout"
                 - task: KubectlInstaller@0
@@ -376,10 +250,10 @@ stages:
                     VALUE_FILE: "helm/pay-wallet-values-uat.yaml"
                     GREEN_VERSION: $(app_version)
 
-  - stage: "API_UAT_GREEN_test"
-    displayName: 'Running API test on uat green app'
-    dependsOn: Deploy_UAT_Green
-    condition: eq(dependencies.Deploy_UAT_Green.result, 'Succeeded')
+  - stage: "API_UAT__test"
+    displayName: 'Running API test on uat app'
+    dependsOn: Deploy_UAT
+    condition: eq(dependencies.Deploy_UAT.result, 'Succeeded')
     jobs:
       - job: newman_api_test_cards
         displayName: 'API Tests: Wallet Cards'
@@ -409,11 +283,11 @@ stages:
   # --- START Deploy PROD --- #
   - stage: "Prod_WaitForApproval"
     displayName: 'PROD approval deployment'
-    dependsOn: [ Deploy_UAT_Green,Get_Release_Version ]
+    dependsOn: [ Deploy_UAT,Get_Release_Version ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(dependencies.Deploy_UAT_Green.result, 'Succeeded'),
+        eq(dependencies.Deploy_UAT.result, 'Succeeded'),
         eq(dependencies.Get_Release_Version.result, 'Succeeded')
       )
     variables:
@@ -431,23 +305,38 @@ stages:
               instructions: "Please approve or reject PROD promotions for release $(release_url)"
               onTimeout: 'reject'
 
+  - stage: "ProdCanary_WaitForApproval"
+    displayName: "PROD canary approval deployment"
+    dependsOn: Prod_WaitForApproval
+    condition: |
+      and(
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        eq(dependencies.Prod_WaitForApproval.result, 'Succeeded')
+      )
+    variables:
+      app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
+    jobs:
+      - job: ProdCanary_Approval
+        displayName: Manual prod canary deploy approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 4320 # 3 days
+            inputs:
+              notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
+              instructions: "Please approve or reject PROD canary deployment to test $(app_version) in prod environment. Canceling this step will equal to reject."
+              onTimeout: "reject"
+
   - stage: "PROD_Green_WaitForApproval"
     displayName: 'PROD green approval deployment'
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], True) }}:
-      dependsOn: Prod_WaitForApproval
-      condition: |
-        and(
-          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-          in(dependencies.Prod_WaitForApproval.result, 'Succeeded')
-        )
-    ${{ if eq(parameters['PROD_SKIP_BLUE_DEPLOYMENT'], False) }}:
-      dependsOn: [ UninstallCanaryDeployment, Prod_WaitForApproval ]
-      condition: |
-        and(
-          eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-          in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
-          in(dependencies.UninstallCanaryDeployment.result, 'Succeeded')
-        )
+    dependsOn: [ UninstallCanaryDeployment, Prod_WaitForApproval ]
+    condition: |
+      and(
+        eq(${{parameters.UAT_PROD_DEPLOY}}, true),
+        in(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
+        in(dependencies.UninstallCanaryDeployment.result, 'Succeeded')
+      )
     variables:
       release_url: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.releaseUrl'] ]
     jobs:
@@ -501,6 +390,7 @@ stages:
               script: |
                 docker tag $(UAT_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version) $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
                 docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(prod_version)
+
   - stage: "Deploy_PROD_Green"
     displayName: 'PROD green deployment'
     dependsOn: [ Build_PROD_Green,Get_Release_Version ]
@@ -544,21 +434,20 @@ stages:
                     GREEN_VERSION: $(prod_version)
 
 
-  - stage: "Build_PROD_Blue"
-    displayName: 'PROD blue Build'
-    dependsOn: [ Prod_WaitForApproval,Get_Release_Version ]
+  - stage: "Build_PROD_Canary"
+    displayName: 'PROD canary Build'
+    dependsOn: [ ProdCanary_WaitForApproval,Get_Release_Version ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False),
-        eq(dependencies.Prod_WaitForApproval.result, 'Succeeded'),
+        eq(dependencies.ProdCanary_WaitForApproval.result, 'Succeeded'),
         eq(dependencies.Get_Release_Version.result, 'Succeeded')
       )
     variables:
       app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
     jobs:
-      - job: "PROD_image"
-        displayName: 'Build PROD image'
+      - job: "PROD_canary_image"
+        displayName: 'Build PROD canary image'
         steps:
           - task: Docker@2
             displayName: "docker login for UAT"
@@ -583,21 +472,21 @@ stages:
               targetType: "inline"
               script: |
                 docker push $(PROD_CONTAINER_NAMESPACE)/$(K8S_IMAGE_REPOSITORY_NAME):$(Build.SourceVersion)
-  - stage: "Deploy_PROD_Blue"
+
+  - stage: "Deploy_PROD_Canary"
     displayName: 'PROD blue deployment'
-    dependsOn: [ Build_PROD_Blue,Get_Release_Version ]
+    dependsOn: [ Build_PROD_Canary,Get_Release_Version ]
     condition: |
       and(
         eq(${{parameters.UAT_PROD_DEPLOY}}, true),
-        eq(${{parameters.PROD_SKIP_BLUE_DEPLOYMENT}}, False),
-        eq(dependencies.Build_PROD_Blue.result, 'Succeeded'),
+        eq(dependencies.Build_PROD_Canary.result, 'Succeeded'),
         in(dependencies.Get_Release_Version.result, 'Succeeded')
       )
     variables:
       app_version: $[ stageDependencies.Get_Release_Version.get_version.outputs['chart_current_version.appVersion'] ]
     jobs:
-      - deployment: "Blue_PROD_deployment"
-        displayName: "Blue PROD deployment"
+      - deployment: "Canary_PROD_deployment"
+        displayName: "Canary PROD deployment"
         pool:
           name: pagopa-prod-linux
         environment: 'PROD'
@@ -629,8 +518,8 @@ stages:
 
   - stage: "ApproveUninstallCanaryDeployment"
     displayName: "Approve uninstall of Canary instance"
-    dependsOn: [ Deploy_PROD_Blue ]
-    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    dependsOn: [ Deploy_PROD_Canary ]
+    condition: eq(dependencies.Deploy_PROD_Canary.result, 'Succeeded')
     jobs:
       - job: UninstallCanaryDeployment_WaitForApproval
         displayName: Uninstall canary deployment approval
@@ -666,8 +555,8 @@ stages:
 
   - stage: "ApproveCanaryTrafficWeight10Percent"
     displayName: "Approve Canary Traffic weight to 10%"
-    dependsOn: [ Deploy_PROD_Blue ]
-    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    dependsOn: [ Deploy_PROD_Canary ]
+    condition: eq(dependencies.Deploy_PROD_Canary.result, 'Succeeded')
     jobs:
       - job: TrafficCanaryTo10Percent_WaitForApproval
         displayName: Canary traffic to 10 percent approval
@@ -704,8 +593,8 @@ stages:
 
   - stage: "ApproveCanaryTrafficWeight50Percent"
     displayName: "Approve Canary Traffic weight to 50%"
-    dependsOn: [ Deploy_PROD_Blue ]
-    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    dependsOn: [ Deploy_PROD_Canary ]
+    condition: eq(dependencies.Deploy_PROD_Canary.result, 'Succeeded')
     jobs:
       - job: TrafficCanaryTo50Percent_WaitForApproval
         displayName: Canary traffic to 50 percent approval
@@ -742,8 +631,8 @@ stages:
 
   - stage: "ApproveCanaryTrafficWeight90Percent"
     displayName: "Approve Canary Traffic weight to 90%"
-    dependsOn: [ Deploy_PROD_Blue ]
-    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    dependsOn: [ Deploy_PROD_Canary ]
+    condition: eq(dependencies.Deploy_PROD_Canary.result, 'Succeeded')
     jobs:
       - job: TrafficCanaryTo90Percent_WaitForApproval
         displayName: Canary traffic to 90 percent approval
@@ -780,8 +669,8 @@ stages:
 
   - stage: "ApproveCanaryTrafficWeight0Percent"
     displayName: "Approve removal of Canary Traffic"
-    dependsOn: [ Deploy_PROD_Blue ]
-    condition: eq(dependencies.Deploy_PROD_Blue.result, 'Succeeded')
+    dependsOn: [ Deploy_PROD_Canary ]
+    condition: eq(dependencies.Deploy_PROD_Canary.result, 'Succeeded')
     jobs:
       - job: RemoveCanaryTraffic_WaitForApproval
         displayName: Canary traffic to 0 percent approval
