@@ -349,7 +349,7 @@ stages:
             timeoutInMinutes: 4320 # 3 days
             inputs:
               notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-              instructions: "Please approve or reject PROD green promotions for release $(release_url)"
+              instructions: "Please approve or reject to deploy stable version in PROD environment for release $(release_url). No further confirm popup will be asked to approve."
               onTimeout: 'reject'
 
   - stage: "Build_PROD_Green"
@@ -530,7 +530,7 @@ stages:
             timeoutInMinutes: 180 # 3 hours
             inputs:
               notifyUsers: $(APPROVE_TOUCHPOINT_MAIL)
-              instructions: "Please approve or reject PROD canary uninstall"
+              instructions: "Please approve or reject PROD canary uninstall. You need to approve both to proceed to deploy stable version or to discard it. Canceling this step will equal to reject."
               onTimeout: "reject"
 
   - stage: "UninstallCanaryDeployment"
