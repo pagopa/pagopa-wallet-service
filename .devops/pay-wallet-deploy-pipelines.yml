@@ -573,7 +573,7 @@ stages:
               kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
               command: 'login'
           - script: |
-              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=10 --overwrite
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-microservice-blue nginx.ingress.kubernetes.io/canary-weight=10 --overwrite
             displayName: Execute kubectl annotate to set traffic weight to 10 percent
 
   - stage: "ApproveCanaryTrafficWeight50Percent"
@@ -611,7 +611,7 @@ stages:
               kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
               command: 'login'
           - script: |
-              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=50 --overwrite
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-microservice-blue nginx.ingress.kubernetes.io/canary-weight=50 --overwrite
             displayName: Execute kubectl annotate to set traffic weight to 50 percent
 
   - stage: "ApproveCanaryTrafficWeight90Percent"
@@ -649,7 +649,7 @@ stages:
               kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
               command: 'login'
           - script: |
-              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=90 --overwrite
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-microservice-blue nginx.ingress.kubernetes.io/canary-weight=90 --overwrite
             displayName: Execute kubectl annotate to set traffic weight to 90 percent
 
   - stage: "ApproveCanaryTrafficWeight0Percent"
@@ -687,7 +687,7 @@ stages:
               kubernetesServiceEndpoint: $(PROD_KUBERNETES_SERVICE_CONN)
               command: 'login'
           - script: |
-              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-blue-microservice nginx.ingress.kubernetes.io/canary-weight=0 --overwrite
+              kubectl annotate -n pay-wallet ingress/pagopa-pay-wallet-microservice-blue nginx.ingress.kubernetes.io/canary-weight=0 --overwrite
             displayName: Remove canary traffic
   # --- END Deploy PROD --- #
 
