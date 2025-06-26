@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
@@ -61,6 +62,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -87,6 +89,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(MALFORMED_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isBadRequest
@@ -102,6 +105,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(detailsRequest)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -128,6 +132,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(createDetailRequest(contractId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
@@ -149,6 +154,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(createDetailRequest(contractId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatusCode.valueOf(409))
@@ -169,6 +175,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(createDetailRequest(contractId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatusCode.valueOf(409))
@@ -189,6 +196,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/updateDetails")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(createDetailRequest(contractId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatusCode.valueOf(422))
@@ -203,6 +211,7 @@ class MigrationControllerTest {
             .uri("/migrations/wallets/delete")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WalletPmDeleteRequestDto().contractIdentifier(UUID.randomUUID().toString()))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNoContent
@@ -227,5 +236,50 @@ class MigrationControllerTest {
                 .paymentCircuit("VISA")
                 .paymentGatewayCardId(UUID.randomUUID().toString())
                 .expiryDate("12/25")
+    }
+
+    @Test
+    fun `should return unauthorized if request has not api key header`() {
+        val paymentManagerId = Random().nextLong()
+        val userId = UUID.randomUUID()
+        given { migrationService.initializeWalletByPaymentManager(any(), any()) }
+            .willAnswer {
+                WalletTestUtils.walletDocument()
+                    .copy(
+                        userId = (it.arguments[1] as UserId).id.toString(),
+                        contractId = WalletTestUtils.CONTRACT_ID.contractId
+                    )
+                    .toDomain()
+                    .toMono()
+            }
+        webClient
+            .put()
+            .uri("/migrations/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
+
+        argumentCaptor<String> {
+            verify(migrationService).initializeWalletByPaymentManager(capture(), any())
+            assertEquals(lastValue, paymentManagerId.toString())
+        }
+    }
+
+    @Test
+    fun `should return unauthorized if request has wrong api key header`() {
+        val paymentManagerId = Random().nextLong()
+        val userId = UUID.randomUUID()
+
+        webClient
+            .put()
+            .uri("/migrations/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(WalletPmAssociationRequestDto().walletIdPm(paymentManagerId).userId(userId))
+            .header("x-api-key", "super-wrong-api-key")
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
     }
 }

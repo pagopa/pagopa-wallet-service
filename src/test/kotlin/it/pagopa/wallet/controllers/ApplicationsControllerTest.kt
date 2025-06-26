@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -70,6 +71,7 @@ class ApplicationsControllerTest {
             .uri("/applications")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(ApplicationsTestUtils.CREATE_APPLICATION_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isCreated
@@ -101,6 +103,7 @@ class ApplicationsControllerTest {
             .uri("/applications/${DOMAIN_APPLICATION.id.id}")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(ApplicationsTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNoContent
@@ -120,8 +123,45 @@ class ApplicationsControllerTest {
             .uri("/applications/${invalidId}")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(ApplicationsTestUtils.UPDATE_SERVICE_STATUS_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
+    }
+
+    @Test
+    fun `should return unauthorized if request has not api key header`() = runTest {
+        given { applicationsService.createApplication(any(), any()) }
+            .willReturn(
+                mono {
+                    LoggedAction(
+                        DOMAIN_APPLICATION,
+                        ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id)
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        webClient
+            .post()
+            .uri("/applications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(ApplicationsTestUtils.CREATE_APPLICATION_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `should return unauthorized if request has wrong api key header`() = runTest {
+        webClient
+            .post()
+            .uri("/applications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(ApplicationsTestUtils.CREATE_APPLICATION_REQUEST)
+            .header("x-api-key", "super-wrong-api-key")
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
     }
 }
