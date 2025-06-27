@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class JwtTokenIssuerConfigProperties(
     val uri: String,
     val readTimeout: Int,
-    val connectionTimeout: Int
+    val connectionTimeout: Int,
+    val apiKey: String
 )

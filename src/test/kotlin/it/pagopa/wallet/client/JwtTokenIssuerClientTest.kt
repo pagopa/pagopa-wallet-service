@@ -6,20 +6,31 @@ import it.pagopa.generated.jwtIssuer.model.CreateTokenResponse
 import it.pagopa.wallet.exception.JWTTokenGenerationException
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.reactor.mono
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.TestPropertySource
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
+@SpringBootTest
+@TestPropertySource(locations = ["classpath:application.test.properties"])
 class JwtTokenIssuerClientTest {
 
     private val jwtIssuerApi: JwtIssuerApi = mock()
     private val jwtTokenIssuerClient = JwtTokenIssuerClient(jwtIssuerApi)
+    @Autowired lateinit var realJwtIssuerApi: JwtIssuerApi
+    @Value("\${jwt-issuer.apiKey}") lateinit var apiKey: String
 
     @Test
     fun `Should create jwt token successfully`() {
@@ -39,6 +50,40 @@ class JwtTokenIssuerClientTest {
             )
             .expectNext(createTokenResponse)
             .verifyComplete()
+    }
+
+    @Test
+    fun `Should inject api key header when making request to jwt issuer service`() {
+        val createTokenResponse = CreateTokenResponse().token("test")
+        val mockWebServer = MockWebServer()
+        mockWebServer.start(8080)
+
+        val jwtTokenIssuerClient = JwtTokenIssuerClient(realJwtIssuerApi)
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(201)
+                .setBody("""{"token":"test"}""")
+                .addHeader("Content-Type", "application/json")
+        )
+
+        // test and assertions
+        StepVerifier.create(
+                jwtTokenIssuerClient.createToken(
+                    CreateTokenRequest()
+                        .duration(100)
+                        .audience("test")
+                        .privateClaims(mapOf("claim1" to "value1"))
+                )
+            )
+            .expectNext(createTokenResponse)
+            .verifyComplete()
+        val request = mockWebServer.takeRequest()
+
+        // Assert the x-api-key header
+        val apiKeyHeader = request.getHeader("x-api-key")
+        assertEquals(apiKey, apiKeyHeader)
+
+        mockWebServer.shutdown()
     }
 
     @Test

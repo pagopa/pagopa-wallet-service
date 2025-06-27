@@ -163,6 +163,7 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-otel-token-header
     EXPIRATION_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_CONNECTION_STRING: wallet-storage-connection-string
+    JWT_ISSUER_API_KEY: pay-wallet-jwt-issuer-service-active-api-key
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
