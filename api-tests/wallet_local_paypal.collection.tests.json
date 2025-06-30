@@ -2130,11 +2130,6 @@
 						"key": "Accept",
 						"value": "application/json",
 						"type": "text"
-					},
-					{
-						"key": "x-api-key",
-						"value": "{{SECURITY_API_KEY_PRIMARY}}",
-						"type": "text"
 					}
 				],
 				"body": {
