@@ -1982,6 +1982,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
