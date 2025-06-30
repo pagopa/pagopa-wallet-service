@@ -154,7 +154,7 @@ microservice-chart:
     JWT_ISSUER_URI: "https://itnuat.pay-wallet.internal.uat.platform.pagopa.it/pagopa-jwt-issuer-service"
     JWT_ISSUER_READ_TIMEOUT: "10000"
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
-    SECURITY_API_KEY_SECURED_PATHS: "/applications,/migrations,/transactions,/wallets"
+    SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
