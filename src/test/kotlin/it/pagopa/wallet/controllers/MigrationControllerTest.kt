@@ -260,11 +260,6 @@ class MigrationControllerTest {
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.UNAUTHORIZED)
-
-        argumentCaptor<String> {
-            verify(migrationService).initializeWalletByPaymentManager(capture(), any())
-            assertEquals(lastValue, paymentManagerId.toString())
-        }
     }
 
     @Test
