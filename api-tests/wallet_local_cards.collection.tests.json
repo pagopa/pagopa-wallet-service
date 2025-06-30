@@ -2097,7 +2097,7 @@
 			"response": []
 		},
 		{
-			"name": "Create a new application UNHAUTORIZED 401 - Missing api key",
+			"name": "Create a new application UNAUTHORIZED 401 - Missing api key",
 			"event": [
 				{
 					"listen": "test",
@@ -2153,7 +2153,7 @@
 			"response": []
 		},
 		{
-			"name": "Create a new application UNHAUTORIZED 401 - Invalid api key",
+			"name": "Create a new application UNAUTHORIZED 401 - Invalid api key",
 			"event": [
 				{
 					"listen": "test",
