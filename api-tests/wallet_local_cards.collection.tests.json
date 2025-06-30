@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "6ce6d9d6-3af0-4d8c-97cd-dd525b67ce68",
+		"_postman_id": "94398674-b55f-4622-adb3-6cb8e6aa755a",
 		"name": "Wallet CARDS onboarding",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23963988"
+		"_exporter_id": "46258243"
 	},
 	"item": [
 		{
@@ -33,17 +33,18 @@
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
 						"key": "Accept",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -110,6 +111,11 @@
 						"key": "x-client-id",
 						"value": "IO",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -166,6 +172,11 @@
 						"key": "x-client-id",
 						"value": "IO",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -217,6 +228,11 @@
 						"key": "x-client-id",
 						"value": "IO",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -264,6 +280,11 @@
 					{
 						"key": "x-client-id",
 						"value": "IO",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -318,6 +339,11 @@
 						"key": "x-client-id",
 						"value": "IO",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -365,6 +391,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -427,6 +458,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -464,6 +500,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -530,7 +571,8 @@
 							"",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -543,6 +585,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -602,6 +649,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -641,7 +693,8 @@
 							"})",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -651,6 +704,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -692,7 +750,8 @@
 							"    pm.expect(response.title).to.equals(\"Session not found\")",
 							"})"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -702,6 +761,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -745,7 +809,8 @@
 							"    pm.expect(response.details.iframeUrl).to.be.a(\"string\")",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -755,6 +820,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -822,6 +892,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -874,6 +949,11 @@
 					{
 						"key": "Authorization",
 						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -932,6 +1012,11 @@
 						"key": "Authorization",
 						"value": "Bearer {{INVALID_SECURITY_TOKEN}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -983,6 +1068,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1041,6 +1131,11 @@
 						"key": "Authorization",
 						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1097,6 +1192,11 @@
 					{
 						"key": "Authorization",
 						"value": "Bearer {{VALID_SECURITY_TOKEN}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1161,6 +1261,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -1189,7 +1294,8 @@
 							"});",
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -1199,6 +1305,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{invalid-x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1254,6 +1365,11 @@
 					{
 						"key": "x-client-id",
 						"value": "IO",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1312,6 +1428,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -1349,6 +1470,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1413,6 +1539,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -1455,17 +1586,18 @@
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
 						"key": "Accept",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1521,6 +1653,11 @@
 					{
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1588,6 +1725,11 @@
 						"key": "x-client-id",
 						"value": "IO",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1649,6 +1791,11 @@
 						"key": "x-user-id",
 						"value": "{{x-user-id}}",
 						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -1691,17 +1838,18 @@
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
 						"key": "Accept",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					},
 					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -1767,6 +1915,11 @@
 					{
 						"key": "x-client-id",
 						"value": "IO",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
 						"type": "text"
 					}
 				],
@@ -1862,7 +2015,13 @@
 			],
 			"request": {
 				"method": "PATCH",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"status\": \"ERROR\",\n    \"details\": {\n        \"reason\": \"move to error due test\"\n    }\n}",
@@ -1903,7 +2062,13 @@
 			],
 			"request": {
 				"method": "PATCH",
-				"header": [],
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_PRIMARY}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"status\": \"ERROR\",\n    \"details\": {\n        \"reason\": \"move to error due test\"\n    }\n}",
@@ -1923,6 +2088,129 @@
 						"{{INVALID_WALLET_ID}}"
 					]
 				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new application UNHAUTORIZED 401 - Missing api key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const applicationId = pm.response.json().applicationId;",
+							"    pm.expect(applicationId).to.be.a(\"string\");",
+							"    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"applications"
+					]
+				},
+				"description": "Creates a new application"
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new application UNHAUTORIZED 401 - Invalid api key",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const applicationId = pm.response.json().applicationId;",
+							"    pm.expect(applicationId).to.be.a(\"string\");",
+							"    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-api-key",
+						"value": "{{SECURITY_API_KEY_INVALID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"applicationId\": \"PAGOPA\",\n  \"status\": \"ENABLED\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{HOSTNAME}}/applications",
+					"host": [
+						"{{HOSTNAME}}"
+					],
+					"path": [
+						"applications"
+					]
+				},
+				"description": "Creates a new application"
 			},
 			"response": []
 		}

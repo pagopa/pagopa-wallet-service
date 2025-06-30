@@ -1,5 +1,5 @@
 {
-	"id": "2344b916-4f0f-45f8-8c96-1ee7ca59e1e3",
+	"id": "18f24619-97ba-4bbd-abbf-a5f9863100dc",
 	"name": "Wallet local env CARDS",
 	"values": [
 		{
@@ -122,9 +122,27 @@
 			"key": "INVALID_SECURITY_TOKEN",
 			"value": "invalidSecurityToken",
 			"enabled": true
+		},
+		{
+			"key": "SECURITY_API_KEY_PRIMARY",
+			"value": "primary-key",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "SECURITY_API_KEY_SECONDARY",
+			"value": "secondary-key",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "SECURITY_API_KEY_INVALID",
+			"value": "invalid-key",
+			"type": "default",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-11-08T22:30:57.522Z",
-	"_postman_exported_using": "Postman/10.19.17"
+	"_postman_exported_at": "2025-06-30T08:46:34.871Z",
+	"_postman_exported_using": "Postman/11.51.6"
 }
