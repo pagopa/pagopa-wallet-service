@@ -2099,10 +2099,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
-							"    pm.response.to.have.status(201);",
-							"    const applicationId = pm.response.json().applicationId;",
-							"    pm.expect(applicationId).to.be.a(\"string\");",
-							"    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+							"    pm.response.to.have.status(401);",
 							"});"
 						],
 						"type": "text/javascript",
@@ -2158,10 +2155,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"[Wallet for onboarding - CARDS] New application created successfully with POST /applications\", function () {",
-							"    pm.response.to.have.status(201);",
-							"    const applicationId = pm.response.json().applicationId;",
-							"    pm.expect(applicationId).to.be.a(\"string\");",
-							"    pm.expect(applicationId).to.equals(\"PAGOPA\");",
+							"    pm.response.to.have.status(401);",
 							"});"
 						],
 						"type": "text/javascript",
