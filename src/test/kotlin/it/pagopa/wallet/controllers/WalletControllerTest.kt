@@ -113,6 +113,7 @@ class WalletControllerTest {
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isCreated
@@ -202,6 +203,7 @@ class WalletControllerTest {
             .uri("/wallets/${walletId.value}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 SessionInputCardDataDto()
                     .serializeRootDiscriminator(SessionInputCardDataDto::class, "cards")
@@ -250,6 +252,7 @@ class WalletControllerTest {
             .uri("/wallets/${walletId.value}/sessions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 // workaround since this class is the request entrypoint and so discriminator
                 // mapping annotation is not read during serialization
@@ -298,6 +301,7 @@ class WalletControllerTest {
             .post()
             .uri("/wallets/${walletId.value}/sessions/${orderId}/validations")
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .contentType(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus()
@@ -325,6 +329,7 @@ class WalletControllerTest {
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNoContent
@@ -350,6 +355,7 @@ class WalletControllerTest {
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNoContent
@@ -366,6 +372,7 @@ class WalletControllerTest {
         webClient
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isBadRequest
@@ -385,6 +392,7 @@ class WalletControllerTest {
             .delete()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
             .header("x-user-id", userId.id.toString())
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNotFound
@@ -405,6 +413,7 @@ class WalletControllerTest {
             .get()
             .uri("/wallets")
             .header("x-user-id", userId.toString())
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -425,6 +434,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
             .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
@@ -447,6 +457,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
             .header("x-user-id", userId.id.toString())
             .exchange()
             .expectStatus()
@@ -468,6 +479,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -488,6 +500,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -506,6 +519,7 @@ class WalletControllerTest {
         webClient
             .get()
             .uri("/wallets/{walletId}/auth-data", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
             .header("x-user-id", UUID.randomUUID().toString())
             .exchange()
             .expectStatus()
@@ -558,6 +572,7 @@ class WalletControllerTest {
             .uri("/wallets/{walletId}/applications", mapOf("walletId" to walletId.value.toString()))
             .header("x-user-id", userId.id.toString())
             .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isNoContent
@@ -641,6 +656,7 @@ class WalletControllerTest {
                     mapOf("walletId" to walletId.value.toString())
                 )
                 .header("x-user-id", userId.id.toString())
+                .header("x-api-key", "primary-key")
                 .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
                 .exchange()
                 .expectStatus()
@@ -688,6 +704,7 @@ class WalletControllerTest {
                     "/wallets/{walletId}/applications",
                     mapOf("walletId" to walletId.value.toString())
                 )
+                .header("x-api-key", "primary-key")
                 .header("x-user-id", userId.id.toString())
                 .bodyValue(walletUpdateRequest)
                 .exchange()
@@ -740,6 +757,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
@@ -789,6 +807,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
@@ -822,6 +841,7 @@ class WalletControllerTest {
             .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
@@ -851,6 +871,7 @@ class WalletControllerTest {
             .get()
             .uri("/wallets/${walletId}/sessions/${orderId}")
             .header("x-user-id", xUserId.toString())
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isOk
@@ -900,6 +921,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
             )
@@ -969,6 +991,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 """
                 {
@@ -1039,6 +1062,7 @@ class WalletControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("x-user-id", UUID.randomUUID().toString())
                 .header("Authorization", "Bearer $sessionToken")
+                .header("x-api-key", "primary-key")
                 .bodyValue(
                     WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
                 )
@@ -1125,6 +1149,7 @@ class WalletControllerTest {
                     "ERROR"
                 )
             )
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(409)
@@ -1155,6 +1180,7 @@ class WalletControllerTest {
                     "ERROR"
                 )
             )
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isEqualTo(204)
@@ -1175,6 +1201,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
             )
@@ -1221,6 +1248,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(
                 WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
             )
@@ -1267,6 +1295,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT_WITH_ERRORS)
             .exchange()
             .expectStatus()
@@ -1335,6 +1364,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT_WITH_ERRORS)
             .exchange()
             .expectStatus()
@@ -1378,6 +1408,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "primary-key")
             .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
             .exchange()
             .expectStatus()
@@ -1394,5 +1425,47 @@ class WalletControllerTest {
         return objectMapper
             .writeValueAsString(this)
             .replace(clazz.simpleName.toString().replace("Dto", ""), discriminatorValue)
+    }
+
+    @Test
+    fun `should return unauthorized if request has not api key header`() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+        given { walletService.notifyWallet(eq(WalletId(walletId)), any(), any(), any()) }
+            .willReturn(Mono.error(OptimisticLockingFailureException("Optimistic lock error")))
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `should return unauthorized if request has wrong api key header`() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        val sessionToken = "sessionToken"
+
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("Authorization", "Bearer $sessionToken")
+            .header("x-api-key", "super-wrong-api-key")
+            .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
     }
 }

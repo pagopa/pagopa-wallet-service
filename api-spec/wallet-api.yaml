@@ -15,6 +15,8 @@ tags:
       description: Documentation
   - name: migration
     description: Api's dedicate to migration phase
+security:
+  - ApiKeyAuth: [ ]
 servers:
   - url: https://${hostname}
 paths:
@@ -1620,3 +1622,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
