@@ -127,7 +127,10 @@ If you want to customize the application environment, reference this table:
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_TTL_SECONDS                | Payment wallet log event error dead letter queue events time to live in seconds                                                                            | number                   |         |
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_VISIBILITY_TIMEOUT_SECONDS | Payment wallet log event error dead letter queue events visibility timeout in seconds                                                                      | number                   |         |
 | PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_CONNECTION_STRING          | Payment wallet log event error dead letter queue storage account connection string                                                                         | string                   |         |
-
+| JWT_ISSUER_URI                                                        | Jwt issuer service URI connection string                                                                                                                   | string                   |         |
+| JWT_ISSUER_READ_TIMEOUT                                               | Jwt issuer service read timeout                                                                                                                            | string                   |         |
+| JWT_ISSUER_CONNECTION_TIMEOUT                                         | Jwt issuer service connection timeout                                                                                                                      | string                   |         |
+| JWT_ISSUER_API_KEY                                                    | Jwt issuer service API key                                                                                                                                 | string                   |         |
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)

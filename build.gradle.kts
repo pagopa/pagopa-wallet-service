@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "1.10.1"
+version = "1.11.0"
 
 description = "pagopa-wallet-service"
 
@@ -91,6 +91,7 @@ dependencies {
   // Kotlin dependencies
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 configurations {
