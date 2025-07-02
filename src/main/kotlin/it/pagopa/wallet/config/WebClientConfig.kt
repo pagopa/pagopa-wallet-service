@@ -115,6 +115,7 @@ class WebClientConfig {
         val webClient =
             it.pagopa.generated.jwtIssuer.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
+                .defaultHeader("x-api-key", config.apiKey)
                 .baseUrl(config.uri)
                 .build()
         val apiClient = it.pagopa.generated.jwtIssuer.ApiClient(webClient).setBasePath(config.uri)

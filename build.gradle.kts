@@ -91,6 +91,7 @@ dependencies {
   // Kotlin dependencies
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 configurations {
