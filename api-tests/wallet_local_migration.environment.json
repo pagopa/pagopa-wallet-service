@@ -25,6 +25,18 @@
 			"value": "e94b3abf-055c-4d5e-827f-64634453fb10",
 			"type": "default",
 			"enabled": true
+		},
+		{
+			"key": "SECURITY_API_KEY_PRIMARY",
+			"value": "primary-key",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "SECURITY_API_KEY_SECONDARY",
+			"value": "secondary-key",
+			"type": "default",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
