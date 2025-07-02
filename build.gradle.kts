@@ -9,21 +9,23 @@ description = "pagopa-wallet-service"
 
 plugins {
   id("java")
-  id("org.springframework.boot") version "3.0.5"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.0"
-  id("com.diffplug.spotless") version "6.18.0"
-  id("org.openapi.generator") version "6.3.0"
+  id("com.diffplug.spotless") version "6.25.0"
+  id("org.openapi.generator") version "7.2.0"
   id("org.sonarqube") version "4.0.0.2929"
   id("com.dipien.semantic-version") version "2.0.0" apply false
-  kotlin("plugin.spring") version "1.8.10"
-  kotlin("jvm") version "1.8.10"
+  kotlin("plugin.spring") version "2.2.0"
+  kotlin("jvm") version "2.2.0"
   jacoco
   application
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
+tasks.withType<KotlinCompile> {
+  compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+}
 
 repositories { mavenCentral() }
 
@@ -33,10 +35,10 @@ object Deps {
 }
 
 dependencyManagement {
-  imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.0.5") }
-  imports { mavenBom("com.azure.spring:spring-cloud-azure-dependencies:5.13.0") }
+  imports { mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.5") }
+  imports { mavenBom("com.azure.spring:spring-cloud-azure-dependencies:5.22.0") }
   // Kotlin BOM
-  imports { mavenBom("org.jetbrains.kotlin:kotlin-bom:1.7.22") }
+  imports { mavenBom("org.jetbrains.kotlin:kotlin-bom:2.2.0") }
   imports { mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.6.4") }
 }
 
@@ -54,7 +56,7 @@ dependencies {
   implementation("org.glassfish.jaxb:jaxb-runtime")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
-  implementation("org.apache.httpcomponents:httpclient")
+  implementation("org.apache.httpcomponents.client5:httpclient5")
   implementation("com.google.code.findbugs:jsr305:3.0.2")
   implementation("org.projectlombok:lombok")
   implementation("org.openapitools:openapi-generator-gradle-plugin:6.5.0")
@@ -83,10 +85,11 @@ dependencies {
   implementation("com.azure.spring:spring-cloud-azure-starter")
   implementation("com.azure:azure-storage-queue")
   implementation("com.azure:azure-core-serializer-json-jackson")
+  implementation("com.azure:azure-identity")
 
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.mockito:mockito-inline")
+  testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   // Kotlin dependencies
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
@@ -105,8 +108,10 @@ dependencyLocking { lockAllConfigurations() }
 
 sourceSets {
   main {
-    java { srcDirs("$buildDir/generated/src/main/java") }
-    kotlin { srcDirs("src/main/kotlin", "$buildDir/generated/src/main/kotlin") }
+    java { srcDirs("${layout.buildDirectory.get()}/generated/src/main/java") }
+    kotlin {
+      srcDirs("src/main/kotlin", "${layout.buildDirectory.get()}/generated/src/main/kotlin")
+    }
     resources { srcDirs("src/resources") }
   }
 }
@@ -131,7 +136,7 @@ tasks.register<GenerateTask>("wallet") {
 
   generatorName.set("spring")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.wallet.api")
   modelPackage.set("it.pagopa.generated.wallet.model")
   generateApiTests.set(false)
@@ -163,7 +168,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.npg.api")
   modelPackage.set("it.pagopa.generated.npg.model")
   generateApiTests.set(false)
@@ -193,7 +198,7 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.api")
   modelPackage.set("it.pagopa.generated.ecommerce.model")
   generateApiTests.set(false)
@@ -224,7 +229,7 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.api")
   modelPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.model")
   generateApiTests.set(false)
@@ -252,7 +257,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/npg-api/npg-notification-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.npgnotification.api")
   modelPackage.set("it.pagopa.generated.npgnotification.model")
   generateApiTests.set(false)
@@ -284,7 +289,7 @@ tasks.register("jwtIssuer", GenerateTask::class.java) {
   remoteInputSpec.set(
     "https://raw.githubusercontent.com/pagopa/pagopa-jwt-issuer-service/refs/tags/0.3.4/api-spec/v1/openapi.yaml"
   )
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.jwtIssuer.api")
   modelPackage.set("it.pagopa.generated.jwtIssuer.model")
   generateApiTests.set(false)
@@ -317,7 +322,11 @@ tasks.withType<KotlinCompile> {
     "ecommercePaymentMethodV2",
     "jwtIssuer"
   )
-  kotlinOptions.jvmTarget = "17"
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+    apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+  }
 }
 
 tasks.withType(JavaCompile::class.java).configureEach { options.encoding = "UTF-8" }
@@ -328,12 +337,16 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     toggleOffOn()
     targetExclude("build/**/*")
-    ktfmt().kotlinlangStyle()
+    // ktfmt().kotlinlangStyle() - temporarily removed due to PSI compatibility issues with Kotlin 2.2.0
+    trimTrailingWhitespace()
+    endWithNewline()
   }
   kotlinGradle {
     toggleOffOn()
     targetExclude("build/**/*.kts")
-    ktfmt().googleStyle()
+    // ktfmt().googleStyle() - temporarily removed due to PSI compatibility issues with Kotlin 2.2.0
+    trimTrailingWhitespace()
+    endWithNewline()
   }
   java {
     target("**/*.java")
