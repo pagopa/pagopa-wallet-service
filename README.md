@@ -170,7 +170,72 @@ $ ./gradlew test
 
 #### Integration testing
 
-TODO
+The service provides comprehensive API testing through multiple approaches:
+
+##### Option 1: Postman Collections (Recommended)
+
+Pre-built collections are available in the `api-tests/` folder:
+
+- **Card Onboarding**: `wallet_local_cards.collection.tests.json` (17 test scenarios)
+- **PayPal Integration**: `wallet_local_paypal.collection.tests.json` 
+- **Wallet Migration**: `wallet_local_migration.collection.tests.json`
+
+**Using Newman CLI:**
+```shell
+newman run api-tests/wallet_local_cards.collection.tests.json \
+  -e api-tests/wallet_local_cards.environment.json
+```
+
+**Using Postman GUI:**
+1. Import collection and environment files from `api-tests/`
+2. Ensure service is running on `http://localhost:8200`
+3. Run the collection to execute all test scenarios
+
+##### Option 2: Manual API Testing
+
+**Service Health Check:**
+```shell
+curl http://localhost:8200/actuator/health
+```
+
+**Example Workflow:**
+```shell
+# 1. Create Application
+curl -X POST http://localhost:8200/applications \
+  -H "Content-Type: application/json" \
+  -d '{"applicationId": "PAGOPA", "status": "ENABLED"}'
+
+# 2. Create Wallet
+curl -X POST http://localhost:8200/wallets \
+  -H "Content-Type: application/json" \
+  -H "x-user-id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
+  -H "x-client-id: IO" \
+  -d '{
+    "applications": ["PAGOPA"],
+    "useDiagnosticTracing": true,
+    "paymentMethodId": "378d0b4f-8b69-46b0-8215-07785fe1aad4"
+  }'
+
+# 3. Get Wallet Details
+curl -X GET http://localhost:8200/wallets/{WALLET_ID} \
+  -H "x-user-id: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+```
+
+##### Test Coverage
+
+The integration tests cover:
+- **Wallet Lifecycle**: Creation, validation, status updates
+- **Session Management**: Payment sessions and validation
+- **Application Management**: Creation and status control
+- **Authentication**: Header validation and authorization
+- **Error Scenarios**: Invalid inputs, missing resources, conflict states
+- **Payment Methods**: Cards, PayPal, and alternative payment methods
+
+##### Prerequisites
+
+- Service running via `docker compose up`
+- Newman CLI (optional): `npm install -g newman`
+- All containers healthy (verify with `docker ps`)
 
 #### Performance testing
 
