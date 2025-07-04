@@ -58,5 +58,7 @@ object WarmupUtils {
 
     const val USER_ID_HEADER_KEY = "x-user-id"
 
+    const val X_API_KEY_HEADER = "x-api-key"
+
     const val CLIENT_ID_HEADER_KEY = "x-client-id"
 }
