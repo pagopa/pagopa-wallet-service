@@ -152,7 +152,7 @@ $ docker compose up --build
 
 - git
 - gradle
-- jdk-17
+- jdk-21
 
 ### Run the project
 
@@ -180,16 +180,18 @@ The service provides comprehensive API testing through multiple approaches:
 Pre-built collections are available in the `api-tests/` folder:
 
 - **Card Onboarding**: `wallet_local_cards.collection.tests.json` (17 test scenarios)
-- **PayPal Integration**: `wallet_local_paypal.collection.tests.json` 
+- **PayPal Integration**: `wallet_local_paypal.collection.tests.json`
 - **Wallet Migration**: `wallet_local_migration.collection.tests.json`
 
 **Using Newman CLI:**
+
 ```shell
 newman run api-tests/wallet_local_cards.collection.tests.json \
   -e api-tests/wallet_local_cards.environment.json
 ```
 
 **Using Postman GUI:**
+
 1. Import collection and environment files from `api-tests/`
 2. Ensure service is running on `http://localhost:8200`
 3. Run the collection to execute all test scenarios
@@ -197,11 +199,13 @@ newman run api-tests/wallet_local_cards.collection.tests.json \
 ##### Option 2: Manual API Testing
 
 **Service Health Check:**
+
 ```shell
 curl http://localhost:8200/actuator/health
 ```
 
 **Example Workflow:**
+
 ```shell
 # 1. Create Application
 curl -X POST http://localhost:8200/applications \
@@ -227,6 +231,7 @@ curl -X GET http://localhost:8200/wallets/{WALLET_ID} \
 ##### Test Coverage
 
 The integration tests cover:
+
 - **Wallet Lifecycle**: Creation, validation, status updates
 - **Session Management**: Payment sessions and validation
 - **Application Management**: Creation and status control
