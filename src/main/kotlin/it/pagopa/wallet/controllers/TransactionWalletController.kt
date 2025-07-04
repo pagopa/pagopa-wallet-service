@@ -15,6 +15,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -31,6 +32,7 @@ import reactor.core.publisher.Mono
 class TransactionWalletController(
     @Autowired private val walletService: WalletService,
     @Autowired private val loggingEventRepository: LoggingEventRepository,
+    @Value("\${security.apiKey.primary}") private val primaryApiKey: String,
     private val webClient: WebClient = WebClient.create()
 ) : TransactionsApi {
 
@@ -85,6 +87,7 @@ class TransactionWalletController(
             .contentType(MediaType.APPLICATION_JSON)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
             .header(WarmupUtils.CLIENT_ID_HEADER_KEY, "IO")
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .bodyValue(WarmupUtils.createTransactionWalletRequestDto)
             .retrieve()
             .toBodilessEntity()

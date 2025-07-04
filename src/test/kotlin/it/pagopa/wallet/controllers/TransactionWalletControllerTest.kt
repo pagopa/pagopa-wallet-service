@@ -25,9 +25,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -47,6 +49,8 @@ class TransactionWalletControllerTest {
 
     @Autowired private lateinit var webClient: WebTestClient
 
+    @Value("\${security.apiKey.primary}") private lateinit var primaryApiKey: String
+
     private val objectMapper =
         JsonMapper.builder()
             .addModule(JavaTimeModule())
@@ -59,7 +63,7 @@ class TransactionWalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         transactionWalletController =
-            TransactionWalletController(walletService, loggingEventRepository)
+            TransactionWalletController(walletService, loggingEventRepository, primaryApiKey)
     }
 
     @Test
@@ -88,6 +92,7 @@ class TransactionWalletControllerTest {
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isCreated
@@ -129,6 +134,7 @@ class TransactionWalletControllerTest {
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
+            .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
             .isCreated
@@ -166,5 +172,66 @@ class TransactionWalletControllerTest {
             "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
             exception.message
         )
+    }
+
+    @Test
+    fun `should return unauthorized if request has not api key header`() {
+        /* preconditions */
+        val transactionId = UUID.randomUUID()
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+            .willReturn(
+                mono {
+                    Pair(
+                        LoggedAction(
+                            WalletTestUtils.WALLET_DOMAIN,
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
+                        ),
+                        Optional.of(webviewPaymentUrl)
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/transactions/${transactionId}/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-client-id", "IO")
+            .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
+    }
+
+    @Test
+    fun `should return unauthorized if request has wrong api key header`() {
+        /* preconditions */
+        val transactionId = UUID.randomUUID()
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+            .willReturn(
+                mono {
+                    Pair(
+                        LoggedAction(
+                            WalletTestUtils.WALLET_DOMAIN,
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
+                        ),
+                        Optional.of(webviewPaymentUrl)
+                    )
+                }
+            )
+        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
+            .willReturn(Flux.empty())
+        /* test */
+        webClient
+            .post()
+            .uri("/transactions/${transactionId}/wallets")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-api-key", "super-wrong-api-key")
+            .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.UNAUTHORIZED)
     }
 }

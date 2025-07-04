@@ -24,6 +24,7 @@ import java.time.Instant
 import java.util.*
 import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -43,6 +44,7 @@ class WalletController(
     @Autowired private val walletTracing: WalletTracing,
     @Autowired private val loggingEventSyncWriter: LoggingEventSyncWriter,
     @Autowired private val walletEventSinksService: WalletEventSinksService,
+    @Value("\${security.apiKey.primary}") private val primaryApiKey: String,
     private val webClient: WebClient = WebClient.create(),
 ) : WalletsApi {
 
@@ -344,6 +346,7 @@ class WalletController(
             .contentType(MediaType.APPLICATION_JSON)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
             .header(WarmupUtils.CLIENT_ID_HEADER_KEY, "IO")
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .bodyValue(WarmupUtils.walletCreateRequest)
             .retrieve()
             .toBodilessEntity()
@@ -356,6 +359,7 @@ class WalletController(
             .get()
             .uri(URI.create(WarmupUtils.WALLETS_URL))
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -367,6 +371,7 @@ class WalletController(
             .get()
             .uri(WarmupUtils.WALLETS_ID_RESOURCE_URL, mapOf("walletId" to WarmupUtils.mockedUUID))
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -378,6 +383,7 @@ class WalletController(
             .delete()
             .uri(WarmupUtils.WALLETS_ID_RESOURCE_URL, mapOf("walletId" to WarmupUtils.mockedUUID))
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -391,6 +397,7 @@ class WalletController(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WarmupUtils.patchWalletStatusErrorRequest)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -407,6 +414,7 @@ class WalletController(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WarmupUtils.walletApplicationUpdateRequestRequest)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -420,6 +428,7 @@ class WalletController(
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WarmupUtils.sessionInputCardDataRequest)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -434,6 +443,7 @@ class WalletController(
                 mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID)
             )
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
@@ -448,6 +458,7 @@ class WalletController(
                 mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID)
             )
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .contentType(MediaType.APPLICATION_JSON)
             .retrieve()
             .toBodilessEntity()
@@ -464,6 +475,7 @@ class WalletController(
             )
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer securityToken")
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .bodyValue(WarmupUtils.walletNotificationRequest)
             .retrieve()
             .toBodilessEntity()
@@ -478,6 +490,7 @@ class WalletController(
                 "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/auth-data",
                 mapOf("walletId" to WarmupUtils.mockedUUID)
             )
+            .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()
             .block(Duration.ofSeconds(10))
