@@ -25,6 +25,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
@@ -48,6 +49,8 @@ class TransactionWalletControllerTest {
 
     @Autowired private lateinit var webClient: WebTestClient
 
+    @Value("\${security.apiKey.primary}") private lateinit var primaryApiKey: String
+
     private val objectMapper =
         JsonMapper.builder()
             .addModule(JavaTimeModule())
@@ -60,7 +63,7 @@ class TransactionWalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         transactionWalletController =
-            TransactionWalletController(walletService, loggingEventRepository)
+            TransactionWalletController(walletService, loggingEventRepository, primaryApiKey)
     }
 
     @Test
