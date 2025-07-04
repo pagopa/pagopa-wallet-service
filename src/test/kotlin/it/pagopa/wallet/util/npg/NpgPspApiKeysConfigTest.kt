@@ -15,7 +15,7 @@ class NpgPspApiKeysConfigTest {
             "pspId1" : "pspId1-apiKey",
             "pspId2" : "pspId2-apiKey",
             "pspId3" : "pspId3-apiKey"
-       } 
+       }
     """
 
     private val defaultApiKey = "defaultApiKey"
