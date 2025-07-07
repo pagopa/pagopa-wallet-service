@@ -16,7 +16,7 @@ microservice-chart:
       tag: "latest"
     envConfig:
       OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
-    envSecret: {}
+    envSecret: { }
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
     tag: "2.0.0"
@@ -56,9 +56,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: "pay-wallet-workload-identity"
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -66,10 +66,10 @@ microservice-chart:
     allowPrivilegeEscalation: false
   resources:
     requests:
-      memory: "512Mi"
+      memory: "768Mi"
       cpu: "400m"
     limits:
-      memory: "512Mi"
+      memory: "768Mi"
       cpu: "600m"
   autoscaling:
     enable: true
@@ -170,7 +170,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
+  nodeSelector: { }
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -192,7 +192,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: pagopawalletservice
-            namespaces: ["pay-wallet"]
+            namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 48a74dad-26f3-4916-ba45-ddda27d950b1
