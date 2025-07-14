@@ -144,6 +144,17 @@ see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/conn
 $ docker compose up --build
 ```
 
+### MongoDB
+
+You can access the MongoDB database using either [Mongo Express](https://github.com/mongo-express/mongo-express) or
+[MongoDB Compass](https://www.mongodb.com/products/tools/compass)
+
+#### Mongo Express
+
+Go to `http://localhost:8201` and use the following credentials:
+- Username: `admin`
+- Password: `pass`
+
 ---
 
 ## Develop Locally 💻
@@ -194,7 +205,8 @@ newman run api-tests/wallet_local_cards.collection.tests.json \
 
 1. Import collection and environment files from `api-tests/`
 2. Ensure service is running on `http://localhost:8200`
-3. Run the collection to execute all test scenarios
+3. Select an environment
+4. Run the collection to execute all test scenarios
 
 ##### Option 2: Manual API Testing
 
