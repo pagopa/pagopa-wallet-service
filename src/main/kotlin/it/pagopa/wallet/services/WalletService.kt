@@ -569,7 +569,7 @@ class WalletService(
         walletId: WalletId,
         userId: UserId
     ): Mono<Pair<WalletVerifyRequestsResponseDto, LoggedAction<Wallet>>> {
-        return mono { npgSessionRedisTemplate.findById(orderId) }
+        return npgSessionRedisTemplate.findById(orderId)
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
                 walletRepository
@@ -702,7 +702,7 @@ class WalletService(
         securityToken: String,
         walletNotificationRequestDto: WalletNotificationRequestDto
     ): Mono<LoggedAction<Wallet>> {
-        return mono { npgSessionRedisTemplate.findById(orderId) }
+        return npgSessionRedisTemplate.findById(orderId)
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .filter { session -> session.securityToken == securityToken }
             .switchIfEmpty {
@@ -964,7 +964,7 @@ class WalletService(
         walletId: WalletId,
         orderId: String,
     ): Mono<SessionWalletRetrieveResponseDto> {
-        return mono { npgSessionRedisTemplate.findById(orderId) }
+        return npgSessionRedisTemplate.findById(orderId)
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
             .flatMap { session ->
                 walletRepository

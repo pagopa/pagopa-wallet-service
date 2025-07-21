@@ -23,22 +23,23 @@ class UniqueIdUtils(
     }
 
     fun generateUniqueId(): Mono<String> {
-        var isSuccessfullySaved = false
-        var attempt = 0
-        var uniqueId: String = generateRandomIdentifier()
-        while (attempt < MAX_NUMBER_ATTEMPTS && !isSuccessfullySaved) {
-            isSuccessfullySaved =
-                uniqueIdTemplateWrapper.saveIfAbsent(
-                    UniqueIdDocument(uniqueId),
-                    Duration.ofSeconds(60)
-                )!!
-            attempt++
-            if (!isSuccessfullySaved) {
-                uniqueId = generateRandomIdentifier()
+        fun tryGenerate(attempt: Int): Mono<String> {
+            val uniqueId = generateRandomIdentifier()
+            return uniqueIdTemplateWrapper.saveIfAbsent(
+                UniqueIdDocument(uniqueId),
+                Duration.ofSeconds(60)
+            )
+            .flatMap { isSuccessfullySaved ->
+                if(isSuccessfullySaved) {
+                    Mono.just(uniqueId)
+                } else if(attempt >= MAX_NUMBER_ATTEMPTS) {
+                    Mono.error(UniqueIdGenerationException())
+                } else {
+                    tryGenerate(attempt + 1)
+                }
             }
         }
-        return if (!isSuccessfullySaved) Mono.error(UniqueIdGenerationException())
-        else Mono.just(uniqueId)
+        return tryGenerate(1)
     }
 
     private fun generateRandomIdentifier(): String {
