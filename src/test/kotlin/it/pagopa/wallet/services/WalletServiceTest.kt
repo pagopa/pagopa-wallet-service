@@ -1529,7 +1529,7 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -1572,7 +1572,8 @@ class WalletServiceTest {
     @Test
     fun `should throw error when try to validate Wallet and session is not found`() {
         val orderId = UUID.randomUUID().toString()
-        given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { null }
+        //given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.empty())
         walletService
             .validateWalletSession(orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id))
             .test()
@@ -1602,7 +1603,7 @@ class WalletServiceTest {
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
 
                 given { paymentMethodsService.getPaymentMethodById(any()) }
                     .willAnswer { mono { getValidAPMPaymentMethod() } }
@@ -1641,7 +1642,7 @@ class WalletServiceTest {
                 it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
                 val orderId = Instant.now().toString() + "ABCDE"
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { null }
+                given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
                 /* test */
                 StepVerifier.create(
                         walletService.validateWalletSession(
@@ -1678,7 +1679,7 @@ class WalletServiceTest {
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { Mono.just(npgSession) }
                 given { walletRepository.findByIdAndUserId(any(), any()) }.willReturn(Mono.empty())
 
                 /* test */
@@ -1723,7 +1724,7 @@ class WalletServiceTest {
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(mono { walletDocumentInitializedStatus })
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
 
                 /* test */
 
@@ -1772,7 +1773,7 @@ class WalletServiceTest {
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(mono { walletDocumentValidationRequestedStatus })
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
 
                 /* test */
 
@@ -1831,7 +1832,7 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { npgSession }
+            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -1902,7 +1903,7 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { Mono.just(npgSession) }
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -1977,7 +1978,7 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { Mono.just(npgSession) }
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -2052,7 +2053,7 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { npgSession }
+            given { npgSessionRedisTemplate.findById(any()) }.willAnswer { Mono.just(npgSession) }
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -2867,7 +2868,7 @@ class WalletServiceTest {
         val sessionToken = "token"
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(eq(orderId)) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(eq(orderId)) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.empty())
         /* test */
 
@@ -2889,7 +2890,7 @@ class WalletServiceTest {
         val orderId = "orderId"
         val sessionToken = "token"
 
-        given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
+        given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         /* test */
 
         StepVerifier.create(
@@ -2913,7 +2914,7 @@ class WalletServiceTest {
         val sessionWalletId = UUID.randomUUID().toString()
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, sessionWalletId)
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument()))
         /* test */
 
@@ -2937,7 +2938,7 @@ class WalletServiceTest {
         val sessionToken = "token"
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument()))
         /* test */
 
@@ -2964,7 +2965,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
@@ -3016,7 +3017,7 @@ class WalletServiceTest {
 
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
@@ -3069,7 +3070,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
@@ -3119,7 +3120,7 @@ class WalletServiceTest {
             walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
@@ -3161,7 +3162,7 @@ class WalletServiceTest {
     @Test
     fun `find session should throws session not found exception`() {
         /* preconditions */
-        given { npgSessionRedisTemplate.findById(any()) }.willReturn(null)
+        given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         /* test */
 
         StepVerifier.create(walletService.findSessionWallet(USER_ID.id, WALLET_UUID, ORDER_ID))
@@ -3178,7 +3179,7 @@ class WalletServiceTest {
         val sessionToken = "token"
 
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(eq(ORDER_ID)) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(eq(ORDER_ID)) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.empty())
         /* test */
@@ -3197,7 +3198,7 @@ class WalletServiceTest {
         val sessionWalletId = UUID.randomUUID().toString()
 
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, sessionWalletId)
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(any(), any()) }
             .willReturn(Mono.just(walletDocument()))
         /* test */
@@ -3215,7 +3216,7 @@ class WalletServiceTest {
         val sessionToken = "token"
 
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(any(), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocument()))
         /* test */
@@ -3234,7 +3235,7 @@ class WalletServiceTest {
         val sessionToken = "token"
         val walletDocument = walletDocumentValidated()
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocument))
 
@@ -3267,7 +3268,7 @@ class WalletServiceTest {
                 )
             )
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
             .willReturn(Mono.just(walletDocument))
 
@@ -3300,7 +3301,7 @@ class WalletServiceTest {
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         val walletDocumentWithError =
             walletDocument.copy(
@@ -3343,7 +3344,7 @@ class WalletServiceTest {
         val walletDocument = walletDocumentVerifiedWithAPM(mock())
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         val walletDocumentWithError = walletDocumentWithError(notifyRequestDto.operationResult)
 
@@ -3388,7 +3389,7 @@ class WalletServiceTest {
             )
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
 
         val walletDocumentWithError =
@@ -3440,7 +3441,7 @@ class WalletServiceTest {
             )
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
-        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         val walletDocumentValidated =
             walletDocument.copy(
@@ -3547,7 +3548,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.DECLINED,
@@ -3589,7 +3590,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.DECLINED,
@@ -3629,7 +3630,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = operationResult,
@@ -3672,7 +3673,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = operationResult,
@@ -3708,7 +3709,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.DECLINED,
@@ -3744,7 +3745,7 @@ class WalletServiceTest {
         val sessionId = "sessionId"
         val sessionToken = "token"
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
-        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(npgSession)
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
                 operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
