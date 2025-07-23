@@ -504,7 +504,6 @@ class WalletService(
                             wallet.id.value.toString()
                         )
                     )
-                    .toMono()
                     .map {
                         SessionWalletCreateResponseDto()
                             .orderId(orderId)

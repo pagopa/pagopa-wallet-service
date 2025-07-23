@@ -10,8 +10,9 @@ abstract class ReactiveRedisTemplateWrapper<V>(
     private val ttl: Duration
 ) {
 
-    fun save(value: V) {
-        reactiveRedisTemplate.opsForValue()["$keyspace:${getKeyFromEntity(value)}", value!!] = ttl
+    fun save(value: V): Mono<Boolean> {
+        val key = "$keyspace:${getKeyFromEntity(value)}"
+        return reactiveRedisTemplate.opsForValue().set(key, value, ttl)
     }
 
     fun saveIfAbsent(value: V): Mono<Boolean> {
@@ -26,7 +27,9 @@ abstract class ReactiveRedisTemplateWrapper<V>(
             .setIfAbsent("$keyspace:${getKeyFromEntity(value)}", value!!, customTtl)
     }
 
-    fun findById(key: String): Mono<V> = reactiveRedisTemplate.opsForValue()["$keyspace:$key"]
+    fun findById(key: String): Mono<V> {
+        return reactiveRedisTemplate.opsForValue()["$keyspace:$key"]
+    }
 
     protected abstract fun getKeyFromEntity(value: V): String
 }
