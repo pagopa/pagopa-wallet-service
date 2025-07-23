@@ -99,7 +99,7 @@ microservice-chart:
     MONGO_SERVER_SELECTION_TIMEOUT_MS: "2000"
     MONGO_WAITING_QUEUE_MS: "2000"
     MONGO_HEARTBEAT_FREQUENCY_MS: "5000"
-    REDIS_HOST: pagopa-u-itn-pay-wallet-redis.redis.cache.windows.net
+    REDIS_HOST: pagopa-u-itn-pay-wallet-redis-std.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
     WEB_LOGGING_LEVEL: "off"
@@ -158,7 +158,7 @@ microservice-chart:
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
-    REDIS_PASSWORD: redis-wallet-password
+    REDIS_PASSWORD: redis-std-wallet-password
     ECOMMERCE_PAYMENT_METHODS_API_KEY: payment-method-api-key
     WALLET_ONBOARDING_PAYPAL_PSP_API_KEY: paypal-psp-api-key
     NPG_NOTIFICATIONS_JWT_SECRET_KEY: npg-notifications-jwt-secret-key
