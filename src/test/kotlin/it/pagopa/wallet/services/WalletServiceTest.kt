@@ -870,7 +870,7 @@ class WalletServiceTest {
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given {
                     jwtTokenIssuerClient.createToken(
                         createTokenRequest = any(),
@@ -1048,7 +1048,7 @@ class WalletServiceTest {
             given { jwtTokenIssuerClient.createToken(createTokenRequest = anyOrNull()) }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
 
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -1169,7 +1169,7 @@ class WalletServiceTest {
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
@@ -1288,7 +1288,7 @@ class WalletServiceTest {
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(eq(npgSession)) }
-                .willAnswer { mono { npgSession } }
+                .willAnswer { Mono.just(true) }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = anyOrNull()) }
                 .willAnswer { mono { CreateTokenResponse().token(sessionToken) } }
             /* test */
@@ -1426,7 +1426,7 @@ class WalletServiceTest {
             val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given {
                     jwtTokenIssuerClient.createToken(
                         createTokenRequest = any(),
@@ -4450,7 +4450,7 @@ class WalletServiceTest {
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
+            given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
