@@ -1572,7 +1572,6 @@ class WalletServiceTest {
     @Test
     fun `should throw error when try to validate Wallet and session is not found`() {
         val orderId = UUID.randomUUID().toString()
-        //given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.empty())
         walletService
             .validateWalletSession(orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id))
@@ -3522,7 +3521,6 @@ class WalletServiceTest {
         /* preconditions */
         given { walletRepository.findByIdAndUserId(any(), any()) }
             .willReturn(Mono.just(walletDocument))
-        given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
 
         /* test */
         StepVerifier.create(
@@ -3804,8 +3802,6 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentCreatedStatus))
 
-            given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
@@ -3822,6 +3818,8 @@ class WalletServiceTest {
                             .audience("npg")
                             .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
                 )
+            verify(walletRepository, times(0)).save(any())
+            verify(npgSessionRedisTemplate, times(0)).save(any())
         }
     }
 
@@ -3843,7 +3841,6 @@ class WalletServiceTest {
     ) {
         val wallet = walletDocument().copy(status = state.value)
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(wallet))
-        given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
 
         walletService
             .patchWalletStateToError(walletId = WalletId.of(wallet.id), reason = "Any reason")
@@ -3851,7 +3848,10 @@ class WalletServiceTest {
             .assertNext { assertEquals(it.status, wallet.status) }
             .verifyComplete()
 
-        argumentCaptor<Wallet> { verify(walletRepository, times(0)).save(capture()) }
+        argumentCaptor<Wallet> {
+            verify(walletRepository, times(1)).findById(any<String>())
+            verify(walletRepository, times(0)).save(capture())
+        }
     }
 
     @ParameterizedTest
@@ -3915,29 +3915,17 @@ class WalletServiceTest {
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
-            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
-
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
             val walletDocumentInitialized = walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
             val sessionToken = "sessionToken"
 
-            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                .willAnswer { mono { npgFields } }
-
             val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentInitialized))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -3961,6 +3949,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(any())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = anyOrNull())
@@ -3991,12 +3980,6 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocument))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -4020,6 +4003,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(any())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = any())
@@ -4047,8 +4031,6 @@ class WalletServiceTest {
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
 
-            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
-
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
             val walletDocumentValidationRequested =
@@ -4056,21 +4038,11 @@ class WalletServiceTest {
 
             val sessionToken = "sessionToken"
 
-            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                .willAnswer { mono { npgFields } }
-
             val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentValidationRequested))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -4094,6 +4066,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(any())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = anyOrNull())
@@ -4124,12 +4097,6 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocument))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -4153,6 +4120,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(walletArgumentCaptor.capture())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = anyOrNull())
@@ -4185,12 +4153,6 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocument))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -4214,6 +4176,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(any())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = anyOrNull())
@@ -4246,12 +4209,6 @@ class WalletServiceTest {
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocument))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-
-            given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
-                .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
-
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -4275,6 +4232,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(0)).generateUniqueId()
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(0)).save(any())
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
             verify(npgSessionRedisTemplate, times(0)).save(any())
             verify(jwtTokenIssuerClient, times(0)).createToken(createTokenRequest = anyOrNull())
@@ -4328,17 +4286,11 @@ class WalletServiceTest {
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
-            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
-                .willAnswer { mono { npgFields } }
-
             val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
 
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(Mono.just(walletDocumentCreatedStatus))
 
-            given { walletRepository.save(walletArgumentCaptor.capture()) }
-                .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(any()) }.willAnswer { mono { npgSession } }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = any()) }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
@@ -4350,6 +4302,10 @@ class WalletServiceTest {
                     )
                 )
                 .verifyError(InternalServerErrorException::class.java)
+
+            verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
+            verify(walletRepository, times(0)).save(walletArgumentCaptor.capture())
+            verify(npgSessionRedisTemplate, times(0)).save(any())
         }
     }
 
@@ -4476,6 +4432,7 @@ class WalletServiceTest {
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletArgumentCaptor.capture())
             verify(jwtTokenIssuerClient, times(1))
                 .createToken(
                     createTokenRequest =
