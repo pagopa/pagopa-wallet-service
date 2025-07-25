@@ -57,7 +57,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(paymentMethodResponse)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.just(paymentMethodResponse))
 
         paymentMethodsService.subscribePaymentMethodCacheSaveSink()
 
@@ -81,7 +81,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
             .willReturn(mono { paymentMethodResponse })
 
@@ -107,7 +107,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
             .willReturn(
                 Mono.error(
@@ -140,7 +140,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
             .willReturn(mono { paymentMethodResponse })
         given { paymentMethodsRedisTemplate.save(any()) }
@@ -168,7 +168,7 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(null)
+        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.empty())
         given { ecommercePaymentMethodsClient.getPaymentMethodById(any()) }
             .willReturn(mono { paymentMethodResponse })
         given { paymentMethodCacheSaveSink.tryEmitNext(any()) }

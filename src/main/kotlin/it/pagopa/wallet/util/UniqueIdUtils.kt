@@ -7,7 +7,10 @@ import java.security.SecureRandom
 import java.time.Duration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.stream.IntStream
+import kotlin.streams.toList
 
 @Component
 class UniqueIdUtils(
@@ -23,22 +26,19 @@ class UniqueIdUtils(
     }
 
     fun generateUniqueId(): Mono<String> {
-        var isSuccessfullySaved = false
-        var attempt = 0
-        var uniqueId: String = generateRandomIdentifier()
-        while (attempt < MAX_NUMBER_ATTEMPTS && !isSuccessfullySaved) {
-            isSuccessfullySaved =
+        return Mono.just(generateRandomIdentifier())
+            .flatMap { uniqueId ->
                 uniqueIdTemplateWrapper.saveIfAbsent(
                     UniqueIdDocument(uniqueId),
                     Duration.ofSeconds(60)
-                )!!
-            attempt++
-            if (!isSuccessfullySaved) {
-                uniqueId = generateRandomIdentifier()
+                ).map { savedSuccessfully -> Pair(uniqueId, savedSuccessfully) }
+            }.filter { (_, savedSuccessfully) -> savedSuccessfully }
+            .onErrorResume {
+                Mono.empty()
             }
-        }
-        return if (!isSuccessfullySaved) Mono.error(UniqueIdGenerationException())
-        else Mono.just(uniqueId)
+            .map { (uniqueId, _) -> uniqueId }
+            .repeatWhenEmpty { Flux.fromIterable(IntStream.range(0, MAX_NUMBER_ATTEMPTS - 1).toList()) }
+            .switchIfEmpty(Mono.error { UniqueIdGenerationException() })
     }
 
     private fun generateRandomIdentifier(): String {

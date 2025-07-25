@@ -8,9 +8,10 @@ import java.time.Duration
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.connection.RedisConnectionFactory
-import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
@@ -18,16 +19,21 @@ class RedisConfiguration {
 
     @Bean
     fun paymentMethodsRedisTemplate(
-        redisConnectionFactory: RedisConnectionFactory,
+        reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory,
         @Value("\${payment-methods.cache.ttlSeconds}") ttlSeconds: Long,
     ): PaymentMethodsTemplateWrapper {
-        val paymentMethodsRedisTemplate = RedisTemplate<String, PaymentMethodResponse>()
-        paymentMethodsRedisTemplate.connectionFactory = redisConnectionFactory
-        val jackson2JsonRedisSerializer =
-            buildJackson2RedisSerializer(PaymentMethodResponse::class.java)
-        paymentMethodsRedisTemplate.valueSerializer = jackson2JsonRedisSerializer
-        paymentMethodsRedisTemplate.keySerializer = StringRedisSerializer()
-        paymentMethodsRedisTemplate.afterPropertiesSet()
+        val keySerializer = StringRedisSerializer()
+        val valueSerializer = buildJackson2RedisSerializer(PaymentMethodResponse::class.java)
+
+        val serializationContext =
+            RedisSerializationContext.newSerializationContext<String, PaymentMethodResponse>(
+                keySerializer
+            )
+                .value(valueSerializer)
+                .build()
+
+        val paymentMethodsRedisTemplate = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+
         return PaymentMethodsTemplateWrapper(
             paymentMethodsRedisTemplate,
             Duration.ofSeconds(ttlSeconds)
@@ -36,28 +42,40 @@ class RedisConfiguration {
 
     @Bean
     fun npgSessionRedisTemplate(
-        redisConnectionFactory: RedisConnectionFactory,
+        reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory,
         @Value("\${wallet.session.ttlSeconds}") ttlSeconds: Long,
     ): NpgSessionsTemplateWrapper {
-        val npgSessionRedisTemplate = RedisTemplate<String, NpgSession>()
-        npgSessionRedisTemplate.connectionFactory = redisConnectionFactory
-        val jackson2JsonRedisSerializer = buildJackson2RedisSerializer(NpgSession::class.java)
-        npgSessionRedisTemplate.valueSerializer = jackson2JsonRedisSerializer
-        npgSessionRedisTemplate.keySerializer = StringRedisSerializer()
-        npgSessionRedisTemplate.afterPropertiesSet()
+        val keySerializer = StringRedisSerializer()
+        val valueSerializer = buildJackson2RedisSerializer(NpgSession::class.java)
+
+        val serializationContext =
+            RedisSerializationContext.newSerializationContext<String, NpgSession>(
+                keySerializer
+            )
+                .value(valueSerializer)
+                .build()
+
+        val npgSessionRedisTemplate = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+
         return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofSeconds(ttlSeconds))
     }
 
     @Bean
     fun uniqueIdRedisTemplate(
-        redisConnectionFactory: RedisConnectionFactory
+        reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory
     ): UniqueIdTemplateWrapper {
-        val uniqueIdTemplateWrapper = RedisTemplate<String, UniqueIdDocument>()
-        uniqueIdTemplateWrapper.connectionFactory = redisConnectionFactory
-        val jackson2JsonRedisSerializer = buildJackson2RedisSerializer(UniqueIdDocument::class.java)
-        uniqueIdTemplateWrapper.valueSerializer = jackson2JsonRedisSerializer
-        uniqueIdTemplateWrapper.keySerializer = StringRedisSerializer()
-        uniqueIdTemplateWrapper.afterPropertiesSet()
+        val keySerializer = StringRedisSerializer()
+        val valueSerializer = buildJackson2RedisSerializer(UniqueIdDocument::class.java)
+
+        val serializationContext =
+            RedisSerializationContext.newSerializationContext<String, UniqueIdDocument>(
+                keySerializer
+            )
+                .value(valueSerializer)
+                .build()
+
+        val uniqueIdTemplateWrapper = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+
         return UniqueIdTemplateWrapper(uniqueIdTemplateWrapper, Duration.ofSeconds(60))
     }
 
