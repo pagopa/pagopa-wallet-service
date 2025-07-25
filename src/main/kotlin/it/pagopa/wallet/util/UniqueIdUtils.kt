@@ -23,20 +23,21 @@ class UniqueIdUtils(
     }
 
     fun generateUniqueId(): Mono<String> {
-        fun tryGenerate(attempt: Int): Mono<String> {
-            val uniqueId = generateRandomIdentifier()
-            return uniqueIdTemplateWrapper.saveIfAbsent(
-                UniqueIdDocument(uniqueId),
-                Duration.ofSeconds(60)
-            )
-            .flatMap { isSuccessfullySaved ->
-                if(isSuccessfullySaved) {
-                    Mono.just(uniqueId)
-                } else if(attempt >= MAX_NUMBER_ATTEMPTS) {
-                    Mono.error(UniqueIdGenerationException())
-                } else {
-                    tryGenerate(attempt + 1)
-                }
+    fun generateUniqueId(): Mono<String> {
+        return Mono.just(generateRandomIdentifier())
+            .flatMap { uniqueId ->
+                uniqueIdTemplateWrapper.saveIfAbsent(
+                    UniqueIdDocument(uniqueId),
+                    Duration.ofSeconds(60)
+                ).map { savedSuccessfully -> Pair(uniqueId, savedSuccessfully) }
+            }.filter { (_, savedSuccessfully) -> savedSuccessfully }
+            .onErrorResume {
+                Mono.empty()
+            }
+            .map { (uniqueId, _) -> uniqueId }
+            .repeatWhenEmpty { Flux.fromIterable(IntStream.range(0, MAX_NUMBER_ATTEMPTS - 1).toList()) }
+            .switchIfEmpty(Mono.error { UniqueIdGenerationException() })
+    }
             }
         }
         return tryGenerate(1)
