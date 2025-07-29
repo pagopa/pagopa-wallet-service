@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 class UniqueIdUtilsTest {
@@ -19,7 +20,7 @@ class UniqueIdUtilsTest {
 
     @Test
     fun shouldGenerateUniqueIdGenerateException() {
-        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(false)
+        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(Mono.just(false))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectErrorMatches {
                 it as UniqueIdGenerationException
@@ -32,7 +33,7 @@ class UniqueIdUtilsTest {
     @Test
     fun shouldGenerateUniqueIdWithRetry() {
         Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any()))
-            .thenReturn(false, false, true)
+            .thenReturn(Mono.just(false), Mono.just(false), Mono.just(true))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectNextMatches { response ->
                 response.length == 18 && response.startsWith(PRODUCT_PREFIX)
@@ -43,7 +44,7 @@ class UniqueIdUtilsTest {
 
     @Test
     fun shouldGenerateUniqueIdNoRetry() {
-        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(true)
+        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(Mono.just(true))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectNextMatches { response ->
                 response.length == 18 && response.startsWith(PRODUCT_PREFIX)

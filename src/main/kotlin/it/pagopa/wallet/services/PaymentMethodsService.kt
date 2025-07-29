@@ -3,7 +3,6 @@ package it.pagopa.wallet.services
 import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,10 +33,8 @@ class PaymentMethodsService(
     }
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
-        mono(Dispatchers.IO) {
-                logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]")
-                paymentMethodsRedisTemplate.findById(paymentMethodId)
-            }
+            paymentMethodsRedisTemplate.findById(paymentMethodId)
+            .doFirst { logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]") }
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
@@ -61,12 +58,8 @@ class PaymentMethodsService(
         paymentMethodCacheSaveSink
             .asFlux()
             .flatMap { paymentMethodResponse ->
-                mono(Dispatchers.IO) {
-                        logger.debug(
-                            "Save payment method into cache: [${paymentMethodResponse.id}]"
-                        )
-                        paymentMethodsRedisTemplate.save(paymentMethodResponse)
-                    }
+                logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
+                paymentMethodsRedisTemplate.save(paymentMethodResponse)
                     .doOnError {
                         logger.error(
                             "Error saving payment method into cache: [${paymentMethodResponse.id}]"
