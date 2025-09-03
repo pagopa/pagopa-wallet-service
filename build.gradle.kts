@@ -13,7 +13,7 @@ plugins {
   id("io.spring.dependency-management") version "1.1.0"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.openapi.generator") version "7.2.0"
-  id("org.sonarqube") version "4.0.0.2929"
+  id("org.sonarqube") version "6.2.0.5505"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   kotlin("plugin.spring") version "2.2.0"
   kotlin("jvm") version "2.2.0"
