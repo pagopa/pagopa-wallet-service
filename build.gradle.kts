@@ -13,7 +13,7 @@ plugins {
   id("io.spring.dependency-management") version "1.1.0"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.openapi.generator") version "7.2.0"
-  id("org.sonarqube") version "4.0.0.2929"
+  id("org.sonarqube") version "6.2.0.5505"
   id("com.dipien.semantic-version") version "2.0.0" apply false
   kotlin("plugin.spring") version "2.2.0"
   kotlin("jvm") version "2.2.0"
@@ -39,6 +39,16 @@ repositories { mavenCentral() }
 object Deps {
   const val ecsLoggingVersion = "1.5.0"
   const val openTelemetryVersion = "1.37.0"
+  const val swaggerAnnotationsVersion = "2.2.8"
+  const val jsr305Version = "3.0.2"
+  const val openapiGeneratorVersion = "6.5.0"
+  const val jacksonDatabindNullableVersion = "0.2.6"
+  const val nettyResolverVersion = "4.1.90.Final"
+  const val vavrVersion = "0.10.4"
+  const val jjwtVersion = "0.11.5"
+  const val mockitoInlineVersion = "5.2.0"
+  const val mockitoKotlinVersion = "4.0.0"
+  const val mockWebServerVersion = "4.12.0"
 }
 
 dependencyManagement {
@@ -62,19 +72,19 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web-services")
   implementation("org.glassfish.jaxb:jaxb-runtime")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api")
-  implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+  implementation("io.swagger.core.v3:swagger-annotations:${Deps.swaggerAnnotationsVersion}")
   implementation("org.apache.httpcomponents.client5:httpclient5")
-  implementation("com.google.code.findbugs:jsr305:3.0.2")
+  implementation("com.google.code.findbugs:jsr305:${Deps.jsr305Version}")
   implementation("org.projectlombok:lombok")
-  implementation("org.openapitools:openapi-generator-gradle-plugin:6.5.0")
-  implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+  implementation("org.openapitools:openapi-generator-gradle-plugin:${Deps.openapiGeneratorVersion}")
+  implementation("org.openapitools:jackson-databind-nullable:${Deps.jacksonDatabindNullableVersion}")
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.springframework.boot:spring-boot-starter-aop")
-  implementation("io.netty:netty-resolver-dns-native-macos:4.1.90.Final")
-  implementation("io.vavr:vavr:0.10.4")
-  implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-  implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
-  implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+  implementation("io.netty:netty-resolver-dns-native-macos:${Deps.nettyResolverVersion}")
+  implementation("io.vavr:vavr:${Deps.vavrVersion}")
+  implementation("io.jsonwebtoken:jjwt-api:${Deps.jjwtVersion}")
+  implementation("io.jsonwebtoken:jjwt-impl:${Deps.jjwtVersion}")
+  implementation("io.jsonwebtoken:jjwt-jackson:${Deps.jjwtVersion}")
   // Kotlin dependencies
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
@@ -96,12 +106,12 @@ dependencies {
 
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.mockito:mockito-inline:5.2.0")
+  testImplementation("org.mockito:mockito-inline:${Deps.mockitoInlineVersion}")
   testImplementation("io.projectreactor:reactor-test")
   // Kotlin dependencies
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-  testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:${Deps.mockitoKotlinVersion}")
+  testImplementation("com.squareup.okhttp3:mockwebserver:${Deps.mockWebServerVersion}")
 }
 
 configurations {
@@ -129,7 +139,9 @@ springBoot {
   buildInfo { properties { additional.set(mapOf("description" to project.description)) } }
 }
 
-tasks.create("applySemanticVersionPlugin") {
+tasks.register("applySemanticVersionPlugin") {
+  description = "Apply semantic versioning plugin for automated version management"
+  group = "semantic-versioning"
   dependsOn("prepareKotlinBuildScriptModel")
   apply(plugin = "com.dipien.semantic-version")
 }
@@ -173,6 +185,7 @@ tasks.register<GenerateTask>("wallet") {
 }
 
 tasks.register("nexiNpg", GenerateTask::class.java) {
+  description = "Generate Nexi NPG client API from OpenAPI specification"
   group = "openapi-generation"
   generatorName.set("java")
   inputSpec.set("$rootDir/npg-api/npg-api.yaml")
@@ -201,6 +214,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
 }
 
 tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
+  description = "Generate eCommerce Payment Method Client v1 from remote OpenAPI specification"
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
@@ -262,6 +276,7 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
 }
 
 tasks.register("nexiNpgNotification", GenerateTask::class.java) {
+  description = "Generate Nexi NPG notification API client using Kotlin Spring"
   group = "openapi-generation"
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/npg-api/npg-notification-api.yaml")
@@ -292,6 +307,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
 }
 
 tasks.register("jwtIssuer", GenerateTask::class.java) {
+  description = "Generate JWT Issuer service client from remote OpenAPI specification"
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
