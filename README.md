@@ -1,6 +1,7 @@
 # PagoPA Wallet Service
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-wallet-service&metric=alert_status)](https://sonarcloud.io/dashboard?id=pagopa_pagopa-wallet-service)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=pagopa_pagopa-wallet-service&metric=coverage)](https://sonarcloud.io/summary/new_code?id=pagopa_pagopa-wallet-service)
 
 This microservice is responsible for keeping wallets inside the PagoPA platform.
 Wallets are collections of payment instruments with a wallet identifier, and may be used both for guest and for
