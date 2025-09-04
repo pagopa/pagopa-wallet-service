@@ -1,11 +1,15 @@
 package it.pagopa.wallet.util.converters.mongo
 
 import it.pagopa.wallet.exception.UniqueIdGenerationException
+import it.pagopa.wallet.repositories.UniqueIdDocument
 import it.pagopa.wallet.repositories.UniqueIdTemplateWrapper
 import it.pagopa.wallet.util.UniqueIdUtils
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -18,16 +22,25 @@ class UniqueIdUtilsTest {
 
     private val PRODUCT_PREFIX = "W"
 
+    private val uniqueIdSaveArgumentCaptor = argumentCaptor<UniqueIdDocument>()
+
     @Test
-    fun shouldGenerateUniqueIdGenerateException() {
-        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(Mono.just(false))
+    fun shouldThrowUniqueIdGenerateExceptionOnExhaustedAttemptsGeneratingId() {
+        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(uniqueIdSaveArgumentCaptor.capture(), any()))
+            .thenReturn(Mono.just(false))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectErrorMatches {
                 it as UniqueIdGenerationException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
             }
             .verify()
-        Mockito.verify(uniqueIdTemplateWrapper, Mockito.times(3)).saveIfAbsent(any(), any())
+        verify(uniqueIdTemplateWrapper, Mockito.times(3)).saveIfAbsent(any(), any())
+        val savedIds = uniqueIdSaveArgumentCaptor.allValues.map { it.id }.toSet()
+        //check that there were attempt saving MAX_NUMBER_ATTEMPTS different elements
+        assertTrue(
+            savedIds.size == UniqueIdUtils.MAX_NUMBER_ATTEMPTS,
+            "saved ids: $savedIds, expected ${UniqueIdUtils.MAX_NUMBER_ATTEMPTS} different values"
+        )
     }
 
     @Test
