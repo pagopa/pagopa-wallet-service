@@ -139,7 +139,7 @@ springBoot {
   buildInfo { properties { additional.set(mapOf("description" to project.description)) } }
 }
 
-tasks.register("applySemanticVersionPlugin") {
+tasks.create("applySemanticVersionPlugin") {
   description = "Apply semantic versioning plugin for automated version management"
   group = "semantic-versioning"
   dependsOn("prepareKotlinBuildScriptModel")
