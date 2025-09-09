@@ -3,12 +3,12 @@ package it.pagopa.wallet.util
 import it.pagopa.wallet.exception.UniqueIdGenerationException
 import it.pagopa.wallet.repositories.UniqueIdDocument
 import it.pagopa.wallet.repositories.UniqueIdTemplateWrapper
-import java.security.SecureRandom
-import java.time.Duration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.security.SecureRandom
+import java.time.Duration
 import java.util.stream.IntStream
 import kotlin.streams.toList
 
@@ -17,6 +17,7 @@ class UniqueIdUtils(
     @Autowired private val uniqueIdTemplateWrapper: UniqueIdTemplateWrapper,
 ) {
     private val secureRandom = SecureRandom()
+
     companion object {
         const val ALPHANUMERICS: String =
             "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._"
@@ -26,7 +27,7 @@ class UniqueIdUtils(
     }
 
     fun generateUniqueId(): Mono<String> {
-        return Mono.just(generateRandomIdentifier())
+        return Mono.fromSupplier { generateRandomIdentifier() }
             .flatMap { uniqueId ->
                 uniqueIdTemplateWrapper.saveIfAbsent(
                     UniqueIdDocument(uniqueId),
