@@ -8,6 +8,5 @@ class NpgClientException(private val description: String, private val httpStatus
         RestApiException(
             httpStatus = httpStatusCode,
             description = description,
-            title = "Npg Invocation exception"
-        )
+            title = "Npg Invocation exception")
 }

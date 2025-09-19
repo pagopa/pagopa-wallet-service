@@ -30,9 +30,7 @@ class WalletEventSinksService(
                 walletEventSink.emitNext(
                     loggedAction,
                     EmitFailureHandler.busyLooping(
-                        Duration.ofMillis(retrySavePolicyConfig.emitBusyLoopDurationInMillis)
-                    )
-                )
+                        Duration.ofMillis(retrySavePolicyConfig.emitBusyLoopDurationInMillis)))
             }
             .map { loggedAction }
             .doOnNext { logger.debug("Logging event emitted") }
@@ -51,15 +49,12 @@ class WalletEventSinksService(
                     .retryWhen(
                         Retry.backoff(
                                 retrySavePolicyConfig.maxAttempts,
-                                Duration.ofSeconds(retrySavePolicyConfig.intervalInSeconds)
-                            )
+                                Duration.ofSeconds(retrySavePolicyConfig.intervalInSeconds))
                             .filter { t -> t is Exception }
                             .doBeforeRetry { signal ->
                                 logger.warn(
-                                    "Retrying writing event on CDC queue due to: ${signal.failure().message}"
-                                )
-                            }
-                    )
+                                    "Retrying writing event on CDC queue due to: ${signal.failure().message}")
+                            })
                     .doOnError { logger.error("Exception while processing wallet event: ", it) }
                     .onErrorReturn(loggedAction)
             }

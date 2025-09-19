@@ -8,8 +8,5 @@ class EcommercePaymentMethodException(
 ) : ApiError(description) {
     override fun toRestException() =
         RestApiException(
-            httpStatus = httpStatusCode,
-            description = description,
-            title = "Payment Method Error"
-        )
+            httpStatus = httpStatusCode, description = description, title = "Payment Method Error")
 }

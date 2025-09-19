@@ -18,6 +18,7 @@ class ApiKeyFilter(
 ) : WebFilter {
     private var logger: Logger = LoggerFactory.getLogger(this.javaClass)
     private val validApiKeys = setOf(primaryApiKey, secondaryApiKey)
+
     /*
      * @formatter:off
      *

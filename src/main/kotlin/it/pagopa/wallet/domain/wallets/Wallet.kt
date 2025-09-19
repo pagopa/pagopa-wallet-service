@@ -71,8 +71,7 @@ data class Wallet(
             setOf(
                 WalletStatusDto.CREATED,
                 WalletStatusDto.INITIALIZED,
-                WalletStatusDto.VALIDATION_REQUESTED
-            )
+                WalletStatusDto.VALIDATION_REQUESTED)
     }
 
     fun isTransientStatus(): Boolean {
@@ -112,8 +111,7 @@ data class Wallet(
                             app.status.name,
                             app.creationDate.toString(),
                             app.updateDate.toString(),
-                            app.metadata.data.mapKeys { it.key.value }
-                        )
+                            app.metadata.data.mapKeys { it.key.value })
                     },
                 details = this.details?.toDocument(),
                 clients =
@@ -121,8 +119,7 @@ data class Wallet(
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,
-                onboardingChannel = this.onboardingChannel.toString()
-            )
+                onboardingChannel = this.onboardingChannel.toString())
 
         return wallet
     }
@@ -138,8 +135,7 @@ data class Wallet(
                         app.status.name,
                         app.creationDate.toString(),
                         app.updateDate.toString(),
-                        app.metadata.data.mapKeys { it.key.value }
-                    )
+                        app.metadata.data.mapKeys { it.key.value })
                 },
             details = this.details?.toAudit(),
             creationDate = this.creationDate.toString(),
@@ -147,8 +143,7 @@ data class Wallet(
             validationOperationResult = this.validationOperationResult?.value,
             validationErrorCode = this.validationErrorCode,
             validationOperationId = null,
-            validationOperationTimestamp = null
-        )
+            validationOperationTimestamp = null)
     }
 
     /** Return input application iff it's present and enabled */

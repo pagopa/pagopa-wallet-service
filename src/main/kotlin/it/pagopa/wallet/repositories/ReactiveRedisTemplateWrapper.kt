@@ -1,8 +1,8 @@
 package it.pagopa.wallet.repositories
 
+import java.time.Duration
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import reactor.core.publisher.Mono
-import java.time.Duration
 
 abstract class ReactiveRedisTemplateWrapper<V>(
     val reactiveRedisTemplate: ReactiveRedisTemplate<String, V>,

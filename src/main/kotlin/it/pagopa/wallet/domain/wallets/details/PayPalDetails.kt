@@ -13,10 +13,7 @@ data class PayPalDetails(
 
     override fun toDocument() =
         it.pagopa.wallet.documents.wallets.details.PayPalDetails(
-            maskedEmail?.value,
-            pspId,
-            pspBusinessName
-        )
+            maskedEmail?.value, pspId, pspBusinessName)
 
     override fun toAudit(): AuditWalletDetails {
         return AuditWalletDetails(type = this.type.name, cardBrand = null, pspId = this.pspId)

@@ -33,7 +33,7 @@ class PaymentMethodsService(
     }
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
-        paymentMethodsRedisTemplate.findById(paymentMethodId)
+            paymentMethodsRedisTemplate.findById(paymentMethodId)
             .doFirst { logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]") }
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {

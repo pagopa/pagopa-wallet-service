@@ -8,7 +8,6 @@ class UniqueIdGenerationException() : ApiError("Error when generating unique id"
         return RestApiException(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "Internal system error",
-            "Error when generating unique id"
-        )
+            "Error when generating unique id")
     }
 }

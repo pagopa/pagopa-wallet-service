@@ -22,8 +22,7 @@ object WarmupUtils {
                 WalletApplicationDto().apply {
                     this.name = "PAGOPA"
                     this.status = WalletApplicationStatusDto.ENABLED
-                }
-            )
+                })
         }
 
     const val sessionInputCardDataRequest = """{"paymentMethodType":"cards"}"""

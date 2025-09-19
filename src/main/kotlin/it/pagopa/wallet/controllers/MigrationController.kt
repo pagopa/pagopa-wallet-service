@@ -29,9 +29,7 @@ class MigrationController(private val migrationService: MigrationService) : Migr
             .flatMap { request ->
                 migrationService
                     .initializeWalletByPaymentManager(
-                        request.walletIdPm.toString(),
-                        UserId(request.userId)
-                    )
+                        request.walletIdPm.toString(), UserId(request.userId))
                     .map {
                         WalletPmAssociationResponseDto()
                             .walletIdPm(request.walletIdPm)
@@ -60,9 +58,7 @@ class MigrationController(private val migrationService: MigrationService) : Migr
                             expiryDate = parseExpiryDateMMYY(request.expiryDate),
                             brand = CardBrand(request.paymentCircuit),
                             paymentInstrumentGatewayId =
-                                PaymentInstrumentGatewayId(request.paymentGatewayCardId)
-                        )
-                )
+                                PaymentInstrumentGatewayId(request.paymentGatewayCardId)))
             }
             .map { ResponseEntity.ok(WalletPmCardDetailsResponseDto().walletId(it.id.value)) }
             .contextWrite { context ->

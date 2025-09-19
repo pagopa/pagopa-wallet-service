@@ -37,8 +37,7 @@ class WebClientConfig {
                 .option(EpollChannelOption.TCP_KEEPCNT, tcpKeepAliveCnt)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS)
-                    )
+                        ReadTimeoutHandler(readTimeout.toLong(), TimeUnit.MILLISECONDS))
                 }
                 .resolver { it.ndots(1) }
         val webClient =
@@ -59,8 +58,7 @@ class WebClientConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
-                    )
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS))
                 }
                 .resolver { it.ndots(1) }
         val webClient =
@@ -82,8 +80,7 @@ class WebClientConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
-                    )
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS))
                 }
                 .resolver { it.ndots(1) }
         val webClient =
@@ -108,8 +105,7 @@ class WebClientConfig {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
                 .doOnConnected { connection: Connection ->
                     connection.addHandlerLast(
-                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS)
-                    )
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS))
                 }
                 .resolver { it.ndots(1) }
         val webClient =

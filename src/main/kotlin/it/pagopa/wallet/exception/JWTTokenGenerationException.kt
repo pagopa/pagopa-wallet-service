@@ -16,6 +16,5 @@ class JWTTokenGenerationException(
         RestApiException(
             httpStatus = httpStatus,
             description = description,
-            title = "Jwt Issuer Invocation exception"
-        )
+            title = "Jwt Issuer Invocation exception")
 }

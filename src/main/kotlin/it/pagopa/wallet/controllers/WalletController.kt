@@ -61,8 +61,7 @@ class WalletController(
                         request.applications.map { s -> WalletApplicationId(s) },
                         userId = xUserId,
                         paymentMethodId = request.paymentMethodId,
-                        onboardingChannel = xClientIdDto.toOnboardingChannel()
-                    )
+                        onboardingChannel = xClientIdDto.toOnboardingChannel())
                     .flatMap { (loggedAction, returnUri) ->
                         walletEventSinksService.tryEmitEvent(loggedAction).map {
                             Triple(it.data.id.value, request, returnUri)
@@ -76,11 +75,9 @@ class WalletController(
                         UriComponentsBuilder.fromUri(returnUri)
                             .queryParam("v", Instant.now().toEpochMilli())
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}"
-                            )
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}&paymentMethodId=${request.paymentMethodId}")
                             .build()
-                            .toUriString()
-                    )
+                            .toUriString())
             }
             .map { ResponseEntity.created(URI.create(it.redirectUrl)).body(it) }
     }
@@ -178,17 +175,12 @@ class WalletController(
             val gatewayOutcomeResult =
                 WalletTracing.GatewayNotificationOutcomeResult(
                     gatewayAuthorizationStatus = requestDto.operationResult.value,
-                    errorCode = requestDto.errorCode
-                )
+                    errorCode = requestDto.errorCode)
             getAuthenticationToken(exchange)
                 .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
                 .flatMap { securityToken ->
                     walletService.notifyWallet(
-                        WalletId(walletId),
-                        orderId,
-                        securityToken,
-                        requestDto
-                    )
+                        WalletId(walletId), orderId, securityToken, requestDto)
                 }
                 .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
                 .doOnNext {
@@ -198,13 +190,13 @@ class WalletController(
                             it.details?.type,
                             it.status,
                             WalletTracing.GatewayNotificationOutcomeResult(
-                                gatewayAuthorizationStatus = it.validationOperationResult?.value
+                                gatewayAuthorizationStatus =
+                                    it.validationOperationResult?.value
                                         ?: gatewayOutcomeResult.gatewayAuthorizationStatus,
-                                errorCode = it.validationErrorCode
-                                        ?: gatewayOutcomeResult.errorCode ?: it.errorReason
-                            )
-                        )
-                    )
+                                errorCode =
+                                    it.validationErrorCode
+                                        ?: gatewayOutcomeResult.errorCode
+                                        ?: it.errorReason)))
                 }
                 .doOnError { error ->
                     walletTracing.traceWalletUpdate(
@@ -212,9 +204,7 @@ class WalletController(
                             errorToWalletNotificationOutcome(error),
                             extractWalletTypeFromError(error),
                             extractWalletStatusFromError(error),
-                            gatewayOutcomeResult
-                        )
-                    )
+                            gatewayOutcomeResult))
                 }
                 .map {
                     /*
@@ -224,11 +214,9 @@ class WalletController(
                      * since it means that NPG notify request is incoherent with onboarded wallet
                      * @formatter:on
                      */
-                    if (
-                        it.status == WalletStatusDto.ERROR &&
-                            it.validationOperationResult ==
-                                WalletNotificationRequestDto.OperationResultEnum.EXECUTED
-                    ) {
+                    if (it.status == WalletStatusDto.ERROR &&
+                        it.validationOperationResult ==
+                            WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                         ResponseEntity.badRequest().build()
                     } else {
                         ResponseEntity.ok().build()
@@ -259,9 +247,7 @@ class WalletController(
             .cast(WalletStatusErrorPatchRequestDto::class.java)
             .flatMap {
                 walletService.patchWalletStateToError(
-                    WalletId.of(walletId.toString()),
-                    it.details.reason
-                )
+                    WalletId.of(walletId.toString()), it.details.reason)
             }
             .map { ResponseEntity.noContent().build() }
 
@@ -291,20 +277,15 @@ class WalletController(
                     requestedApplications.map {
                         Pair(
                             WalletApplicationId(it.name),
-                            WalletApplicationStatus.valueOf(it.status.value)
-                        )
-                    }
-                )
+                            WalletApplicationStatus.valueOf(it.status.value))
+                    })
             }
             .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
             .flatMap {
                 return@flatMap if (it.applicationsWithUpdateFailed.isNotEmpty()) {
                     Mono.error(
                         WalletApplicationStatusConflictException(
-                            it.successfullyUpdatedApplications,
-                            it.applicationsWithUpdateFailed
-                        )
-                    )
+                            it.successfullyUpdatedApplications, it.applicationsWithUpdateFailed))
                 } else {
                     Mono.just(it)
                 }
@@ -334,8 +315,7 @@ class WalletController(
                 .stream()
                 .findFirst()
                 .filter { header: String -> header.startsWith("Bearer ") }
-                .map { header: String -> header.substring("Bearer ".length) }
-        )
+                .map { header: String -> header.substring("Bearer ".length) })
     }
 
     @WarmupFunction
@@ -409,8 +389,7 @@ class WalletController(
             .put()
             .uri(
                 "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/applications",
-                mapOf("walletId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("walletId" to WarmupUtils.mockedUUID))
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(WarmupUtils.walletApplicationUpdateRequestRequest)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
@@ -440,8 +419,7 @@ class WalletController(
             .get()
             .uri(
                 WarmupUtils.WALLETS_SESSIONS_BY_ORDER_ID_URL,
-                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID))
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
             .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
@@ -455,8 +433,7 @@ class WalletController(
             .post()
             .uri(
                 "${WarmupUtils.WALLETS_SESSIONS_BY_ORDER_ID_URL}/validations",
-                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID))
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
             .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .contentType(MediaType.APPLICATION_JSON)
@@ -471,8 +448,7 @@ class WalletController(
             .post()
             .uri(
                 "${WarmupUtils.WALLETS_SESSIONS_BY_ORDER_ID_URL}/notifications",
-                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("walletId" to WarmupUtils.mockedUUID, "orderId" to WarmupUtils.mockedUUID))
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer securityToken")
             .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
@@ -488,8 +464,7 @@ class WalletController(
             .get()
             .uri(
                 "${WarmupUtils.WALLETS_ID_RESOURCE_URL}/auth-data",
-                mapOf("walletId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("walletId" to WarmupUtils.mockedUUID))
             .header(WarmupUtils.X_API_KEY_HEADER, primaryApiKey)
             .retrieve()
             .toBodilessEntity()

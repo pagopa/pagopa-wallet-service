@@ -1,7 +1,7 @@
 package it.pagopa.wallet.repositories
 
-import org.springframework.data.redis.core.ReactiveRedisTemplate
 import java.time.Duration
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 
 class UniqueIdTemplateWrapper
 
@@ -12,6 +12,7 @@ class UniqueIdTemplateWrapper
  * @param ttl time to live for keys
  */
 (reactiveRedisTemplate: ReactiveRedisTemplate<String, UniqueIdDocument>, ttl: Duration) :
-    ReactiveRedisTemplateWrapper<UniqueIdDocument>(reactiveRedisTemplate = reactiveRedisTemplate, "uniqueId", ttl) {
+    ReactiveRedisTemplateWrapper<UniqueIdDocument>(
+        reactiveRedisTemplate = reactiveRedisTemplate, "uniqueId", ttl) {
     override fun getKeyFromEntity(value: UniqueIdDocument): String = value.id
 }

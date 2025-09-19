@@ -45,9 +45,7 @@ class JwtTokenIssuerClientTest {
                     CreateTokenRequest()
                         .duration(100)
                         .audience("test")
-                        .privateClaims(mapOf("claim1" to "value1"))
-                )
-            )
+                        .privateClaims(mapOf("claim1" to "value1"))))
             .expectNext(createTokenResponse)
             .verifyComplete()
     }
@@ -63,8 +61,7 @@ class JwtTokenIssuerClientTest {
             MockResponse()
                 .setResponseCode(201)
                 .setBody("""{"token":"test"}""")
-                .addHeader("Content-Type", "application/json")
-        )
+                .addHeader("Content-Type", "application/json"))
 
         // test and assertions
         StepVerifier.create(
@@ -72,9 +69,7 @@ class JwtTokenIssuerClientTest {
                     CreateTokenRequest()
                         .duration(100)
                         .audience("test")
-                        .privateClaims(mapOf("claim1" to "value1"))
-                )
-            )
+                        .privateClaims(mapOf("claim1" to "value1"))))
             .expectNext(createTokenResponse)
             .verifyComplete()
         val request = mockWebServer.takeRequest()
@@ -102,10 +97,7 @@ class JwtTokenIssuerClientTest {
                         "Error while invoking jwtIssuer",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(jwtTokenIssuerClient.createToken(createTokenRequest))

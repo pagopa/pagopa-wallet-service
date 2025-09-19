@@ -31,8 +31,7 @@ class LoggingEventSyncWriterTest {
             storageQueueName = "dql-name",
             ttlSeconds = 100,
             storageConnectionString = "storage-connection-string",
-            visibilityTimeoutSeconds = 100
-        )
+            visibilityTimeoutSeconds = 100)
     private val loggingEventRepository: LoggingEventRepository = mock()
     private val tracingUtils: TracingUtils = TracingUtilsTest.getMock()
 
@@ -42,8 +41,7 @@ class LoggingEventSyncWriterTest {
                 paymentWalletLoggedActionDeadLetterQueueClient,
             queueConfig = queueConfig,
             loggingEventRepository = loggingEventRepository,
-            tracingUtils = tracingUtils
-        )
+            tracingUtils = tracingUtils)
 
     @Test
     fun `should save logging events to repository`() {
@@ -53,12 +51,10 @@ class LoggingEventSyncWriterTest {
         val loggedAction =
             LoggedAction(
                 data = Unit,
-                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString())
-            )
+                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString()))
         // test
         StepVerifier.create(
-                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction)
-            )
+                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction))
             .expectNext(Unit)
             .verifyComplete()
         // verifications
@@ -74,26 +70,19 @@ class LoggingEventSyncWriterTest {
             .willReturn(Flux.error(RuntimeException("error saving event to DLQ")))
         given {
                 paymentWalletLoggedActionDeadLetterQueueClient.sendQueueEventWithTracingInfo(
-                    any(),
-                    any(),
-                    any()
-                )
+                    any(), any(), any())
             }
             .willReturn(AzureQueueTestUtils.QUEUE_SUCCESSFUL_RESPONSE)
         val loggedAction =
             LoggedAction(
                 data = Unit,
-                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString())
-            )
+                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString()))
         val expectedDLQEvent =
             WalletLoggingErrorEvent(
-                eventId = loggedAction.events[0].id,
-                loggingEvent = loggedAction.events[0]
-            )
+                eventId = loggedAction.events[0].id, loggingEvent = loggedAction.events[0])
         // test
         StepVerifier.create(
-                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction)
-            )
+                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction))
             .expectNext(Unit)
             .verifyComplete()
         // verifications
@@ -102,8 +91,7 @@ class LoggingEventSyncWriterTest {
             .sendQueueEventWithTracingInfo(
                 event = eq(expectedDLQEvent),
                 delay = eq(Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds)),
-                tracingInfo = any()
-            )
+                tracingInfo = any())
     }
 
     @Test
@@ -113,26 +101,19 @@ class LoggingEventSyncWriterTest {
             .willReturn(Flux.error(RuntimeException("error saving event to DLQ")))
         given {
                 paymentWalletLoggedActionDeadLetterQueueClient.sendQueueEventWithTracingInfo(
-                    any(),
-                    any(),
-                    any()
-                )
+                    any(), any(), any())
             }
             .willReturn(Mono.error(RuntimeException("error writing event to DLQ")))
         val loggedAction =
             LoggedAction(
                 data = Unit,
-                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString())
-            )
+                event = WalletDeletedEvent(walletId = WalletTestUtils.WALLET_UUID.value.toString()))
         val expectedDLQEvent =
             WalletLoggingErrorEvent(
-                eventId = loggedAction.events[0].id,
-                loggingEvent = loggedAction.events[0]
-            )
+                eventId = loggedAction.events[0].id, loggingEvent = loggedAction.events[0])
         // test
         StepVerifier.create(
-                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction)
-            )
+                loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedAction = loggedAction))
             .expectErrorMatches {
                 it is RuntimeException && it.message == "error writing event to DLQ"
             }
@@ -143,8 +124,7 @@ class LoggingEventSyncWriterTest {
             .sendQueueEventWithTracingInfo(
                 event = eq(expectedDLQEvent),
                 delay = eq(Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds)),
-                tracingInfo = any()
-            )
+                tracingInfo = any())
     }
 
     @ParameterizedTest
@@ -169,30 +149,20 @@ class LoggingEventSyncWriterTest {
                         ApplicationStatusChangedEvent(
                             serviceId = "serviceId",
                             oldStatus = ApplicationStatus.ENABLED,
-                            newStatus = ApplicationStatus.DISABLED
-                        )
-                    ),
-                    "N/A"
-                ),
+                            newStatus = ApplicationStatus.DISABLED)),
+                    "N/A"),
                 Arguments.of(listOf(WalletAddedEvent(walletId = walletId)), walletId),
                 Arguments.of(
                     listOf(
                         SessionWalletCreatedEvent(
                             walletId = walletId,
-                            auditWallet = AuditWalletCreated(orderId = "orderId")
-                        )
-                    ),
-                    walletId
-                ),
+                            auditWallet = AuditWalletCreated(orderId = "orderId"))),
+                    walletId),
                 Arguments.of(
                     listOf(
                         WalletApplicationsUpdatedEvent(
-                            walletId = walletId,
-                            updatedApplications = listOf()
-                        )
-                    ),
-                    walletId
-                ),
+                            walletId = walletId, updatedApplications = listOf())),
+                    walletId),
                 Arguments.of(listOf(WalletDeletedEvent(walletId = walletId)), walletId),
                 Arguments.of(listOf(WalletDetailsAddedEvent(walletId = walletId)), walletId),
                 Arguments.of(listOf(WalletMigratedAddedEvent(walletId = walletId)), walletId),
@@ -211,26 +181,18 @@ class LoggingEventSyncWriterTest {
                                     validationOperationId = "validationOperationId",
                                     validationOperationResult = "EXECUTED",
                                     validationOperationTimestamp = OffsetDateTime.now().toString(),
-                                    validationErrorCode = null
-                                )
-                        )
-                    ),
-                    walletId
-                ),
+                                    validationErrorCode = null))),
+                    walletId),
                 Arguments.of(
                     listOf(
                         WalletDeletedEvent(walletId = walletId),
-                        ApplicationCreatedEvent(serviceId = "serviceId")
-                    ),
-                    walletId
-                ),
+                        ApplicationCreatedEvent(serviceId = "serviceId")),
+                    walletId),
                 Arguments.of(
                     listOf(
                         ApplicationCreatedEvent(serviceId = "serviceId"),
-                        WalletDeletedEvent(walletId = walletId)
-                    ),
-                    walletId
-                ),
+                        WalletDeletedEvent(walletId = walletId)),
+                    walletId),
             )
     }
 }

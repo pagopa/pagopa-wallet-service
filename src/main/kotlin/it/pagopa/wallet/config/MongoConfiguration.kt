@@ -18,7 +18,5 @@ class MongoConfiguration {
                 PaymentMethodIdReader,
                 PaymentMethodIdWriter,
                 InstantReader,
-                InstantWriter
-            )
-        )
+                InstantWriter))
 }

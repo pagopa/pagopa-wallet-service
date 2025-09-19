@@ -81,8 +81,7 @@ class WalletControllerTest {
             .addModule(JavaTimeModule())
             .addMixIn(
                 WalletStatusErrorPatchRequestDto::class.java,
-                WalletStatusPatchRequestDto::class.java
-            )
+                WalletStatusPatchRequestDto::class.java)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build()
@@ -99,8 +98,7 @@ class WalletControllerTest {
         val pairLoggedActionUri =
             Pair(
                 LoggedAction(WALLET_DOMAIN, WalletAddedEvent(WALLET_DOMAIN.id.value.toString())),
-                webviewPaymentUrl
-            )
+                webviewPaymentUrl)
         given { walletService.createWallet(any(), any(), any(), any()) }
             .willReturn(mono { pairLoggedActionUri })
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
@@ -140,18 +138,14 @@ class WalletControllerTest {
                 // Check for the presence of other parameters
                 assertTrue(
                     redirectUrl.contains(
-                        "useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
-                    )
-                ) {
-                    "Redirect URL does not contain the expected useDiagnosticTracing parameter"
-                }
+                        "useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")) {
+                        "Redirect URL does not contain the expected useDiagnosticTracing parameter"
+                    }
                 assertTrue(
                     redirectUrl.contains(
-                        "paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}"
-                    )
-                ) {
-                    "Redirect URL does not contain the expected paymentMethodId parameter"
-                }
+                        "paymentMethodId=${WalletTestUtils.CREATE_WALLET_REQUEST.paymentMethodId}")) {
+                        "Redirect URL does not contain the expected paymentMethodId parameter"
+                    }
             }
 
         verify(walletEventSinksService, times(1)).tryEmitEvent(pairLoggedActionUri.first)
@@ -177,9 +171,7 @@ class WalletControllerTest {
                                     .propertyClass("holder")
                                     .propertyClass("h")
                                     .type("type"),
-                            )
-                        )
-                )
+                            )))
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
@@ -191,12 +183,8 @@ class WalletControllerTest {
                             WALLET_DOMAIN,
                             SessionWalletCreatedEvent(
                                 walletId = walletId.toString(),
-                                auditWallet = AuditWalletCreated(orderId = orderId)
-                            )
-                        )
-                    )
-                }
-            )
+                                auditWallet = AuditWalletCreated(orderId = orderId))))
+                })
         /* test */
         webClient
             .post()
@@ -206,8 +194,7 @@ class WalletControllerTest {
             .header("x-api-key", "primary-key")
             .bodyValue(
                 SessionInputCardDataDto()
-                    .serializeRootDiscriminator(SessionInputCardDataDto::class, "cards")
-            )
+                    .serializeRootDiscriminator(SessionInputCardDataDto::class, "cards"))
             .exchange()
             .expectStatus()
             .isOk
@@ -227,8 +214,7 @@ class WalletControllerTest {
                 .sessionData(
                     SessionWalletCreateResponseAPMDataDto()
                         .paymentMethodType("apm")
-                        .redirectUrl("https://apm-redirect.url")
-                )
+                        .redirectUrl("https://apm-redirect.url"))
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.createSessionWallet(eq(userId), eq(walletId), any()) }
@@ -240,12 +226,8 @@ class WalletControllerTest {
                             WALLET_DOMAIN,
                             SessionWalletCreatedEvent(
                                 walletId = walletId.toString(),
-                                auditWallet = AuditWalletCreated(orderId = orderId)
-                            )
-                        )
-                    )
-                }
-            )
+                                auditWallet = AuditWalletCreated(orderId = orderId))))
+                })
         /* test */
         webClient
             .post()
@@ -258,8 +240,7 @@ class WalletControllerTest {
                 // mapping annotation is not read during serialization
                 ObjectMapper()
                     .writeValueAsString(WalletTestUtils.APM_SESSION_CREATE_REQUEST)
-                    .replace("SessionInputPayPalData", "paypal")
-            )
+                    .replace("SessionInputPayPalData", "paypal"))
             .exchange()
             .expectStatus()
             .isOk
@@ -278,8 +259,7 @@ class WalletControllerTest {
             WalletVerifyRequestsResponseDto()
                 .orderId(orderId)
                 .details(
-                    WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl")
-                )
+                    WalletVerifyRequestCardDetailsDto().type("CARD").iframeUrl("http://iFrameUrl"))
         given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
             .willAnswer { Mono.just(it.arguments[0]) }
         given { walletService.validateWalletSession(orderId, walletId, userId) }
@@ -288,12 +268,8 @@ class WalletControllerTest {
                     Pair(
                         response,
                         LoggedAction(
-                            wallet.toDomain(),
-                            WalletDetailsAddedEvent(walletId.toString())
-                        )
-                    )
-                }
-            )
+                            wallet.toDomain(), WalletDetailsAddedEvent(walletId.toString())))
+                })
 
         val stringTest = objectMapper.writeValueAsString(response)
         /* test */
@@ -318,8 +294,7 @@ class WalletControllerTest {
 
         given { walletService.deleteWallet(walletId, userId) }
             .willReturn(
-                Mono.just(LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString())))
-            )
+                Mono.just(LoggedAction(Unit, WalletDeletedEvent(walletId.value.toString()))))
 
         given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
             .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
@@ -542,12 +517,9 @@ class WalletControllerTest {
                                 mapOf(
                                     WalletApplicationId(WALLET_SERVICE_1.name) to
                                         WalletApplicationStatus.valueOf(
-                                            WALLET_SERVICE_1.status.name
-                                        )
-                                ),
+                                            WALLET_SERVICE_1.status.name)),
                             applicationsWithUpdateFailed = mapOf(),
-                            updatedWallet = WALLET_DOMAIN.toDocument()
-                        ),
+                            updatedWallet = WALLET_DOMAIN.toDocument()),
                         WalletApplicationsUpdatedEvent(
                             WALLET_DOMAIN.id.value.toString(),
                             listOf(
@@ -556,13 +528,8 @@ class WalletControllerTest {
                                     WALLET_SERVICE_1.status.name,
                                     Instant.now().toString(),
                                     Instant.now().toString(),
-                                    mapOf()
-                                )
-                            )
-                        )
-                    )
-                }
-            )
+                                    mapOf()))))
+                })
         given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
             .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
 
@@ -599,15 +566,12 @@ class WalletControllerTest {
                     successfullyUpdatedApplications =
                         mapOf(
                             WalletApplicationId("PAGOPA") to
-                                WalletApplicationStatus.valueOf(WALLET_SERVICE_1.status.name)
-                        ),
+                                WalletApplicationStatus.valueOf(WALLET_SERVICE_1.status.name)),
                     applicationsWithUpdateFailed =
                         mapOf(
                             WalletApplicationId("PAGOPA") to
-                                WalletApplicationStatus.valueOf(WALLET_SERVICE_2.status.name)
-                        ),
-                    updatedWallet = WALLET_DOMAIN.toDocument()
-                )
+                                WalletApplicationStatus.valueOf(WALLET_SERVICE_2.status.name)),
+                    updatedWallet = WALLET_DOMAIN.toDocument())
 
             given { walletService.updateWalletApplications(eq(walletId), eq(userId), any()) }
                 .willReturn(
@@ -622,13 +586,8 @@ class WalletControllerTest {
                                         WALLET_SERVICE_1.status.name,
                                         Instant.now().toString(),
                                         Instant.now().toString(),
-                                        mapOf()
-                                    )
-                                )
-                            )
-                        )
-                    }
-                )
+                                        mapOf()))))
+                    })
             given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
                 .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
 
@@ -653,8 +612,7 @@ class WalletControllerTest {
                 .put()
                 .uri(
                     "/wallets/{walletId}/applications",
-                    mapOf("walletId" to walletId.value.toString())
-                )
+                    mapOf("walletId" to walletId.value.toString()))
                 .header("x-user-id", userId.id.toString())
                 .header("x-api-key", "primary-key")
                 .bodyValue(WalletTestUtils.UPDATE_SERVICES_BODY)
@@ -702,8 +660,7 @@ class WalletControllerTest {
                 .put()
                 .uri(
                     "/wallets/{walletId}/applications",
-                    mapOf("walletId" to walletId.value.toString())
-                )
+                    mapOf("walletId" to walletId.value.toString()))
                 .header("x-api-key", "primary-key")
                 .header("x-user-id", userId.id.toString())
                 .bodyValue(walletUpdateRequest)
@@ -723,11 +680,7 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given {
                 walletService.notifyWallet(
-                    eq(WalletId(walletId)),
-                    eq(orderId),
-                    eq(sessionToken),
-                    any()
-                )
+                    eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
             }
             .willReturn(
                 mono {
@@ -743,11 +696,8 @@ class WalletControllerTest {
                                     it.validationOperationTimestamp =
                                         WalletTestUtils.TIMESTAMP.toString()
                                     return@let it
-                                }
-                        )
-                    )
-                }
-            )
+                                }))
+                })
         given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
             .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
@@ -772,11 +722,7 @@ class WalletControllerTest {
                         WalletDetailsType.CARDS,
                         WalletStatusDto.VALIDATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.EXECUTED.value
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.EXECUTED.value))))
         verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
         val loggedAction = loggedActionCaptor.firstValue
         assertEquals(1, loggedAction.events.size)
@@ -793,11 +739,7 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given {
                 walletService.notifyWallet(
-                    eq(WalletId(walletId)),
-                    eq(orderId),
-                    eq(sessionToken),
-                    any()
-                )
+                    eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
             }
             .willReturn(Mono.error(SecurityTokenMatchException()))
         /* test */
@@ -822,11 +764,7 @@ class WalletControllerTest {
                         null,
                         null,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.EXECUTED.value
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.EXECUTED.value))))
     }
 
     @Test
@@ -887,11 +825,7 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given {
                 walletService.notifyWallet(
-                    eq(WalletId(walletId)),
-                    eq(orderId),
-                    eq(sessionToken),
-                    any()
-                )
+                    eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
             }
             .willReturn(
                 mono {
@@ -907,11 +841,8 @@ class WalletControllerTest {
                                     it.validationOperationTimestamp =
                                         WalletTestUtils.TIMESTAMP.toString()
                                     return@let it
-                                }
-                        )
-                    )
-                }
-            )
+                                }))
+                })
         given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
             .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
@@ -923,8 +854,7 @@ class WalletControllerTest {
             .header("Authorization", "Bearer $sessionToken")
             .header("x-api-key", "primary-key")
             .bodyValue(
-                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
-            )
+                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS)
             .exchange()
             .expectStatus()
             .isOk
@@ -938,11 +868,7 @@ class WalletControllerTest {
                         WalletDetailsType.CARDS,
                         WalletStatusDto.VALIDATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.EXECUTED.value
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.EXECUTED.value))))
         verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
         val loggedAction = loggedActionCaptor.firstValue
         assertEquals(1, loggedAction.events.size)
@@ -959,11 +885,7 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given {
                 walletService.notifyWallet(
-                    eq(WalletId(walletId)),
-                    eq(orderId),
-                    eq(sessionToken),
-                    any()
-                )
+                    eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
             }
             .willReturn(
                 mono {
@@ -979,11 +901,8 @@ class WalletControllerTest {
                                     it.validationOperationTimestamp =
                                         WalletTestUtils.TIMESTAMP.toString()
                                     return@let it
-                                }
-                        )
-                    )
-                }
-            )
+                                }))
+                })
         /* test */
         webClient
             .post()
@@ -1002,8 +921,7 @@ class WalletControllerTest {
                         "type": "PAYPAL"
                     }
                 }
-            """
-            )
+            """)
             .exchange()
             .expectStatus()
             .isBadRequest
@@ -1013,10 +931,7 @@ class WalletControllerTest {
             .traceWalletUpdate(
                 eq(
                     WalletTracing.WalletUpdateResult(
-                        WalletTracing.WalletNotificationOutcome.BAD_REQUEST
-                    )
-                )
-            )
+                        WalletTracing.WalletNotificationOutcome.BAD_REQUEST)))
     }
 
     @Test
@@ -1028,11 +943,7 @@ class WalletControllerTest {
             val sessionToken = "sessionToken"
             given {
                     walletService.notifyWallet(
-                        eq(WalletId(walletId)),
-                        eq(orderId),
-                        eq(sessionToken),
-                        any()
-                    )
+                        eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
                 }
                 .willReturn(
                     mono {
@@ -1048,11 +959,8 @@ class WalletControllerTest {
                                         it.validationOperationTimestamp =
                                             WalletTestUtils.TIMESTAMP.toString()
                                         return@let it
-                                    }
-                            )
-                        )
-                    }
-                )
+                                    }))
+                    })
             given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
                 .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
             /* test */
@@ -1064,8 +972,7 @@ class WalletControllerTest {
                 .header("Authorization", "Bearer $sessionToken")
                 .header("x-api-key", "primary-key")
                 .bodyValue(
-                    WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
-                )
+                    WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS)
                 .exchange()
                 .expectStatus()
                 .isBadRequest
@@ -1079,11 +986,7 @@ class WalletControllerTest {
                             WalletDetailsType.CARDS,
                             WalletStatusDto.ERROR,
                             WalletTracing.GatewayNotificationOutcomeResult(
-                                OperationResultEnum.EXECUTED.value
-                            )
-                        )
-                    )
-                )
+                                OperationResultEnum.EXECUTED.value))))
             verify(loggingEventSyncWriter, times(1))
                 .saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
             val loggedAction = loggedActionCaptor.firstValue
@@ -1108,15 +1011,13 @@ class WalletControllerTest {
                             xClientIdDto = mockClientId,
                             walletCreateRequestDto =
                                 Mono.just(WalletTestUtils.CREATE_WALLET_REQUEST),
-                            exchange = mock()
-                        )
+                            exchange = mock())
                         .block()
                 }
 
             assertEquals(
                 "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
-                exception.message
-            )
+                exception.message)
         }
 
     @Test
@@ -1134,10 +1035,7 @@ class WalletControllerTest {
                         WalletId.create(),
                         WalletStatusDto.VALIDATION_REQUESTED,
                         setOf(),
-                        WalletDetailsType.CARDS
-                    )
-                )
-            )
+                        WalletDetailsType.CARDS)))
 
         webClient
             .patch()
@@ -1145,10 +1043,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(
                 updateRequest.serializeRootDiscriminator(
-                    WalletStatusErrorPatchRequestDto::class,
-                    "ERROR"
-                )
-            )
+                    WalletStatusErrorPatchRequestDto::class, "ERROR"))
             .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
@@ -1176,10 +1071,7 @@ class WalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(
                 updateRequest.serializeRootDiscriminator(
-                    WalletStatusErrorPatchRequestDto::class,
-                    "ERROR"
-                )
-            )
+                    WalletStatusErrorPatchRequestDto::class, "ERROR"))
             .header("x-api-key", "primary-key")
             .exchange()
             .expectStatus()
@@ -1203,8 +1095,7 @@ class WalletControllerTest {
             .header("Authorization", "Bearer $sessionToken")
             .header("x-api-key", "primary-key")
             .bodyValue(
-                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
-            )
+                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS)
             .exchange()
             .expectStatus()
             .isNotFound
@@ -1218,11 +1109,7 @@ class WalletControllerTest {
                         null,
                         null,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.EXECUTED.value
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.EXECUTED.value))))
     }
 
     @Test
@@ -1237,10 +1124,8 @@ class WalletControllerTest {
                         WalletId(walletId),
                         WalletStatusDto.DELETED,
                         setOf(),
-                        WalletDetailsType.CARDS
-                    )
-                    .toMono()
-            )
+                        WalletDetailsType.CARDS)
+                    .toMono())
         /* test */
         webClient
             .post()
@@ -1250,8 +1135,7 @@ class WalletControllerTest {
             .header("Authorization", "Bearer $sessionToken")
             .header("x-api-key", "primary-key")
             .bodyValue(
-                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
-            )
+                WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS)
             .exchange()
             .expectStatus()
             .isEqualTo(409)
@@ -1265,11 +1149,7 @@ class WalletControllerTest {
                         WalletDetailsType.CARDS,
                         WalletStatusDto.DELETED,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.EXECUTED.value
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.EXECUTED.value))))
     }
 
     @Test
@@ -1284,10 +1164,8 @@ class WalletControllerTest {
                         WalletId(walletId),
                         WalletStatusDto.DELETED,
                         setOf(),
-                        WalletDetailsType.CARDS
-                    )
-                    .toMono()
-            )
+                        WalletDetailsType.CARDS)
+                    .toMono())
         /* test */
         webClient
             .post()
@@ -1310,12 +1188,7 @@ class WalletControllerTest {
                         WalletDetailsType.CARDS,
                         WalletStatusDto.DELETED,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.DECLINED.value,
-                            "WG001"
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.DECLINED.value, "WG001"))))
     }
 
     @Test
@@ -1326,19 +1199,14 @@ class WalletControllerTest {
         val sessionToken = "sessionToken"
         given {
                 walletService.notifyWallet(
-                    eq(WalletId(walletId)),
-                    eq(orderId),
-                    eq(sessionToken),
-                    any()
-                )
+                    eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
             }
             .willReturn(
                 mono {
                     val wallet =
                         WALLET_DOMAIN.copy(
                             validationOperationResult = OperationResultEnum.DECLINED,
-                            validationErrorCode = "WG001"
-                        )
+                            validationErrorCode = "WG001")
                     LoggedAction(
                         wallet,
                         WalletOnboardCompletedEvent(
@@ -1350,11 +1218,8 @@ class WalletControllerTest {
                                     it.validationOperationTimestamp =
                                         WalletTestUtils.TIMESTAMP.toString()
                                     return@let it
-                                }
-                        )
-                    )
-                }
-            )
+                                }))
+                })
         given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
             .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
         /* test */
@@ -1379,12 +1244,7 @@ class WalletControllerTest {
                         WalletDetailsType.CARDS,
                         WalletStatusDto.CREATED,
                         WalletTracing.GatewayNotificationOutcomeResult(
-                            OperationResultEnum.DECLINED.value,
-                            "WG001"
-                        )
-                    )
-                )
-            )
+                            OperationResultEnum.DECLINED.value, "WG001"))))
         verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
         val loggedAction = loggedActionCaptor.firstValue
         assertEquals(1, loggedAction.events.size)

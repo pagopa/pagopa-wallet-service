@@ -24,9 +24,7 @@ class WalletUtils(@Autowired val logoMapping: Map<String, URI>) {
                 is CardDetails -> logoMapping[walletDetail.brand.value]
                 is PayPalDetails -> logoMapping[walletDetail.type.name]
                 else -> logoMapping[UNKNOWN_LOGO_KEY]
-            }
-                ?: logoMapping[UNKNOWN_LOGO_KEY]
-        )
+            } ?: logoMapping[UNKNOWN_LOGO_KEY])
 }
 
 fun ClientIdDto.toOnboardingChannel(): OnboardingChannel =
@@ -34,6 +32,5 @@ fun ClientIdDto.toOnboardingChannel(): OnboardingChannel =
         OnboardingChannel.valueOf(this.toString())
     } else {
         throw InvalidRequestException(
-            "Input clientId: [$this] is unknown. Handled onboarding channels: ${WalletUtils.VALID_ONBOARDING_CHANNELS}"
-        )
+            "Input clientId: [$this] is unknown. Handled onboarding channels: ${WalletUtils.VALID_ONBOARDING_CHANNELS}")
     }

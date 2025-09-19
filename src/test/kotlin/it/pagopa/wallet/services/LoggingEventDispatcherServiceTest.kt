@@ -46,10 +46,7 @@ class LoggingEventDispatcherServiceTest {
         argumentCaptor<WalletCreatedEvent> {
             verify(walletQueueClient, times(1))
                 .sendQueueEventWithTracingInfo(
-                    capture(),
-                    eq(Duration.ofSeconds(config.timeoutWalletExpired)),
-                    any()
-                )
+                    capture(), eq(Duration.ofSeconds(config.timeoutWalletExpired)), any())
             Assertions.assertEquals(walletCreatedLoggingEvent.walletId, lastValue.walletId)
             verify(tracingUtils, times(1)).traceMonoQueue(any(), any<TracedMono<Any>>())
         }

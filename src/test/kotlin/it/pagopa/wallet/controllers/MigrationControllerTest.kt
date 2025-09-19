@@ -52,8 +52,7 @@ class MigrationControllerTest {
                 WalletTestUtils.walletDocument()
                     .copy(
                         userId = (it.arguments[1] as UserId).id.toString(),
-                        contractId = WalletTestUtils.CONTRACT_ID.contractId
-                    )
+                        contractId = WalletTestUtils.CONTRACT_ID.contractId)
                     .toDomain()
                     .toMono()
             }
@@ -144,9 +143,7 @@ class MigrationControllerTest {
         given { migrationService.updateWalletCardDetails(any(), any()) }
             .willAnswer {
                 MigrationError.WalletIllegalStateTransition(
-                        WalletId.create(),
-                        WalletStatusDto.ERROR
-                    )
+                        WalletId.create(), WalletStatusDto.ERROR)
                     .toMono<Wallet>()
             }
         webClient
@@ -247,8 +244,7 @@ class MigrationControllerTest {
                 WalletTestUtils.walletDocument()
                     .copy(
                         userId = (it.arguments[1] as UserId).id.toString(),
-                        contractId = WalletTestUtils.CONTRACT_ID.contractId
-                    )
+                        contractId = WalletTestUtils.CONTRACT_ID.contractId)
                     .toDomain()
                     .toMono()
             }

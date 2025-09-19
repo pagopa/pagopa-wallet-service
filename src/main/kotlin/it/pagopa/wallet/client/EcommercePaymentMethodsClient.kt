@@ -36,8 +36,7 @@ class EcommercePaymentMethodsClient(
             .onErrorMap(WebClientResponseException::class.java) {
                 logger.error(
                     "Error communicating with ecommerce payment-methods: response: ${it.responseBodyAsString}",
-                    it
-                )
+                    it)
                 when (it.statusCode) {
                     HttpStatus.BAD_REQUEST ->
                         EcommercePaymentMethodException(
@@ -75,9 +74,7 @@ class EcommercePaymentMethodsClient(
                     EcommercePaymentMethodException(
                         description = "Invalid Payment Method",
                         httpStatusCode = HttpStatus.BAD_REQUEST,
-                    )
-                )
-            )
+                    )))
     }
 
     private fun isValidPaymentMethodGivenWalletTypeAvailable(paymentMethodName: String): Boolean {

@@ -15,19 +15,13 @@ import org.springframework.data.mongodb.core.mapping.Document
     JsonSubTypes.Type(value = WalletDeletedEvent::class, name = "WalletDeletedEvent"),
     JsonSubTypes.Type(value = SessionWalletCreatedEvent::class, name = "SessionWalletCreatedEvent"),
     JsonSubTypes.Type(
-        value = WalletApplicationsUpdatedEvent::class,
-        name = "WalletApplicationsUpdatedEvent"
-    ),
+        value = WalletApplicationsUpdatedEvent::class, name = "WalletApplicationsUpdatedEvent"),
     JsonSubTypes.Type(value = WalletDetailsAddedEvent::class, name = "WalletDetailsAddedEvent"),
     JsonSubTypes.Type(
-        value = WalletOnboardCompletedEvent::class,
-        name = "WalletOnboardCompletedEvent"
-    ),
+        value = WalletOnboardCompletedEvent::class, name = "WalletOnboardCompletedEvent"),
     JsonSubTypes.Type(value = ApplicationCreatedEvent::class, name = "ApplicationCreatedEvent"),
     JsonSubTypes.Type(
-        value = ApplicationStatusChangedEvent::class,
-        name = "ApplicationStatusChangedEvent"
-    ),
+        value = ApplicationStatusChangedEvent::class, name = "ApplicationStatusChangedEvent"),
 )
 sealed class LoggingEvent(val id: String, val timestamp: String) {
     constructor() : this(UUID.randomUUID().toString(), Instant.now().toString())

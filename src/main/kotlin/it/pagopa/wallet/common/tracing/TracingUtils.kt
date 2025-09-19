@@ -34,21 +34,17 @@ class TracingUtils(private val openTelemetry: OpenTelemetry, private val tracer:
                         .startSpan()
                 val rawTracingInfo: MutableMap<String, String> = mutableMapOf()
                 openTelemetry.propagators.textMapPropagator.inject(
-                    Context.current(),
-                    rawTracingInfo
-                ) { map, k, v ->
-                    map?.put(k, v)
-                }
+                    Context.current(), rawTracingInfo) { map, k, v ->
+                        map?.put(k, v)
+                    }
 
                 val tracingInfo =
                     QueueTracingInfo(
                         rawTracingInfo[TRACEPARENT],
                         rawTracingInfo[TRACESTATE],
-                        rawTracingInfo[BAGGAGE]
-                    )
+                        rawTracingInfo[BAGGAGE])
                 Pair(span, tracingInfo)
             },
             { (_, tracingInfo) -> traced.invoke(tracingInfo) },
-            { (span, _) -> span.end() }
-        )
+            { (span, _) -> span.end() })
 }

@@ -17,6 +17,7 @@ data class WalletApplicationMetadata(val data: Map<Metadata, String?>) {
 
     companion object {
         fun empty() = of()
+
         fun of(vararg data: Pair<Metadata, String>) =
             WalletApplicationMetadata(data.associate { it.first to it.second })
     }

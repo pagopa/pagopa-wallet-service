@@ -21,9 +21,7 @@ class WalletTracingTest {
                 walletOutcome,
                 WalletDetailsType.PAYPAL,
                 WalletStatusDto.CREATED,
-                WalletTracing.GatewayNotificationOutcomeResult("EXECUTED")
-            )
-        )
+                WalletTracing.GatewayNotificationOutcomeResult("EXECUTED")))
 
         val expectedAttributes =
             Attributes.of(
@@ -36,8 +34,7 @@ class WalletTracingTest {
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_OUTCOME_ATTRIBUTE_KEY,
                 "EXECUTED",
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_ERROR_CODE_ATTRIBUTE_KEY,
-                "N/A"
-            )
+                "N/A")
 
         verify(tracingUtils, times(1))
             .addSpan(WalletTracing.WALLET_UPDATE_RESULT_SPAN_NAME, expectedAttributes)
@@ -51,9 +48,7 @@ class WalletTracingTest {
                 walletOutcome,
                 WalletDetailsType.CARDS,
                 WalletStatusDto.CREATED,
-                WalletTracing.GatewayNotificationOutcomeResult("EXECUTED", "GW001")
-            )
-        )
+                WalletTracing.GatewayNotificationOutcomeResult("EXECUTED", "GW001")))
 
         val expectedAttributes =
             Attributes.of(
@@ -66,8 +61,7 @@ class WalletTracingTest {
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_OUTCOME_ATTRIBUTE_KEY,
                 "EXECUTED",
                 WalletTracing.UPDATE_WALLET_STATUS_GATEWAY_ERROR_CODE_ATTRIBUTE_KEY,
-                "GW001"
-            )
+                "GW001")
 
         verify(tracingUtils, times(1))
             .addSpan(WalletTracing.WALLET_UPDATE_RESULT_SPAN_NAME, expectedAttributes)

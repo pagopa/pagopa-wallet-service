@@ -23,8 +23,7 @@ class CardDetailsTest {
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = CardBrand(rawBrand),
-                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
-            )
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId))
 
         assertEquals(validBin, cardDetails.bin.bin)
         assertEquals(validLastFourDigits, cardDetails.lastFourDigits.lastFourDigits)
@@ -41,8 +40,7 @@ class CardDetailsTest {
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(invalidExpiryDate),
                 brand = CardBrand(rawBrand),
-                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
-            )
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId))
         }
     }
 
@@ -55,8 +53,7 @@ class CardDetailsTest {
                 lastFourDigits = LastFourDigits(invalidLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = CardBrand(rawBrand),
-                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
-            )
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId))
         }
     }
 
@@ -69,8 +66,7 @@ class CardDetailsTest {
                 lastFourDigits = LastFourDigits(validLastFourDigits),
                 expiryDate = ExpiryDate(validExpiryDate),
                 brand = CardBrand(rawBrand),
-                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
-            )
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId(paymentInstrumentGatewayId))
         }
     }
 }
