@@ -359,7 +359,10 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     toggleOffOn()
     targetExclude("build/**/*")
-    ktfmt().kotlinlangStyle().configure { it.setManageTrailingCommas(false) }
+    ktfmt().kotlinlangStyle().configure {
+      it.setManageTrailingCommas(false)
+      it.setRemoveUnusedImports(true)
+    }
     trimTrailingWhitespace()
     endWithNewline()
   }
