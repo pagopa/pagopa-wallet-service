@@ -46,12 +46,9 @@ internal class ContextLifterMDC<T>(
                 context
                     .stream()
                     .collect(
-                        Collectors.toMap({ e -> e.key.toString() }, { e -> e.value.toString() })
-                    )
-            if (
-                reactorContextMap.getOrDefault(contextKey, "") ==
-                    mdcContextMap.getOrDefault(contextKey, "")
-            ) {
+                        Collectors.toMap({ e -> e.key.toString() }, { e -> e.value.toString() }))
+            if (reactorContextMap.getOrDefault(contextKey, "") ==
+                mdcContextMap.getOrDefault(contextKey, "")) {
                 reactorContextMap.putAll(mdcContextMap)
                 MDC.setContextMap(reactorContextMap)
             } else {

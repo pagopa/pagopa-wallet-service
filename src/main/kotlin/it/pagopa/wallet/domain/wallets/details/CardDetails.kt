@@ -21,8 +21,7 @@ data class CardDetails(
             this.lastFourDigits.lastFourDigits,
             this.expiryDate.expDate,
             this.brand.value,
-            this.paymentInstrumentGatewayId.paymentInstrumentGatewayId
-        )
+            this.paymentInstrumentGatewayId.paymentInstrumentGatewayId)
 
     override fun toAudit(): AuditWalletDetails {
         return AuditWalletDetails(type = this.type.name, cardBrand = this.brand.value, pspId = null)

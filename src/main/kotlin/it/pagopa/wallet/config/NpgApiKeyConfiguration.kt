@@ -21,7 +21,6 @@ class NpgApiKeyConfiguration {
                 jsonSecretConfiguration = paypalApiKeys,
                 pspToHandle = pspToHandle,
                 objectMapper = objectMapper,
-                defaultApiKey = defaultApiKey
-            )
+                defaultApiKey = defaultApiKey)
             .fold({ throw it }, { it })
 }

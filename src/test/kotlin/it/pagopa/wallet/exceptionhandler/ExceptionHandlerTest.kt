@@ -26,17 +26,11 @@ class ExceptionHandlerTest {
                 RestApiException(
                     httpStatus = HttpStatus.UNAUTHORIZED,
                     title = "title",
-                    description = "description"
-                )
-            )
+                    description = "description"))
         assertEquals(
             WalletTestUtils.buildProblemJson(
-                httpStatus = HttpStatus.UNAUTHORIZED,
-                title = "title",
-                description = "description"
-            ),
-            response.body
-        )
+                httpStatus = HttpStatus.UNAUTHORIZED, title = "title", description = "description"),
+            response.body)
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
     }
 
@@ -44,18 +38,14 @@ class ExceptionHandlerTest {
     fun `Should handle ApiError`() {
         val exception =
             NpgClientException(
-                httpStatusCode = HttpStatus.UNAUTHORIZED,
-                description = "description"
-            )
+                httpStatusCode = HttpStatus.UNAUTHORIZED, description = "description")
         val response = exceptionHandler.handleException(exception)
         assertEquals(
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.UNAUTHORIZED,
                 title = "Npg Invocation exception",
-                description = "description"
-            ),
-            response.body
-        )
+                description = "description"),
+            response.body)
         assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
     }
 
@@ -68,10 +58,8 @@ class ExceptionHandlerTest {
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.BAD_REQUEST,
                 title = "Bad request",
-                description = "Input request is not valid"
-            ),
-            response.body
-        )
+                description = "Input request is not valid"),
+            response.body)
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
     }
 
@@ -83,10 +71,8 @@ class ExceptionHandlerTest {
             WalletTestUtils.buildProblemJson(
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
                 title = "Error processing the request",
-                description = "An internal error occurred processing the request"
-            ),
-            response.body
-        )
+                description = "An internal error occurred processing the request"),
+            response.body)
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode)
     }
 }

@@ -32,20 +32,19 @@ class WalletPaymentManagerRepositoryImpl(
             walletPmId = walletPmId,
             walletId = walletId.value.toString(),
             contractId = contractId.contractId,
-            creationDate = Instant.now()
-        )
+            creationDate = Instant.now())
 
     private fun WalletPaymentManagerDocument.toDomain() =
         WalletPaymentManager(
             walletPmId = walletPmId,
             walletId = WalletId(UUID.fromString(walletId)),
-            contractId = ContractId(contractId)
-        )
+            contractId = ContractId(contractId))
 }
 
 @Repository
 interface MongoWalletMigrationRepository :
     ReactiveCrudRepository<WalletPaymentManagerDocument, String> {
     fun findByWalletPmId(walletPmId: String): Flux<WalletPaymentManagerDocument>
+
     fun findByContractId(contractId: String): Flux<WalletPaymentManagerDocument>
 }

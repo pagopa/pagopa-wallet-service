@@ -49,8 +49,7 @@ class WalletUtilsTest {
         assertTrue(
             logoURI
                 .toString()
-                .endsWith("/${(walletWithAliasBrand.details as CardDetails).brand.value}")
-        )
+                .endsWith("/${(walletWithAliasBrand.details as CardDetails).brand.value}"))
     }
 
     @Test

@@ -37,8 +37,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
         logger.error("Exception processing request", e)
         return ResponseEntity.status(e.httpStatus)
             .body(
-                ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description)
-            )
+                ProblemJsonDto().status(e.httpStatus.value()).title(e.title).detail(e.description))
     }
 
     /** ApiError exception handler */
@@ -54,8 +53,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
         ServerWebInputException::class,
         ValidationException::class,
         HttpMessageNotReadableException::class,
-        WebExchangeBindException::class
-    )
+        WebExchangeBindException::class)
     fun handleRequestValidationException(
         e: Exception,
         exchange: ServerWebExchange?
@@ -69,8 +67,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                 ProblemJsonDto()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .title("Bad request")
-                    .detail("Input request is not valid")
-            )
+                    .detail("Input request is not valid"))
     }
 
     /** Handler for generic exception */
@@ -82,8 +79,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                 ProblemJsonDto()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .title("Error processing the request")
-                    .detail("An internal error occurred processing the request")
-            )
+                    .detail("An internal error occurred processing the request"))
     }
 
     @ExceptionHandler(OptimisticLockingFailureException::class)
@@ -96,8 +92,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                 ProblemJsonDto()
                     .status(HttpStatus.CONFLICT.value())
                     .title("Error processing the request due to concurrent request detected")
-                    .detail("Optimistic lock has detected multiple concurrent requests")
-            )
+                    .detail("Optimistic lock has detected multiple concurrent requests"))
     }
 
     @ExceptionHandler(WalletApplicationStatusConflictException::class)
@@ -119,8 +114,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                                 .name(it.key.id)
                                 .status(WalletApplicationStatusDto.valueOf(it.value.name))
                         }
-                }
-            )
+                })
     }
 
     @ExceptionHandler(MigrationError::class)
@@ -141,8 +135,7 @@ class ExceptionHandler(private val walletTracing: WalletTracing) {
                     .status(HttpStatus.CONFLICT.value())
                     .title("Wallet already onboarded")
                     .detail(
-                        "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded"
-                    )
+                        "Cannot associated wallet ${e.walletId.value} to user cause it's already onboarded")
             is MigrationError.WalletIllegalTransactionDeleteToValidated ->
                 ProblemJsonDto()
                     .status(HttpStatus.UNPROCESSABLE_ENTITY.value())

@@ -53,16 +53,14 @@ class NpgClientTest {
                         RecurringSettings()
                             .action(RecurringAction.CONTRACT_CREATION)
                             .contractId("contractId")
-                            .contractType(RecurringContractType.CIT)
-                    )
+                            .contractType(RecurringContractType.CIT))
                     .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                     .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                     .captureType(CaptureType.IMPLICIT)
                     .paymentService(paymentService.name)
                     .resultUrl("resultUrl")
                     .cancelUrl("cancelUrl")
-                    .notificationUrl("notificationUrl")
-            )
+                    .notificationUrl("notificationUrl"))
 
     @BeforeEach
     fun setup() {
@@ -93,8 +91,7 @@ class NpgClientTest {
                             .id(UUID.randomUUID().toString())
                             .src("https://test.it/c")
                             .propertyClass("cvv")
-                            .propertyClass("c")
-                    )
+                            .propertyClass("c"))
             }
 
         // prerequisite
@@ -104,8 +101,7 @@ class NpgClientTest {
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectNext(fields)
             .verifyComplete()
         verify(npgPspApiKeysConfig, times(1)).defaultApiKey
@@ -135,8 +131,7 @@ class NpgClientTest {
                             .id(UUID.randomUUID().toString())
                             .src("https://test.it/c")
                             .propertyClass("cvv")
-                            .propertyClass("c")
-                    )
+                            .propertyClass("c"))
             }
 
         // prerequisite
@@ -147,8 +142,7 @@ class NpgClientTest {
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, pspId)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, pspId))
             .expectNext(fields)
             .verifyComplete()
         verify(npgPspApiKeysConfig, times(1))[pspId]
@@ -194,12 +188,8 @@ class NpgClientTest {
                         HttpHeaders.EMPTY,
                         objectMapper.writeValueAsBytes(
                             ServerError()
-                                .addErrorsItem(ErrorsInner().code("123").description("error"))
-                        ),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))),
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(npgClient.getCardData(sessionId, correlationId))
@@ -219,9 +209,7 @@ class NpgClientTest {
         verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(500L))
         verify(span)
             .setAttribute(
-                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
-                eq(listOf("123"))
-            )
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME), eq(listOf("123")))
     }
 
     @Test
@@ -244,8 +232,7 @@ class NpgClientTest {
             .pspApiV1BuildConfirmPaymentPost(
                 correlationId,
                 defaultApiKey,
-                ConfirmPaymentRequest().amount("0").sessionId(sessionId)
-            )
+                ConfirmPaymentRequest().amount("0").sessionId(sessionId))
     }
 
     @Test
@@ -261,10 +248,7 @@ class NpgClientTest {
                         "statusText",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(npgClient.confirmPayment(confirmPaymentRequest, correlationId))
@@ -291,15 +275,11 @@ class NpgClientTest {
                         "statusText",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -324,15 +304,11 @@ class NpgClientTest {
                         "statusText",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
@@ -357,15 +333,11 @@ class NpgClientTest {
                         "statusText",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -390,15 +362,11 @@ class NpgClientTest {
                         "statusText",
                         HttpHeaders.EMPTY,
                         ByteArray(0),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY
@@ -427,17 +395,12 @@ class NpgClientTest {
                         HttpHeaders.EMPTY,
                         objectMapper.writeValueAsBytes(
                             ClientError()
-                                .addErrorsItem(ErrorsInner().code("123").description("error"))
-                        ),
-                        StandardCharsets.UTF_8
-                    )
-                )
-            )
+                                .addErrorsItem(ErrorsInner().code("123").description("error"))),
+                        StandardCharsets.UTF_8)))
 
         // test and assertions
         StepVerifier.create(
-                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null)
-            )
+                npgClient.createNpgOrderBuild(correlationId, createHostedOrderRequest, null))
             .expectErrorMatches {
                 it as NpgClientException
                 it.toRestException().httpStatus == HttpStatus.INTERNAL_SERVER_ERROR
@@ -453,8 +416,6 @@ class NpgClientTest {
         verify(span).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), eq(400L))
         verify(span)
             .setAttribute(
-                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME),
-                eq(listOf("123"))
-            )
+                eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME), eq(listOf("123")))
     }
 }

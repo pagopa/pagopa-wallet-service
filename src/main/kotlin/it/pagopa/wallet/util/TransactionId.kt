@@ -14,9 +14,8 @@ data class TransactionId(val trimmedUUIDString: String) {
     companion object {
         private fun fromTrimmedUUIDString(trimmedUUIDString: String): UUID {
             require(trimmedUUIDString.length == 32) {
-                "Invalid transaction id: [%s]. Transaction id must be not null and 32 chars length".format(
-                    trimmedUUIDString
-                )
+                "Invalid transaction id: [%s]. Transaction id must be not null and 32 chars length"
+                    .format(trimmedUUIDString)
             }
             val uuid = CharArray(36)
             val trimmedUUID = trimmedUUIDString.toCharArray()

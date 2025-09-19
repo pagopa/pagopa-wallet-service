@@ -45,15 +45,12 @@ internal constructor(private val configuration: Map<String, String>, val default
                 val apiKeys: Map<String, String> =
                     objectMapper.readValue(
                         jsonSecretConfiguration,
-                        object : TypeReference<HashMap<String, String>>() {}
-                    )
+                        object : TypeReference<HashMap<String, String>>() {})
                 val missingKeys = pspToHandle - apiKeys.keys
                 if (missingKeys.isNotEmpty()) {
                     Either.left(
                         NpgApiKeyConfigurationException(
-                            "Misconfigured api keys. Missing keys: $missingKeys"
-                        )
-                    )
+                            "Misconfigured api keys. Missing keys: $missingKeys"))
                 } else Either.right(NpgPspApiKeysConfig(apiKeys, defaultApiKey))
             } catch (_: JacksonException) {
                 // exception here is ignored on purpose in order to avoid secret configuration

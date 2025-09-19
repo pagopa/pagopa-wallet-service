@@ -1,12 +1,12 @@
 package it.pagopa.wallet.repositories
 
+import java.time.Duration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ReactiveValueOperations
 import reactor.core.publisher.Mono
-import java.time.Duration
 
 class ReactiveRedisTemplateWrapperTest {
     class MockReactiveRedisTemplateWrapper(
@@ -80,7 +80,6 @@ class ReactiveRedisTemplateWrapperTest {
         verify(redisTemplate, times(1)).opsForValue()
         verify(opsForVal, times(1)).setIfAbsent("$keySpace:key", value, customTtl)
     }
-
 
     @Test
     fun `should find entity by id`() {

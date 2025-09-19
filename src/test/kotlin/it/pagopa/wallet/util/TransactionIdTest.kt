@@ -20,7 +20,6 @@ class TransactionIdTest {
         val exception = assertThrows<IllegalArgumentException> { TransactionId("a").uuid() }
         assertEquals(
             "Invalid transaction id: [a]. Transaction id must be not null and 32 chars length",
-            exception.message
-        )
+            exception.message)
     }
 }

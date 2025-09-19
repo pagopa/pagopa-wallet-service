@@ -11,7 +11,7 @@ plugins {
   id("java")
   id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.0"
-  id("com.diffplug.spotless") version "6.25.0"
+  id("com.diffplug.spotless") version "7.2.1"
   id("org.openapi.generator") version "7.2.0"
   id("org.sonarqube") version "6.2.0.5505"
   id("com.dipien.semantic-version") version "2.0.0" apply false
@@ -27,12 +27,7 @@ tasks.withType<KotlinCompile> {
   compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 }
 
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
-  }
-}
-
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 repositories { mavenCentral() }
 
@@ -77,7 +72,9 @@ dependencies {
   implementation("com.google.code.findbugs:jsr305:${Deps.jsr305Version}")
   implementation("org.projectlombok:lombok")
   implementation("org.openapitools:openapi-generator-gradle-plugin:${Deps.openapiGeneratorVersion}")
-  implementation("org.openapitools:jackson-databind-nullable:${Deps.jacksonDatabindNullableVersion}")
+  implementation(
+    "org.openapitools:jackson-databind-nullable:${Deps.jacksonDatabindNullableVersion}"
+  )
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.springframework.boot:spring-boot-starter-aop")
   implementation("io.netty:netty-resolver-dns-native-macos:${Deps.nettyResolverVersion}")
@@ -121,6 +118,7 @@ configurations {
     exclude(group = "org.slf4j", module = "slf4j-simple")
   }
 }
+
 // Dependency locking - lock all dependencies
 dependencyLocking { lockAllConfigurations() }
 
@@ -208,7 +206,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -239,7 +237,7 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -270,7 +268,7 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -301,7 +299,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
       "useSpringBoot3" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
-      "enumPropertyNaming" to "UPPERCASE"
+      "enumPropertyNaming" to "UPPERCASE",
     )
   )
 }
@@ -332,7 +330,7 @@ tasks.register("jwtIssuer", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -344,7 +342,7 @@ tasks.withType<KotlinCompile> {
     "nexiNpgNotification",
     "ecommercePaymentMethod",
     "ecommercePaymentMethodV2",
-    "jwtIssuer"
+    "jwtIssuer",
   )
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
@@ -361,14 +359,17 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   kotlin {
     toggleOffOn()
     targetExclude("build/**/*")
-    // ktfmt().kotlinlangStyle() - temporarily removed due to PSI compatibility issues with Kotlin 2.2.0
+    ktfmt().kotlinlangStyle().configure {
+      it.setManageTrailingCommas(false)
+      it.setRemoveUnusedImports(true)
+    }
     trimTrailingWhitespace()
     endWithNewline()
   }
   kotlinGradle {
     toggleOffOn()
     targetExclude("build/**/*.kts")
-    // ktfmt().googleStyle() - temporarily removed due to PSI compatibility issues with Kotlin 2.2.0
+    ktfmt().googleStyle()
     trimTrailingWhitespace()
     endWithNewline()
   }

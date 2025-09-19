@@ -17,8 +17,7 @@ class ApplicationTest {
                 APPLICATION_DESCRIPTION,
                 ApplicationStatus.DISABLED,
                 Instant.now(),
-                Instant.now()
-            )
+                Instant.now())
         }
     }
 }

@@ -16,6 +16,5 @@ data class CardDetails(
             LastFourDigits(lastFourDigits),
             ExpiryDate(expiryDate),
             CardBrand(brand),
-            PaymentInstrumentGatewayId(paymentInstrumentGatewayId)
-        )
+            PaymentInstrumentGatewayId(paymentInstrumentGatewayId))
 }

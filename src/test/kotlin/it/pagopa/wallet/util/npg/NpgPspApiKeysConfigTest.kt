@@ -26,8 +26,7 @@ class NpgPspApiKeysConfigTest {
                 jsonSecretConfiguration = pspApiKeyConfigurationJson,
                 pspToHandle = pspList,
                 objectMapper = jacksonObjectMapper(),
-                defaultApiKey = defaultApiKey
-            )
+                defaultApiKey = defaultApiKey)
             .get()
 
     @ParameterizedTest
@@ -51,14 +50,12 @@ class NpgPspApiKeysConfigTest {
                 jsonSecretConfiguration = invalidPspConfigurationJson,
                 pspToHandle = pspList,
                 objectMapper = jacksonObjectMapper(),
-                defaultApiKey = defaultApiKey
-            )
+                defaultApiKey = defaultApiKey)
         // assertions
         assertTrue(configuration.isLeft)
         assertEquals(
             "Npg api key configuration error: Invalid json configuration map",
-            configuration.left.message
-        )
+            configuration.left.message)
     }
 
     @Test
@@ -71,14 +68,12 @@ class NpgPspApiKeysConfigTest {
                 jsonSecretConfiguration = pspApiKeyConfigurationJson,
                 pspToHandle = pspListWithMissingKeyInConf,
                 objectMapper = jacksonObjectMapper(),
-                defaultApiKey = defaultApiKey
-            )
+                defaultApiKey = defaultApiKey)
         // assertions
         assertTrue(configuration.isLeft)
         assertEquals(
             "Npg api key configuration error: Misconfigured api keys. Missing keys: [missing]",
-            configuration.left.message
-        )
+            configuration.left.message)
     }
 
     @Test
@@ -91,7 +86,6 @@ class NpgPspApiKeysConfigTest {
         assertTrue(pspApiKey.isLeft)
         assertEquals(
             "Npg api key configuration error: Requested API key for PSP: [missing]. Available PSPs: [pspId3, pspId2, pspId1]",
-            pspApiKey.left.message
-        )
+            pspApiKey.left.message)
     }
 }

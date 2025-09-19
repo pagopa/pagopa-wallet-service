@@ -7,6 +7,5 @@ class InvalidRequestException(private val description: String) : ApiError(descri
         RestApiException(
             httpStatus = HttpStatus.BAD_REQUEST,
             description = description,
-            title = "Input request is invalid"
-        )
+            title = "Input request is invalid")
 }

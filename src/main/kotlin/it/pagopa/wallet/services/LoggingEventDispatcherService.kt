@@ -45,21 +45,18 @@ class LoggingEventDispatcherService(
                 logger.info(
                     "Handling wallet created event for [{}], publishing to storage queue with delay of [{}]",
                     walletCreated.walletId,
-                    walletExpireTimeout
-                )
+                    walletExpireTimeout)
                 val walletCreatedEvent = WalletCreatedEvent.of(WalletId.of(walletCreated.walletId))
                 expirationQueueClient.sendQueueEventWithTracingInfo(
                     event = walletCreatedEvent,
                     delay = walletExpireTimeout,
-                    tracingInfo = tracingInfo
-                )
+                    tracingInfo = tracingInfo)
             }
             .doOnNext {
                 logger.info(
                     "Successfully published expiration message for [{}] with delay of [{}]",
                     walletCreated.walletId,
-                    walletExpireTimeout
-                )
+                    walletExpireTimeout)
             }
             .doOnError { logger.error("Failed to publish event for [${walletCreated.walletId}]") }
 }

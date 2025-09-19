@@ -12,8 +12,7 @@ class WalletConflictStatusException(
     val walletDetailsType: WalletDetailsType?
 ) :
     ApiError(
-        "Conflict with walletId [${walletId.value}] with status [${walletStatusDto.value}]. Allowed statuses $allowedStatuses"
-    ) {
+        "Conflict with walletId [${walletId.value}] with status [${walletStatusDto.value}]. Allowed statuses $allowedStatuses") {
     override fun toRestException(): RestApiException =
         RestApiException(HttpStatus.CONFLICT, "Conflict", message!!)
 }

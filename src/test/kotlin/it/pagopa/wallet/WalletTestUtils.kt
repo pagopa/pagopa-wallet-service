@@ -39,15 +39,13 @@ object WalletTestUtils {
     val TEST_DEFAULT_CLIENTS: Map<Client.Id, Client> =
         mapOf(
             Client.WellKnown.IO to Client(Client.Status.ENABLED),
-            Client.Unknown("unknownClient") to Client(Client.Status.DISABLED)
-        )
+            Client.Unknown("unknownClient") to Client(Client.Status.DISABLED))
     private val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
     val APPLICATION_METADATA =
         WalletApplicationMetadata(
             APPLICATION_METADATA_HASHMAP.mapKeys {
                 WalletApplicationMetadata.Metadata.fromMetadataValue(it.key)
-            }
-        )
+            })
     val CONTRACT_ID = ContractId("W49357937935R869i")
     val BIN = Bin("42424242")
     val LAST_FOUR_DIGITS = LastFourDigits("5555")
@@ -80,8 +78,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun newWalletDocumentToBeSaved(
@@ -107,8 +104,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
@@ -130,19 +126,13 @@ object WalletTestUtils {
                                     WalletApplicationMetadata.Metadata
                                         .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                         .value,
-                                    true.toString()
-                                ),
+                                    true.toString()),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
-                                ),
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                    AMOUNT.toString()
-                                )
-                            )
-                        )
-                    ),
+                                    AMOUNT.toString())))),
                 clients =
                     Client.WellKnown.values().associate {
                         it.name to
@@ -151,10 +141,8 @@ object WalletTestUtils {
                                     Client.Status.ENABLED.name
                                 } else {
                                     Client.Status.DISABLED.name
-                                }
-                            )
-                    }
-            )
+                                })
+                    })
     }
 
     private fun parseWalletApplicationStatus(status: String): String =
@@ -182,8 +170,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentInitializedStatus(
@@ -205,8 +192,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentValidationRequestedStatus(paymentMethodId: PaymentMethodId): Wallet {
@@ -222,14 +208,10 @@ object WalletTestUtils {
                             LAST_FOUR_DIGITS.lastFourDigits,
                             EXP_DATE.expDate,
                             BRAND.toString(),
-                            PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
-                        )
+                            PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId)
                     } else {
                         PayPalDetailsDocument(
-                            maskedEmail = null,
-                            pspId = PSP_ID,
-                            pspBusinessName = PSP_BUSINESS_NAME
-                        )
+                            maskedEmail = null, pspId = PSP_ID, pspBusinessName = PSP_BUSINESS_NAME)
                     },
             )
     }
@@ -251,20 +233,13 @@ object WalletTestUtils {
                                     WalletApplicationMetadata.Metadata
                                         .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                         .value,
-                                    true.toString()
-                                ),
+                                    true.toString()),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
-                                ),
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                    AMOUNT.toString()
-                                )
-                            )
-                        )
-                    )
-            )
+                                    AMOUNT.toString())))))
     }
 
     fun walletDocumentInitializedStatusForTransactionWithContextualOnboard(
@@ -284,20 +259,13 @@ object WalletTestUtils {
                                     WalletApplicationMetadata.Metadata
                                         .PAYMENT_WITH_CONTEXTUAL_ONBOARD
                                         .value,
-                                    true.toString()
-                                ),
+                                    true.toString()),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).trimmedUUIDString
-                                ),
+                                    TransactionId(TRANSACTION_ID).trimmedUUIDString),
                                 Pair(
                                     WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                    AMOUNT.toString()
-                                )
-                            )
-                        )
-                    )
-            )
+                                    AMOUNT.toString())))))
     }
 
     fun walletDocumentStatusValidatedCard(
@@ -320,9 +288,7 @@ object WalletTestUtils {
                         WalletApplicationStatus.DISABLED.toString(),
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
-                        APPLICATION_METADATA_HASHMAP
-                    )
-                ),
+                        APPLICATION_METADATA_HASHMAP)),
             details =
                 CardDetailsDocument(
                     TYPE.toString(),
@@ -330,14 +296,12 @@ object WalletTestUtils {
                     LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
                     brand.value,
-                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
-                ),
+                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentStatusValidatedAPM(
@@ -360,21 +324,15 @@ object WalletTestUtils {
                         WalletApplicationStatus.DISABLED.toString(),
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
-                        APPLICATION_METADATA_HASHMAP
-                    )
-                ),
+                        APPLICATION_METADATA_HASHMAP)),
             details =
                 PayPalDetailsDocument(
-                    maskedEmail = paypalEmail,
-                    pspId = PSP_ID,
-                    pspBusinessName = PSP_BUSINESS_NAME
-                ),
+                    maskedEmail = paypalEmail, pspId = PSP_ID, pspBusinessName = PSP_BUSINESS_NAME),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentVerifiedWithCardDetails(
@@ -402,14 +360,12 @@ object WalletTestUtils {
                     lastFourDigits,
                     expiryDate,
                     brand,
-                    paymentInstrumentGatewayId
-                ),
+                    paymentInstrumentGatewayId),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentVerifiedWithAPM(
@@ -431,8 +387,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentWithError(
@@ -456,8 +411,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentValidated(clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS): Wallet {
@@ -476,8 +430,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentEmptyCreatedStatus(): Wallet {
@@ -497,8 +450,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentEmptyApplicationsNullDetails(): Wallet {
@@ -518,8 +470,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentEmptyContractId(): Wallet {
@@ -539,8 +490,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentWithEmptyValidationOperationResult(): Wallet {
@@ -560,8 +510,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDocumentNullDetails(): Wallet {
@@ -581,17 +530,14 @@ object WalletTestUtils {
                         WalletApplicationStatus.DISABLED.toString(),
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
-                        APPLICATION_METADATA.data.mapKeys { it.key.value }
-                    )
-                ),
+                        APPLICATION_METADATA.data.mapKeys { it.key.value })),
             details = null,
             clients =
                 TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     fun walletDomain(): it.pagopa.wallet.domain.wallets.Wallet {
@@ -615,16 +561,13 @@ object WalletTestUtils {
                         WalletApplicationStatus.DISABLED.toString(),
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
-                        APPLICATION_METADATA_HASHMAP
-                    ),
+                        APPLICATION_METADATA_HASHMAP),
                     WalletApplicationDocument(
                         OTHER_WALLET_APPLICATION_ID.id,
                         WalletApplicationStatus.DISABLED.toString(),
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
-                        mapOf()
-                    )
-                ),
+                        mapOf())),
             details =
                 CardDetailsDocument(
                     TYPE.toString(),
@@ -632,15 +575,13 @@ object WalletTestUtils {
                     LAST_FOUR_DIGITS.lastFourDigits,
                     EXP_DATE.expDate,
                     BRAND.value,
-                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId
-                ),
+                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId),
             clients =
                 TEST_DEFAULT_CLIENTS.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString()
-        )
+            onboardingChannel = OnboardingChannel.IO.toString())
     }
 
     val WALLET_DOMAIN =
@@ -656,16 +597,13 @@ object WalletTestUtils {
                         WalletApplicationStatus.DISABLED,
                         TIMESTAMP,
                         TIMESTAMP,
-                        APPLICATION_METADATA
-                    ),
+                        APPLICATION_METADATA),
                     WalletApplication(
                         OTHER_WALLET_APPLICATION_ID,
                         WalletApplicationStatus.DISABLED,
                         TIMESTAMP,
                         TIMESTAMP,
-                        WalletApplicationMetadata(mapOf())
-                    )
-                ),
+                        WalletApplicationMetadata(mapOf()))),
             contractId = CONTRACT_ID,
             validationOperationResult = OperationResultEnum.EXECUTED,
             validationErrorCode = null,
@@ -675,8 +613,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO
-        )
+            onboardingChannel = OnboardingChannel.IO)
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
         it.pagopa.wallet.domain.wallets.Wallet {
@@ -694,8 +631,7 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO
-        )
+            onboardingChannel = OnboardingChannel.IO)
     }
 
     fun walletInfoDto(): WalletInfoDto =
@@ -712,8 +648,7 @@ object WalletTestUtils {
                     .lastFourDigits(LAST_FOUR_DIGITS.lastFourDigits)
                     .type("CARDS")
                     .brand("MASTERCARD")
-                    .expiryDate(EXP_DATE.expDate)
-            )
+                    .expiryDate(EXP_DATE.expDate))
 
     fun walletInfoDtoAPM(): WalletInfoDto =
         WalletInfoDto()
@@ -725,8 +660,7 @@ object WalletTestUtils {
             .userId(USER_ID.id.toString())
             .applications(listOf())
             .details(
-                WalletPaypalDetailsDto().type("PAYPAL").maskedEmail("maskedEmail").pspId(PSP_ID)
-            )
+                WalletPaypalDetailsDto().type("PAYPAL").maskedEmail("maskedEmail").pspId(PSP_ID))
 
     fun walletCardAuthDataDto(): WalletAuthDataDto =
         WalletAuthDataDto()
@@ -748,8 +682,7 @@ object WalletTestUtils {
             APPLICATION_DESCRIPTION.description,
             ApplicationStatus.DISABLED.name,
             TIMESTAMP.toString(),
-            TIMESTAMP.toString()
-        )
+            TIMESTAMP.toString())
 
     fun buildProblemJson(
         httpStatus: HttpStatus,
@@ -845,8 +778,7 @@ object WalletTestUtils {
             .details(
                 WalletNotificationRequestCardDetailsDto()
                     .type("CARD")
-                    .paymentInstrumentGatewayId(CARD_ID_4)
-            )
+                    .paymentInstrumentGatewayId(CARD_ID_4))
 
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS:
         WalletNotificationRequestDto =
@@ -857,8 +789,7 @@ object WalletTestUtils {
             .details(
                 WalletNotificationRequestPaypalDetailsDto()
                     .type("PAYPAL")
-                    .maskedEmail(MASKED_EMAIL.value)
-            )
+                    .maskedEmail(MASKED_EMAIL.value))
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT_WITH_ERRORS: WalletNotificationRequestDto =
         WalletNotificationRequestDto()

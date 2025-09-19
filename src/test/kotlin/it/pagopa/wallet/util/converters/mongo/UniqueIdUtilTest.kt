@@ -26,7 +26,8 @@ class UniqueIdUtilsTest {
 
     @Test
     fun shouldThrowUniqueIdGenerateExceptionOnExhaustedAttemptsGeneratingId() {
-        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(uniqueIdSaveArgumentCaptor.capture(), any()))
+        Mockito.`when`(
+                uniqueIdTemplateWrapper.saveIfAbsent(uniqueIdSaveArgumentCaptor.capture(), any()))
             .thenReturn(Mono.just(false))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectErrorMatches {
@@ -36,11 +37,10 @@ class UniqueIdUtilsTest {
             .verify()
         verify(uniqueIdTemplateWrapper, Mockito.times(3)).saveIfAbsent(any(), any())
         val savedIds = uniqueIdSaveArgumentCaptor.allValues.map { it.id }.toSet()
-        //check that there were attempt saving MAX_NUMBER_ATTEMPTS different elements
+        // check that there were attempt saving MAX_NUMBER_ATTEMPTS different elements
         assertTrue(
             savedIds.size == UniqueIdUtils.MAX_NUMBER_ATTEMPTS,
-            "saved ids: $savedIds, expected ${UniqueIdUtils.MAX_NUMBER_ATTEMPTS} different values"
-        )
+            "saved ids: $savedIds, expected ${UniqueIdUtils.MAX_NUMBER_ATTEMPTS} different values")
     }
 
     @Test
@@ -57,7 +57,8 @@ class UniqueIdUtilsTest {
 
     @Test
     fun shouldGenerateUniqueIdNoRetry() {
-        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any())).thenReturn(Mono.just(true))
+        Mockito.`when`(uniqueIdTemplateWrapper.saveIfAbsent(any(), any()))
+            .thenReturn(Mono.just(true))
         StepVerifier.create(uniqueIdUtils.generateUniqueId())
             .expectNextMatches { response ->
                 response.length == 18 && response.startsWith(PRODUCT_PREFIX)

@@ -17,7 +17,6 @@ data class Application(
                 application.description.description,
                 application.status.name,
                 application.creationDate.toString(),
-                application.updateDate.toString()
-            )
+                application.updateDate.toString())
     }
 }

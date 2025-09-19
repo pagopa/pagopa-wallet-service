@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 class ControllersWarmup : ApplicationListener<ContextRefreshedEvent> {
 
     private val logger = LoggerFactory.getLogger(this.javaClass)
+
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
         val restControllers =
             event.applicationContext.getBeansWithAnnotation<RestController>().map { it.value }
@@ -44,8 +45,7 @@ class ControllersWarmup : ApplicationListener<ContextRefreshedEvent> {
                                     "Warmup function: [{}] -> elapsed time: [{}]. Is ok: [{}] ",
                                     it.toString(),
                                     intertime,
-                                    result
-                                )
+                                    result)
                                 1
                             }
                             .sum()
@@ -59,7 +59,6 @@ class ControllersWarmup : ApplicationListener<ContextRefreshedEvent> {
             "Controller: [{}] warm-up executed functions: [{}], elapsed time: [{}] ms",
             controllerToWarmUpKClass,
             warmUpMethods,
-            elapsedTime
-        )
+            elapsedTime)
     }
 }

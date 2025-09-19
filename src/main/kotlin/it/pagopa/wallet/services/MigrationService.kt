@@ -49,7 +49,7 @@ class MigrationService(
                 { _ -> Duration.ofDays(1) }, // ttl value
                 { _ -> Duration.ZERO }, // ttl error
                 { Duration.ZERO } // ttl empty
-            )
+                )
     }
 
     fun initializeWalletByPaymentManager(
@@ -59,8 +59,7 @@ class MigrationService(
         logger.info(
             "Initialize wallet for paymentManagerId: [{}] and userId: [{}]",
             paymentManagerWalletId,
-            userId.id
-        )
+            userId.id)
         val now = Instant.now()
         return walletPaymentManagerRepository
             .findByWalletPmId(paymentManagerWalletId)
@@ -68,30 +67,21 @@ class MigrationService(
             .flatMap { walletPaymentManager ->
                 Tracing.customizeSpan(
                         createWalletByPaymentManager(
-                            walletPaymentManager,
-                            userId,
-                            cardPaymentMethodId,
-                            now
-                        )
-                    ) {
-                        setAttribute(
-                            Tracing.WALLET_ID,
-                            walletPaymentManager.walletId.value.toString()
-                        )
-                    }
+                            walletPaymentManager, userId, cardPaymentMethodId, now)) {
+                            setAttribute(
+                                Tracing.WALLET_ID, walletPaymentManager.walletId.value.toString())
+                        }
                     .doOnNext { wallet ->
                         logger.info(
                             "Initialized new Wallet for paymentManagerId: [{}] and userId: [{}]. Wallet id: [{}]",
                             paymentManagerWalletId,
                             userId.id,
-                            wallet.id.value
-                        )
+                            wallet.id.value)
                     }
                     .doOnError {
                         logger.error(
                             "Failure during wallet creation. paymentManagerId: [${walletPaymentManager.walletPmId}], userId: [${userId.id}], wallet id: [${walletPaymentManager.walletId.value}]",
-                            it
-                        )
+                            it)
                     }
                     .contextWrite { ctx ->
                         ctx.put(MDC_WALLET_ID, walletPaymentManager.walletId.value.toString())
@@ -120,8 +110,7 @@ class MigrationService(
             }
             .doOnError(MigrationError.WalletAlreadyOnboarded::class.java) {
                 logger.error(
-                    "Failure during wallet's card details update: wallet already onboarded"
-                )
+                    "Failure during wallet's card details update: wallet already onboarded")
             }
             .doOnError({ e -> e !is MigrationError.WalletContractIdNotFound }) {
                 logger.error("Failure during wallet's card details update", it)
@@ -194,8 +183,7 @@ class MigrationService(
                 userId = wallet.userId.id.toString(),
                 paymentInstrumentGatewayId =
                     details.paymentInstrumentGatewayId.paymentInstrumentGatewayId,
-                status = WalletStatusDto.VALIDATED
-            )
+                status = WalletStatusDto.VALIDATED)
             .hasElement()
     }
 
@@ -217,9 +205,7 @@ class MigrationService(
                     creationTime,
                     WalletApplicationMetadata.of(
                         WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION to
-                            creationTime.toString()
-                    )
-                )
+                            creationTime.toString()))
             }
             .map { application ->
                 Wallet(
@@ -240,8 +226,8 @@ class MigrationService(
                 )
             }
             .switchIfEmpty(
-                Mono.error(ApplicationNotFoundException(walletMigrationConfig.defaultApplicationId))
-            )
+                Mono.error(
+                    ApplicationNotFoundException(walletMigrationConfig.defaultApplicationId)))
             .flatMap { walletRepository.save(it.toDocument()) }
             .map { LoggedAction(it.toDomain(), WalletMigratedAddedEvent(it.id)) }
             .flatMap { it.saveEvents(loggingEventRepository) }

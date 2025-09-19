@@ -52,8 +52,7 @@ class MigrationServiceTest {
             uniqueIdUtils,
             WalletMigrationConfig(
                 cardPaymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
-                defaultApplicationId = WALLET_APPLICATION_PAGOPA_ID.id
-            ),
+                defaultApplicationId = WALLET_APPLICATION_PAGOPA_ID.id),
         )
 
     @BeforeEach
@@ -92,9 +91,7 @@ class MigrationServiceTest {
                     argumentCaptor<Iterable<LoggingEvent>> {
                         verify(loggingEventRepository, times(1)).saveAll(capture())
                         assertInstanceOf(
-                            WalletMigratedAddedEvent::class.java,
-                            lastValue.firstOrNull()
-                        )
+                            WalletMigratedAddedEvent::class.java, lastValue.firstOrNull())
                     }
                 }
                 .verifyComplete()
@@ -122,8 +119,7 @@ class MigrationServiceTest {
                     assertEquals(defaultApplication.status, WalletApplicationStatus.ENABLED)
                     assertThat(
                         defaultApplication.metadata.data,
-                        hasKey(WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION)
-                    )
+                        hasKey(WalletApplicationMetadata.Metadata.ONBOARD_BY_MIGRATION))
                 }
                 .verifyComplete()
         }
@@ -193,10 +189,7 @@ class MigrationServiceTest {
             given {
                     walletRepository
                         .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                            any(),
-                            any(),
-                            any()
-                        )
+                            any(), any(), any())
                 }
                 .willAnswer { Mono.empty<String>() }
 
@@ -212,16 +205,12 @@ class MigrationServiceTest {
                         assertEquals(cardDetails.lastFourDigits, it.lastFourDigits)
                         assertEquals(cardDetails.expiryDate, it.expiryDate)
                         assertEquals(
-                            cardDetails.paymentInstrumentGatewayId,
-                            it.paymentInstrumentGatewayId
-                        )
+                            cardDetails.paymentInstrumentGatewayId, it.paymentInstrumentGatewayId)
                     }
                     argumentCaptor<Iterable<LoggingEvent>> {
                         verify(loggingEventRepository, times(1)).saveAll(capture())
                         assertInstanceOf(
-                            WalletDetailsAddedEvent::class.java,
-                            lastValue.firstOrNull()
-                        )
+                            WalletDetailsAddedEvent::class.java, lastValue.firstOrNull())
                     }
                 }
                 .verifyComplete()
@@ -325,10 +314,7 @@ class MigrationServiceTest {
             given {
                     walletRepository
                         .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                            any(),
-                            any(),
-                            any()
-                        )
+                            any(), any(), any())
                 }
                 .willAnswer { Mono.just(true) }
 
@@ -437,11 +423,8 @@ class MigrationServiceTest {
             ContractId(UUID.randomUUID().toString()).let {
                 receiver(
                     generateWalletPaymentManagerDocument(
-                        paymentManagerId ?: Random().nextLong().toString(),
-                        it
-                    ),
-                    it
-                )
+                        paymentManagerId ?: Random().nextLong().toString(), it),
+                    it)
             }
 
         private fun generateWalletPaymentManagerDocument(
@@ -452,8 +435,7 @@ class MigrationServiceTest {
                 walletPmId = paymentManagerId,
                 walletId = UUID.randomUUID().toString(),
                 contractId = contractId.contractId,
-                creationDate = Instant.now()
-            )
+                creationDate = Instant.now())
 
         private fun generateCardDetails() =
             CardDetails(
@@ -461,8 +443,7 @@ class MigrationServiceTest {
                 lastFourDigits = LastFourDigits("7890"),
                 expiryDate = ExpiryDate("202212"),
                 brand = CardBrand("VISA"),
-                paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123")
-            )
+                paymentInstrumentGatewayId = PaymentInstrumentGatewayId("123"))
 
         private fun WalletPaymentManagerDocument.createWalletTest(
             userId: UserId,
@@ -484,7 +465,6 @@ class MigrationServiceTest {
                 validationErrorCode = null,
                 errorReason = null,
                 version = 0,
-                onboardingChannel = OnboardingChannel.IO.toString()
-            )
+                onboardingChannel = OnboardingChannel.IO.toString())
     }
 }

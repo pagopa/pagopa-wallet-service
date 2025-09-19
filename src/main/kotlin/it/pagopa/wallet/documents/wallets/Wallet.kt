@@ -55,8 +55,7 @@ data class Wallet(
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,
-                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel)
-            )
+                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel))
         return wallet
     }
 }

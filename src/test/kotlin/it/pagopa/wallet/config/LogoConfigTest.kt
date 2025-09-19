@@ -16,8 +16,7 @@ class LogoConfigTest {
             "AMEX" to URI.create("http://amex"),
             "MAESTRO" to URI.create("http://maestro"),
             "DINERS" to URI.create("http://diners"),
-            "UNKNOWN" to URI.create("http://unknown")
-        )
+            "UNKNOWN" to URI.create("http://unknown"))
 
     @Test
     fun `should build logo mapping successfully`() {
@@ -31,14 +30,12 @@ class LogoConfigTest {
             assertThrows<IllegalStateException> {
                 LogoConfig()
                     .walletLogoMapping(
-                        logoMapping.filter { it.key != "VISA" }.mapValues { it.value.toString() }
-                    )
+                        logoMapping.filter { it.key != "VISA" }.mapValues { it.value.toString() })
             }
 
         assertEquals(
             "Invalid logo configuration map, missing logo entries for the following keys: [VISA]",
-            exception.message
-        )
+            exception.message)
     }
 
     @Test
