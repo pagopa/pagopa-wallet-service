@@ -3,11 +3,7 @@ package it.pagopa.wallet
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
 import it.pagopa.wallet.config.WalletMigrationConfig
-import it.pagopa.wallet.config.properties.ExpirationQueueConfig
-import it.pagopa.wallet.config.properties.JwtTokenIssuerConfigProperties
-import it.pagopa.wallet.config.properties.LoggedActionDeadLetterQueueConfig
-import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
-import it.pagopa.wallet.config.properties.RetrySavePolicyConfig
+import it.pagopa.wallet.config.properties.*
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
@@ -23,7 +19,8 @@ import reactor.core.publisher.Hooks
     RetrySavePolicyConfig::class,
     ExpirationQueueConfig::class,
     LoggedActionDeadLetterQueueConfig::class,
-    JwtTokenIssuerConfigProperties::class)
+    JwtTokenIssuerConfigProperties::class,
+    PaymentMethodsHandlerConfigProperties::class)
 class WalletApplication
 
 fun main(args: Array<String>) {
