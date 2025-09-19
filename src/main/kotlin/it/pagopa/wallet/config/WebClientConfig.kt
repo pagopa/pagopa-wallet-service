@@ -123,10 +123,10 @@ class WebClientConfig {
         return it.pagopa.generated.jwtIssuer.api.JwtIssuerApi(apiClient)
     }
 
-    @Bean(name = ["ecommercePaymentMethodsHandlerClient"])
+    @Bean(name = ["ecommercePaymentMethodsHandlerWebClient"])
     fun ecommercePaymentMethodsHandlerClient(
         config: PaymentMethodsHandlerConfigProperties
-    ): it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsApi {
+    ): it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsHandlerApi {
         val httpClient =
             HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
@@ -145,6 +145,7 @@ class WebClientConfig {
                 .ApiClient(webClient)
                 .setBasePath(config.uri)
         apiClient.setApiKey(config.apiKey)
-        return it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsApi(apiClient)
+        return it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsHandlerApi(
+            apiClient)
     }
 }

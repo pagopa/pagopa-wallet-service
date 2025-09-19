@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 @Component
 class EcommercePaymentMethodsHandlerClient(
     @Autowired
-    @Qualifier("ecommercePaymentMethodsHandlerClient")
+    @Qualifier("ecommercePaymentMethodsHandlerWebClient")
     private val ecommercePaymentMethodHandlerClient: PaymentMethodsHandlerApi,
 ) {
 
