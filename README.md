@@ -137,6 +137,7 @@ If you want to customize the application environment, reference this table:
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_URI                                 | eCommerce payment methods handler URI                                                                                                                      | string                   |         |
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_READ_TIMEOUT                        | eCommerce payment methods handler response timeout                                                                                                         | string                   |         |
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_CONNECTION_TIMEOUT                  | eCommerce payment methods handler connection timeout                                                                                                       | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_API_KEY                             | eCommerce payment methods handler api key                                                                                                                  | string                   |         |
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
