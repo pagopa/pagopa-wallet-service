@@ -1,8 +1,8 @@
 package it.pagopa.wallet.repositories
 
 import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
-import org.springframework.data.redis.core.ReactiveRedisTemplate
 import java.time.Duration
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 
 class PaymentMethodsTemplateWrapper
 /**
@@ -13,9 +13,6 @@ class PaymentMethodsTemplateWrapper
  */
 (reactiveRedisTemplate: ReactiveRedisTemplate<String, PaymentMethodResponse>, ttl: Duration) :
     ReactiveRedisTemplateWrapper<PaymentMethodResponse>(
-        reactiveRedisTemplate = reactiveRedisTemplate,
-        "wallet-service:payment-methods",
-        ttl
-    ) {
+        reactiveRedisTemplate = reactiveRedisTemplate, "wallet-service:payment-methods", ttl) {
     override fun getKeyFromEntity(value: PaymentMethodResponse): String = value.id
 }

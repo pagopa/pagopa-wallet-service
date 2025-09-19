@@ -67,7 +67,7 @@ class EcommercePaymentMethodsClient(
             }
             .filter {
                 PaymentMethodStatus.ENABLED == it.status &&
-                        isValidPaymentMethodGivenWalletTypeAvailable(it.name)
+                    isValidPaymentMethodGivenWalletTypeAvailable(it.name)
             }
             .switchIfEmpty(
                 Mono.error(

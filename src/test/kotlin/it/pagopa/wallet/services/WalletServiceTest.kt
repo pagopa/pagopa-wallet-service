@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-
 import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.paymentmethods.v2.model.Bundle
 import it.pagopa.generated.jwtIssuer.model.CreateTokenRequest
@@ -118,8 +117,7 @@ class WalletServiceTest {
             "/esito",
             "/annulla",
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}?sessionToken={sessionToken}",
-            "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
-        )
+            "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}")
 
     private val walletUtils: WalletUtils = mock()
 
@@ -187,40 +185,31 @@ class WalletServiceTest {
             Stream.of(
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.PENDING,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.CANCELED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.VOIDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.REFUNDED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.FAILED,
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                ),
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
             )
 
         @JvmStatic
@@ -251,8 +240,7 @@ class WalletServiceTest {
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
             walletUtils = walletUtils,
             pspDetailClient = pspDetailClient,
-            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS
-        )
+            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS)
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 
@@ -281,9 +269,7 @@ class WalletServiceTest {
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
 
@@ -311,26 +297,21 @@ class WalletServiceTest {
                         "testDescription",
                         ApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
                 val walletApplicationSaved =
                     it.pagopa.wallet.documents.wallets.WalletApplication(
                         "test",
                         WalletApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
                         Instant.now().toString(),
-                        mapOf()
-                    )
+                        mapOf())
                 val newWalletDocumentToBeSaved =
                     newWalletDocumentToBeSaved(
-                        PAYMENT_METHOD_ID_CARDS,
-                        listOf(walletApplicationSaved)
-                    )
+                        PAYMENT_METHOD_ID_CARDS, listOf(walletApplicationSaved))
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentToBeSaved.toDomain(),
-                        WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                        WalletAddedEvent(WALLET_UUID.value.toString()))
                 given { applicationRepository.findById(anyString()) }
                     .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }
@@ -345,14 +326,11 @@ class WalletServiceTest {
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, onboardingConfig.cardReturnUrl),
-                            createWalletOutput
-                        )
+                            createWalletOutput)
                     }
                     .verifyComplete()
 
@@ -379,26 +357,21 @@ class WalletServiceTest {
                         "testDescription",
                         ApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
                 val walletApplicationSaved =
                     it.pagopa.wallet.documents.wallets.WalletApplication(
                         "test",
                         WalletApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
                         Instant.now().toString(),
-                        mapOf()
-                    )
+                        mapOf())
                 val newWalletDocumentToBeSaved =
                     newWalletDocumentToBeSaved(
-                        PAYMENT_METHOD_ID_APM,
-                        listOf(walletApplicationSaved)
-                    )
+                        PAYMENT_METHOD_ID_APM, listOf(walletApplicationSaved))
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentToBeSaved.toDomain(),
-                        WalletAddedEvent(mockedUUID.toString())
-                    )
+                        WalletAddedEvent(mockedUUID.toString()))
                 given { applicationRepository.findById(anyString()) }
                     .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
@@ -412,14 +385,11 @@ class WalletServiceTest {
                             walletApplicationList = listOf(WALLET_APPLICATION_ID),
                             userId = USER_ID.id,
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, onboardingConfig.apmReturnUrl),
-                            createWalletOutput
-                        )
+                            createWalletOutput)
                     }
                     .verifyComplete()
 
@@ -452,9 +422,7 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
                 verify(paymentMethodsService, times(0)).getPaymentMethodById(anyString())
@@ -481,19 +449,15 @@ class WalletServiceTest {
                         "",
                         ApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
 
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
                     newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-                        PAYMENT_METHOD_ID_CARDS,
-                        expectedPagoPAApplication
-                    )
+                        PAYMENT_METHOD_ID_CARDS, expectedPagoPAApplication)
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
-                        WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                        WalletAddedEvent(WALLET_UUID.value.toString()))
 
                 given { applicationRepository.findById("PAGOPA") }
                     .willAnswer { Mono.just(expectedPagoPAApplication) }
@@ -513,17 +477,14 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
                                 expectedLoggedAction,
-                                Optional.of(URI.create(onboardingPaymentWalletCreditCardReturnUrl))
-                            ),
-                            createWalletOutput
-                        )
+                                Optional.of(
+                                    URI.create(onboardingPaymentWalletCreditCardReturnUrl))),
+                            createWalletOutput)
                     }
                     .verifyComplete()
                 verify(paymentMethodsService, times(1))
@@ -550,19 +511,15 @@ class WalletServiceTest {
                         "",
                         ApplicationStatus.DISABLED.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
 
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
                     newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-                        PAYMENT_METHOD_ID_CARDS,
-                        expectedPagoPAApplication
-                    )
+                        PAYMENT_METHOD_ID_CARDS, expectedPagoPAApplication)
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
-                        WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                        WalletAddedEvent(WALLET_UUID.value.toString()))
 
                 given { applicationRepository.findById("PAGOPA") }
                     .willAnswer { Mono.just(expectedPagoPAApplication) }
@@ -582,17 +539,14 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
                                 expectedLoggedAction,
-                                Optional.of(URI.create(onboardingPaymentWalletCreditCardReturnUrl))
-                            ),
-                            createWalletOutput
-                        )
+                                Optional.of(
+                                    URI.create(onboardingPaymentWalletCreditCardReturnUrl))),
+                            createWalletOutput)
                     }
                     .verifyComplete()
                 verify(paymentMethodsService, times(1))
@@ -621,19 +575,15 @@ class WalletServiceTest {
                         "",
                         ApplicationStatus.INCOMING.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
 
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
                     newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-                        PAYMENT_METHOD_ID_CARDS,
-                        expectedPagoPAApplication
-                    )
+                        PAYMENT_METHOD_ID_CARDS, expectedPagoPAApplication)
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
-                        WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                        WalletAddedEvent(WALLET_UUID.value.toString()))
 
                 given { applicationRepository.findById("PAGOPA") }
                     .willAnswer { Mono.just(expectedPagoPAApplication) }
@@ -653,17 +603,14 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
                                 expectedLoggedAction,
-                                Optional.of(URI.create(onboardingPaymentWalletCreditCardReturnUrl))
-                            ),
-                            createWalletOutput
-                        )
+                                Optional.of(
+                                    URI.create(onboardingPaymentWalletCreditCardReturnUrl))),
+                            createWalletOutput)
                     }
                     .verifyComplete()
                 verify(paymentMethodsService, times(1))
@@ -692,20 +639,16 @@ class WalletServiceTest {
                         "",
                         ApplicationStatus.ENABLED.name,
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
 
                 val newWalletDocumentForPaymentWithContextualOnboardToBeSaved =
                     newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
-                        PAYMENT_METHOD_ID_APM,
-                        expectedPagoPAApplication
-                    )
+                        PAYMENT_METHOD_ID_APM, expectedPagoPAApplication)
 
                 val expectedLoggedAction =
                     LoggedAction(
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
-                        WalletAddedEvent(WALLET_UUID.value.toString())
-                    )
+                        WalletAddedEvent(WALLET_UUID.value.toString()))
 
                 given { applicationRepository.findById("PAGOPA") }
                     .willAnswer { Mono.just(expectedPagoPAApplication) }
@@ -725,14 +668,10 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
-                    )
+                            onboardingChannel = OnboardingChannel.IO))
                     .assertNext { createWalletOutput ->
                         assertEquals(
-                            Pair(expectedLoggedAction, Optional.empty<URI>()),
-                            createWalletOutput
-                        )
+                            Pair(expectedLoggedAction, Optional.empty<URI>()), createWalletOutput)
                     }
                     .verifyComplete()
 
@@ -777,8 +716,7 @@ class WalletServiceTest {
                                     .id(UUID.randomUUID().toString())
                                     .src("https://test.it/c")
                                     .propertyClass("cvv")
-                                    .propertyClass("c")
-                            )
+                                    .propertyClass("c"))
                     }
             val sessionResponseDto =
                 SessionWalletCreateResponseDto()
@@ -792,9 +730,7 @@ class WalletServiceTest {
                                         .propertyClass(it.propertyClass)
                                         .src(URI.create(it.src))
                                         .id(it.id)
-                                }
-                            )
-                    )
+                                }))
 
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
@@ -807,9 +743,7 @@ class WalletServiceTest {
                     walletDocumentInitializedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWalletCreated(orderId = orderId)
-                    )
-                )
+                        auditWallet = AuditWalletCreated(orderId = orderId)))
 
             val basePath = URI.create(sessionUrlConfig.basePath)
             val merchantUrl = sessionUrlConfig.basePath
@@ -822,9 +756,7 @@ class WalletServiceTest {
                         mapOf(
                             Pair("walletId", walletDocumentCreatedStatus.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
 
             val npgCorrelationId = WALLET_UUID.value
 
@@ -836,8 +768,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.VERIFY)
@@ -845,16 +776,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("CARDS")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
@@ -881,11 +810,7 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -902,8 +827,7 @@ class WalletServiceTest {
                     CreateTokenRequest()
                         .audience("npg")
                         .duration(TOKEN_VALIDITY_TIME_SECONDS)
-                        .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
-                )
+                        .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
         }
     }
 
@@ -940,8 +864,7 @@ class WalletServiceTest {
                                     .id(UUID.randomUUID().toString())
                                     .src("https://test.it/c")
                                     .propertyClass("cvv")
-                                    .propertyClass("c")
-                            )
+                                    .propertyClass("c"))
                     }
             val sessionResponseDto =
                 SessionWalletCreateResponseDto()
@@ -955,9 +878,7 @@ class WalletServiceTest {
                                         .propertyClass(it.propertyClass)
                                         .src(URI.create(it.src))
                                         .id(it.id)
-                                }
-                            )
-                    )
+                                }))
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
 
@@ -967,21 +888,17 @@ class WalletServiceTest {
 
             val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS
-                )
+                    PAYMENT_METHOD_ID_CARDS)
             val walletDocumentInitializedStatusForTransactionWithContextualOnboard =
                 walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS
-                )
+                    PAYMENT_METHOD_ID_CARDS)
 
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentInitializedStatusForTransactionWithContextualOnboard.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWalletCreated(orderId = orderId)
-                    )
-                )
+                        auditWallet = AuditWalletCreated(orderId = orderId)))
 
             val basePath = URI.create(sessionUrlConfig.basePath)
             val merchantUrl = sessionUrlConfig.basePath
@@ -990,19 +907,15 @@ class WalletServiceTest {
             val sessionToken = "sessionToken"
             val notificationUrl =
                 UriComponentsBuilder.fromHttpUrl(
-                        sessionUrlConfig.trxWithContextualOnboardNotificationUrl
-                    )
+                        sessionUrlConfig.trxWithContextualOnboardNotificationUrl)
                     .build(
                         mapOf(
                             Pair("transactionId", TransactionId(TRANSACTION_ID).trimmedUUIDString),
                             Pair(
                                 "walletId",
-                                walletDocumentCreatedStatusForTransactionWithContextualOnboard.id
-                            ),
+                                walletDocumentCreatedStatusForTransactionWithContextualOnboard.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
 
             val npgCorrelationId = WALLET_UUID.value
             val npgCreateHostedOrderRequest =
@@ -1013,8 +926,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(AMOUNT.toString())
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.PAY)
@@ -1022,16 +934,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(AMOUNT.toString())
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("CARDS")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                 .willAnswer { mono { npgFields } }
@@ -1040,8 +950,7 @@ class WalletServiceTest {
 
             given { walletRepository.findByIdAndUserId(any(), any()) }
                 .willReturn(
-                    Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard)
-                )
+                    Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard))
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
@@ -1053,11 +962,7 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -1078,10 +983,7 @@ class WalletServiceTest {
                             .privateClaims(
                                 mapOf(
                                     "walletId" to WALLET_UUID.value.toString(),
-                                    "transactionId" to TRANSACTION_ID
-                                )
-                            )
-                )
+                                    "transactionId" to TRANSACTION_ID)))
         }
     }
 
@@ -1122,9 +1024,7 @@ class WalletServiceTest {
                         mapOf(
                             Pair("walletId", walletDocumentCreatedStatus.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
 
             val npgCorrelationId = WALLET_UUID.value
             val npgCreateHostedOrderRequest =
@@ -1135,8 +1035,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.VERIFY)
@@ -1144,16 +1043,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("PAYPAL")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
@@ -1176,11 +1073,7 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        APM_SESSION_CREATE_REQUEST
-                    )
-                )
+                        USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST))
                 .expectError(NpgClientException::class.java)
                 .verify()
 
@@ -1199,8 +1092,7 @@ class WalletServiceTest {
                         CreateTokenRequest()
                             .duration(TOKEN_VALIDITY_TIME_SECONDS)
                             .audience("npg")
-                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
-                )
+                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
         }
     }
 
@@ -1245,9 +1137,7 @@ class WalletServiceTest {
                         mapOf(
                             Pair("walletId", walletDocumentCreatedStatus.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
 
             val npgCorrelationId = WALLET_UUID.value
             val npgCreateHostedOrderRequest =
@@ -1258,8 +1148,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.VERIFY)
@@ -1267,16 +1156,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("CARDS")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
                 .willAnswer { mono { npgFields } }
@@ -1288,18 +1175,13 @@ class WalletServiceTest {
 
             given { walletRepository.save(walletArgumentCaptor.capture()) }
                 .willAnswer { Mono.just(it.arguments[0]) }
-            given { npgSessionRedisTemplate.save(eq(npgSession)) }
-                .willAnswer { Mono.just(true) }
+            given { npgSessionRedisTemplate.save(eq(npgSession)) }.willAnswer { Mono.just(true) }
             given { jwtTokenIssuerClient.createToken(createTokenRequest = anyOrNull()) }
                 .willAnswer { mono { CreateTokenResponse().token(sessionToken) } }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectError(NpgClientException::class.java)
                 .verify()
 
@@ -1318,8 +1200,7 @@ class WalletServiceTest {
                         CreateTokenRequest()
                             .duration(TOKEN_VALIDITY_TIME_SECONDS)
                             .audience("npg")
-                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
-                )
+                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
         }
     }
 
@@ -1352,8 +1233,7 @@ class WalletServiceTest {
                     .sessionData(
                         SessionWalletCreateResponseAPMDataDto()
                             .redirectUrl(apmRedirectUrl)
-                            .paymentMethodType("apm")
-                    )
+                            .paymentMethodType("apm"))
 
             val npgSession =
                 NpgSession(orderId, sessionId.toString(), "token", WALLET_UUID.value.toString())
@@ -1366,9 +1246,7 @@ class WalletServiceTest {
                     walletDocumentValidationRequestedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWalletCreated(orderId = orderId)
-                    )
-                )
+                        auditWallet = AuditWalletCreated(orderId = orderId)))
 
             val basePath = URI.create(sessionUrlConfig.basePath)
             val merchantUrl = sessionUrlConfig.basePath
@@ -1381,9 +1259,7 @@ class WalletServiceTest {
                         mapOf(
                             Pair("walletId", walletDocumentCreatedStatus.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
             val npgCreateHostedOrderRequest =
                 CreateHostedOrderRequest()
                     .version(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERSION)
@@ -1392,8 +1268,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.VERIFY)
@@ -1401,16 +1276,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("PAYPAL")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             /* Mock response */
             given { paymentMethodsService.getPaymentMethodById(any()) }
@@ -1437,11 +1310,7 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        APM_SESSION_CREATE_REQUEST
-                    )
-                )
+                        USER_ID, WALLET_UUID, APM_SESSION_CREATE_REQUEST))
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -1480,8 +1349,7 @@ class WalletServiceTest {
                     .fieldSet(
                         Fields()
                             .sessionId(sessionId)
-                            .addFieldsItem(Field().src("http://src.state.url"))
-                    )
+                            .addFieldsItem(Field().src("http://src.state.url")))
 
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
             val verifyResponse =
@@ -1496,28 +1364,19 @@ class WalletServiceTest {
                                         npgStateResponse.fieldSet!!
                                             .fields!![0]
                                             .src!!
-                                            .toByteArray(StandardCharsets.UTF_8)
-                                    )
-                            )
-                    )
+                                            .toByteArray(StandardCharsets.UTF_8))))
 
             val walletDocumentInitializedStatus =
                 walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
 
             val walletDocumentWithCardDetails =
                 walletDocumentVerifiedWithCardDetails(
-                    "12345678",
-                    "0000",
-                    "203012",
-                    "?",
-                    "MASTERCARD"
-                )
+                    "12345678", "0000", "203012", "?", "MASTERCARD")
 
             val expectedLoggedAction =
                 LoggedAction(
                     walletDocumentWithCardDetails.toDomain(),
-                    WalletDetailsAddedEvent(WALLET_UUID.value.toString())
-                )
+                    WalletDetailsAddedEvent(WALLET_UUID.value.toString()))
 
             given { npgClient.getCardData(any(), any()) }
                 .willAnswer { mono { npgGetCardDataResponse } }
@@ -1542,19 +1401,14 @@ class WalletServiceTest {
 
             StepVerifier.create(
                     walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
-                )
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                 .expectNext(Pair(verifyResponse, expectedLoggedAction))
                 .verifyComplete()
 
             val walletDocumentToSave = walletArgumentCaptor.firstValue
             assertEquals(
                 walletDocumentToSave.details,
-                CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
-            )
+                CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?"))
 
             verify(paymentMethodsService, times(1))
                 .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
@@ -1564,9 +1418,7 @@ class WalletServiceTest {
             verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
             verify(npgClient, times(1))
                 .confirmPayment(
-                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                    npgCorrelationId
-                )
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"), npgCorrelationId)
         }
     }
 
@@ -1603,7 +1455,8 @@ class WalletServiceTest {
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(Mono.just(walletDocumentInitializedStatus))
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
+                given { npgSessionRedisTemplate.findById(orderId) }
+                    .willAnswer { Mono.just(npgSession) }
 
                 given { paymentMethodsService.getPaymentMethodById(any()) }
                     .willAnswer { mono { getValidAPMPaymentMethod() } }
@@ -1612,11 +1465,7 @@ class WalletServiceTest {
 
                 StepVerifier.create(
                         walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
+                            orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                     .expectError(NoCardsSessionValidateRequestException::class.java)
                     .verify()
 
@@ -1646,11 +1495,7 @@ class WalletServiceTest {
                 /* test */
                 StepVerifier.create(
                         walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
+                            orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                     .expectError(SessionNotFoundException::class.java)
                     .verify()
 
@@ -1679,17 +1524,14 @@ class WalletServiceTest {
                 val npgSession =
                     NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
-                given { npgSessionRedisTemplate.findById(any()) }.willAnswer { Mono.just(npgSession) }
+                given { npgSessionRedisTemplate.findById(any()) }
+                    .willAnswer { Mono.just(npgSession) }
                 given { walletRepository.findByIdAndUserId(any(), any()) }.willReturn(Mono.empty())
 
                 /* test */
                 StepVerifier.create(
                         walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
+                            orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                     .expectError(WalletNotFoundException::class.java)
                     .verify()
 
@@ -1724,17 +1566,14 @@ class WalletServiceTest {
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(mono { walletDocumentInitializedStatus })
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
+                given { npgSessionRedisTemplate.findById(orderId) }
+                    .willAnswer { Mono.just(npgSession) }
 
                 /* test */
 
                 StepVerifier.create(
                         walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
+                            orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                     .expectError(WalletSessionMismatchException::class.java)
                     .verify()
 
@@ -1764,26 +1603,19 @@ class WalletServiceTest {
                     walletDocumentValidationRequestedStatus(PAYMENT_METHOD_ID_CARDS)
                 val npgSession =
                     NpgSession(
-                        orderId,
-                        sessionId,
-                        "token",
-                        walletDocumentValidationRequestedStatus.id
-                    )
+                        orderId, sessionId, "token", walletDocumentValidationRequestedStatus.id)
 
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(mono { walletDocumentValidationRequestedStatus })
 
-                given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
+                given { npgSessionRedisTemplate.findById(orderId) }
+                    .willAnswer { Mono.just(npgSession) }
 
                 /* test */
 
                 StepVerifier.create(
                         walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
-                    )
+                            orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                     .expectError(WalletConflictStatusException::class.java)
                     .verify()
 
@@ -1844,11 +1676,7 @@ class WalletServiceTest {
 
             StepVerifier.create(
                     walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
-                )
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -1863,9 +1691,7 @@ class WalletServiceTest {
             verify(walletRepository, times(1)).save(walletDocumentToSave)
             verify(npgClient, times(1))
                 .confirmPayment(
-                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                    npgCorrelationId
-                )
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"), npgCorrelationId)
         }
     }
 
@@ -1915,11 +1741,7 @@ class WalletServiceTest {
 
             StepVerifier.create(
                     walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
-                )
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -1934,9 +1756,7 @@ class WalletServiceTest {
             verify(walletRepository, times(1)).save(walletDocumentToSave)
             verify(npgClient, times(1))
                 .confirmPayment(
-                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                    npgCorrelationId
-                )
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"), npgCorrelationId)
             verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
@@ -1990,11 +1810,7 @@ class WalletServiceTest {
 
             StepVerifier.create(
                     walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
-                )
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -2009,9 +1825,7 @@ class WalletServiceTest {
             verify(walletRepository, times(1)).save(walletDocumentToSave)
             verify(npgClient, times(1))
                 .confirmPayment(
-                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                    npgCorrelationId
-                )
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"), npgCorrelationId)
             verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
@@ -2065,11 +1879,7 @@ class WalletServiceTest {
 
             StepVerifier.create(
                     walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
-                )
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -2084,9 +1894,7 @@ class WalletServiceTest {
             verify(walletRepository, times(1)).save(walletDocumentToSave)
             verify(npgClient, times(1))
                 .confirmPayment(
-                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"),
-                    npgCorrelationId
-                )
+                    ConfirmPaymentRequest().sessionId(sessionId).amount("0"), npgCorrelationId)
             verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
         }
     }
@@ -2121,22 +1929,18 @@ class WalletServiceTest {
                                 WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
-                            }
-                        )
+                            })
                         .details(
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .brand((wallet.details as CardDetails).brand)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
-                        )
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits))
                         .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
+                            eq(WALLET_UUID.value.toString()), eq(USER_ID.id.toString()))
                     }
                     .willAnswer { Mono.just(wallet) }
 
@@ -2179,21 +1983,17 @@ class WalletServiceTest {
                                 WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
-                            }
-                        )
+                            })
                         .details(
                             WalletPaypalDetailsDto()
                                 .maskedEmail(MASKED_EMAIL.value)
                                 .pspId(PSP_ID)
-                                .pspBusinessName(PSP_BUSINESS_NAME)
-                        )
+                                .pspBusinessName(PSP_BUSINESS_NAME))
                         .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
+                            eq(WALLET_UUID.value.toString()), eq(USER_ID.id.toString()))
                     }
                     .willAnswer { Mono.just(wallet) }
 
@@ -2234,21 +2034,17 @@ class WalletServiceTest {
                                 WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
-                            }
-                        )
+                            })
                         .details(
                             WalletPaypalDetailsDto()
                                 .maskedEmail(null)
                                 .pspId(PSP_ID)
-                                .pspBusinessName(PSP_BUSINESS_NAME)
-                        )
+                                .pspBusinessName(PSP_BUSINESS_NAME))
                         .clients(walletClientInfo)
 
                 given {
                         walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
+                            eq(WALLET_UUID.value.toString()), eq(USER_ID.id.toString()))
                     }
                     .willAnswer { Mono.just(wallet) }
 
@@ -2293,15 +2089,13 @@ class WalletServiceTest {
                                 WalletApplicationInfoDto()
                                     .name(application.id)
                                     .status(WalletApplicationStatusDto.valueOf(application.status))
-                            }
-                        )
+                            })
                         .details(
                             WalletCardDetailsDto()
                                 .type((wallet.details as CardDetails).type)
                                 .brand((wallet.details as CardDetails).brand)
                                 .expiryDate((wallet.details as CardDetails).expiryDate)
-                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits)
-                        )
+                                .lastFourDigits((wallet.details as CardDetails).lastFourDigits))
                         .paymentMethodAsset(URI.create(logoUri))
                         .clients(walletClientInfo)
 
@@ -2309,9 +2103,7 @@ class WalletServiceTest {
 
                 given {
                         walletRepository.findByUserIdAndStatus(
-                            USER_ID.id.toString(),
-                            WalletStatusDto.VALIDATED
-                        )
+                            USER_ID.id.toString(), WalletStatusDto.VALIDATED)
                     }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
@@ -2409,11 +2201,8 @@ class WalletServiceTest {
                                         newWalletApplicationStatus,
                                         mockedInstant,
                                         mockedInstant,
-                                        APPLICATION_METADATA
-                                    )
-                                ),
-                            updateDate = mockedInstant
-                        )
+                                        APPLICATION_METADATA)),
+                            updateDate = mockedInstant)
                         .toDocument()
 
                 val expectedLoggedAction =
@@ -2422,8 +2211,7 @@ class WalletServiceTest {
                             updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to newWalletApplicationStatus),
-                            applicationsWithUpdateFailed = mapOf()
-                        ),
+                            applicationsWithUpdateFailed = mapOf()),
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
@@ -2432,18 +2220,14 @@ class WalletServiceTest {
                                     app.status,
                                     app.creationDate.toString(),
                                     app.updateDate.toString(),
-                                    app.metadata.mapKeys { m -> m.key }
-                                )
-                            }
-                        )
-                    )
+                                    app.metadata.mapKeys { m -> m.key })
+                            }))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
                 given { walletRepository.findByIdAndUserId(any(), any()) }
                     .willReturn(
-                        Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument)
-                    )
+                        Mono.just(walletDocumentEmptyServicesNullDetailsNoPaymentInstrument))
 
                 given { walletRepository.save(walletArgumentCaptor.capture()) }
                     .willAnswer { Mono.just(it.arguments[0]) }
@@ -2451,9 +2235,7 @@ class WalletServiceTest {
                 given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
                         Mono.just(
-                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
-                        )
-                    )
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)))
 
                 /* test */
                 assertTrue(wallet.applications.isEmpty())
@@ -2462,9 +2244,7 @@ class WalletServiceTest {
                         walletService.updateWalletApplications(
                             WALLET_UUID,
                             USER_ID,
-                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
-                        )
-                    )
+                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))))
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2496,18 +2276,14 @@ class WalletServiceTest {
                                         newWalletApplicationStatus,
                                         applicationCreationDate,
                                         mockedInstant,
-                                        APPLICATION_METADATA
-                                    ),
+                                        APPLICATION_METADATA),
                                     WalletApplication(
                                         OTHER_WALLET_APPLICATION_ID,
                                         WalletApplicationStatus.DISABLED,
                                         TIMESTAMP,
                                         TIMESTAMP,
-                                        WalletApplicationMetadata(mapOf())
-                                    )
-                                ),
-                            updateDate = mockedInstant
-                        )
+                                        WalletApplicationMetadata(mapOf()))),
+                            updateDate = mockedInstant)
                         .toDocument()
 
                 val expectedLoggedAction =
@@ -2516,8 +2292,7 @@ class WalletServiceTest {
                             updatedWallet = updatedWallet,
                             successfullyUpdatedApplications =
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
-                            applicationsWithUpdateFailed = mapOf()
-                        ),
+                            applicationsWithUpdateFailed = mapOf()),
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
@@ -2526,11 +2301,8 @@ class WalletServiceTest {
                                     app.status,
                                     app.creationDate.toString(),
                                     app.updateDate.toString(),
-                                    app.metadata.mapKeys { m -> m.key }
-                                )
-                            }
-                        )
-                    )
+                                    app.metadata.mapKeys { m -> m.key })
+                            }))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
                 val walletDocument = walletDocument()
@@ -2543,25 +2315,19 @@ class WalletServiceTest {
                 given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
                         Mono.just(
-                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
-                        )
-                    )
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)))
 
                 /* test */
                 assertEquals(2, walletDocument.applications.size)
                 assertEquals(walletDocument.applications[0].id, APPLICATION_DOCUMENT.id)
                 assertEquals(
-                    walletDocument.applications[0].status,
-                    ApplicationStatus.DISABLED.toString()
-                )
+                    walletDocument.applications[0].status, ApplicationStatus.DISABLED.toString())
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
                             WALLET_UUID,
                             USER_ID,
-                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
-                        )
-                    )
+                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))))
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2570,8 +2336,7 @@ class WalletServiceTest {
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    WalletApplicationStatus.ENABLED.toString()
-                )
+                    WalletApplicationStatus.ENABLED.toString())
             }
         }
     }
@@ -2591,8 +2356,7 @@ class WalletServiceTest {
                     walletDomain()
                         .copy(
                             applications = walletDocument.applications.map { it.toDomain() },
-                            updateDate = mockedInstant
-                        )
+                            updateDate = mockedInstant)
                         .toDocument()
 
                 val expectedLoggedAction =
@@ -2600,8 +2364,7 @@ class WalletServiceTest {
                         WalletApplicationUpdateData(
                             updatedWallet = updatedWallet,
                             successfullyUpdatedApplications = mapOf(),
-                            applicationsWithUpdateFailed = mapOf()
-                        ),
+                            applicationsWithUpdateFailed = mapOf()),
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
@@ -2610,11 +2373,8 @@ class WalletServiceTest {
                                     app.status,
                                     app.creationDate.toString(),
                                     app.updateDate.toString(),
-                                    app.metadata.mapKeys { m -> m.key }
-                                )
-                            }
-                        )
-                    )
+                                    app.metadata.mapKeys { m -> m.key })
+                            }))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
                 given { walletRepository.findByIdAndUserId(any(), any()) }
@@ -2626,21 +2386,17 @@ class WalletServiceTest {
                 given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
                         Mono.just(
-                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
-                        )
-                    )
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)))
 
                 /* test */
                 assertEquals(2, walletDocument.applications.size)
                 assertEquals(walletDocument.applications[0].id, APPLICATION_ID.id)
                 assertEquals(
                     walletDocument.applications[0].status,
-                    WalletApplicationStatus.DISABLED.toString()
-                )
+                    WalletApplicationStatus.DISABLED.toString())
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(WALLET_UUID, USER_ID, listOf())
-                    )
+                        walletService.updateWalletApplications(WALLET_UUID, USER_ID, listOf()))
                     .assertNext { assertEquals(expectedLoggedAction, it) }
                     .verifyComplete()
 
@@ -2649,8 +2405,7 @@ class WalletServiceTest {
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    WalletApplicationStatus.DISABLED.toString()
-                )
+                    WalletApplicationStatus.DISABLED.toString())
             }
         }
     }
@@ -2691,18 +2446,14 @@ class WalletServiceTest {
                                         newWalletApplicationStatus,
                                         applicationCreationDate,
                                         mockedInstant,
-                                        APPLICATION_METADATA
-                                    ),
+                                        APPLICATION_METADATA),
                                     WalletApplication(
                                         OTHER_WALLET_APPLICATION_ID,
                                         WalletApplicationStatus.DISABLED,
                                         TIMESTAMP,
                                         TIMESTAMP,
-                                        WalletApplicationMetadata(mapOf())
-                                    )
-                                ),
-                            updateDate = mockedInstant
-                        )
+                                        WalletApplicationMetadata(mapOf()))),
+                            updateDate = mockedInstant)
                         .toDocument()
 
                 val expectedLoggedAction =
@@ -2713,9 +2464,8 @@ class WalletServiceTest {
                                 mapOf(WALLET_APPLICATION_ID to WalletApplicationStatus.ENABLED),
                             applicationsWithUpdateFailed =
                                 mapOf(
-                                    disabledWalletApplicationId to WalletApplicationStatus.INCOMING
-                                )
-                        ),
+                                    disabledWalletApplicationId to
+                                        WalletApplicationStatus.INCOMING)),
                         WalletApplicationsUpdatedEvent(
                             WALLET_UUID.value.toString(),
                             updatedWallet.applications.map { app ->
@@ -2724,11 +2474,8 @@ class WalletServiceTest {
                                     app.status,
                                     app.creationDate.toString(),
                                     app.updateDate.toString(),
-                                    app.metadata.mapKeys { m -> m.key }
-                                )
-                            }
-                        )
-                    )
+                                    app.metadata.mapKeys { m -> m.key })
+                            }))
 
                 val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor<Wallet>()
 
@@ -2741,9 +2488,7 @@ class WalletServiceTest {
                 given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
                         Mono.just(
-                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
-                        )
-                    )
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)))
 
                 given { applicationRepository.findById(disabledApplication.id.id) }
                     .willReturn(Mono.just(ApplicationDocument.fromDomain(disabledApplication)))
@@ -2753,8 +2498,7 @@ class WalletServiceTest {
                 assertEquals(walletDocument.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocument.applications[0].status,
-                    WalletApplicationStatus.DISABLED.toString()
-                )
+                    WalletApplicationStatus.DISABLED.toString())
 
                 StepVerifier.create(
                         walletService.updateWalletApplications(
@@ -2764,11 +2508,7 @@ class WalletServiceTest {
                                 Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
                                 Pair(
                                     WalletApplicationId(disabledApplication.id.id),
-                                    newWalletApplicationStatus
-                                )
-                            )
-                        )
-                    )
+                                    newWalletApplicationStatus))))
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2777,8 +2517,7 @@ class WalletServiceTest {
                 assertEquals(walletDocumentToSave.applications[0].id, WALLET_APPLICATION_ID.id)
                 assertEquals(
                     walletDocumentToSave.applications[0].status,
-                    WalletApplicationStatus.ENABLED.toString()
-                )
+                    WalletApplicationStatus.ENABLED.toString())
             }
         }
     }
@@ -2801,8 +2540,7 @@ class WalletServiceTest {
                         APPLICATION_DESCRIPTION.description,
                         ApplicationStatus.INCOMING.toString(),
                         Instant.now().toString(),
-                        Instant.now().toString()
-                    )
+                        Instant.now().toString())
 
                 val walletDocument = walletDocument()
 
@@ -2812,9 +2550,7 @@ class WalletServiceTest {
                 given { applicationRepository.findById(APPLICATION_ID.id) }
                     .willReturn(
                         Mono.just(
-                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)
-                        )
-                    )
+                            APPLICATION_DOCUMENT.copy(status = ApplicationStatus.ENABLED.name)))
 
                 given { applicationRepository.findById(unknownApplication.id) }
                     .willReturn(Mono.empty())
@@ -2829,11 +2565,7 @@ class WalletServiceTest {
                                 Pair(WALLET_APPLICATION_ID, newApplicationStatus),
                                 Pair(
                                     WalletApplicationId(unknownApplication.id),
-                                    newApplicationStatus
-                                )
-                            )
-                        )
-                    )
+                                    newApplicationStatus))))
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
 
@@ -2853,9 +2585,7 @@ class WalletServiceTest {
                 walletService.updateWalletApplications(
                     WALLET_UUID,
                     USER_ID,
-                    listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
-                )
-            )
+                    listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))))
             .expectError(WalletNotFoundException::class.java)
             .verify()
     }
@@ -2874,12 +2604,7 @@ class WalletServiceTest {
 
         StepVerifier.create(
                 walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
-            )
+                    WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletNotFoundException::class.java)
             .verify()
     }
@@ -2895,12 +2620,7 @@ class WalletServiceTest {
 
         StepVerifier.create(
                 walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
-            )
+                    WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(SessionNotFoundException::class.java)
             .verify()
     }
@@ -2920,12 +2640,7 @@ class WalletServiceTest {
 
         StepVerifier.create(
                 walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
-            )
+                    WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletSessionMismatchException::class.java)
             .verify()
     }
@@ -2944,12 +2659,7 @@ class WalletServiceTest {
 
         StepVerifier.create(
                 walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
-            )
+                    WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletConflictStatusException::class.java)
             .verify()
     }
@@ -2969,10 +2679,7 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
+                    any<String>(), any<String>(), any())
             }
             .willReturn(Mono.empty())
 
@@ -2991,14 +2698,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3021,18 +2725,14 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
+                    any<String>(), any<String>(), any())
             }
             .willReturn(mono { validatedWalletdDocument.id })
 
         val walletDocumentWithError =
             walletDocument.copy(
                 status = "ERROR",
-                validationErrorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE
-            )
+                validationErrorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE)
 
         given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentWithError))
 
@@ -3047,14 +2747,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3074,10 +2771,7 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
+                    any<String>(), any<String>(), any())
             }
             .willReturn(Mono.empty())
 
@@ -3097,14 +2791,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3124,10 +2815,7 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
+                    any<String>(), any<String>(), any())
             }
             .willReturn(Mono.empty())
 
@@ -3147,14 +2835,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3264,9 +2949,7 @@ class WalletServiceTest {
                 PayPalDetails(
                     maskedEmail = MASKED_EMAIL.value,
                     pspId = "pspId",
-                    pspBusinessName = PSP_BUSINESS_NAME
-                )
-            )
+                    pspBusinessName = PSP_BUSINESS_NAME))
         val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3296,9 +2979,7 @@ class WalletServiceTest {
                 PayPalDetails(
                     maskedEmail = MASKED_EMAIL.value,
                     pspId = "pspId",
-                    pspBusinessName = PSP_BUSINESS_NAME
-                )
-            )
+                    pspBusinessName = PSP_BUSINESS_NAME))
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
@@ -3306,8 +2987,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                status = WalletStatusDto.ERROR.value
-            )
+                status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
@@ -3322,14 +3002,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3360,14 +3037,11 @@ class WalletServiceTest {
                         it.validationOperationTimestamp =
                             notifyRequestDto.timestampOperation.toString()
                         return@let it
-                    }
-            )
-        )
+                    }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectError(InvalidRequestException::class.java)
             .verify()
     }
@@ -3384,9 +3058,7 @@ class WalletServiceTest {
                 PayPalDetails(
                     maskedEmail = MASKED_EMAIL.value,
                     pspId = "pspId",
-                    pspBusinessName = PSP_BUSINESS_NAME
-                )
-            )
+                    pspBusinessName = PSP_BUSINESS_NAME))
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
@@ -3395,8 +3067,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                status = WalletStatusDto.ERROR.value
-            )
+                status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
@@ -3411,14 +3082,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3436,9 +3104,7 @@ class WalletServiceTest {
                 PayPalDetails(
                     maskedEmail = MASKED_EMAIL.value,
                     pspId = "pspId",
-                    pspBusinessName = PSP_BUSINESS_NAME
-                )
-            )
+                    pspBusinessName = PSP_BUSINESS_NAME))
 
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
@@ -3446,8 +3112,7 @@ class WalletServiceTest {
         val walletDocumentValidated =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                status = WalletStatusDto.VALIDATED.toString()
-            )
+                status = WalletStatusDto.VALIDATED.toString())
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
@@ -3462,14 +3127,11 @@ class WalletServiceTest {
                             it.validationOperationTimestamp =
                                 notifyRequestDto.timestampOperation.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3481,9 +3143,7 @@ class WalletServiceTest {
                 PayPalDetails(
                     maskedEmail = MASKED_EMAIL.value,
                     pspId = "pspId",
-                    pspBusinessName = PSP_BUSINESS_NAME
-                )
-            )
+                    pspBusinessName = PSP_BUSINESS_NAME))
 
         /* preconditions */
         given { walletRepository.findByIdAndUserId(any(), any()) }
@@ -3498,9 +3158,7 @@ class WalletServiceTest {
         StepVerifier.create(
                 walletService.deleteWallet(
                     WalletId(UUID.fromString(walletDocument.id)),
-                    UserId(UUID.fromString(walletDocument.userId))
-                )
-            )
+                    UserId(UUID.fromString(walletDocument.userId))))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
 
@@ -3514,9 +3172,7 @@ class WalletServiceTest {
                     PayPalDetails(
                         maskedEmail = MASKED_EMAIL.value,
                         pspId = "pspId",
-                        pspBusinessName = PSP_BUSINESS_NAME
-                    )
-                )
+                        pspBusinessName = PSP_BUSINESS_NAME))
                 .copy(status = WalletStatusDto.DELETED.value)
 
         /* preconditions */
@@ -3527,9 +3183,7 @@ class WalletServiceTest {
         StepVerifier.create(
                 walletService.deleteWallet(
                     WalletId(UUID.fromString(walletDocument.id)),
-                    UserId(UUID.fromString(walletDocument.userId))
-                )
-            )
+                    UserId(UUID.fromString(walletDocument.userId))))
             .verifyError(WalletAlreadyDeletedException::class.java)
 
         verify(walletRepository, times(0)).save(any())
@@ -3559,8 +3213,7 @@ class WalletServiceTest {
                         lastFourDigits = "1234",
                         expiryDate = "202412",
                         brand = "VISA",
-                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
-                    ),
+                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"),
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3598,8 +3251,7 @@ class WalletServiceTest {
                     PayPalDetails(
                         maskedEmail = "p*******@p*******.it",
                         pspId = "pspId",
-                        pspBusinessName = PSP_BUSINESS_NAME
-                    ),
+                        pspBusinessName = PSP_BUSINESS_NAME),
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3641,8 +3293,7 @@ class WalletServiceTest {
                         lastFourDigits = "1234",
                         expiryDate = "202412",
                         brand = "VISA",
-                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"
-                    ),
+                        paymentInstrumentGatewayId = "paymentInstrumentGatewayId"),
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3681,8 +3332,7 @@ class WalletServiceTest {
                     PayPalDetails(
                         maskedEmail = "p*******@p*******.it",
                         pspId = "pspId",
-                        pspBusinessName = PSP_BUSINESS_NAME
-                    ),
+                        pspBusinessName = PSP_BUSINESS_NAME),
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3717,8 +3367,7 @@ class WalletServiceTest {
                     PayPalDetails(
                         maskedEmail = "p*******@p*******.it",
                         pspId = "pspId",
-                        pspBusinessName = PSP_BUSINESS_NAME
-                    ),
+                        pspBusinessName = PSP_BUSINESS_NAME),
             )
 
         given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
@@ -3817,8 +3466,7 @@ class WalletServiceTest {
                         CreateTokenRequest()
                             .duration(TOKEN_VALIDITY_TIME_SECONDS)
                             .audience("npg")
-                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
-                )
+                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
             verify(walletRepository, times(0)).save(any())
             verify(npgSessionRedisTemplate, times(0)).save(any())
         }
@@ -3909,8 +3557,7 @@ class WalletServiceTest {
                                     .id(UUID.randomUUID().toString())
                                     .src("https://test.it/c")
                                     .propertyClass("cvv")
-                                    .propertyClass("c")
-                            )
+                                    .propertyClass("c"))
                     }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
@@ -3930,17 +3577,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocumentInitialized.id}] with status [${walletDocumentInitialized.status}]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -3984,17 +3626,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -4047,17 +3684,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocumentValidationRequested.id}] with status [${walletDocumentValidationRequested.status}]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -4101,17 +3733,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -4143,8 +3770,7 @@ class WalletServiceTest {
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS
-                    )
+                        PAYMENT_METHOD_ID_CARDS)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -4157,17 +3783,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -4199,8 +3820,7 @@ class WalletServiceTest {
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_APM
-                    )
+                        PAYMENT_METHOD_ID_APM)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -4213,17 +3833,12 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
                         "Conflict with walletId [${walletDocument.id}] with status [$walletStatus]. Allowed statuses [CREATED]",
-                        it.message
-                    )
+                        it.message)
                     true
                 }
                 .verify()
@@ -4272,8 +3887,7 @@ class WalletServiceTest {
                                     .id(UUID.randomUUID().toString())
                                     .src("https://test.it/c")
                                     .propertyClass("cvv")
-                                    .propertyClass("c")
-                            )
+                                    .propertyClass("c"))
                     }
 
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
@@ -4297,11 +3911,7 @@ class WalletServiceTest {
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputInvalidDataDto()
-                    )
-                )
+                        USER_ID, WALLET_UUID, SessionInputInvalidDataDto()))
                 .verifyError(InternalServerErrorException::class.java)
 
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
@@ -4343,9 +3953,7 @@ class WalletServiceTest {
                     walletDocumentValidationRequestedStatus.toDomain(),
                     SessionWalletCreatedEvent(
                         walletId = WALLET_UUID.value.toString(),
-                        auditWallet = AuditWalletCreated(orderId = orderId)
-                    )
-                )
+                        auditWallet = AuditWalletCreated(orderId = orderId)))
 
             val basePath = URI.create(sessionUrlConfig.basePath)
             val merchantUrl = sessionUrlConfig.basePath
@@ -4358,9 +3966,7 @@ class WalletServiceTest {
                         mapOf(
                             Pair("walletId", walletDocumentCreatedStatus.id),
                             Pair("orderId", orderId),
-                            Pair("sessionToken", sessionToken)
-                        )
-                    )
+                            Pair("sessionToken", sessionToken)))
 
             val npgCorrelationId = WALLET_UUID.value
 
@@ -4372,8 +3978,7 @@ class WalletServiceTest {
                         Order()
                             .orderId(orderId)
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
-                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR)
-                    )
+                            .currency(WalletService.CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR))
                     .paymentSession(
                         PaymentSession()
                             .actionType(ActionType.VERIFY)
@@ -4381,16 +3986,14 @@ class WalletServiceTest {
                                 RecurringSettings()
                                     .action(RecurringAction.CONTRACT_CREATION)
                                     .contractId(contractId)
-                                    .contractType(RecurringContractType.CIT)
-                            )
+                                    .contractType(RecurringContractType.CIT))
                             .amount(WalletService.CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT)
                             .language(WalletService.CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                             .captureType(CaptureType.IMPLICIT)
                             .paymentService("PAYPAL")
                             .resultUrl(resultUrl.toString())
                             .cancelUrl(cancelUrl.toString())
-                            .notificationUrl(notificationUrl.toString())
-                    )
+                            .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
                 .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
@@ -4415,9 +4018,7 @@ class WalletServiceTest {
                     walletService.createSessionWallet(
                         USER_ID,
                         WALLET_UUID,
-                        SessionInputPayPalDataDto().pspId(walletDetails.pspId)
-                    )
-                )
+                        SessionInputPayPalDataDto().pspId(walletDetails.pspId)))
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -4426,10 +4027,7 @@ class WalletServiceTest {
             verify(uniqueIdUtils, times(2)).generateUniqueId()
             verify(npgClient, times(1))
                 .createNpgOrderBuild(
-                    npgCorrelationId,
-                    npgCreateHostedOrderRequest,
-                    walletDetails.pspId
-                )
+                    npgCorrelationId, npgCreateHostedOrderRequest, walletDetails.pspId)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
             verify(walletRepository, times(1))
                 .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
@@ -4440,8 +4038,7 @@ class WalletServiceTest {
                         CreateTokenRequest()
                             .duration(TOKEN_VALIDITY_TIME_SECONDS)
                             .audience("npg")
-                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString()))
-                )
+                            .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
         }
     }
 }

@@ -33,8 +33,11 @@ class PaymentMethodsService(
     }
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
-            paymentMethodsRedisTemplate.findById(paymentMethodId)
-            .doFirst { logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]") }
+        paymentMethodsRedisTemplate
+            .findById(paymentMethodId)
+            .doFirst {
+                logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]")
+            }
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
@@ -59,12 +62,10 @@ class PaymentMethodsService(
             .asFlux()
             .flatMap { paymentMethodResponse ->
                 logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
-                paymentMethodsRedisTemplate.save(paymentMethodResponse)
-                    .doOnError {
-                        logger.error(
-                            "Error saving payment method into cache: [${paymentMethodResponse.id}]"
-                        )
-                    }
+                paymentMethodsRedisTemplate.save(paymentMethodResponse).doOnError {
+                    logger.error(
+                        "Error saving payment method into cache: [${paymentMethodResponse.id}]")
+                }
             }
             .subscribe()
 }

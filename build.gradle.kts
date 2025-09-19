@@ -27,12 +27,7 @@ tasks.withType<KotlinCompile> {
   compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 }
 
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
-  }
-}
-
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 repositories { mavenCentral() }
 
@@ -77,7 +72,9 @@ dependencies {
   implementation("com.google.code.findbugs:jsr305:${Deps.jsr305Version}")
   implementation("org.projectlombok:lombok")
   implementation("org.openapitools:openapi-generator-gradle-plugin:${Deps.openapiGeneratorVersion}")
-  implementation("org.openapitools:jackson-databind-nullable:${Deps.jacksonDatabindNullableVersion}")
+  implementation(
+    "org.openapitools:jackson-databind-nullable:${Deps.jacksonDatabindNullableVersion}"
+  )
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.springframework.boot:spring-boot-starter-aop")
   implementation("io.netty:netty-resolver-dns-native-macos:${Deps.nettyResolverVersion}")
@@ -121,6 +118,7 @@ configurations {
     exclude(group = "org.slf4j", module = "slf4j-simple")
   }
 }
+
 // Dependency locking - lock all dependencies
 dependencyLocking { lockAllConfigurations() }
 
@@ -208,7 +206,7 @@ tasks.register("nexiNpg", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -221,8 +219,8 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
     "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
-  apiPackage.set("it.pagopa.generated.ecommerce.api")
-  modelPackage.set("it.pagopa.generated.ecommerce.model")
+  apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.paymentmethods.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -239,7 +237,7 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -270,40 +268,40 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
 
 tasks.register("ecommercePaymentMethodHandlerV1", GenerateTask::class.java) {
-    description = "Generate eCommerce Payment Method Handler v1 from remote OpenAPI specification"
-    group = "openapi-generation"
-    generatorName.set("java")
-    remoteInputSpec.set(
-        "https://raw.githubusercontent.com/pagopa/pagopa-infra/CHK-4451-add-payment-methods-handler-api/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
+  description = "Generate eCommerce Payment Method Handler v1 from remote OpenAPI specification"
+  group = "openapi-generation"
+  generatorName.set("java")
+  remoteInputSpec.set(
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/CHK-4451-add-payment-methods-handler-api/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
+  )
+  outputDir.set("${layout.buildDirectory.get()}/generated")
+  apiPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false",
     )
-    outputDir.set("${layout.buildDirectory.get()}/generated")
-    apiPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.api")
-    modelPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.model")
-    generateApiTests.set(false)
-    generateApiDocumentation.set(false)
-    generateApiTests.set(false)
-    generateModelTests.set(false)
-    library.set("webclient")
-    configOptions.set(
-        mapOf(
-            "swaggerAnnotations" to "false",
-            "openApiNullable" to "true",
-            "interfaceOnly" to "true",
-            "hideGenerationTimestamp" to "true",
-            "skipDefaultInterface" to "true",
-            "useSwaggerUI" to "false",
-            "reactive" to "true",
-            "useSpringBoot3" to "true",
-            "oas3" to "true",
-            "generateSupportingFiles" to "false"
-        )
-    )
+  )
 }
 
 tasks.register("nexiNpgNotification", GenerateTask::class.java) {
@@ -332,7 +330,7 @@ tasks.register("nexiNpgNotification", GenerateTask::class.java) {
       "useSpringBoot3" to "true",
       "oas3" to "true",
       "generateSupportingFiles" to "true",
-      "enumPropertyNaming" to "UPPERCASE"
+      "enumPropertyNaming" to "UPPERCASE",
     )
   )
 }
@@ -363,7 +361,7 @@ tasks.register("jwtIssuer", GenerateTask::class.java) {
       "reactive" to "true",
       "useSpringBoot3" to "true",
       "oas3" to "true",
-      "generateSupportingFiles" to "false"
+      "generateSupportingFiles" to "false",
     )
   )
 }
@@ -375,8 +373,8 @@ tasks.withType<KotlinCompile> {
     "nexiNpgNotification",
     "ecommercePaymentMethod",
     "ecommercePaymentMethodV2",
-        "jwtIssuer",
-        "ecommercePaymentMethodHandlerV1"
+    "jwtIssuer",
+    "ecommercePaymentMethodHandlerV1",
   )
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
