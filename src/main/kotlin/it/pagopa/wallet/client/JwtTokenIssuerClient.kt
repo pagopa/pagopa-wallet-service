@@ -35,13 +35,10 @@ class JwtTokenIssuerClient(
         if (err is WebClientResponseException) {
             return JWTTokenGenerationException(
                 httpStatus = HttpStatus.valueOf(err.statusCode.value()),
-                description = err.message.orEmpty()
-            )
+                description = err.message.orEmpty())
         }
 
         return JWTTokenGenerationException(
-            "Unexpected error while invoking jwtIssuer",
-            HttpStatus.INTERNAL_SERVER_ERROR
-        )
+            "Unexpected error while invoking jwtIssuer", HttpStatus.INTERNAL_SERVER_ERROR)
     }
 }

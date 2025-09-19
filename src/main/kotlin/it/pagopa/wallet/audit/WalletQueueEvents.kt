@@ -27,8 +27,7 @@ data class WalletCreatedEvent(
             WalletCreatedEvent(
                 eventId = UUID.randomUUID().toString(),
                 creationDate = Instant.now(),
-                walletId = walletId.value.toString()
-            )
+                walletId = walletId.value.toString())
     }
 }
 
@@ -38,8 +37,6 @@ data class WalletLoggingErrorEvent<T>(val eventId: String, val loggingEvent: T) 
     companion object {
         fun of(loggingEvent: LoggingEvent) =
             WalletLoggingErrorEvent(
-                eventId = UUID.randomUUID().toString(),
-                loggingEvent = loggingEvent
-            )
+                eventId = UUID.randomUUID().toString(), loggingEvent = loggingEvent)
     }
 }

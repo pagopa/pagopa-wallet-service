@@ -10,6 +10,5 @@ open class NpgApiKeyConfigurationException(
         RestApiException(
             HttpStatus.INTERNAL_SERVER_ERROR,
             HttpStatus.INTERNAL_SERVER_ERROR.reasonPhrase,
-            message!!
-        )
+            message!!)
 }

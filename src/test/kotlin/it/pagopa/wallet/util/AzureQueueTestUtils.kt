@@ -20,6 +20,5 @@ object AzureQueueTestUtils {
                 override fun getRequest(): HttpRequest = mock()
 
                 override fun getValue(): SendMessageResult = SendMessageResult()
-            }
-        )
+            })
 }

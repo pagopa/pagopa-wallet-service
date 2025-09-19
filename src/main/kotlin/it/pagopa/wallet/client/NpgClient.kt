@@ -55,51 +55,44 @@ class NpgClient(
         return usingNpgTracing(
             tracer,
             GatewayOperation.BUILD_FORM,
-            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
-        ) { span, operation ->
-            logger.info("Sending orderBuild with correlationId: $correlationId")
-            apiKey
-                .fold(
-                    { Mono.error(it) },
-                    {
-                        npgWebClient.pspApiV1OrdersBuildPost(
-                            correlationId,
-                            it,
-                            createHostedOrderRequest
-                        )
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
+                span,
+                operation ->
+                logger.info("Sending orderBuild with correlationId: $correlationId")
+                apiKey
+                    .fold(
+                        { Mono.error(it) },
+                        {
+                            npgWebClient.pspApiV1OrdersBuildPost(
+                                correlationId, it, createHostedOrderRequest)
+                        })
+                    .doOnError(WebClientResponseException::class.java) {
+                        logger.error(
+                            "Error communicating with NPG-orderBuild  for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                            it)
                     }
-                )
-                .doOnError(WebClientResponseException::class.java) {
-                    logger.error(
-                        "Error communicating with NPG-orderBuild  for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                        it
-                    )
-                }
-                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
-        }
+                    .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
+            }
     }
 
     fun getCardData(sessionId: String, correlationId: UUID): Mono<CardDataResponse> {
         return usingNpgTracing(
             tracer,
             GatewayOperation.GET_CARD_DATA,
-            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
-        ) { span, operation ->
-            logger.info("getCardData with correlationId: $correlationId")
-            npgWebClient
-                .pspApiV1BuildCardDataGet(
-                    correlationId,
-                    npgPaypalPspApiKeysConfig.defaultApiKey,
-                    sessionId
-                )
-                .doOnError(WebClientResponseException::class.java) {
-                    logger.error(
-                        "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                        it
-                    )
-                }
-                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
-        }
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
+                span,
+                operation ->
+                logger.info("getCardData with correlationId: $correlationId")
+                npgWebClient
+                    .pspApiV1BuildCardDataGet(
+                        correlationId, npgPaypalPspApiKeysConfig.defaultApiKey, sessionId)
+                    .doOnError(WebClientResponseException::class.java) {
+                        logger.error(
+                            "Error communicating with NPG-getCardData for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                            it)
+                    }
+                    .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
+            }
     }
 
     fun confirmPayment(
@@ -109,23 +102,23 @@ class NpgClient(
         return usingNpgTracing(
             tracer,
             GatewayOperation.CONFIRM_PAYMENT,
-            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }
-        ) { span, operation ->
-            logger.info("confirmPayment with correlationId: $correlationId")
-            npgWebClient
-                .pspApiV1BuildConfirmPaymentPost(
-                    correlationId,
-                    npgPaypalPspApiKeysConfig.defaultApiKey,
-                    confirmPaymentRequest,
-                )
-                .doOnError(WebClientResponseException::class.java) {
-                    logger.error(
-                        "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
-                        it
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
+                span,
+                operation ->
+                logger.info("confirmPayment with correlationId: $correlationId")
+                npgWebClient
+                    .pspApiV1BuildConfirmPaymentPost(
+                        correlationId,
+                        npgPaypalPspApiKeysConfig.defaultApiKey,
+                        confirmPaymentRequest,
                     )
-                }
-                .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
-        }
+                    .doOnError(WebClientResponseException::class.java) {
+                        logger.error(
+                            "Error communicating with NPG-confirmPayment for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                            it)
+                    }
+                    .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
+            }
     }
 
     private fun exceptionToNpgResponseException(
@@ -147,8 +140,7 @@ class NpgClient(
                                 .readValue(err.responseBodyAsByteArray, ClientError::class.java)
                                 .errors
                         else -> emptyList()
-                    }?.mapNotNull { it.code }
-                        ?: emptyList()
+                    }?.mapNotNull { it.code } ?: emptyList()
 
                 span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, responseErrors)
 
@@ -166,8 +158,7 @@ class NpgClient(
 
         return NpgClientException(
             "Unexpected error while invoke method for %s".format(gatewayOperation.spanName),
-            HttpStatus.INTERNAL_SERVER_ERROR
-        )
+            HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     private fun mapNpgException(statusCode: HttpStatusCode): NpgClientException =
@@ -218,12 +209,10 @@ class NpgClient(
                     spanDecorator(
                             tracer
                                 .spanBuilder(operation.spanName)
-                                .setParent(Context.current().with(Span.current()))
-                        )
+                                .setParent(Context.current().with(Span.current())))
                         .startSpan()
                 },
                 { span -> mono(span, operation) },
-                { span -> span.end() }
-            )
+                { span -> span.end() })
     }
 }

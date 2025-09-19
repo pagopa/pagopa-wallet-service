@@ -43,8 +43,7 @@ class ApplicationsServiceTest {
                 applicationDescription,
                 applicationStatus,
                 creationDate,
-                creationDate
-            )
+                creationDate)
         val expected = LoggedAction(application, ApplicationCreatedEvent(applicationId.id))
 
         mockStatic(Instant::class.java).use { mockedInstant ->
@@ -58,9 +57,7 @@ class ApplicationsServiceTest {
             val actual =
                 applicationsService
                     .createApplication(
-                        applicationId.id,
-                        ApplicationStatusDto.valueOf(applicationStatus.name)
-                    )
+                        applicationId.id, ApplicationStatusDto.valueOf(applicationStatus.name))
                     .block()
             assertEquals(expected, actual)
         }
@@ -76,8 +73,7 @@ class ApplicationsServiceTest {
         val expected =
             LoggedAction(
                 application.copy(status = newStatus, updateDate = updatedDate),
-                ApplicationStatusChangedEvent(application.id.id, application.status, newStatus)
-            )
+                ApplicationStatusChangedEvent(application.id.id, application.status, newStatus))
 
         mockStatic(Instant::class.java, CALLS_REAL_METHODS).use { mockedInstant ->
             mockedInstant.`when`<Instant> { Instant.now() }.thenReturn(updatedDate)
@@ -95,9 +91,7 @@ class ApplicationsServiceTest {
             val actual =
                 applicationsService
                     .setApplicationStatus(
-                        application.id.id,
-                        ApplicationStatusDto.valueOf(newStatus.name)
-                    )
+                        application.id.id, ApplicationStatusDto.valueOf(newStatus.name))
                     .block()
             assertEquals(expected, actual)
         }
@@ -117,10 +111,7 @@ class ApplicationsServiceTest {
 
             StepVerifier.create(
                     applicationsService.setApplicationStatus(
-                        service.id.id,
-                        ApplicationStatusDto.valueOf(newStatus.name)
-                    )
-                )
+                        service.id.id, ApplicationStatusDto.valueOf(newStatus.name)))
                 .expectError(ApplicationNotFoundException::class.java)
         }
     }

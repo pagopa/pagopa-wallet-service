@@ -35,8 +35,7 @@ class PspDetailClient(
                     paymentMethodId.value.toString(),
                     STUB_TRANSACTION_ID,
                     STUB_FEES_REQUEST,
-                    DEFAULT_MAX_OCCURRENCES
-                )
+                    DEFAULT_MAX_OCCURRENCES)
             }
             .fold({ error -> Mono.error(error) }, { it })
             .doOnError {
@@ -44,8 +43,7 @@ class PspDetailClient(
                     is WebClientResponseException ->
                         logger.error(
                             "Failed to get psp list. HTTP Status: [${it.statusCode}], Response: [${it.responseBodyAsString}]",
-                            it
-                        )
+                            it)
                     else -> logger.error("Failed to get psp list", it)
                 }
             }
@@ -53,8 +51,7 @@ class PspDetailClient(
                 RestApiException(
                     HttpStatus.valueOf(it.statusCode.value()),
                     it.statusText,
-                    "Failed to get psp list"
-                )
+                    "Failed to get psp list")
             }
     }
 
@@ -80,9 +77,7 @@ class PspDetailClient(
                             TransferListItem()
                                 .transferCategory("")
                                 .digitalStamp(false)
-                                .creditorInstitution("")
-                        )
-                )
+                                .creditorInstitution("")))
                 .isAllCCP(false)
     }
 }

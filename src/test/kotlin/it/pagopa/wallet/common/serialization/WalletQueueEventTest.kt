@@ -47,29 +47,21 @@ class WalletQueueEventTest {
                 Arguments.of(WalletCreatedEvent.of(walletId = WalletId(UUID.randomUUID()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
-                        loggingEvent = WalletAddedEvent(walletId = UUID.randomUUID().toString())
-                    )
-                ),
+                        loggingEvent = WalletAddedEvent(walletId = UUID.randomUUID().toString()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
-                            WalletMigratedAddedEvent(walletId = UUID.randomUUID().toString())
-                    )
-                ),
+                            WalletMigratedAddedEvent(walletId = UUID.randomUUID().toString()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
-                        loggingEvent = WalletDeletedEvent(walletId = UUID.randomUUID().toString())
-                    )
-                ),
+                        loggingEvent =
+                            WalletDeletedEvent(walletId = UUID.randomUUID().toString()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
                             SessionWalletCreatedEvent(
                                 walletId = UUID.randomUUID().toString(),
-                                auditWallet = AuditWalletCreated(orderId = "orderId")
-                            )
-                    )
-                ),
+                                auditWallet = AuditWalletCreated(orderId = "orderId")))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
@@ -82,18 +74,11 @@ class WalletQueueEventTest {
                                             status = "status",
                                             creationDate = OffsetDateTime.now().toString(),
                                             updateDate = OffsetDateTime.now().toString(),
-                                            metadata = mapOf("key1" to "value1")
-                                        )
-                                    )
-                            )
-                    )
-                ),
+                                            metadata = mapOf("key1" to "value1")))))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
-                            WalletDetailsAddedEvent(walletId = UUID.randomUUID().toString())
-                    )
-                ),
+                            WalletDetailsAddedEvent(walletId = UUID.randomUUID().toString()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
@@ -114,8 +99,7 @@ class WalletQueueEventTest {
                                             AuditWalletDetails(
                                                 pspId = "pspId",
                                                 type = "type",
-                                                cardBrand = "cardBrand"
-                                            ),
+                                                cardBrand = "cardBrand"),
                                         applications =
                                             listOf(
                                                 AuditWalletApplication(
@@ -123,29 +107,18 @@ class WalletQueueEventTest {
                                                     creationDate = OffsetDateTime.now().toString(),
                                                     updateDate = OffsetDateTime.now().toString(),
                                                     metadata = mapOf("key1" to "value1"),
-                                                    id = "id"
-                                                )
-                                            )
-                                    )
-                            )
-                    )
-                ),
+                                                    id = "id")))))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
-                            ApplicationCreatedEvent(serviceId = UUID.randomUUID().toString())
-                    )
-                ),
+                            ApplicationCreatedEvent(serviceId = UUID.randomUUID().toString()))),
                 Arguments.of(
                     WalletLoggingErrorEvent.of(
                         loggingEvent =
                             ApplicationStatusChangedEvent(
                                 serviceId = UUID.randomUUID().toString(),
                                 oldStatus = ApplicationStatus.INCOMING,
-                                newStatus = ApplicationStatus.ENABLED
-                            )
-                    )
-                ),
+                                newStatus = ApplicationStatus.ENABLED))),
             )
     }
 }

@@ -27,19 +27,13 @@ class WalletQueueClientTest {
 
     private val walletQueueClient =
         WalletQueueClient(
-            queueClient = azureQueueClient,
-            jsonSerializer = jsonSerializer,
-            ttl = Duration.ZERO
-        )
+            queueClient = azureQueueClient, jsonSerializer = jsonSerializer, ttl = Duration.ZERO)
 
     @Test
     fun shouldEmitWalletCreatedEvent() {
         val expiredEvent =
             WalletCreatedEvent(
-                UUID.randomUUID().toString(),
-                Instant.now(),
-                UUID.randomUUID().toString()
-            )
+                UUID.randomUUID().toString(), Instant.now(), UUID.randomUUID().toString())
         val tracingInfo = QueueTracingInfo("traceparent", "state", "baggage")
         val expectedQueueEvent = QueueEvent(expiredEvent, tracingInfo)
 
@@ -48,10 +42,7 @@ class WalletQueueClientTest {
 
         walletQueueClient
             .sendQueueEventWithTracingInfo(
-                expiredEvent,
-                delay = Duration.ofSeconds(10),
-                tracingInfo
-            )
+                expiredEvent, delay = Duration.ofSeconds(10), tracingInfo)
             .test()
             .assertNext { Assertions.assertEquals(200, it.statusCode) }
             .verifyComplete()

@@ -24,8 +24,8 @@ class ApplicationsController(
             .flatMap {
                 applicationsService.createApplication(
                     it.applicationId,
-                    ApplicationStatusDto.valueOf((it.status ?: ApplicationStatusDto.DISABLED).value)
-                )
+                    ApplicationStatusDto.valueOf(
+                        (it.status ?: ApplicationStatusDto.DISABLED).value))
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map { ApplicationCreateResponseDto().apply { applicationId = it.id.id } }
@@ -40,9 +40,7 @@ class ApplicationsController(
         return servicePatchRequestDto
             .flatMap {
                 applicationsService.setApplicationStatus(
-                    applicationId,
-                    ApplicationStatusDto.valueOf(it.status.toString())
-                )
+                    applicationId, ApplicationStatusDto.valueOf(it.status.toString()))
             }
             .flatMap { it.saveEvents(loggingEventRepository) }
             .map { ResponseEntity.noContent().build() }

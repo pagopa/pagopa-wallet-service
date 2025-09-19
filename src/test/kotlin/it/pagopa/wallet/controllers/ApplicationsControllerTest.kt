@@ -57,11 +57,8 @@ class ApplicationsControllerTest {
             .willReturn(
                 mono {
                     LoggedAction(
-                        DOMAIN_APPLICATION,
-                        ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id)
-                    )
-                }
-            )
+                        DOMAIN_APPLICATION, ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
 
@@ -89,11 +86,8 @@ class ApplicationsControllerTest {
                         ApplicationStatusChangedEvent(
                             DOMAIN_APPLICATION.id.id,
                             DOMAIN_APPLICATION.status,
-                            ApplicationStatus.INCOMING
-                        )
-                    )
-                }
-            )
+                            ApplicationStatus.INCOMING))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
 
@@ -135,11 +129,8 @@ class ApplicationsControllerTest {
             .willReturn(
                 mono {
                     LoggedAction(
-                        DOMAIN_APPLICATION,
-                        ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id)
-                    )
-                }
-            )
+                        DOMAIN_APPLICATION, ApplicationCreatedEvent(DOMAIN_APPLICATION.id.id))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         webClient

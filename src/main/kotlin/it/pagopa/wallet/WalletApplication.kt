@@ -23,8 +23,7 @@ import reactor.core.publisher.Hooks
     RetrySavePolicyConfig::class,
     ExpirationQueueConfig::class,
     LoggedActionDeadLetterQueueConfig::class,
-    JwtTokenIssuerConfigProperties::class
-)
+    JwtTokenIssuerConfigProperties::class)
 class WalletApplication
 
 fun main(args: Array<String>) {

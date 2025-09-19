@@ -40,8 +40,7 @@ class LoggingEventSyncWriter(
                 logger.debug(
                     "Saved logging events: [{}], for wallet with id: [{}]",
                     events.map { it.javaClass.simpleName },
-                    walletId
-                )
+                    walletId)
             }
             .thenReturn(Unit)
             .onErrorResume {
@@ -54,19 +53,15 @@ class LoggingEventSyncWriter(
                                 .sendQueueEventWithTracingInfo(
                                     event =
                                         WalletLoggingErrorEvent(
-                                            loggingEvent = loggingEvent,
-                                            eventId = loggingEvent.id
-                                        ),
+                                            loggingEvent = loggingEvent, eventId = loggingEvent.id),
                                     delay =
                                         Duration.ofSeconds(queueConfig.visibilityTimeoutSeconds),
-                                    tracingInfo = tracingInfo
-                                )
+                                    tracingInfo = tracingInfo)
                                 .doOnNext {
                                     logger.warn(
                                         "Written event into dead letter for error saving wallet logging event: [{}] for wallet with id: [{}]",
                                         loggingEvent.javaClass,
-                                        walletId
-                                    )
+                                        walletId)
                                 }
                         }
                         .collectList()
@@ -89,6 +84,5 @@ class LoggingEventSyncWriter(
                 is WalletMigratedAddedEvent -> it.walletId
                 is WalletOnboardCompletedEvent -> it.walletId
             }
-        }
-            ?: "N/A"
+        } ?: "N/A"
 }

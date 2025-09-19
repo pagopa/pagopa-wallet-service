@@ -20,7 +20,5 @@ data class WalletApplication(
             Instant.parse(creationDate),
             Instant.parse(updateDate),
             WalletApplicationMetadata(
-                metadata.mapKeys { WalletApplicationMetadata.Metadata.fromMetadataValue(it.key) }
-            )
-        )
+                metadata.mapKeys { WalletApplicationMetadata.Metadata.fromMetadataValue(it.key) }))
 }

@@ -8,5 +8,4 @@ class WalletApplicationStatusConflictException(
     val failedApplications: Map<WalletApplicationId, WalletApplicationStatus>
 ) :
     RuntimeException(
-        "Wallet application update failed, could not update applications ${failedApplications.keys}"
-    )
+        "Wallet application update failed, could not update applications ${failedApplications.keys}")

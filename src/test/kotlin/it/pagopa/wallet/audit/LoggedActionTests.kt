@@ -37,9 +37,7 @@ class LoggedActionTests {
                                 WalletTestUtils.VALIDATION_OPERATION_ID.toString()
                             it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
         }
     }
 
@@ -97,9 +95,7 @@ class LoggedActionTests {
 
         val expected =
             LoggedAction(
-                walletId1,
-                listOf(WalletAddedEvent(walletId1), WalletAddedEvent(walletId1))
-            )
+                walletId1, listOf(WalletAddedEvent(walletId1), WalletAddedEvent(walletId1)))
 
         assertEquals(expected, actual)
     }
@@ -130,9 +126,7 @@ class LoggedActionTests {
                                 WalletTestUtils.VALIDATION_OPERATION_ID.toString()
                             it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
 
         given(mongoRepository.saveAll(expectedSavedEvents)).willReturn(Flux.empty())
 
@@ -160,9 +154,7 @@ class LoggedActionTests {
                                 WalletTestUtils.VALIDATION_OPERATION_ID.toString()
                             it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
         given(mongoRepository.saveAll(any<Iterable<LoggingEvent>>())).willAnswer {
             Flux.fromIterable(expectedSavedEvents)
         }
@@ -192,9 +184,7 @@ class LoggedActionTests {
                                 WalletTestUtils.VALIDATION_OPERATION_ID.toString()
                             it.validationOperationTimestamp = WalletTestUtils.TIMESTAMP.toString()
                             return@let it
-                        }
-                )
-            )
+                        }))
         given { loggingEventDispatcher.dispatchEvent(any()) }
             .willAnswer { Mono.just(it.arguments.get(0)) }
             .willAnswer { Mono.empty<LoggingEvent>() }

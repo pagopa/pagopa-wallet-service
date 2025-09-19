@@ -28,14 +28,12 @@ class PaymentMethodsServiceTest {
     private val paymentMethodsService: PaymentMethodsService =
         PaymentMethodsService(
             paymentMethodsRedisTemplate = paymentMethodsRedisTemplate,
-            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient
-        )
+            ecommercePaymentMethodsClient = ecommercePaymentMethodsClient)
     private val paymentMethodsServiceMockSink: PaymentMethodsService =
         PaymentMethodsService(
             paymentMethodsRedisTemplate = paymentMethodsRedisTemplate,
             ecommercePaymentMethodsClient = ecommercePaymentMethodsClient,
-            paymentMethodCacheSaveSink = paymentMethodCacheSaveSink
-        )
+            paymentMethodCacheSaveSink = paymentMethodCacheSaveSink)
 
     companion object {
 
@@ -43,11 +41,8 @@ class PaymentMethodsServiceTest {
         fun paymentMethodsSource(): Stream<Arguments> =
             Stream.of(
                 Arguments.of(
-                    PAYMENT_METHOD_ID_CARDS.value.toString(),
-                    getValidCardsPaymentMethod()
-                ),
-                Arguments.of(PAYMENT_METHOD_ID_APM.value.toString(), getValidAPMPaymentMethod())
-            )
+                    PAYMENT_METHOD_ID_CARDS.value.toString(), getValidCardsPaymentMethod()),
+                Arguments.of(PAYMENT_METHOD_ID_APM.value.toString(), getValidAPMPaymentMethod()))
     }
 
     @ParameterizedTest
@@ -57,7 +52,8 @@ class PaymentMethodsServiceTest {
         paymentMethodResponse: PaymentMethodResponse
     ) {
         // pre-requisites
-        given { paymentMethodsRedisTemplate.findById(any()) }.willReturn(Mono.just(paymentMethodResponse))
+        given { paymentMethodsRedisTemplate.findById(any()) }
+            .willReturn(Mono.just(paymentMethodResponse))
 
         paymentMethodsService.subscribePaymentMethodCacheSaveSink()
 
@@ -112,11 +108,7 @@ class PaymentMethodsServiceTest {
             .willReturn(
                 Mono.error(
                     EcommercePaymentMethodException(
-                        "EcommercePaymentMethods - Bad request",
-                        HttpStatus.BAD_GATEWAY
-                    )
-                )
-            )
+                        "EcommercePaymentMethods - Bad request", HttpStatus.BAD_GATEWAY)))
 
         paymentMethodsService.subscribePaymentMethodCacheSaveSink()
 

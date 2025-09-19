@@ -16,9 +16,6 @@ object Tracing {
 
     fun <T> customizeSpan(mono: Mono<T>, f: Span.() -> Unit): Mono<T> {
         return Mono.using(
-            { Span.fromContext(Context.current()) },
-            { span -> f(span).let { mono } },
-            {}
-        )
+            { Span.fromContext(Context.current()) }, { span -> f(span).let { mono } }, {})
     }
 }

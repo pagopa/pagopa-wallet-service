@@ -76,12 +76,9 @@ class TransactionWalletControllerTest {
                     Pair(
                         LoggedAction(
                             WalletTestUtils.WALLET_DOMAIN,
-                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.of(webviewPaymentUrl)
-                    )
-                }
-            )
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
+                        Optional.of(webviewPaymentUrl))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */
@@ -102,10 +99,7 @@ class TransactionWalletControllerTest {
                     WalletTransactionCreateResponseDto()
                         .walletId(WalletTestUtils.WALLET_DOMAIN.id.value)
                         .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}"
-                        )
-                )
-            )
+                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")))
     }
 
     @Test
@@ -118,12 +112,9 @@ class TransactionWalletControllerTest {
                     Pair(
                         LoggedAction(
                             WalletTestUtils.WALLET_DOMAIN,
-                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.empty()
-                    )
-                }
-            )
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
+                        Optional.empty())
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */
@@ -143,9 +134,7 @@ class TransactionWalletControllerTest {
                 objectMapper.writeValueAsString(
                     WalletTransactionCreateResponseDto()
                         .walletId(WalletTestUtils.WALLET_DOMAIN.id.value)
-                        .redirectUrl(null)
-                )
-            )
+                        .redirectUrl(null)))
     }
 
     @Test
@@ -163,15 +152,13 @@ class TransactionWalletControllerTest {
                         transactionId = "",
                         walletTransactionCreateRequestDto =
                             Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
-                        exchange = mock()
-                    )
+                        exchange = mock())
                     .block()
             }
 
         assertEquals(
             "Input clientId: [INVALID] is unknown. Handled onboarding channels: [IO]",
-            exception.message
-        )
+            exception.message)
     }
 
     @Test
@@ -184,12 +171,9 @@ class TransactionWalletControllerTest {
                     Pair(
                         LoggedAction(
                             WalletTestUtils.WALLET_DOMAIN,
-                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.of(webviewPaymentUrl)
-                    )
-                }
-            )
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
+                        Optional.of(webviewPaymentUrl))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */
@@ -215,12 +199,9 @@ class TransactionWalletControllerTest {
                     Pair(
                         LoggedAction(
                             WalletTestUtils.WALLET_DOMAIN,
-                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())
-                        ),
-                        Optional.of(webviewPaymentUrl)
-                    )
-                }
-            )
+                            WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
+                        Optional.of(webviewPaymentUrl))
+                })
         given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
             .willReturn(Flux.empty())
         /* test */

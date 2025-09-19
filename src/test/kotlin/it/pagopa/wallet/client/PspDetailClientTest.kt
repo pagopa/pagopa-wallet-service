@@ -87,6 +87,7 @@ class PspDetailClientTest {
     companion object {
         private const val PSP_ID = "pspId"
         private const val PSP_BUSINESS_NAME = "pspBusinessName"
+
         private fun generateFeesResponse() =
             CalculateFeeResponse()
                 .addBundlesItem(Bundle().idPsp(PSP_ID).pspBusinessName(PSP_BUSINESS_NAME))

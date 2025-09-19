@@ -27,17 +27,15 @@ class RedisConfiguration {
 
         val serializationContext =
             RedisSerializationContext.newSerializationContext<String, PaymentMethodResponse>(
-                keySerializer
-            )
+                    keySerializer)
                 .value(valueSerializer)
                 .build()
 
-        val paymentMethodsRedisTemplate = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+        val paymentMethodsRedisTemplate =
+            ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
 
         return PaymentMethodsTemplateWrapper(
-            paymentMethodsRedisTemplate,
-            Duration.ofSeconds(ttlSeconds)
-        )
+            paymentMethodsRedisTemplate, Duration.ofSeconds(ttlSeconds))
     }
 
     @Bean
@@ -49,13 +47,12 @@ class RedisConfiguration {
         val valueSerializer = buildJackson2RedisSerializer(NpgSession::class.java)
 
         val serializationContext =
-            RedisSerializationContext.newSerializationContext<String, NpgSession>(
-                keySerializer
-            )
+            RedisSerializationContext.newSerializationContext<String, NpgSession>(keySerializer)
                 .value(valueSerializer)
                 .build()
 
-        val npgSessionRedisTemplate = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+        val npgSessionRedisTemplate =
+            ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
 
         return NpgSessionsTemplateWrapper(npgSessionRedisTemplate, Duration.ofSeconds(ttlSeconds))
     }
@@ -69,12 +66,12 @@ class RedisConfiguration {
 
         val serializationContext =
             RedisSerializationContext.newSerializationContext<String, UniqueIdDocument>(
-                keySerializer
-            )
+                    keySerializer)
                 .value(valueSerializer)
                 .build()
 
-        val uniqueIdTemplateWrapper = ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+        val uniqueIdTemplateWrapper =
+            ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
 
         return UniqueIdTemplateWrapper(uniqueIdTemplateWrapper, Duration.ofSeconds(60))
     }

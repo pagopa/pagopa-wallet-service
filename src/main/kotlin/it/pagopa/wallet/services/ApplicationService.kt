@@ -24,8 +24,7 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
                 description = ApplicationDescription(""), // TODO handle according API refactoring
                 status = ApplicationStatus.valueOf(status.value),
                 creationDate = Instant.now(),
-                updateDate = Instant.now()
-            )
+                updateDate = Instant.now())
 
         return applicationRepository
             .save(it.pagopa.wallet.documents.applications.Application.fromDomain(application))
@@ -52,14 +51,12 @@ class ApplicationService(@Autowired private val applicationRepository: Applicati
                     ApplicationDescription(""),
                     ApplicationStatus.valueOf(application.status),
                     Instant.parse(application.creationDate),
-                    Instant.parse(application.updateDate)
-                ) to oldStatus
+                    Instant.parse(application.updateDate)) to oldStatus
             }
             .map { (application, oldStatus) ->
                 LoggedAction(
                     application,
-                    ApplicationStatusChangedEvent(applicationId, oldStatus, application.status)
-                )
+                    ApplicationStatusChangedEvent(applicationId, oldStatus, application.status))
             }
     }
 }

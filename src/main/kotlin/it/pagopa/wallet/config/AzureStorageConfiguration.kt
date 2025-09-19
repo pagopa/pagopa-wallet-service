@@ -37,10 +37,8 @@ class AzureStorageConfiguration {
                     NettyAsyncHttpClientBuilder(
                             HttpClient.create().resolver { nameResolverSpec ->
                                 nameResolverSpec.ndots(1)
-                            }
-                        )
-                        .build()
-                )
+                            })
+                        .build())
                 .buildAsyncClient()
         return WalletQueueClient(queue, serializer, Duration.ofSeconds(queueConfig.ttlSeconds))
     }
@@ -59,15 +57,10 @@ class AzureStorageConfiguration {
                     NettyAsyncHttpClientBuilder(
                             HttpClient.create().resolver { nameResolverSpec ->
                                 nameResolverSpec.ndots(1)
-                            }
-                        )
-                        .build()
-                )
+                            })
+                        .build())
                 .buildAsyncClient()
         return WalletQueueClient(
-            queue,
-            serializer,
-            Duration.ofSeconds(expirationQueueConfig.ttlSeconds)
-        )
+            queue, serializer, Duration.ofSeconds(expirationQueueConfig.ttlSeconds))
     }
 }

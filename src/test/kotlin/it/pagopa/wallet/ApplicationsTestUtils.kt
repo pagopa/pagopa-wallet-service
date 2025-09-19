@@ -15,8 +15,7 @@ class ApplicationsTestUtils {
                 APPLICATION_DESCRIPTION,
                 ApplicationStatus.DISABLED,
                 Instant.now(),
-                Instant.now()
-            )
+                Instant.now())
 
         val CREATE_APPLICATION_REQUEST =
             ApplicationCreateRequestDto().apply { applicationId = APPLICATION_ID.id }

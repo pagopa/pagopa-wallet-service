@@ -28,8 +28,7 @@ class WalletTest {
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
-                onboardingChannel = OnboardingChannel.IO
-            )
+                onboardingChannel = OnboardingChannel.IO)
         }
     }
 
@@ -48,9 +47,7 @@ class WalletTest {
                             WalletApplicationStatus.DISABLED,
                             Instant.now(),
                             Instant.now(),
-                            WalletTestUtils.APPLICATION_METADATA
-                        )
-                    ),
+                            WalletTestUtils.APPLICATION_METADATA)),
                 contractId = WalletTestUtils.CONTRACT_ID,
                 validationOperationResult = OperationResultEnum.EXECUTED,
                 validationErrorCode = null,
@@ -59,8 +56,7 @@ class WalletTest {
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
-                onboardingChannel = OnboardingChannel.IO
-            )
+                onboardingChannel = OnboardingChannel.IO)
         }
     }
 
@@ -80,9 +76,7 @@ class WalletTest {
                             WalletApplicationStatus.DISABLED,
                             Instant.now(),
                             Instant.now(),
-                            WalletTestUtils.APPLICATION_METADATA
-                        )
-                    ),
+                            WalletTestUtils.APPLICATION_METADATA)),
                 contractId = WalletTestUtils.CONTRACT_ID,
                 validationOperationResult = OperationResultEnum.EXECUTED,
                 validationErrorCode = null,
@@ -92,14 +86,12 @@ class WalletTest {
                         WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
-                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
-                    ),
+                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID),
                 clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
-                onboardingChannel = OnboardingChannel.IO
-            )
+                onboardingChannel = OnboardingChannel.IO)
         }
     }
 
@@ -119,9 +111,7 @@ class WalletTest {
                             WalletApplicationStatus.DISABLED,
                             Instant.now(),
                             Instant.now(),
-                            WalletTestUtils.APPLICATION_METADATA
-                        )
-                    ),
+                            WalletTestUtils.APPLICATION_METADATA)),
                 contractId = WalletTestUtils.CONTRACT_ID,
                 validationOperationResult = null,
                 validationErrorCode = null,
@@ -131,14 +121,12 @@ class WalletTest {
                         WalletTestUtils.LAST_FOUR_DIGITS,
                         WalletTestUtils.EXP_DATE,
                         WalletTestUtils.BRAND,
-                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID
-                    ),
+                        WalletTestUtils.PAYMENT_INSTRUMENT_GATEWAY_ID),
                 clients = TEST_DEFAULT_CLIENTS,
                 version = 0,
                 creationDate = WalletTestUtils.creationDate,
                 updateDate = WalletTestUtils.creationDate,
-                onboardingChannel = OnboardingChannel.IO
-            )
+                onboardingChannel = OnboardingChannel.IO)
         }
         assert(WalletTestUtils.walletDomain() == WalletTestUtils.walletDocument().toDomain())
     }

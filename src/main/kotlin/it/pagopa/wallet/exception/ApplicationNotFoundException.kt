@@ -8,7 +8,6 @@ class ApplicationNotFoundException(private val serviceId: String) :
         return RestApiException(
             HttpStatus.NOT_FOUND,
             "Application not found",
-            "Application with id '${serviceId}' not found"
-        )
+            "Application with id '${serviceId}' not found")
     }
 }

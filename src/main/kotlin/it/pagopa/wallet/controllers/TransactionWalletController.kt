@@ -51,8 +51,7 @@ class TransactionWalletController(
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
                         amount = request.amount,
-                        onboardingChannel = xClientIdDto.toOnboardingChannel()
-                    )
+                        onboardingChannel = xClientIdDto.toOnboardingChannel())
                     .flatMap { (loggedAction, returnUri) ->
                         loggedAction.saveEvents(loggingEventRepository).map {
                             Triple(it.id.value, request, returnUri)
@@ -65,11 +64,9 @@ class TransactionWalletController(
                     response.redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri.get())
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}"
-                            )
+                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}")
                             .build()
-                            .toUriString()
-                    )
+                            .toUriString())
                 }
                 response.walletId(walletId)
             }
@@ -82,8 +79,7 @@ class TransactionWalletController(
             .post()
             .uri(
                 WarmupUtils.TRANSACTION_WALLET_URI,
-                mapOf("transactionId" to WarmupUtils.mockedUUID)
-            )
+                mapOf("transactionId" to WarmupUtils.mockedUUID))
             .contentType(MediaType.APPLICATION_JSON)
             .header(WarmupUtils.USER_ID_HEADER_KEY, WarmupUtils.mockedUUID.toString())
             .header(WarmupUtils.CLIENT_ID_HEADER_KEY, "IO")
