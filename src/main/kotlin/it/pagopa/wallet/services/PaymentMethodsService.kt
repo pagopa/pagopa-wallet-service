@@ -1,6 +1,6 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
 import kotlinx.coroutines.reactor.mono
@@ -33,7 +33,7 @@ class PaymentMethodsService(
     }
 
     fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
-            paymentMethodsRedisTemplate.findById(paymentMethodId)
+        paymentMethodsRedisTemplate.findById(paymentMethodId)
             .doFirst { logger.debug("Try to retrieve payment method from cache: [$paymentMethodId]") }
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {

@@ -1,6 +1,7 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.paymentmethods.v2.model.Bundle
 import it.pagopa.generated.jwtIssuer.model.CreateTokenRequest
 import it.pagopa.generated.jwtIssuer.model.CreateTokenResponse
@@ -56,7 +57,6 @@ import it.pagopa.wallet.client.NpgClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
-import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 import it.pagopa.wallet.documents.wallets.Wallet
 import it.pagopa.wallet.documents.wallets.details.CardDetails
 import it.pagopa.wallet.documents.wallets.details.PayPalDetails
@@ -70,13 +70,10 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.*
-import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.util.*
-import java.util.stream.Stream
+import it.pagopa.wallet.util.Constants
+import it.pagopa.wallet.util.TransactionId
+import it.pagopa.wallet.util.UniqueIdUtils
+import it.pagopa.wallet.util.WalletUtils
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -96,6 +93,13 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
 import reactor.test.StepVerifier
+import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.util.*
+import java.util.stream.Stream
+import it.pagopa.wallet.documents.applications.Application as ApplicationDocument
 
 class WalletServiceTest {
     private val walletRepository: WalletRepository = mock()
@@ -276,13 +280,13 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWallet(
-                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWallet(
+                        walletApplicationList = listOf(WALLET_APPLICATION_ID),
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
 
@@ -340,13 +344,13 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWallet(
-                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWallet(
+                        walletApplicationList = listOf(WALLET_APPLICATION_ID),
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, onboardingConfig.cardReturnUrl),
@@ -407,13 +411,13 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWallet(
-                            walletApplicationList = listOf(WALLET_APPLICATION_ID),
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWallet(
+                        walletApplicationList = listOf(WALLET_APPLICATION_ID),
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_APM.value,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, onboardingConfig.apmReturnUrl),
@@ -446,14 +450,14 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForTransaction(
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWalletForTransaction(
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        transactionId = TransactionId(TRANSACTION_ID),
+                        amount = AMOUNT,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
                 verify(paymentMethodsService, times(0)).getPaymentMethodById(anyString())
@@ -507,14 +511,14 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForTransaction(
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWalletForTransaction(
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        transactionId = TransactionId(TRANSACTION_ID),
+                        amount = AMOUNT,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -576,14 +580,14 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForTransaction(
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWalletForTransaction(
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        transactionId = TransactionId(TRANSACTION_ID),
+                        amount = AMOUNT,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -647,14 +651,14 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForTransaction(
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
-                            transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWalletForTransaction(
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
+                        transactionId = TransactionId(TRANSACTION_ID),
+                        amount = AMOUNT,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -719,14 +723,14 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.createWalletForTransaction(
-                            userId = USER_ID.id,
-                            paymentMethodId = PAYMENT_METHOD_ID_APM.value,
-                            transactionId = TransactionId(TRANSACTION_ID),
-                            amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO
-                        )
+                    walletService.createWalletForTransaction(
+                        userId = USER_ID.id,
+                        paymentMethodId = PAYMENT_METHOD_ID_APM.value,
+                        transactionId = TransactionId(TRANSACTION_ID),
+                        amount = AMOUNT,
+                        onboardingChannel = OnboardingChannel.IO
                     )
+                )
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, Optional.empty<URI>()),
@@ -872,19 +876,19 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given {
-                    jwtTokenIssuerClient.createToken(
-                        createTokenRequest = any(),
-                    )
-                }
+                jwtTokenIssuerClient.createToken(
+                    createTokenRequest = any(),
+                )
+            }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -989,8 +993,8 @@ class WalletServiceTest {
             val sessionToken = "sessionToken"
             val notificationUrl =
                 UriComponentsBuilder.fromHttpUrl(
-                        sessionUrlConfig.trxWithContextualOnboardNotificationUrl
-                    )
+                    sessionUrlConfig.trxWithContextualOnboardNotificationUrl
+                )
                     .build(
                         mapOf(
                             Pair("transactionId", TransactionId(TRANSACTION_ID).trimmedUUIDString),
@@ -1051,12 +1055,12 @@ class WalletServiceTest {
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -1174,12 +1178,12 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        APM_SESSION_CREATE_REQUEST
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    APM_SESSION_CREATE_REQUEST
                 )
+            )
                 .expectError(NpgClientException::class.java)
                 .verify()
 
@@ -1293,12 +1297,12 @@ class WalletServiceTest {
                 .willAnswer { mono { CreateTokenResponse().token(sessionToken) } }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectError(NpgClientException::class.java)
                 .verify()
 
@@ -1428,19 +1432,19 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
             given {
-                    jwtTokenIssuerClient.createToken(
-                        createTokenRequest = any(),
-                    )
-                }
+                jwtTokenIssuerClient.createToken(
+                    createTokenRequest = any(),
+                )
+            }
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        APM_SESSION_CREATE_REQUEST
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    APM_SESSION_CREATE_REQUEST
                 )
+            )
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 
@@ -1540,12 +1544,12 @@ class WalletServiceTest {
             /* test */
 
             StepVerifier.create(
-                    walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
+                walletService.validateWalletSession(
+                    orderId,
+                    WalletId(WALLET_UUID.value),
+                    UserId(USER_ID.id)
                 )
+            )
                 .expectNext(Pair(verifyResponse, expectedLoggedAction))
                 .verifyComplete()
 
@@ -1610,12 +1614,12 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
+                )
                     .expectError(NoCardsSessionValidateRequestException::class.java)
                     .verify()
 
@@ -1644,12 +1648,12 @@ class WalletServiceTest {
                 given { npgSessionRedisTemplate.findById(any()) }.willReturn(Mono.empty())
                 /* test */
                 StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
+                )
                     .expectError(SessionNotFoundException::class.java)
                     .verify()
 
@@ -1683,12 +1687,12 @@ class WalletServiceTest {
 
                 /* test */
                 StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
+                )
                     .expectError(WalletNotFoundException::class.java)
                     .verify()
 
@@ -1728,12 +1732,12 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
+                )
                     .expectError(WalletSessionMismatchException::class.java)
                     .verify()
 
@@ -1777,12 +1781,12 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.validateWalletSession(
-                            orderId,
-                            WalletId(WALLET_UUID.value),
-                            UserId(USER_ID.id)
-                        )
+                    walletService.validateWalletSession(
+                        orderId,
+                        WalletId(WALLET_UUID.value),
+                        UserId(USER_ID.id)
                     )
+                )
                     .expectError(WalletConflictStatusException::class.java)
                     .verify()
 
@@ -1842,12 +1846,12 @@ class WalletServiceTest {
             /* test */
 
             StepVerifier.create(
-                    walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
+                walletService.validateWalletSession(
+                    orderId,
+                    WalletId(WALLET_UUID.value),
+                    UserId(USER_ID.id)
                 )
+            )
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -1913,12 +1917,12 @@ class WalletServiceTest {
             /* test */
 
             StepVerifier.create(
-                    walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
+                walletService.validateWalletSession(
+                    orderId,
+                    WalletId(WALLET_UUID.value),
+                    UserId(USER_ID.id)
                 )
+            )
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -1988,12 +1992,12 @@ class WalletServiceTest {
             /* test */
 
             StepVerifier.create(
-                    walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
+                walletService.validateWalletSession(
+                    orderId,
+                    WalletId(WALLET_UUID.value),
+                    UserId(USER_ID.id)
                 )
+            )
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -2063,12 +2067,12 @@ class WalletServiceTest {
             /* test */
 
             StepVerifier.create(
-                    walletService.validateWalletSession(
-                        orderId,
-                        WalletId(WALLET_UUID.value),
-                        UserId(USER_ID.id)
-                    )
+                walletService.validateWalletSession(
+                    orderId,
+                    WalletId(WALLET_UUID.value),
+                    UserId(USER_ID.id)
                 )
+            )
                 .expectError(BadGatewayException::class.java)
                 .verify()
 
@@ -2132,11 +2136,11 @@ class WalletServiceTest {
                         .clients(walletClientInfo)
 
                 given {
-                        walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
-                    }
+                    walletRepository.findByIdAndUserId(
+                        eq(WALLET_UUID.value.toString()),
+                        eq(USER_ID.id.toString())
+                    )
+                }
                     .willAnswer { Mono.just(wallet) }
 
                 /* test */
@@ -2189,11 +2193,11 @@ class WalletServiceTest {
                         .clients(walletClientInfo)
 
                 given {
-                        walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
-                    }
+                    walletRepository.findByIdAndUserId(
+                        eq(WALLET_UUID.value.toString()),
+                        eq(USER_ID.id.toString())
+                    )
+                }
                     .willAnswer { Mono.just(wallet) }
 
                 /* test */
@@ -2244,11 +2248,11 @@ class WalletServiceTest {
                         .clients(walletClientInfo)
 
                 given {
-                        walletRepository.findByIdAndUserId(
-                            eq(WALLET_UUID.value.toString()),
-                            eq(USER_ID.id.toString())
-                        )
-                    }
+                    walletRepository.findByIdAndUserId(
+                        eq(WALLET_UUID.value.toString()),
+                        eq(USER_ID.id.toString())
+                    )
+                }
                     .willAnswer { Mono.just(wallet) }
 
                 /* test */
@@ -2307,11 +2311,11 @@ class WalletServiceTest {
                 val walletsDto = WalletsDto().addWalletsItem(walletInfoDto)
 
                 given {
-                        walletRepository.findByUserIdAndStatus(
-                            USER_ID.id.toString(),
-                            WalletStatusDto.VALIDATED
-                        )
-                    }
+                    walletRepository.findByUserIdAndStatus(
+                        USER_ID.id.toString(),
+                        WalletStatusDto.VALIDATED
+                    )
+                }
                     .willAnswer { Flux.fromIterable(listOf(wallet)) }
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
@@ -2458,12 +2462,12 @@ class WalletServiceTest {
                 assertTrue(wallet.applications.isEmpty())
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(
-                            WALLET_UUID,
-                            USER_ID,
-                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
-                        )
+                    walletService.updateWalletApplications(
+                        WALLET_UUID,
+                        USER_ID,
+                        listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                     )
+                )
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2555,12 +2559,12 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(
-                            WALLET_UUID,
-                            USER_ID,
-                            listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
-                        )
+                    walletService.updateWalletApplications(
+                        WALLET_UUID,
+                        USER_ID,
+                        listOf(Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus))
                     )
+                )
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2638,8 +2642,8 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(WALLET_UUID, USER_ID, listOf())
-                    )
+                    walletService.updateWalletApplications(WALLET_UUID, USER_ID, listOf())
+                )
                     .assertNext { assertEquals(expectedLoggedAction, it) }
                     .verifyComplete()
 
@@ -2756,18 +2760,18 @@ class WalletServiceTest {
                 )
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(
-                            WALLET_UUID,
-                            USER_ID,
-                            listOf(
-                                Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
-                                Pair(
-                                    WalletApplicationId(disabledApplication.id.id),
-                                    newWalletApplicationStatus
-                                )
+                    walletService.updateWalletApplications(
+                        WALLET_UUID,
+                        USER_ID,
+                        listOf(
+                            Pair(WALLET_APPLICATION_ID, newWalletApplicationStatus),
+                            Pair(
+                                WalletApplicationId(disabledApplication.id.id),
+                                newWalletApplicationStatus
                             )
                         )
                     )
+                )
                     .expectNext(expectedLoggedAction)
                     .verifyComplete()
 
@@ -2821,18 +2825,18 @@ class WalletServiceTest {
                 /* test */
 
                 StepVerifier.create(
-                        walletService.updateWalletApplications(
-                            WALLET_UUID,
-                            USER_ID,
-                            listOf(
-                                Pair(WALLET_APPLICATION_ID, newApplicationStatus),
-                                Pair(
-                                    WalletApplicationId(unknownApplication.id),
-                                    newApplicationStatus
-                                )
+                    walletService.updateWalletApplications(
+                        WALLET_UUID,
+                        USER_ID,
+                        listOf(
+                            Pair(WALLET_APPLICATION_ID, newApplicationStatus),
+                            Pair(
+                                WalletApplicationId(unknownApplication.id),
+                                newApplicationStatus
                             )
                         )
                     )
+                )
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
 
@@ -2849,12 +2853,12 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.updateWalletApplications(
-                    WALLET_UUID,
-                    USER_ID,
-                    listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
-                )
+            walletService.updateWalletApplications(
+                WALLET_UUID,
+                USER_ID,
+                listOf(Pair(WALLET_APPLICATION_ID, WalletApplicationStatus.ENABLED))
             )
+        )
             .expectError(WalletNotFoundException::class.java)
             .verify()
     }
@@ -2872,13 +2876,13 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
+            walletService.notifyWallet(
+                WALLET_UUID,
+                orderId,
+                sessionToken,
+                NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
             )
+        )
             .expectError(WalletNotFoundException::class.java)
             .verify()
     }
@@ -2893,13 +2897,13 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
+            walletService.notifyWallet(
+                WALLET_UUID,
+                orderId,
+                sessionToken,
+                NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
             )
+        )
             .expectError(SessionNotFoundException::class.java)
             .verify()
     }
@@ -2918,13 +2922,13 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
+            walletService.notifyWallet(
+                WALLET_UUID,
+                orderId,
+                sessionToken,
+                NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
             )
+        )
             .expectError(WalletSessionMismatchException::class.java)
             .verify()
     }
@@ -2942,13 +2946,13 @@ class WalletServiceTest {
         /* test */
 
         StepVerifier.create(
-                walletService.notifyWallet(
-                    WALLET_UUID,
-                    orderId,
-                    sessionToken,
-                    NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
-                )
+            walletService.notifyWallet(
+                WALLET_UUID,
+                orderId,
+                sessionToken,
+                NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
             )
+        )
             .expectError(WalletConflictStatusException::class.java)
             .verify()
     }
@@ -2967,12 +2971,12 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
-            }
+            walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                any<String>(),
+                any<String>(),
+                any()
+            )
+        }
             .willReturn(Mono.empty())
 
         val walletDocumentWithError = walletDocumentWithError(notifyRequestDto.operationResult)
@@ -2996,8 +3000,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3019,12 +3023,12 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
-            }
+            walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                any<String>(),
+                any<String>(),
+                any()
+            )
+        }
             .willReturn(mono { validatedWalletdDocument.id })
 
         val walletDocumentWithError =
@@ -3052,8 +3056,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3072,12 +3076,12 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
-            }
+            walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                any<String>(),
+                any<String>(),
+                any()
+            )
+        }
             .willReturn(Mono.empty())
 
         val walletDocumentValidated =
@@ -3102,8 +3106,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3122,12 +3126,12 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
-                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(),
-                    any<String>(),
-                    any()
-                )
-            }
+            walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                any<String>(),
+                any<String>(),
+                any()
+            )
+        }
             .willReturn(Mono.empty())
 
         val walletDocumentValidated =
@@ -3152,8 +3156,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .expectNext(expectedLoggedAction)
             .verifyComplete()
     }
@@ -3327,8 +3331,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3365,8 +3369,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .expectError(InvalidRequestException::class.java)
             .verify()
     }
@@ -3416,8 +3420,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3467,8 +3471,8 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
-            )
+            walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto)
+        )
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
     }
@@ -3495,11 +3499,11 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.deleteWallet(
-                    WalletId(UUID.fromString(walletDocument.id)),
-                    UserId(UUID.fromString(walletDocument.userId))
-                )
+            walletService.deleteWallet(
+                WalletId(UUID.fromString(walletDocument.id)),
+                UserId(UUID.fromString(walletDocument.userId))
             )
+        )
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
 
@@ -3510,12 +3514,12 @@ class WalletServiceTest {
     fun `should not update wallet status to DELETED when calling deleteWalletById on deleted wallet`() {
         val walletDocument =
             walletDocumentVerifiedWithAPM(
-                    PayPalDetails(
-                        maskedEmail = MASKED_EMAIL.value,
-                        pspId = "pspId",
-                        pspBusinessName = PSP_BUSINESS_NAME
-                    )
+                PayPalDetails(
+                    maskedEmail = MASKED_EMAIL.value,
+                    pspId = "pspId",
+                    pspBusinessName = PSP_BUSINESS_NAME
                 )
+            )
                 .copy(status = WalletStatusDto.DELETED.value)
 
         /* preconditions */
@@ -3524,11 +3528,11 @@ class WalletServiceTest {
 
         /* test */
         StepVerifier.create(
-                walletService.deleteWallet(
-                    WalletId(UUID.fromString(walletDocument.id)),
-                    UserId(UUID.fromString(walletDocument.userId))
-                )
+            walletService.deleteWallet(
+                WalletId(UUID.fromString(walletDocument.id)),
+                UserId(UUID.fromString(walletDocument.userId))
             )
+        )
             .verifyError(WalletAlreadyDeletedException::class.java)
 
         verify(walletRepository, times(0)).save(any())
@@ -3928,12 +3932,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -3982,12 +3986,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -4045,12 +4049,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -4099,12 +4103,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -4142,8 +4146,8 @@ class WalletServiceTest {
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS
-                    )
+                    PAYMENT_METHOD_ID_CARDS
+                )
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -4155,12 +4159,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -4198,8 +4202,8 @@ class WalletServiceTest {
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_APM
-                    )
+                    PAYMENT_METHOD_ID_APM
+                )
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -4211,12 +4215,12 @@ class WalletServiceTest {
 
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputCardDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputCardDataDto()
                 )
+            )
                 .expectErrorMatches {
                     assertTrue(it is WalletConflictStatusException)
                     assertEquals(
@@ -4295,12 +4299,12 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputInvalidDataDto()
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputInvalidDataDto()
                 )
+            )
                 .verifyError(InternalServerErrorException::class.java)
 
             verify(npgClient, times(0)).createNpgOrderBuild(any(), any(), anyOrNull())
@@ -4411,12 +4415,12 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
             /* test */
             StepVerifier.create(
-                    walletService.createSessionWallet(
-                        USER_ID,
-                        WALLET_UUID,
-                        SessionInputPayPalDataDto().pspId(walletDetails.pspId)
-                    )
+                walletService.createSessionWallet(
+                    USER_ID,
+                    WALLET_UUID,
+                    SessionInputPayPalDataDto().pspId(walletDetails.pspId)
                 )
+            )
                 .expectNext(Pair(sessionResponseDto, expectedLoggedAction))
                 .verifyComplete()
 

@@ -1,8 +1,8 @@
 package it.pagopa.wallet.client
 
-import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
-import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
+import it.pagopa.generated.ecommerce.paymentmethods.api.PaymentMethodsApi
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodStatus
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import org.slf4j.LoggerFactory
@@ -44,17 +44,20 @@ class EcommercePaymentMethodsClient(
                             description = "EcommercePaymentMethods - Bad request",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
+
                     HttpStatus.UNAUTHORIZED ->
                         EcommercePaymentMethodException(
                             description =
                                 "EcommercePaymentMethods - Misconfigured EcommercePaymentMethods api key",
                             httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                         )
+
                     HttpStatus.INTERNAL_SERVER_ERROR ->
                         EcommercePaymentMethodException(
                             description = "EcommercePaymentMethods - internal server error",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
+
                     else ->
                         EcommercePaymentMethodException(
                             description =
@@ -65,7 +68,7 @@ class EcommercePaymentMethodsClient(
             }
             .filter {
                 PaymentMethodStatus.ENABLED == it.status &&
-                    isValidPaymentMethodGivenWalletTypeAvailable(it.name)
+                        isValidPaymentMethodGivenWalletTypeAvailable(it.name)
             }
             .switchIfEmpty(
                 Mono.error(

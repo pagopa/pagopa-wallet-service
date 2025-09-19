@@ -1,6 +1,7 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_APM
 import it.pagopa.wallet.WalletTestUtils.PAYMENT_METHOD_ID_CARDS
 import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
@@ -8,7 +9,6 @@ import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
-import java.util.stream.Stream
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.kotlin.test.test
+import java.util.stream.Stream
 
 class PaymentMethodsServiceTest {
 

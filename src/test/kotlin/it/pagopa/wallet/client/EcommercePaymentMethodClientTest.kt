@@ -1,9 +1,8 @@
 package it.pagopa.wallet.client
 
-import it.pagopa.generated.ecommerce.api.PaymentMethodsApi
+import it.pagopa.generated.ecommerce.paymentmethods.api.PaymentMethodsApi
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
-import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.given
@@ -12,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.test.StepVerifier
+import java.nio.charset.StandardCharsets
 
 class EcommercePaymentMethodClientTest {
 

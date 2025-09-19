@@ -1,28 +1,30 @@
 package it.pagopa.wallet
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodManagementType
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
-import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
+
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodManagementType
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodStatus
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.documents.applications.Application
-import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
-import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
-import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
-import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
+import org.springframework.http.HttpStatus
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
-import org.springframework.http.HttpStatus
+import it.pagopa.wallet.documents.wallets.Client as ClientDocument
+import it.pagopa.wallet.documents.wallets.WalletApplication as WalletApplicationDocument
+import it.pagopa.wallet.documents.wallets.details.CardDetails as CardDetailsDocument
+import it.pagopa.wallet.documents.wallets.details.PayPalDetails as PayPalDetailsDocument
 
 object WalletTestUtils {
 
@@ -146,13 +148,13 @@ object WalletTestUtils {
                 clients =
                     Client.WellKnown.values().associate {
                         it.name to
-                            ClientDocument(
-                                if (it == client) {
-                                    Client.Status.ENABLED.name
-                                } else {
-                                    Client.Status.DISABLED.name
-                                }
-                            )
+                                ClientDocument(
+                                    if (it == client) {
+                                        Client.Status.ENABLED.name
+                                    } else {
+                                        Client.Status.DISABLED.name
+                                    }
+                                )
                     }
             )
     }
@@ -679,7 +681,7 @@ object WalletTestUtils {
         )
 
     fun walletDomainEmptyServicesNullDetailsNoPaymentInstrument():
-        it.pagopa.wallet.domain.wallets.Wallet {
+            it.pagopa.wallet.domain.wallets.Wallet {
         return Wallet(
             id = WALLET_UUID,
             userId = USER_ID,
@@ -849,7 +851,7 @@ object WalletTestUtils {
             )
 
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS:
-        WalletNotificationRequestDto =
+            WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
             .timestampOperation(OffsetDateTime.now())
