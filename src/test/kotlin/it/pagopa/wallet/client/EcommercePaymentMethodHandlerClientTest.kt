@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.given
 import org.mockito.kotlin.mock
 import org.springframework.http.HttpHeaders
@@ -28,7 +29,8 @@ class EcommercePaymentMethodHandlerClientTest {
             WalletTestUtils.getValidCardsPaymentMethod().toPaymentMethodHandlerResponse()
         Hooks.onOperatorDebug()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any())).willReturn(mono { paymentMethod })
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
+            .willReturn(mono { paymentMethod })
 
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
@@ -40,7 +42,7 @@ class EcommercePaymentMethodHandlerClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for exception during communication`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any()))
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
             .willThrow(
                 WebClientResponseException.create(
                     500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
@@ -57,7 +59,7 @@ class EcommercePaymentMethodHandlerClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with INTERNAL_SERVER_ERROR error for 401 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any()))
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
             .willThrow(
                 WebClientResponseException.create(
                     401, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
@@ -74,7 +76,7 @@ class EcommercePaymentMethodHandlerClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 500 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any()))
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
             .willThrow(
                 WebClientResponseException.create(
                     500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
@@ -91,7 +93,7 @@ class EcommercePaymentMethodHandlerClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 404 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any()))
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
             .willThrow(
                 WebClientResponseException.create(
                     404, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
@@ -108,7 +110,7 @@ class EcommercePaymentMethodHandlerClientTest {
     fun `Should map payment method service error response to EcommercePaymentMethodsClientException with BAD_GATEWAY error for 400 from ecommerce-payment-methods`() {
         val paymentMethodId = WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString()
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any()))
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
             .willThrow(
                 WebClientResponseException.create(
                     400, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
@@ -129,7 +131,8 @@ class EcommercePaymentMethodHandlerClientTest {
             WalletTestUtils.getDisabledCardsPaymentMethod().toPaymentMethodHandlerResponse()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any())).willReturn(mono { paymentMethod })
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
+            .willReturn(mono { paymentMethod })
 
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
@@ -147,7 +150,8 @@ class EcommercePaymentMethodHandlerClientTest {
             WalletTestUtils.getInvalidPaymentMethod().toPaymentMethodHandlerResponse()
 
         // prerequisite
-        given(paymentMethodsApi.getPaymentMethod(any(), any())).willReturn(mono { paymentMethod })
+        given(paymentMethodsApi.getPaymentMethod(any(), anyOrNull()))
+            .willReturn(mono { paymentMethod })
 
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
