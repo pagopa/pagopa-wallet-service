@@ -35,8 +35,7 @@ class EcommercePaymentMethodsHandlerClient(
             .onErrorMap(WebClientResponseException::class.java) {
                 logger.error(
                     "Error communicating with ecommerce payment-methods-handler: response: ${it.responseBodyAsString}",
-                    it
-                )
+                    it)
                 when (it.statusCode) {
                     HttpStatus.BAD_REQUEST ->
                         EcommercePaymentMethodException(
@@ -67,16 +66,14 @@ class EcommercePaymentMethodsHandlerClient(
             }
             .filter {
                 it.status == PaymentMethodResponse.StatusEnum.ENABLED &&
-                        isValidPaymentMethodGivenWalletTypeAvailable(it.paymentTypeCode)
+                    isValidPaymentMethodGivenWalletTypeAvailable(it.paymentTypeCode)
             }
             .switchIfEmpty(
                 Mono.error(
                     EcommercePaymentMethodException(
                         description = "Invalid Payment Method",
                         httpStatusCode = HttpStatus.BAD_REQUEST,
-                    )
-                )
-            )
+                    )))
     }
 
     /**

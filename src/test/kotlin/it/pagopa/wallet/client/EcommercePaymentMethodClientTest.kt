@@ -3,6 +3,7 @@ package it.pagopa.wallet.client
 import it.pagopa.generated.ecommerce.paymentmethods.api.PaymentMethodsApi
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.given
@@ -11,7 +12,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.test.StepVerifier
-import java.nio.charset.StandardCharsets
 
 class EcommercePaymentMethodClientTest {
 
@@ -40,9 +40,7 @@ class EcommercePaymentMethodClientTest {
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
-                    500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
-                )
-            )
+                    500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
             .expectErrorMatches {
@@ -59,9 +57,7 @@ class EcommercePaymentMethodClientTest {
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
-                    401, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
-                )
-            )
+                    401, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
             .expectErrorMatches {
@@ -78,9 +74,7 @@ class EcommercePaymentMethodClientTest {
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
-                    500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
-                )
-            )
+                    500, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
             .expectErrorMatches {
@@ -97,9 +91,7 @@ class EcommercePaymentMethodClientTest {
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
-                    404, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
-                )
-            )
+                    404, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
             .expectErrorMatches {
@@ -116,9 +108,7 @@ class EcommercePaymentMethodClientTest {
         given(paymentMethodsApi.getPaymentMethod(paymentMethodId, null))
             .willThrow(
                 WebClientResponseException.create(
-                    400, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8
-                )
-            )
+                    400, "statusText", HttpHeaders.EMPTY, ByteArray(0), StandardCharsets.UTF_8))
         // test and assertions
         StepVerifier.create(paymentMethodsClient.getPaymentMethodById(paymentMethodId))
             .expectErrorMatches {
