@@ -25,8 +25,10 @@ class EcommercePaymentMethodsHandlerClient(
 
         val maybePaymentMethodResponse: Mono<PaymentMethodResponse> =
             try {
-                logger.info("Starting getPaymentMethod given id $paymentMethodId")
-                ecommercePaymentMethodHandlerClient.getPaymentMethod(paymentMethodId, null)
+                logger.info(
+                    "Invoking payment methods handler for get method by id. Searched method id: [{}}",
+                    paymentMethodId)
+                ecommercePaymentMethodHandlerClient.getPaymentMethod(paymentMethodId, "IO")
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }

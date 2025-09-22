@@ -1,6 +1,5 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
 import it.pagopa.generated.ecommerce.paymentmethods.v2.model.Bundle
 import it.pagopa.generated.jwtIssuer.model.CreateTokenRequest
 import it.pagopa.generated.jwtIssuer.model.CreateTokenResponse
@@ -35,6 +34,7 @@ import it.pagopa.wallet.WalletTestUtils.getValidAPMPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.getValidCardsPaymentMethod
 import it.pagopa.wallet.WalletTestUtils.newWalletDocumentForPaymentWithContextualOnboardToBeSaved
 import it.pagopa.wallet.WalletTestUtils.newWalletDocumentToBeSaved
+import it.pagopa.wallet.WalletTestUtils.toPaymentMethodInfo
 import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatusForTransactionWithContextualOnboard
@@ -70,7 +70,10 @@ import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.*
+import it.pagopa.wallet.util.Constants
+import it.pagopa.wallet.util.TransactionId
+import it.pagopa.wallet.util.UniqueIdUtils
+import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -92,6 +95,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import reactor.kotlin.test.test
@@ -317,7 +321,7 @@ class WalletServiceTest {
                 given { walletRepository.save(any()) }
                     .willAnswer { Mono.just(newWalletDocumentToBeSaved) }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -376,7 +380,7 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(applicationFound) }
                 given { walletRepository.save(any()) }.willAnswer { Mono.just(it.arguments[0]) }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willReturn { Mono.just(getValidAPMPaymentMethod()) }
+                    .willReturn { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -467,7 +471,7 @@ class WalletServiceTest {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -529,7 +533,7 @@ class WalletServiceTest {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -593,7 +597,7 @@ class WalletServiceTest {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -658,7 +662,7 @@ class WalletServiceTest {
                         Mono.just(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
                     }
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                    .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
                 /* test */
 
@@ -786,7 +790,7 @@ class WalletServiceTest {
                             .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -880,7 +884,7 @@ class WalletServiceTest {
                                         .id(it.id)
                                 }))
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -1053,7 +1057,7 @@ class WalletServiceTest {
                             .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -1115,7 +1119,7 @@ class WalletServiceTest {
                     .apply { fields = listOf() }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -1287,7 +1291,7 @@ class WalletServiceTest {
 
             /* Mock response */
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -1395,7 +1399,7 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { mono { getValidCardsPaymentMethod() } }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
 
             /* test */
 
@@ -1459,7 +1463,7 @@ class WalletServiceTest {
                     .willAnswer { Mono.just(npgSession) }
 
                 given { paymentMethodsService.getPaymentMethodById(any()) }
-                    .willAnswer { mono { getValidAPMPaymentMethod() } }
+                    .willAnswer { mono { getValidAPMPaymentMethod().toPaymentMethodInfo() } }
 
                 /* test */
 
@@ -1670,7 +1674,7 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { mono { getValidCardsPaymentMethod() } }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
 
             /* test */
 
@@ -1735,7 +1739,7 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { mono { getValidCardsPaymentMethod() } }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
 
             /* test */
 
@@ -1804,10 +1808,10 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") } }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
 
             /* test */
-
+            Hooks.onOperatorDebug()
             StepVerifier.create(
                     walletService.validateWalletSession(
                         orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
@@ -1873,7 +1877,7 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(it.arguments[0]) }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { mono { PaymentMethodResponse().name("CARDS").paymentTypeCode("CP") } }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
 
             /* test */
 
@@ -3442,7 +3446,7 @@ class WalletServiceTest {
             val sessionToken = "sessionToken"
             /* Mock response */
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -3561,7 +3565,7 @@ class WalletServiceTest {
                     }
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
@@ -3610,7 +3614,7 @@ class WalletServiceTest {
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
                 walletDocumentInitializedStatus(PAYMENT_METHOD_ID_CARDS)
@@ -3667,7 +3671,7 @@ class WalletServiceTest {
                     .state(WorkflowState.REDIRECTED_TO_EXTERNAL_DOMAIN)
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
@@ -3717,7 +3721,7 @@ class WalletServiceTest {
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
                 walletDocumentInitializedStatus(PAYMENT_METHOD_ID_APM)
@@ -3766,7 +3770,7 @@ class WalletServiceTest {
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
@@ -3816,7 +3820,7 @@ class WalletServiceTest {
             mockedStaticInstant.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
                 walletDocumentCreatedStatusForTransactionWithContextualOnboard(
@@ -3897,7 +3901,7 @@ class WalletServiceTest {
             val sessionToken = "sessionToken"
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidCardsPaymentMethod()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 
@@ -3996,7 +4000,7 @@ class WalletServiceTest {
                             .notificationUrl(notificationUrl.toString()))
 
             given { paymentMethodsService.getPaymentMethodById(any()) }
-                .willAnswer { Mono.just(getValidAPMPaymentMethod()) }
+                .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
 

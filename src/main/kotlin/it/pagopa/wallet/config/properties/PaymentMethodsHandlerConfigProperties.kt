@@ -7,5 +7,6 @@ data class PaymentMethodsHandlerConfigProperties(
     val uri: String,
     val readTimeout: Int,
     val connectionTimeout: Int,
-    val apiKey: String
+    val apiKey: String,
+    val enabled: Boolean
 )

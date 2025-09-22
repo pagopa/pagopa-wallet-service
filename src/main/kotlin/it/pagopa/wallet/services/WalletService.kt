@@ -16,14 +16,16 @@ import it.pagopa.wallet.domain.applications.ApplicationStatus
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
-import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
-import it.pagopa.wallet.util.*
+import it.pagopa.wallet.util.Constants
 import it.pagopa.wallet.util.EitherExtension.toMono
+import it.pagopa.wallet.util.TransactionId
+import it.pagopa.wallet.util.UniqueIdUtils
+import it.pagopa.wallet.util.WalletUtils
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -190,14 +192,16 @@ class WalletService(
                     .map { loggedAction ->
                         Pair(
                             loggedAction,
-                            paymentMethodResponse.name.let {
+                            paymentMethodResponse.paymentTypeCode.let {
                                 /*
-                                 * Safe value of call here since EcommercePaymentMethodsClient already perform a check
+                                 * Safe not null operator here since EcommercePaymentMethodsClient already perform a check
                                  * against returned payment method name and WalletDetailsType enumeration
                                  */
-                                when (WalletDetailsType.valueOf(it)) {
+                                when (WalletDetailsType.fromPaymentTypeCode(it)) {
                                     WalletDetailsType.CARDS -> onboardingConfig.cardReturnUrl
                                     WalletDetailsType.PAYPAL -> onboardingConfig.apmReturnUrl
+                                    else ->
+                                        throw RuntimeException("Unhandled payment type code: [$it]")
                                 }
                             })
                     }
@@ -271,10 +275,11 @@ class WalletService(
                     .map { loggedAction ->
                         Pair(
                             loggedAction,
-                            paymentMethodResponse.name.let {
-                                when (WalletDetailsType.valueOf(it)) {
+                            paymentMethodResponse.paymentTypeCode.let {
+                                when (WalletDetailsType.fromPaymentTypeCode(it)) {
                                     WalletDetailsType.CARDS ->
                                         Optional.of(URI.create(walletPaymentReturnUrl))
+
                                     else -> {
                                         Optional.empty()
                                     }
@@ -403,7 +408,10 @@ class WalletService(
                                                 })
                                             .language(CREATE_HOSTED_ORDER_REQUEST_LANGUAGE_ITA)
                                             .captureType(CaptureType.IMPLICIT)
-                                            .paymentService(paymentMethod.name)
+                                            .paymentService(
+                                                WalletDetailsType.fromPaymentTypeCode(
+                                                        paymentMethod.paymentTypeCode)!!
+                                                    .toString())
                                             .resultUrl(resultUrl.toString())
                                             .cancelUrl(cancelUrl.toString())
                                             .notificationUrl(notificationUrl.toString())),
@@ -436,6 +444,7 @@ class WalletService(
                                     is SessionInputPayPalDataDto ->
                                         createPaypalDetails(
                                             sessionInputDataDto, wallet.paymentMethodId)
+
                                     else ->
                                         Mono.error(
                                             InternalServerErrorException("Unhandled session input"))
@@ -548,6 +557,7 @@ class WalletService(
                                     "CP" ->
                                         confirmPaymentCard(
                                             session.sessionId, walletId.value, orderId, wallet)
+
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
@@ -849,6 +859,7 @@ class WalletService(
                         walletDetails = walletDetails,
                         errorCode = walletNotificationRequestDto.errorCode)
                 }
+
             is PayPalDetails ->
                 if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
@@ -872,6 +883,7 @@ class WalletService(
                         walletDetails = walletDetails,
                         errorCode = walletNotificationRequestDto.errorCode)
                 }
+
             else ->
                 throw InvalidRequestException(
                     "Unhandled wallet details for notification request: $walletDetails")
@@ -959,11 +971,13 @@ class WalletService(
                     .expiryDate(details.expiryDate)
                     .lastFourDigits(details.lastFourDigits)
                     .brand(CardBrand(details.brand).value)
+
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
                     .pspId(details.pspId)
                     .pspBusinessName(details.pspBusinessName)
+
             else -> null
         }
     }
@@ -976,11 +990,14 @@ class WalletService(
                 is CardDetails ->
                     wallet.details.brand to
                         WalletAuthCardDataDto().paymentMethodType("cards").bin(wallet.details.bin)
+
                 is PayPalDetailsDocument ->
                     "PAYPAL" to WalletAuthAPMDataDto().paymentMethodType("apm")
+
                 null ->
                     throw RuntimeException(
                         "Called getAuthData on null wallet details for wallet id: ${wallet.id}!")
+
                 else ->
                     throw RuntimeException(
                         "Unhandled wallet details variant in getAuthData for wallet id ${wallet.id}")
@@ -1116,30 +1133,41 @@ class WalletService(
                     } else {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
                     }
+
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
                         decodeCardsOnboardingNpgErrorCode(errorCode)
                     } else {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
                     }
+
                 WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_VALIDATED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+
                 WalletNotificationRequestDto.OperationResultEnum.THREEDS_FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2
+
                 WalletNotificationRequestDto.OperationResultEnum.PENDING ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+
                 WalletNotificationRequestDto.OperationResultEnum.CANCELED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_8
+
                 WalletNotificationRequestDto.OperationResultEnum.VOIDED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+
                 WalletNotificationRequestDto.OperationResultEnum.REFUNDED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+
                 WalletNotificationRequestDto.OperationResultEnum.FAILED ->
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
@@ -1249,6 +1277,7 @@ class WalletService(
                             "Invalid paymentInstrumentGatewayId null for card wallet notification"))
                 }
             }
+
             is PayPalDetails -> {
                 logger.debug(
                     "Already onboard check DISABLED for PAYPAL for userId [{}] and walletId [{}]",
@@ -1256,6 +1285,7 @@ class WalletService(
                     walletId)
                 mono { false }
             }
+
             else -> {
                 val errorDescription =
                     "Unhandled already onboard check for userId [${userId}] and walletId [${walletId}]"
