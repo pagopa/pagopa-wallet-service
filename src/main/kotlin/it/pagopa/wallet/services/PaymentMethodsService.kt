@@ -49,10 +49,11 @@ class PaymentMethodsService(
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
-                mono { paymentMethodsHandlerConfigProperties.enabled }
-                    .filter { enabled -> enabled }
-                    .flatMap { retrievePaymentMethodByHandlerApi(paymentMethodId) }
-                    .switchIfEmpty { retrievePaymentMethodByApi(paymentMethodId) }
+                if (paymentMethodsHandlerConfigProperties.enabled) {
+                    retrievePaymentMethodByHandlerApi(paymentMethodId)
+                } else {
+                    retrievePaymentMethodByApi(paymentMethodId)
+                }
             }
 
     private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodInfo> =
