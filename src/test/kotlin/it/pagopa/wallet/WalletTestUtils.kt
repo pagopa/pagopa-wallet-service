@@ -17,6 +17,7 @@ import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
+import it.pagopa.wallet.domain.methods.PaymentMethodInfo
 import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
@@ -818,8 +819,10 @@ object WalletTestUtils {
                     when (it.status) {
                         PaymentMethodStatus.ENABLED ->
                             PaymentMethodHandlerResponse.StatusEnum.ENABLED
+
                         PaymentMethodStatus.DISABLED ->
                             PaymentMethodHandlerResponse.StatusEnum.DISABLED
+
                         else -> PaymentMethodHandlerResponse.StatusEnum.DISABLED
                     })
                 .validityDateFrom(LocalDate.of(2000, 1, 1))
@@ -834,4 +837,16 @@ object WalletTestUtils {
                 .paymentMethodsBrandAssets(it.brandAssets)
         }
     }
+
+    fun PaymentMethodResponse.toPaymentMethodInfo(): PaymentMethodInfo =
+        PaymentMethodInfo(
+            id = this.id,
+            enabled = this.status == PaymentMethodStatus.ENABLED,
+            paymentTypeCode = this.paymentTypeCode)
+
+    fun PaymentMethodHandlerResponse.toPaymentMethodInfo(): PaymentMethodInfo =
+        PaymentMethodInfo(
+            id = this.id,
+            enabled = this.status == PaymentMethodHandlerResponse.StatusEnum.ENABLED,
+            paymentTypeCode = this.paymentTypeCode.toString())
 }

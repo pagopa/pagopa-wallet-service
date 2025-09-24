@@ -4,4 +4,4 @@ WORKDIR /usr/src/app
 
 RUN yarn global add json-server@0.17.4 --exact
 
-CMD ["json-server", "/config/payment-method-server.json", "--routes", "/config/routes.json",  "--middlewares", "/config/middleware.js", "--host", "0.0.0.0"]
+CMD ["json-server", "/config/payment-method-handler-server.json", "--routes", "/config/routes.json",  "--middlewares", "/config/middleware.js", "--host", "0.0.0.0"]
