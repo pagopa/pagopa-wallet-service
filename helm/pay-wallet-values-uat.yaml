@@ -18,10 +18,10 @@ microservice-chart:
       OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
       OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-wallet-service-blue,deployment.environment=uat"
       EXPIRATION_QUEUE_NAME: pagopa-u-itn-pay-wallet-expiration-queue-b
-    envSecret: { }
+    envSecret: {}
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.2.0"
+    tag: "2.3.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -52,9 +52,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: { }
+    annotations: {}
     name: "pay-wallet-workload-identity"
-  podAnnotations: { }
+  podAnnotations: {}
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -176,7 +176,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-u-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -198,7 +198,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: pagopawalletservice
-            namespaces: [ "pay-wallet" ]
+            namespaces: ["pay-wallet"]
             topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 928bc159-85e9-4f09-ba08-1e71851166f1
