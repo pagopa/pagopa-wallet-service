@@ -1,8 +1,12 @@
 package it.pagopa.wallet.services
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodStatus
+import it.pagopa.generated.ecommerce.paymentmethodshandler.model.PaymentMethodResponse
 import it.pagopa.wallet.client.EcommercePaymentMethodsClient
-import it.pagopa.wallet.repositories.PaymentMethodsTemplateWrapper
+import it.pagopa.wallet.client.EcommercePaymentMethodsHandlerClient
+import it.pagopa.wallet.config.properties.PaymentMethodsHandlerConfigProperties
+import it.pagopa.wallet.domain.methods.PaymentMethodInfo
+import it.pagopa.wallet.repositories.PaymentMethodsInfoTemplateWrapper
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,9 +21,13 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 
 @Service
 class PaymentMethodsService(
-    @Autowired private val paymentMethodsRedisTemplate: PaymentMethodsTemplateWrapper,
+    @Autowired private val paymentMethodsRedisTemplate: PaymentMethodsInfoTemplateWrapper,
     @Autowired private val ecommercePaymentMethodsClient: EcommercePaymentMethodsClient,
-    private val paymentMethodCacheSaveSink: Sinks.Many<PaymentMethodResponse> =
+    @Autowired
+    private val ecommercePaymentMethodsHandlerClient: EcommercePaymentMethodsHandlerClient,
+    @Autowired
+    private val paymentMethodsHandlerConfigProperties: PaymentMethodsHandlerConfigProperties,
+    private val paymentMethodCacheSaveSink: Sinks.Many<PaymentMethodInfo> =
         Sinks.many().unicast().onBackpressureBuffer()
 ) : ApplicationListener<ApplicationReadyEvent> {
 
@@ -32,7 +40,7 @@ class PaymentMethodsService(
         subscribePaymentMethodCacheSaveSink()
     }
 
-    fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodResponse> =
+    fun getPaymentMethodById(paymentMethodId: String): Mono<PaymentMethodInfo> =
         paymentMethodsRedisTemplate
             .findById(paymentMethodId)
             .doFirst {
@@ -41,30 +49,57 @@ class PaymentMethodsService(
             .doOnNext { logger.info("Cache hit for payment method with id: [$paymentMethodId]") }
             .switchIfEmpty {
                 logger.info("Cache miss for payment method: [$paymentMethodId]")
-                retrievePaymentMethodByApi(paymentMethodId)
+                if (paymentMethodsHandlerConfigProperties.enabled) {
+                    retrievePaymentMethodByHandlerApi(paymentMethodId)
+                } else {
+                    retrievePaymentMethodByApi(paymentMethodId)
+                }
             }
 
-    private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodResponse> =
+    private fun retrievePaymentMethodByApi(paymentMethodId: String): Mono<PaymentMethodInfo> =
         ecommercePaymentMethodsClient
             .getPaymentMethodById(paymentMethodId)
+            .map {
+                PaymentMethodInfo(
+                    id = it.id,
+                    enabled = it.status == PaymentMethodStatus.ENABLED,
+                    paymentTypeCode = it.paymentTypeCode)
+            }
             .flatMap { emitPaymentMethodCacheSaveSink(it) }
             .doOnError { logger.error("Error during call to payment method: [$paymentMethodId]") }
 
-    private fun emitPaymentMethodCacheSaveSink(paymentMethodResponse: PaymentMethodResponse) =
-        mono { paymentMethodCacheSaveSink.tryEmitNext(paymentMethodResponse) }
+    private fun retrievePaymentMethodByHandlerApi(
+        paymentMethodId: String
+    ): Mono<PaymentMethodInfo> =
+        ecommercePaymentMethodsHandlerClient
+            .getPaymentMethodById(paymentMethodId)
+            .map {
+                PaymentMethodInfo(
+                    id = it.id,
+                    enabled = it.status == PaymentMethodResponse.StatusEnum.ENABLED,
+                    paymentTypeCode = it.paymentTypeCode.toString())
+            }
+            .flatMap { emitPaymentMethodCacheSaveSink(it) }
+            .doOnError {
+                logger.error(
+                    "Error during call to payment method handler for id: [$paymentMethodId]")
+            }
+
+    private fun emitPaymentMethodCacheSaveSink(paymentMethodInfo: PaymentMethodInfo) =
+        mono { paymentMethodCacheSaveSink.tryEmitNext(paymentMethodInfo) }
             .doOnNext { logger.debug("Emit paymentMethodCacheSaveSink result: {}", it) }
             .doOnError { logger.error("Exception while emitting cache save: ", it) }
-            .map { paymentMethodResponse }
-            .onErrorReturn(paymentMethodResponse)
+            .map { paymentMethodInfo }
+            .onErrorReturn(paymentMethodInfo)
 
     fun subscribePaymentMethodCacheSaveSink(): Disposable =
         paymentMethodCacheSaveSink
             .asFlux()
-            .flatMap { paymentMethodResponse ->
-                logger.debug("Save payment method into cache: [${paymentMethodResponse.id}]")
-                paymentMethodsRedisTemplate.save(paymentMethodResponse).doOnError {
+            .flatMap { paymentMethodInfo ->
+                logger.debug("Save payment method into cache: [${paymentMethodInfo.id}]")
+                paymentMethodsRedisTemplate.save(paymentMethodInfo).doOnError {
                     logger.error(
-                        "Error saving payment method into cache: [${paymentMethodResponse.id}]")
+                        "Error saving payment method into cache: [${paymentMethodInfo.id}]")
                 }
             }
             .subscribe()

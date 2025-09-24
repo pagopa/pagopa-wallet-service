@@ -134,6 +134,11 @@ If you want to customize the application environment, reference this table:
 | JWT_ISSUER_READ_TIMEOUT                                               | Jwt issuer service read timeout                                                                                                                            | string                   |         |
 | JWT_ISSUER_CONNECTION_TIMEOUT                                         | Jwt issuer service connection timeout                                                                                                                      | string                   |         |
 | JWT_ISSUER_API_KEY                                                    | Jwt issuer service API key                                                                                                                                 | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_URI                                 | eCommerce payment methods handler URI                                                                                                                      | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_READ_TIMEOUT                        | eCommerce payment methods handler response timeout                                                                                                         | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_CONNECTION_TIMEOUT                  | eCommerce payment methods handler connection timeout                                                                                                       | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_API_KEY                             | eCommerce payment methods handler api key                                                                                                                  | string                   |         |
+| ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED                             | Feature flag used to enable or not method retrieval logic using eCommerce payment methods handler service in place of legacy payment methods               | boolean                  |         |
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)
@@ -152,6 +157,7 @@ You can access the MongoDB database using either [Mongo Express](https://github.
 #### Mongo Express
 
 Go to `http://localhost:8201` and use the following credentials:
+
 - Username: `admin`
 - Password: `pass`
 

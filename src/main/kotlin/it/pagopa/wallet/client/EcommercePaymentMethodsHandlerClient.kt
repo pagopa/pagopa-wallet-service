@@ -1,8 +1,7 @@
 package it.pagopa.wallet.client
 
-import it.pagopa.generated.ecommerce.paymentmethods.api.PaymentMethodsApi
-import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
-import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodStatus
+import it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsHandlerApi
+import it.pagopa.generated.ecommerce.paymentmethodshandler.model.PaymentMethodResponse
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.EcommercePaymentMethodException
 import org.slf4j.LoggerFactory
@@ -14,10 +13,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 
 @Component
-class EcommercePaymentMethodsClient(
+class EcommercePaymentMethodsHandlerClient(
     @Autowired
-    @Qualifier("ecommercePaymentMethodsWebClient")
-    private val ecommercePaymentMethodsClient: PaymentMethodsApi,
+    @Qualifier("ecommercePaymentMethodsHandlerWebClient")
+    private val ecommercePaymentMethodHandlerClient: PaymentMethodsHandlerApi,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -26,8 +25,10 @@ class EcommercePaymentMethodsClient(
 
         val maybePaymentMethodResponse: Mono<PaymentMethodResponse> =
             try {
-                logger.info("Starting getPaymentMethod given id $paymentMethodId")
-                ecommercePaymentMethodsClient.getPaymentMethod(paymentMethodId, null)
+                logger.info(
+                    "Invoking payment methods handler for get method by id. Searched method id: [{}}",
+                    paymentMethodId)
+                ecommercePaymentMethodHandlerClient.getPaymentMethod(paymentMethodId, "IO")
             } catch (e: WebClientResponseException) {
                 Mono.error(e)
             }
@@ -35,7 +36,7 @@ class EcommercePaymentMethodsClient(
         return maybePaymentMethodResponse
             .onErrorMap(WebClientResponseException::class.java) {
                 logger.error(
-                    "Error communicating with ecommerce payment-methods: response: ${it.responseBodyAsString}",
+                    "Error communicating with ecommerce payment-methods-handler: response: ${it.responseBodyAsString}",
                     it)
                 when (it.statusCode) {
                     HttpStatus.BAD_REQUEST ->
@@ -66,8 +67,8 @@ class EcommercePaymentMethodsClient(
                 }
             }
             .filter {
-                PaymentMethodStatus.ENABLED == it.status &&
-                    isValidPaymentMethodGivenWalletTypeAvailable(it.name)
+                it.status == PaymentMethodResponse.StatusEnum.ENABLED &&
+                    isValidPaymentMethodGivenWalletTypeAvailable(it.paymentTypeCode)
             }
             .switchIfEmpty(
                 Mono.error(
@@ -77,7 +78,15 @@ class EcommercePaymentMethodsClient(
                     )))
     }
 
-    private fun isValidPaymentMethodGivenWalletTypeAvailable(paymentMethodName: String): Boolean {
-        return WalletDetailsType.values().any { it.name == paymentMethodName }
+    /**
+     * Check if the returned payment method have a wallet compatible payment type code, that is, the
+     * code used to uniquely identify a payment method typology
+     */
+    private fun isValidPaymentMethodGivenWalletTypeAvailable(
+        paymentTypeCode: PaymentMethodResponse.PaymentTypeCodeEnum
+    ): Boolean {
+        return WalletDetailsType.entries.any { walletDetailType ->
+            walletDetailType.paymentTypeCode == paymentTypeCode.toString()
+        }
     }
 }

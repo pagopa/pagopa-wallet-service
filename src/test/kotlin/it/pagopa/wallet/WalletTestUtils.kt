@@ -1,8 +1,10 @@
 package it.pagopa.wallet
 
-import it.pagopa.generated.ecommerce.model.PaymentMethodManagementType
-import it.pagopa.generated.ecommerce.model.PaymentMethodResponse
-import it.pagopa.generated.ecommerce.model.PaymentMethodStatus
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodManagementType
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodResponse
+import it.pagopa.generated.ecommerce.paymentmethods.model.PaymentMethodStatus
+import it.pagopa.generated.ecommerce.paymentmethodshandler.model.FeeRange
+import it.pagopa.generated.ecommerce.paymentmethodshandler.model.PaymentMethodResponse as PaymentMethodHandlerResponse
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
 import it.pagopa.wallet.documents.applications.Application
@@ -15,10 +17,13 @@ import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.applications.ApplicationDescription
 import it.pagopa.wallet.domain.applications.ApplicationId
 import it.pagopa.wallet.domain.applications.ApplicationStatus
+import it.pagopa.wallet.domain.methods.PaymentMethodInfo
 import it.pagopa.wallet.domain.wallets.*
+import it.pagopa.wallet.domain.wallets.WalletApplication
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.util.TransactionId
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
@@ -753,10 +758,10 @@ object WalletTestUtils {
             .ranges(listOf())
     }
 
-    fun getInvalidCardsPaymentMethod(): PaymentMethodResponse {
+    fun getInvalidPaymentMethod(): PaymentMethodResponse {
         return PaymentMethodResponse()
             .id(PAYMENT_METHOD_ID_CARDS.value.toString())
-            .paymentTypeCode("CP")
+            .paymentTypeCode("RICO")
             .status(PaymentMethodStatus.ENABLED)
             .name("INVALID")
             .description("INVALID description")
@@ -803,4 +808,45 @@ object WalletTestUtils {
             .operationResult(OperationResultEnum.DECLINED)
             .timestampOperation(OffsetDateTime.now())
             .operationId("validationOperationId")
+
+    fun PaymentMethodResponse.toPaymentMethodHandlerResponse(): PaymentMethodHandlerResponse {
+        return this.let {
+            PaymentMethodHandlerResponse()
+                .id(it.id)
+                .name(mapOf("IT" to it.name))
+                .description(mapOf("IT" to it.description))
+                .status(
+                    when (it.status) {
+                        PaymentMethodStatus.ENABLED ->
+                            PaymentMethodHandlerResponse.StatusEnum.ENABLED
+
+                        PaymentMethodStatus.DISABLED ->
+                            PaymentMethodHandlerResponse.StatusEnum.DISABLED
+
+                        else -> PaymentMethodHandlerResponse.StatusEnum.DISABLED
+                    })
+                .validityDateFrom(LocalDate.of(2000, 1, 1))
+                .paymentTypeCode(
+                    PaymentMethodHandlerResponse.PaymentTypeCodeEnum.valueOf(it.paymentTypeCode))
+                .addPaymentMethodTypesItem(PaymentMethodHandlerResponse.PaymentMethodTypesEnum.APP)
+                .feeRange(FeeRange().min(0).max(1000000))
+                .paymentMethodAsset(it.asset)
+                .methodManagement(
+                    PaymentMethodHandlerResponse.MethodManagementEnum.valueOf(
+                        it.methodManagement.toString()))
+                .paymentMethodsBrandAssets(it.brandAssets)
+        }
+    }
+
+    fun PaymentMethodResponse.toPaymentMethodInfo(): PaymentMethodInfo =
+        PaymentMethodInfo(
+            id = this.id,
+            enabled = this.status == PaymentMethodStatus.ENABLED,
+            paymentTypeCode = this.paymentTypeCode)
+
+    fun PaymentMethodHandlerResponse.toPaymentMethodInfo(): PaymentMethodInfo =
+        PaymentMethodInfo(
+            id = this.id,
+            enabled = this.status == PaymentMethodHandlerResponse.StatusEnum.ENABLED,
+            paymentTypeCode = this.paymentTypeCode.toString())
 }

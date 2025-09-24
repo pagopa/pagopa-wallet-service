@@ -216,11 +216,11 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
-  apiPackage.set("it.pagopa.generated.ecommerce.api")
-  modelPackage.set("it.pagopa.generated.ecommerce.model")
+  apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.paymentmethods.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -247,11 +247,42 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/main/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.api")
   modelPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false",
+    )
+  )
+}
+
+tasks.register("ecommercePaymentMethodHandlerV1", GenerateTask::class.java) {
+  description = "Generate eCommerce Payment Method Handler v1 from remote OpenAPI specification"
+  group = "openapi-generation"
+  generatorName.set("java")
+  remoteInputSpec.set(
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
+  )
+  outputDir.set("${layout.buildDirectory.get()}/generated")
+  apiPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.api")
+  modelPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -343,11 +374,13 @@ tasks.withType<KotlinCompile> {
     "ecommercePaymentMethod",
     "ecommercePaymentMethodV2",
     "jwtIssuer",
+    "ecommercePaymentMethodHandlerV1",
   )
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
     apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_2)
+    freeCompilerArgs.add("-Xannotation-default-target=param-property")
   }
 }
 
