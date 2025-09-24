@@ -16,7 +16,7 @@ microservice-chart:
       tag: "latest"
     envConfig:
       OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
-    envSecret: {}
+    envSecret: { }
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
     tag: "2.3.0"
@@ -56,9 +56,9 @@ microservice-chart:
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: "pay-wallet-workload-identity"
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -156,7 +156,7 @@ microservice-chart:
     JWT_ISSUER_READ_TIMEOUT: "10000"
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
     SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
-    ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED: false
+    ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED: "false"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
@@ -174,7 +174,7 @@ microservice-chart:
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
+  nodeSelector: { }
   tolerations:
     - effect: "NoSchedule"
       key: "paymentWalletOnly"
@@ -196,7 +196,7 @@ microservice-chart:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/instance: pagopawalletservice
-            namespaces: ["pay-wallet"]
+            namespaces: [ "pay-wallet" ]
             topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 48a74dad-26f3-4916-ba45-ddda27d950b1
