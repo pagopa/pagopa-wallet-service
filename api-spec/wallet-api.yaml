@@ -1503,6 +1503,8 @@ components:
         brand:
           description: The card brand name
           type: string
+        contextualOnboardDetails:
+          $ref: '#/components/schemas/ContextualOnboardDetails'
         paymentMethodData:
           oneOf:
             - $ref: "#/components/schemas/WalletAuthCardData"
@@ -1516,6 +1518,14 @@ components:
         - contractId
         - brand
         - paymentMethodData
+    ContextualOnboardDetails:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        amount:
+          type: integer
+          format: int64
     WalletAuthCardData:
       x-discriminator-value: cards
       type: object

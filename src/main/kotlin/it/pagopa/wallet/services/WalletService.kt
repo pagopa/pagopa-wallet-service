@@ -1003,11 +1003,27 @@ class WalletService(
                         "Unhandled wallet details variant in getAuthData for wallet id ${wallet.id}")
             }
 
+        val contextualOnboardDetails =
+            wallet.applications
+                .find { application -> application.id == "PAGOPA" }
+                ?.metadata
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { metadata ->
+                    ContextualOnboardDetailsDto().apply {
+                        amount(
+                            metadata[WalletApplicationMetadata.Metadata.AMOUNT.value]
+                                ?.toLongOrNull())
+                        transactionId(
+                            metadata[WalletApplicationMetadata.Metadata.TRANSACTION_ID.value])
+                    }
+                }
+
         return WalletAuthDataDto()
             .walletId(UUID.fromString(wallet.id))
             .contractId(wallet.contractId)
             .brand(CardBrand(brand).value)
             .paymentMethodData(paymentMethodData)
+            .contextualOnboardDetails(contextualOnboardDetails)
     }
 
     fun updateWalletApplications(
