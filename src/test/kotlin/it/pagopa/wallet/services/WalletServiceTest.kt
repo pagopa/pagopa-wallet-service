@@ -43,6 +43,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidationRequestedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
@@ -2118,6 +2119,37 @@ class WalletServiceTest {
                     .verifyComplete()
             }
         }
+    }
+
+    @Test
+    fun `should find wallet auth data by ID with cards and fill contextual onboard details`() {
+        /* preconditions */
+
+        val wallet = walletDocumentStatusValidatedCardWithContextualOnboard()
+        val walletAuthDataDto = WalletTestUtils.walletCardAuthDataContextualOnboardDto()
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectNext(walletAuthDataDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should find wallet auth data by ID with cards and do not fill contextual onboard details`() {
+        /* preconditions */
+
+        val wallet =
+            walletDocumentStatusValidatedCardWithContextualOnboard(contextualOnboard = false)
+        val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectNext(walletAuthDataDto)
+            .verifyComplete()
     }
 
     @Test

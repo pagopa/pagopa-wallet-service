@@ -1007,7 +1007,10 @@ class WalletService(
             wallet.applications
                 .find { application -> application.id == "PAGOPA" }
                 ?.metadata
-                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf {
+                    it[WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
+                        .toBoolean()
+                }
                 ?.let { metadata ->
                     ContextualOnboardDetailsDto().apply {
                         amount(
