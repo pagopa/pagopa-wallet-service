@@ -4,7 +4,7 @@ import it.pagopa.generated.wallet.api.TransactionsApi
 import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateRequestDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
-import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.toOnboardingChannel
@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono
 @Slf4j
 class TransactionWalletController(
     @Autowired private val walletService: WalletService,
-    @Autowired private val loggingEventRepository: LoggingEventRepository,
+    @Autowired private val walletEventSinksService: WalletEventSinksService,
     @Value("\${security.apiKey.primary}") private val primaryApiKey: String,
     private val webClient: WebClient = WebClient.create()
 ) : TransactionsApi {
@@ -53,8 +53,8 @@ class TransactionWalletController(
                         amount = request.amount,
                         onboardingChannel = xClientIdDto.toOnboardingChannel())
                     .flatMap { (loggedAction, returnUri) ->
-                        loggedAction.saveEvents(loggingEventRepository).map {
-                            Triple(it.id.value, request, returnUri)
+                        walletEventSinksService.tryEmitEvent(loggedAction).map {
+                            Triple(it.data.id.value, request, returnUri)
                         }
                     }
             }
