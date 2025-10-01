@@ -319,7 +319,7 @@ object WalletTestUtils {
             onboardingChannel = OnboardingChannel.IO.toString())
     }
 
-    fun walletDocumentStatusValidatedCardWithContextualOnboard(
+    fun walletDocumentStatusValidatedCardWithApplicationMetadata(
         brand: CardBrand = BRAND,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS,
         contextualOnboard: Boolean = true

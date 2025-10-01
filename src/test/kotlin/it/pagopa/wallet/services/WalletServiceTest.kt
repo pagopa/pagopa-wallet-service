@@ -43,7 +43,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
-import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithContextualOnboard
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithApplicationMetadata
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidationRequestedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
@@ -2125,7 +2125,7 @@ class WalletServiceTest {
     fun `should find wallet auth data by ID with cards and fill contextual onboard details`() {
         /* preconditions */
 
-        val wallet = walletDocumentStatusValidatedCardWithContextualOnboard()
+        val wallet = walletDocumentStatusValidatedCardWithApplicationMetadata()
         val walletAuthDataDto = WalletTestUtils.walletCardAuthDataContextualOnboardDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
@@ -2141,7 +2141,7 @@ class WalletServiceTest {
         /* preconditions */
 
         val wallet =
-            walletDocumentStatusValidatedCardWithContextualOnboard(contextualOnboard = false)
+            walletDocumentStatusValidatedCardWithApplicationMetadata(contextualOnboard = false)
         val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
