@@ -8,11 +8,11 @@ import it.pagopa.generated.wallet.model.ClientIdDto
 import it.pagopa.generated.wallet.model.WalletTransactionCreateResponseDto
 import it.pagopa.wallet.WalletTestUtils
 import it.pagopa.wallet.audit.LoggedAction
-import it.pagopa.wallet.audit.LoggingEvent
 import it.pagopa.wallet.audit.WalletAddedEvent
 import it.pagopa.wallet.config.OpenTelemetryTestConfiguration
+import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.exception.InvalidRequestException
-import it.pagopa.wallet.repositories.LoggingEventRepository
+import it.pagopa.wallet.services.WalletEventSinksService
 import it.pagopa.wallet.services.WalletService
 import java.net.URI
 import java.util.*
@@ -27,13 +27,12 @@ import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @WebFluxTest(TransactionWalletController::class)
@@ -41,9 +40,9 @@ import reactor.core.publisher.Mono
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class TransactionWalletControllerTest {
 
-    @MockBean private lateinit var walletService: WalletService
+    @MockitoBean private lateinit var walletService: WalletService
 
-    @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
+    @MockitoBean private lateinit var walletEventSinksService: WalletEventSinksService
 
     private lateinit var transactionWalletController: TransactionWalletController
 
@@ -63,7 +62,7 @@ class TransactionWalletControllerTest {
     @BeforeEach
     fun beforeTest() {
         transactionWalletController =
-            TransactionWalletController(walletService, loggingEventRepository, primaryApiKey)
+            TransactionWalletController(walletService, walletEventSinksService, primaryApiKey)
     }
 
     @Test
@@ -79,8 +78,8 @@ class TransactionWalletControllerTest {
                             WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
                         Optional.of(webviewPaymentUrl))
                 })
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         /* test */
         webClient
             .post()
@@ -115,8 +114,8 @@ class TransactionWalletControllerTest {
                             WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
                         Optional.empty())
                 })
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         /* test */
         webClient
             .post()
@@ -174,8 +173,8 @@ class TransactionWalletControllerTest {
                             WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
                         Optional.of(webviewPaymentUrl))
                 })
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         /* test */
         webClient
             .post()
@@ -202,8 +201,8 @@ class TransactionWalletControllerTest {
                             WalletAddedEvent(WalletTestUtils.WALLET_DOMAIN.id.value.toString())),
                         Optional.of(webviewPaymentUrl))
                 })
-        given { loggingEventRepository.saveAll(any<Iterable<LoggingEvent>>()) }
-            .willReturn(Flux.empty())
+        given { walletEventSinksService.tryEmitEvent(any<LoggedAction<Wallet>>()) }
+            .willAnswer { Mono.just(it.arguments[0]) }
         /* test */
         webClient
             .post()
