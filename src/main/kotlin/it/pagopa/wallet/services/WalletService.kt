@@ -1009,7 +1009,8 @@ class WalletService(
                 ?.metadata
                 ?.takeIf {
                     it[WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD.value]
-                        .toBoolean()
+                        .toBoolean() &&
+                        WalletStatusDto.valueOf(wallet.status) != WalletStatusDto.VALIDATED
                 }
                 ?.let { metadata ->
                     ContextualOnboardDetailsDto().apply {

@@ -322,12 +322,13 @@ object WalletTestUtils {
     fun walletDocumentStatusValidatedCardWithApplicationMetadata(
         brand: CardBrand = BRAND,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS,
-        contextualOnboard: Boolean = true
+        contextualOnboard: Boolean = true,
+        status: String = WalletStatusDto.INITIALIZED.name
     ): Wallet {
         return Wallet(
             id = WALLET_UUID.value.toString(),
             userId = USER_ID.id.toString(),
-            status = WalletStatusDto.VALIDATED.name,
+            status = status,
             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
             contractId = CONTRACT_ID.contractId,
             validationOperationResult = OperationResultEnum.EXECUTED.value,

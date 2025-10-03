@@ -2137,11 +2137,28 @@ class WalletServiceTest {
     }
 
     @Test
-    fun `should find wallet auth data by ID with cards and do not fill contextual onboard details`() {
+    fun `should find wallet auth data by ID with cards and do not fill contextual onboard details due to their absence`() {
         /* preconditions */
 
         val wallet =
             walletDocumentStatusValidatedCardWithApplicationMetadata(contextualOnboard = false)
+        val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
+
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+
+        /* test */
+        StepVerifier.create(walletService.findWalletAuthData(WALLET_UUID))
+            .expectNext(walletAuthDataDto)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should find wallet auth data by ID with cards and do not fill contextual onboard details due to wallet status`() {
+        /* preconditions */
+
+        val wallet =
+            walletDocumentStatusValidatedCardWithApplicationMetadata(
+                status = WalletStatusDto.VALIDATED.name)
         val walletAuthDataDto = WalletTestUtils.walletCardAuthDataDto()
 
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
