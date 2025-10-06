@@ -34,6 +34,7 @@ import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.plus
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -459,7 +460,13 @@ class WalletService(
                                     contractId = ContractId(contractId),
                                     status = newStatus,
                                     details = it.orElse(null),
-                                ),
+                                    applications =
+                                        if (isTransactionWithContextualOnboard) {
+                                            updateMetadataWithContextualOnboardDetails(
+                                                wallet, hostedOrderResponse.sessionId, orderId)
+                                        } else {
+                                            wallet.applications
+                                        }),
                                 orderId,
                                 isAPM = isAPM)
                         }
@@ -493,6 +500,21 @@ class WalletService(
                             walletId = wallet.id.value.toString(),
                             auditWallet = AuditWalletCreated(orderId = orderId)))
             }
+    }
+
+    private fun updateMetadataWithContextualOnboardDetails(
+        wallet: Wallet,
+        sessionId: String?,
+        orderId: String
+    ): List<WalletApplication> {
+        return wallet.applications.map { application ->
+            val newMetadataMap =
+                application.metadata.data +
+                    mapOf(
+                        WalletApplicationMetadata.Metadata.SESSION_ID to sessionId,
+                        WalletApplicationMetadata.Metadata.ORDER_ID to orderId)
+            application.copy(metadata = application.metadata.copy(data = newMetadataMap))
+        }
     }
 
     private fun buildResponseSessionData(

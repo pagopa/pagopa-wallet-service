@@ -37,10 +37,9 @@ import it.pagopa.wallet.WalletTestUtils.newWalletDocumentToBeSaved
 import it.pagopa.wallet.WalletTestUtils.toPaymentMethodInfo
 import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatus
-import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
+import it.pagopa.wallet.WalletTestUtils.walletDocumentForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
-import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
@@ -891,11 +890,11 @@ class WalletServiceTest {
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
             val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.CREATED)
             val walletDocumentInitializedStatusForTransactionWithContextualOnboard =
-                walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.INITIALIZED)
 
             val expectedLoggedAction =
                 LoggedAction(
@@ -3773,8 +3772,8 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                        PAYMENT_METHOD_ID_CARDS, "orderId", "sessionId", WalletStatusDto.CREATED)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -3823,8 +3822,8 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_APM)
+                walletDocumentForTransactionWithContextualOnboard(
+                        PAYMENT_METHOD_ID_APM, "orderId", "sessionId", WalletStatusDto.CREATED)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
