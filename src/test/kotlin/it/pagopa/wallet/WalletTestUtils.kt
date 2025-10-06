@@ -50,6 +50,8 @@ object WalletTestUtils {
         hashMapOf(
             "transactionId" to "transactionId",
             "amount" to "1200",
+            "sessionId" to "sessionId",
+            "orderId" to "orderId",
             "paymentWithContextualOnboard" to "true")
     private val APPLICATION_METADATA_HASHMAP_NO_CONTEXTUAL_ONBOARD: HashMap<String, String> =
         hashMapOf(
@@ -730,7 +732,11 @@ object WalletTestUtils {
             .brand(BRAND.value)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
             .contextualOnboardDetails(
-                ContextualOnboardDetailsDto().amount(1200).transactionId("transactionId"))
+                ContextualOnboardDetailsDto()
+                    .amount(1200)
+                    .transactionId("transactionId")
+                    .sessionId("sessionId")
+                    .orderId("orderId"))
 
     fun walletAPMAuthDataDto(): WalletAuthDataDto =
         WalletAuthDataDto()

@@ -1019,6 +1019,8 @@ class WalletService(
                                 ?.toLongOrNull())
                         transactionId(
                             metadata[WalletApplicationMetadata.Metadata.TRANSACTION_ID.value])
+                        orderId(metadata[WalletApplicationMetadata.Metadata.ORDER_ID.value])
+                        sessionId(WalletApplicationMetadata.Metadata.SESSION_ID.value)
                     }
                 }
 
