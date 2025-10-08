@@ -61,8 +61,6 @@ class WalletService(
     @Autowired
     @Value("\${wallet.payment.cardReturnUrl}")
     private val walletPaymentReturnUrl: String,
-    @Value("\${validations-url.card.trx-with-contextual-onboard}")
-    private val validationsCardsRedirectUrl: String,
     @Autowired private val walletUtils: WalletUtils,
     private val pspDetailClient: PspDetailClient,
     @Value("\${npg.notifications.jwt.validityTimeSeconds}")
@@ -606,10 +604,7 @@ class WalletService(
                 authData to
                     WalletVerifyRequestsResponseDto()
                         .orderId(orderId)
-                        .details(
-                            WalletVerifyRequestContextualCardDetailsDto()
-                                .type("CARD_CTX")
-                                .redirectUrl(validationsCardsRedirectUrl))
+                        .details(WalletVerifyRequestContextualCardDetailsDto().type("CARD_CTX"))
             }
             .map { (data, response) ->
                 response to
