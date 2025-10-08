@@ -156,6 +156,7 @@ microservice-chart:
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
     SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
     ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED: "true"
+    VALIDATIONS_URL_CARD_TRX_WITH_CONTEXTUAL_ONBOARD: "TBD"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key
