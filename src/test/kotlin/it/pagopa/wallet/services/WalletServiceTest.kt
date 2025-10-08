@@ -111,7 +111,6 @@ class WalletServiceTest {
     private val uniqueIdUtils: UniqueIdUtils = mock()
     private val jwtTokenIssuerClient: JwtTokenIssuerClient = mock()
     private val pspDetailClient: PspDetailClient = mock()
-    private val validationsUrlCardContextualOnboard = "redirectUrl"
     private val onboardingConfig =
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
@@ -246,8 +245,7 @@ class WalletServiceTest {
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
             walletUtils = walletUtils,
             pspDetailClient = pspDetailClient,
-            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS,
-            validationsCardsRedirectUrl = validationsUrlCardContextualOnboard)
+            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS)
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 
@@ -1354,10 +1352,7 @@ class WalletServiceTest {
             val verifyResponse =
                 WalletVerifyRequestsResponseDto()
                     .orderId(orderId)
-                    .details(
-                        WalletVerifyRequestContextualCardDetailsDto()
-                            .type("CARD_CTX")
-                            .redirectUrl(validationsUrlCardContextualOnboard))
+                    .details(WalletVerifyRequestContextualCardDetailsDto().type("CARD_CTX"))
 
             val walletDocumentInitializedStatus =
                 walletDocumentForTransactionWithContextualOnboard(

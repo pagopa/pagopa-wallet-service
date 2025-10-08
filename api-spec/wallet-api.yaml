@@ -920,9 +920,6 @@ components:
         type:
           type: string
           description: Wallet verify request details discriminator field.
-        redirectUrl:
-          type: string
-          description: redirect url in order to continue the contextual payment.
     WalletVerifyRequestAPMDetails:
       type: object
       description: Alternative Payment Method (APM) verify request details
