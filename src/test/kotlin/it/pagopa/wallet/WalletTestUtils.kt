@@ -381,6 +381,8 @@ object WalletTestUtils {
         expiryDate: String,
         paymentInstrumentGatewayId: String,
         brand: String,
+        sessionId: String,
+        orderId: String,
         clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
     ): Wallet {
         return Wallet(
@@ -408,8 +410,9 @@ object WalletTestUtils {
                                 WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
                                 TransactionId(TRANSACTION_ID).trimmedUUIDString),
                             Pair(
-                                WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                AMOUNT.toString())))),
+                                WalletApplicationMetadata.Metadata.AMOUNT.value, AMOUNT.toString()),
+                            Pair(WalletApplicationMetadata.Metadata.ORDER_ID.value, orderId),
+                            Pair(WalletApplicationMetadata.Metadata.SESSION_ID.value, sessionId)))),
             details =
                 CardDetailsDocument(
                     WalletDetailsType.CARDS.name,
