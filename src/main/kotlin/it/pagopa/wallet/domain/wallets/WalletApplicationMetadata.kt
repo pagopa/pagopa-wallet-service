@@ -5,6 +5,8 @@ data class WalletApplicationMetadata(val data: Map<Metadata, String?>) {
         TRANSACTION_ID("transactionId"),
         AMOUNT("amount"),
         PAYMENT_WITH_CONTEXTUAL_ONBOARD("paymentWithContextualOnboard"),
+        ORDER_ID("orderId"),
+        SESSION_ID("sessionId"),
         ONBOARD_BY_MIGRATION("onboardByMigration");
 
         companion object {
