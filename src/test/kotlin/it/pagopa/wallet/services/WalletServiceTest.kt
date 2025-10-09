@@ -1355,12 +1355,16 @@ class WalletServiceTest {
                     .details(WalletVerifyRequestContextualCardDetailsDto().type("CARD_CTX"))
 
             val walletDocumentInitializedStatus =
-                walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS,
+                    orderId,
+                    sessionId,
+                    WalletStatusDto.INITIALIZED,
+                )
 
             val walletDocumentWithCardDetails =
                 walletDocumentVerifiedWithContextualOnboardCardDetails(
-                    "12345678", "0000", "203012", "?", "MASTERCARD")
+                    "12345678", "0000", "203012", "?", "MASTERCARD", sessionId, orderId)
 
             val expectedLoggedAction =
                 LoggedAction(
