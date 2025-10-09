@@ -1357,7 +1357,7 @@ class WalletControllerTest {
         /* test */
         webClient
             .post()
-            .uri("/wallets/${walletId}/sessions/${orderId}/get-state/notifications")
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications/internal")
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-api-key", "primary-key")

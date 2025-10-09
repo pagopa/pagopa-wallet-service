@@ -573,12 +573,12 @@ paths:
                 title: string
                 status: 500
                 detail: Internal server error
-  /wallets/{walletId}/sessions/{orderId}/get-state/notifications:
+  /wallets/{walletId}/sessions/{orderId}/notifications/internal:
     post:
       tags:
         - wallets
       summary: Update Wallet on NPG onboarding authorization response
-      description: Update Wallet on NPG onboarding authorization response retrieved by get state retry flow
+      description: Update Wallet on NPG onboarding authorization response retrieved by get state retry flow (b2b interaction)
       operationId: notifyWalletByGetState
       parameters:
         - in: path
