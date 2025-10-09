@@ -842,7 +842,8 @@ object WalletTestUtils {
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
-            .timestampOperation(OffsetDateTime.now())
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
             .details(
                 WalletNotificationRequestCardDetailsDto()
@@ -853,7 +854,8 @@ object WalletTestUtils {
         WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
-            .timestampOperation(OffsetDateTime.now())
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
             .details(
                 WalletNotificationRequestPaypalDetailsDto()
@@ -863,14 +865,16 @@ object WalletTestUtils {
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT_WITH_ERRORS: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.DECLINED)
-            .timestampOperation(OffsetDateTime.now())
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
             .errorCode("WG001")
 
     val NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.DECLINED)
-            .timestampOperation(OffsetDateTime.now())
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
 
     fun PaymentMethodResponse.toPaymentMethodHandlerResponse(): PaymentMethodHandlerResponse {

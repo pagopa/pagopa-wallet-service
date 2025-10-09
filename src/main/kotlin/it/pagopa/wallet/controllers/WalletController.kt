@@ -171,17 +171,44 @@ class WalletController(
         walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
+        return getAuthenticationToken(exchange)
+            .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
+            .flatMap {
+                handleWalletNotificationRequest(
+                    walletId = walletId,
+                    orderId = orderId,
+                    walletNotificationRequestDto = walletNotificationRequestDto,
+                    securityToken = it)
+            }
+    }
+
+    override fun notifyWalletByGetState(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<Void>> {
+        return handleWalletNotificationRequest(
+            walletId = walletId,
+            orderId = orderId,
+            walletNotificationRequestDto = walletNotificationRequestDto,
+            securityToken = null)
+    }
+
+    private fun handleWalletNotificationRequest(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        securityToken: String?
+    ): Mono<ResponseEntity<Void>> {
+
         return walletNotificationRequestDto.flatMap { requestDto ->
             val gatewayOutcomeResult =
                 WalletTracing.GatewayNotificationOutcomeResult(
                     gatewayAuthorizationStatus = requestDto.operationResult.value,
                     errorCode = requestDto.errorCode)
-            getAuthenticationToken(exchange)
-                .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
-                .flatMap { securityToken ->
-                    walletService.notifyWallet(
-                        WalletId(walletId), orderId, securityToken, requestDto)
-                }
+            walletService
+                .notifyWallet(WalletId(walletId), orderId, securityToken, requestDto)
                 .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
                 .doOnNext {
                     walletTracing.traceWalletUpdate(
