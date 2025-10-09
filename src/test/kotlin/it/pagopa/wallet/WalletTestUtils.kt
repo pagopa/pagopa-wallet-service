@@ -46,6 +46,18 @@ object WalletTestUtils {
             Client.WellKnown.IO to Client(Client.Status.ENABLED),
             Client.Unknown("unknownClient") to Client(Client.Status.DISABLED))
     private val APPLICATION_METADATA_HASHMAP: HashMap<String, String> = hashMapOf()
+    private val APPLICATION_METADATA_HASHMAP_CONTEXTUAL_ONBOARD: HashMap<String, String> =
+        hashMapOf(
+            "transactionId" to "transactionId",
+            "amount" to "1200",
+            "sessionId" to "sessionId",
+            "orderId" to "orderId",
+            "paymentWithContextualOnboard" to "true")
+    private val APPLICATION_METADATA_HASHMAP_NO_CONTEXTUAL_ONBOARD: HashMap<String, String> =
+        hashMapOf(
+            "transactionId" to "transactionId",
+            "amount" to "1200",
+            "paymentWithContextualOnboard" to "false")
     val APPLICATION_METADATA =
         WalletApplicationMetadata(
             APPLICATION_METADATA_HASHMAP.mapKeys {
@@ -278,6 +290,45 @@ object WalletTestUtils {
                         TIMESTAMP.toString(),
                         TIMESTAMP.toString(),
                         APPLICATION_METADATA_HASHMAP)),
+            details =
+                CardDetailsDocument(
+                    TYPE.toString(),
+                    BIN.bin,
+                    LAST_FOUR_DIGITS.lastFourDigits,
+                    EXP_DATE.expDate,
+                    brand.value,
+                    PAYMENT_INSTRUMENT_GATEWAY_ID.paymentInstrumentGatewayId),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString())
+    }
+
+    fun walletDocumentStatusValidatedCardWithApplicationMetadata(
+        brand: CardBrand = BRAND,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS,
+        contextualOnboard: Boolean = true,
+        status: String = WalletStatusDto.INITIALIZED.name
+    ): Wallet {
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = status,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = OperationResultEnum.EXECUTED.value,
+            validationErrorCode = null,
+            errorReason = null,
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.DISABLED.toString(),
+                        TIMESTAMP.toString(),
+                        TIMESTAMP.toString(),
+                        if (contextualOnboard) APPLICATION_METADATA_HASHMAP_CONTEXTUAL_ONBOARD
+                        else APPLICATION_METADATA_HASHMAP_NO_CONTEXTUAL_ONBOARD)),
             details =
                 CardDetailsDocument(
                     TYPE.toString(),
@@ -657,6 +708,19 @@ object WalletTestUtils {
             .contractId(CONTRACT_ID.contractId)
             .brand(BRAND.value)
             .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
+
+    fun walletCardAuthDataContextualOnboardDto(): WalletAuthDataDto =
+        WalletAuthDataDto()
+            .walletId(WALLET_UUID.value)
+            .contractId(CONTRACT_ID.contractId)
+            .brand(BRAND.value)
+            .paymentMethodData(WalletAuthCardDataDto().bin(BIN.bin).paymentMethodType("cards"))
+            .contextualOnboardDetails(
+                ContextualOnboardDetailsDto()
+                    .amount(1200)
+                    .transactionId("transactionId")
+                    .sessionId("sessionId")
+                    .orderId("orderId"))
 
     fun walletAPMAuthDataDto(): WalletAuthDataDto =
         WalletAuthDataDto()
