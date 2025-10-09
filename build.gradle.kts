@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "2.3.3"
+version = "2.4.0"
 
 description = "pagopa-wallet-service"
 
