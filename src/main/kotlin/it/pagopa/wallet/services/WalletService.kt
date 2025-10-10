@@ -725,13 +725,21 @@ class WalletService(
     fun notifyWallet(
         walletId: WalletId,
         orderId: String,
-        securityToken: String,
+        securityToken: String?,
         walletNotificationRequestDto: WalletNotificationRequestDto
     ): Mono<LoggedAction<Wallet>> {
         return npgSessionRedisTemplate
             .findById(orderId)
             .switchIfEmpty { Mono.error(SessionNotFoundException(orderId)) }
-            .filter { session -> session.securityToken == securityToken }
+            .filter { session ->
+                // perform security token check only if input security token have been received
+                // correctly
+                if (securityToken != null) {
+                    session.securityToken == securityToken
+                } else {
+                    true
+                }
+            }
             .switchIfEmpty {
                 logger.error("Security token match failed")
                 Mono.error(SecurityTokenMatchException())

@@ -1328,4 +1328,61 @@ class WalletControllerTest {
             .expectStatus()
             .isEqualTo(HttpStatus.UNAUTHORIZED)
     }
+
+    @Test
+    fun `notify wallet OK calling with outcome retrieved by get state`() = runTest {
+        /* preconditions */
+        val walletId = UUID.randomUUID()
+        val orderId = WalletTestUtils.ORDER_ID
+        given { walletService.notifyWallet(any(), any(), anyOrNull(), any()) }
+            .willReturn(
+                mono {
+                    val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.VALIDATED)
+                    LoggedAction(
+                        wallet,
+                        WalletOnboardCompletedEvent(
+                            walletId = wallet.id.toString(),
+                            auditWallet =
+                                wallet.toAudit().let {
+                                    it.validationOperationId =
+                                        WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                    it.validationOperationTimestamp =
+                                        WalletTestUtils.TIMESTAMP.toString()
+                                    return@let it
+                                }))
+                })
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+        val notificationRequest = WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        /* test */
+        webClient
+            .post()
+            .uri("/wallets/${walletId}/sessions/${orderId}/notifications/internal")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-user-id", UUID.randomUUID().toString())
+            .header("x-api-key", "primary-key")
+            .bodyValue(notificationRequest)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+
+        verify(walletTracing, times(1))
+            .traceWalletUpdate(
+                eq(
+                    WalletTracing.WalletUpdateResult(
+                        WalletTracing.WalletNotificationOutcome.OK,
+                        WalletDetailsType.CARDS,
+                        WalletStatusDto.VALIDATED,
+                        WalletTracing.GatewayNotificationOutcomeResult(
+                            OperationResultEnum.EXECUTED.value))))
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        val loggedAction = loggedActionCaptor.firstValue
+        assertEquals(1, loggedAction.events.size)
+        val loggedEvent = loggedAction.events[0] as WalletOnboardCompletedEvent
+        assertNull(loggedEvent.auditWallet.validationErrorCode)
+        assertEquals("EXECUTED", loggedEvent.auditWallet.validationOperationResult)
+        verify(walletService, times(1))
+            .notifyWallet(WalletId(walletId), orderId, null, notificationRequest)
+    }
 }

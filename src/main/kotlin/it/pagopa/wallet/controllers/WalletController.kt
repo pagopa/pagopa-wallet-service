@@ -171,17 +171,66 @@ class WalletController(
         walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<Void>> {
+        return getAuthenticationToken(exchange)
+            .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
+            .flatMap {
+                handleWalletNotificationRequest(
+                    walletId = walletId,
+                    orderId = orderId,
+                    walletNotificationRequestDto = walletNotificationRequestDto,
+                    securityToken = it)
+            }
+    }
+
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
+    override fun notifyWalletInternal(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<Void>> {
+        return handleWalletNotificationRequest(
+            walletId = walletId,
+            orderId = orderId,
+            walletNotificationRequestDto = walletNotificationRequestDto,
+            securityToken = null)
+    }
+
+    /*
+     * @formatter:off
+     *
+     * Warning kotlin:S6508 - "Unit" should be used instead of "Void"
+     * Suppressed because controller interface is generated from openapi descriptor as java code which use Void as return type.
+     * Wallet interface is generated using java generator of the following issue with
+     * kotlin generator https://github.com/OpenAPITools/openapi-generator/issues/14949
+     *
+     * @formatter:on
+     */
+    @SuppressWarnings("kotlin:S6508")
+    private fun handleWalletNotificationRequest(
+        walletId: UUID,
+        orderId: String,
+        walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,
+        securityToken: String?
+    ): Mono<ResponseEntity<Void>> {
+
         return walletNotificationRequestDto.flatMap { requestDto ->
             val gatewayOutcomeResult =
                 WalletTracing.GatewayNotificationOutcomeResult(
                     gatewayAuthorizationStatus = requestDto.operationResult.value,
                     errorCode = requestDto.errorCode)
-            getAuthenticationToken(exchange)
-                .switchIfEmpty(Mono.error(WalletSecurityTokenNotFoundException()))
-                .flatMap { securityToken ->
-                    walletService.notifyWallet(
-                        WalletId(walletId), orderId, securityToken, requestDto)
-                }
+            walletService
+                .notifyWallet(WalletId(walletId), orderId, securityToken, requestDto)
                 .flatMap { loggingEventSyncWriter.saveEventSyncWithDLQWrite(it) }
                 .doOnNext {
                     walletTracing.traceWalletUpdate(
