@@ -37,10 +37,9 @@ import it.pagopa.wallet.WalletTestUtils.newWalletDocumentToBeSaved
 import it.pagopa.wallet.WalletTestUtils.toPaymentMethodInfo
 import it.pagopa.wallet.WalletTestUtils.walletDocument
 import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatus
-import it.pagopa.wallet.WalletTestUtils.walletDocumentCreatedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
+import it.pagopa.wallet.WalletTestUtils.walletDocumentForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
-import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatusForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithApplicationMetadata
@@ -48,6 +47,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidationRequestedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithAPM
 import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithCardDetails
+import it.pagopa.wallet.WalletTestUtils.walletDocumentVerifiedWithContextualOnboardCardDetails
 import it.pagopa.wallet.WalletTestUtils.walletDocumentWithError
 import it.pagopa.wallet.WalletTestUtils.walletDomain
 import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPaymentInstrument
@@ -892,11 +892,11 @@ class WalletServiceTest {
             val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
 
             val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.CREATED)
             val walletDocumentInitializedStatusForTransactionWithContextualOnboard =
-                walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-                    PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.INITIALIZED)
 
             val expectedLoggedAction =
                 LoggedAction(
@@ -1328,6 +1328,85 @@ class WalletServiceTest {
             verify(npgClient, times(1))
                 .createNpgOrderBuild(npgCorrelationId, npgCreateHostedOrderRequest, PSP_ID)
             verify(npgSessionRedisTemplate, times(1)).save(npgSession)
+        }
+    }
+
+    @Test
+    fun `should execute validation for wallet CARD for contextual onboard`() {
+        /* preconditions */
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+
+            val sessionId = UUID.randomUUID().toString()
+            val npgCorrelationId = WALLET_UUID.value
+            val orderId = Instant.now().toString() + "ABCDE"
+            val npgGetCardDataResponse =
+                CardDataResponse()
+                    .bin("12345678")
+                    .expiringDate("12/30")
+                    .lastFourDigits("0000")
+                    .circuit("MC")
+
+            val npgSession = NpgSession(orderId, sessionId, "token", WALLET_UUID.value.toString())
+            val verifyResponse =
+                WalletVerifyRequestsResponseDto()
+                    .orderId(orderId)
+                    .details(WalletVerifyRequestContextualCardDetailsDto().type("CARD_CTX"))
+
+            val walletDocumentInitializedStatus =
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS,
+                    orderId,
+                    sessionId,
+                    WalletStatusDto.INITIALIZED,
+                )
+
+            val walletDocumentWithCardDetails =
+                walletDocumentVerifiedWithContextualOnboardCardDetails(
+                    "12345678", "0000", "203012", "?", "MASTERCARD", sessionId, orderId)
+
+            val expectedLoggedAction =
+                LoggedAction(
+                    walletDocumentWithCardDetails.toDomain(),
+                    WalletDetailsAddedEvent(WALLET_UUID.value.toString()))
+
+            given { npgClient.getCardData(any(), any()) }
+                .willAnswer { mono { npgGetCardDataResponse } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(Mono.just(walletDocumentInitializedStatus))
+
+            given { npgSessionRedisTemplate.findById(orderId) }.willAnswer { Mono.just(npgSession) }
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+
+            given { paymentMethodsService.getPaymentMethodById(any()) }
+                .willAnswer { mono { getValidCardsPaymentMethod().toPaymentMethodInfo() } }
+
+            /* test */
+
+            StepVerifier.create(
+                    walletService.validateWalletSession(
+                        orderId, WalletId(WALLET_UUID.value), UserId(USER_ID.id)))
+                .expectNext(Pair(verifyResponse, expectedLoggedAction))
+                .verifyComplete()
+
+            val walletDocumentToSave = walletArgumentCaptor.firstValue
+            assertEquals(
+                walletDocumentToSave.details,
+                CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?"))
+
+            verify(paymentMethodsService, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+            verify(walletRepository, times(1)).save(walletDocumentWithCardDetails)
+            verify(npgClient, times(1)).getCardData(sessionId, npgCorrelationId)
+            verify(npgClient, times(0)).confirmPayment(anyOrNull(), anyOrNull())
         }
     }
 
@@ -3822,8 +3901,8 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_CARDS)
+                walletDocumentForTransactionWithContextualOnboard(
+                        PAYMENT_METHOD_ID_CARDS, "orderId", "sessionId", WalletStatusDto.CREATED)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"
@@ -3872,8 +3951,8 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(getValidAPMPaymentMethod().toPaymentMethodInfo()) }
 
             val walletDocument =
-                walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-                        PAYMENT_METHOD_ID_APM)
+                walletDocumentForTransactionWithContextualOnboard(
+                        PAYMENT_METHOD_ID_APM, "orderId", "sessionId", WalletStatusDto.CREATED)
                     .copy(status = walletStatus.value)
 
             val sessionToken = "sessionToken"

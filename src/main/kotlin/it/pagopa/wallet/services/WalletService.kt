@@ -34,6 +34,7 @@ import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.plus
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -459,7 +460,13 @@ class WalletService(
                                     contractId = ContractId(contractId),
                                     status = newStatus,
                                     details = it.orElse(null),
-                                ),
+                                    applications =
+                                        if (isTransactionWithContextualOnboard) {
+                                            updateMetadataWithContextualOnboardDetails(
+                                                wallet, hostedOrderResponse.sessionId, orderId)
+                                        } else {
+                                            wallet.applications
+                                        }),
                                 orderId,
                                 isAPM = isAPM)
                         }
@@ -493,6 +500,21 @@ class WalletService(
                             walletId = wallet.id.value.toString(),
                             auditWallet = AuditWalletCreated(orderId = orderId)))
             }
+    }
+
+    private fun updateMetadataWithContextualOnboardDetails(
+        wallet: Wallet,
+        sessionId: String?,
+        orderId: String
+    ): List<WalletApplication> {
+        return wallet.applications.map { application ->
+            val newMetadataMap =
+                application.metadata.data +
+                    mapOf(
+                        WalletApplicationMetadata.Metadata.SESSION_ID to sessionId,
+                        WalletApplicationMetadata.Metadata.ORDER_ID to orderId)
+            application.copy(metadata = application.metadata.copy(data = newMetadataMap))
+        }
     }
 
     private fun buildResponseSessionData(
@@ -555,9 +577,8 @@ class WalletService(
                             .flatMap {
                                 when (it.paymentTypeCode) {
                                     "CP" ->
-                                        confirmPaymentCard(
+                                        handleCardPayment(
                                             session.sessionId, walletId.value, orderId, wallet)
-
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
@@ -571,6 +592,54 @@ class WalletService(
                     }
             }
     }
+
+    private fun handleCardPayment(
+        sessionId: String,
+        walletId: UUID,
+        orderId: String,
+        wallet: Wallet
+    ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> {
+        val isTransactionWithContextualOnboard =
+            wallet
+                .getApplicationMetadata(
+                    pagopaWalletApplicationId,
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD)
+                .toBoolean()
+
+        return if (isTransactionWithContextualOnboard) {
+            validateCardForContextualOnboard(sessionId, walletId, orderId, wallet)
+        } else {
+            confirmPaymentCard(sessionId, walletId, orderId, wallet)
+        }
+    }
+
+    private fun validateCardForContextualOnboard(
+        sessionId: String,
+        correlationId: UUID,
+        orderId: String,
+        wallet: Wallet
+    ): Mono<Pair<WalletVerifyRequestsResponseDto, Wallet>> =
+        npgClient
+            .getCardData(URLDecoder.decode(sessionId, StandardCharsets.UTF_8), correlationId)
+            .doOnNext { logger.info("Validating wallet for contextual card onboard") }
+            .map { authData ->
+                authData to
+                    WalletVerifyRequestsResponseDto()
+                        .orderId(orderId)
+                        .details(WalletVerifyRequestContextualCardDetailsDto().type("CARD_CTX"))
+            }
+            .map { (data, response) ->
+                response to
+                    wallet.copy(
+                        status = WalletStatusDto.VALIDATION_REQUESTED,
+                        details =
+                            DomainCardDetails(
+                                Bin(data.bin.orEmpty()),
+                                LastFourDigits(data.lastFourDigits.orEmpty()),
+                                ExpiryDate(gatewayToWalletExpiryDate(data.expiringDate.orEmpty())),
+                                CardBrand(data.circuit.orEmpty()),
+                                PaymentInstrumentGatewayId("?")))
+            }
 
     private fun confirmPaymentCard(
         sessionId: String,

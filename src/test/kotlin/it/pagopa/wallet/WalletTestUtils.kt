@@ -233,56 +233,40 @@ object WalletTestUtils {
             )
     }
 
-    fun walletDocumentCreatedStatusForTransactionWithContextualOnboard(
-        paymentMethodId: PaymentMethodId
+    fun walletDocumentForTransactionWithContextualOnboard(
+        paymentMethodId: PaymentMethodId,
+        orderId: String,
+        sessionId: String,
+        walletStatus: WalletStatusDto
     ): Wallet {
-        return walletDocumentCreatedStatus(paymentMethodId)
-            .copy(
-                applications =
-                    listOf(
-                        WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.ENABLED.toString(),
-                            creationDate.toString(),
-                            creationDate.toString(),
-                            hashMapOf(
-                                Pair(
-                                    WalletApplicationMetadata.Metadata
-                                        .PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                        .value,
-                                    true.toString()),
-                                Pair(
-                                    WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).trimmedUUIDString),
-                                Pair(
-                                    WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                    AMOUNT.toString())))))
-    }
-
-    fun walletDocumentInitializedStatusForTransactionWithContextualOnboard(
-        paymentMethodId: PaymentMethodId
-    ): Wallet {
-        return walletDocumentInitializedStatus(paymentMethodId)
-            .copy(
-                applications =
-                    listOf(
-                        WalletApplicationDocument(
-                            WALLET_APPLICATION_ID.id,
-                            WalletApplicationStatus.ENABLED.toString(),
-                            this.creationDate.toString(),
-                            this.creationDate.toString(),
-                            hashMapOf(
-                                Pair(
-                                    WalletApplicationMetadata.Metadata
-                                        .PAYMENT_WITH_CONTEXTUAL_ONBOARD
-                                        .value,
-                                    true.toString()),
-                                Pair(
-                                    WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
-                                    TransactionId(TRANSACTION_ID).trimmedUUIDString),
-                                Pair(
-                                    WalletApplicationMetadata.Metadata.AMOUNT.value,
-                                    AMOUNT.toString())))))
+        var wallet: Wallet
+        if (walletStatus == WalletStatusDto.CREATED) {
+            wallet = walletDocumentCreatedStatus(paymentMethodId)
+        } else if (walletStatus == WalletStatusDto.INITIALIZED) {
+            wallet = walletDocumentInitializedStatus(paymentMethodId)
+        } else {
+            throw RuntimeException("Status is not valid")
+        }
+        return wallet.copy(
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.ENABLED.toString(),
+                        creationDate.toString(),
+                        creationDate.toString(),
+                        hashMapOf(
+                            Pair(
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                    .value,
+                                true.toString()),
+                            Pair(
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                TransactionId(TRANSACTION_ID).trimmedUUIDString),
+                            Pair(
+                                WalletApplicationMetadata.Metadata.AMOUNT.value, AMOUNT.toString()),
+                            Pair(WalletApplicationMetadata.Metadata.ORDER_ID.value, orderId),
+                            Pair(WalletApplicationMetadata.Metadata.SESSION_ID.value, sessionId)))))
     }
 
     fun walletDocumentStatusValidatedCard(
@@ -384,6 +368,59 @@ object WalletTestUtils {
             details =
                 PayPalDetailsDocument(
                     maskedEmail = paypalEmail, pspId = PSP_ID, pspBusinessName = PSP_BUSINESS_NAME),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString())
+    }
+
+    fun walletDocumentVerifiedWithContextualOnboardCardDetails(
+        bin: String,
+        lastFourDigits: String,
+        expiryDate: String,
+        paymentInstrumentGatewayId: String,
+        brand: String,
+        sessionId: String,
+        orderId: String,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.VALIDATION_REQUESTED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = null,
+            validationErrorCode = null,
+            errorReason = null,
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.ENABLED.toString(),
+                        this.creationDate.toString(),
+                        this.creationDate.toString(),
+                        hashMapOf(
+                            Pair(
+                                WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD
+                                    .value,
+                                true.toString()),
+                            Pair(
+                                WalletApplicationMetadata.Metadata.TRANSACTION_ID.value,
+                                TransactionId(TRANSACTION_ID).trimmedUUIDString),
+                            Pair(
+                                WalletApplicationMetadata.Metadata.AMOUNT.value, AMOUNT.toString()),
+                            Pair(WalletApplicationMetadata.Metadata.ORDER_ID.value, orderId),
+                            Pair(WalletApplicationMetadata.Metadata.SESSION_ID.value, sessionId)))),
+            details =
+                CardDetailsDocument(
+                    WalletDetailsType.CARDS.name,
+                    bin,
+                    lastFourDigits,
+                    expiryDate,
+                    brand,
+                    paymentInstrumentGatewayId),
             clients = clients.entries.associate { it.key.name to it.value.toDocument() },
             version = 0,
             creationDate = creationDate,
