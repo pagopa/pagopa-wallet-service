@@ -193,7 +193,7 @@ class WalletController(
      * @formatter:on
      */
     @SuppressWarnings("kotlin:S6508")
-    override fun notifyWalletByGetState(
+    override fun notifyWalletInternal(
         walletId: UUID,
         orderId: String,
         walletNotificationRequestDto: Mono<WalletNotificationRequestDto>,

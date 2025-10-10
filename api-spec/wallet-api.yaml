@@ -579,7 +579,7 @@ paths:
         - wallets
       summary: Update Wallet on NPG onboarding authorization response
       description: Update Wallet on NPG onboarding authorization response retrieved by get state retry flow (b2b interaction)
-      operationId: notifyWalletByGetState
+      operationId: notifyWalletInternal
       parameters:
         - in: path
           name: walletId
