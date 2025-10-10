@@ -21,7 +21,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopauitncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.4.0"
+    tag: "2.5.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
