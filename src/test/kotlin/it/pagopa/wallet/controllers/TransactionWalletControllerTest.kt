@@ -98,7 +98,7 @@ class TransactionWalletControllerTest {
                     WalletTransactionCreateResponseDto()
                         .walletId(WalletTestUtils.WALLET_DOMAIN.id.value)
                         .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")))
+                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&transactionId=${transactionId}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")))
     }
 
     @Test
