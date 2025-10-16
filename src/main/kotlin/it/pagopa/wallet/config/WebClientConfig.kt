@@ -8,6 +8,7 @@ import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.wallet.config.properties.JwtTokenIssuerConfigProperties
 import it.pagopa.wallet.config.properties.PaymentMethodsConfigProperties
 import it.pagopa.wallet.config.properties.PaymentMethodsHandlerConfigProperties
+import it.pagopa.wallet.config.properties.PdvTokenizerConfigProperties
 import java.util.concurrent.TimeUnit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -147,5 +148,27 @@ class WebClientConfig {
         apiClient.setApiKey(config.apiKey)
         return it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsHandlerApi(
             apiClient)
+    }
+
+    @Bean(name = ["pdvTokenizerWebClient"])
+    fun pdvTokenizerClient(
+        config: PdvTokenizerConfigProperties
+    ): it.pagopa.generated.pdv.api.TokenApi {
+        val httpClient =
+            HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.connectionTimeout)
+                .doOnConnected { connection: Connection ->
+                    connection.addHandlerLast(
+                        ReadTimeoutHandler(config.readTimeout.toLong(), TimeUnit.MILLISECONDS))
+                }
+                .resolver { it.ndots(1) }
+        val webClient =
+            it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
+                .clientConnector(ReactorClientHttpConnector(httpClient))
+                .baseUrl(config.uri)
+                .build()
+        val apiClient = it.pagopa.generated.pdv.ApiClient(webClient).setBasePath(config.uri)
+        apiClient.setApiKey(config.apiKey)
+        return it.pagopa.generated.pdv.api.TokenApi(apiClient)
     }
 }
