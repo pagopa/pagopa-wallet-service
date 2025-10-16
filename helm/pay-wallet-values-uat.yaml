@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "pay-wallet"
   nameOverride: ""
-  fullnameOverride: "pagopa-pay-wallet-microservice"
+  fullnameOverride: "beta-pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
@@ -182,23 +182,5 @@ microservice-chart:
       key: "paymentWalletOnly"
       operator: "Equal"
       value: "true"
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: domain
-                operator: In
-                values:
-                  - paywallet
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchLabels:
-                app.kubernetes.io/instance: pagopawalletservice
-            namespaces: ["pay-wallet"]
-            topologyKey: topology.kubernetes.io/zone
   azure:
     workloadIdentityClientId: 928bc159-85e9-4f09-ba08-1e71851166f1
