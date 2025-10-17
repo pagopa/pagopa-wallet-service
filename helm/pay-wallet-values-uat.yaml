@@ -63,7 +63,7 @@ microservice-chart:
   resources:
     requests:
       memory: "512Mi"
-      cpu: "400m"
+      cpu: "500m"
     limits:
       memory: "512Mi"
       cpu: "900m"
@@ -78,7 +78,7 @@ microservice-chart:
         metadata:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
-          value: "60"
+          value: "70"
   terminationGracePeriodSeconds: 30
   strategy:
     type: "RollingUpdate"
