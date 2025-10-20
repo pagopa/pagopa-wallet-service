@@ -20,11 +20,10 @@ interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
     fun findByContractId(contract: String): Mono<Wallet>
 
     @Query(
-        value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1, 'status' : ?2 }",
-        fields = "{ '_id' : 1 }")
+        value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1, 'status' : ?2 }")
     fun findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
         userId: String,
         paymentInstrumentGatewayId: String,
         status: WalletStatusDto
-    ): Mono<String>
+    ): Mono<Wallet>
 }

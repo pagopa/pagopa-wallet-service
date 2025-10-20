@@ -2857,9 +2857,9 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(), any<String>(), any())
+                    any<String>(), any<String>(), any(), )
             }
-            .willReturn(mono { validatedWalletdDocument.id })
+            .willReturn(mono { validatedWalletdDocument })
 
         val walletDocumentWithError =
             walletDocument.copy(
