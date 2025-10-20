@@ -64,7 +64,7 @@ class TransactionWalletController(
                     response.redirectUrl(
                         UriComponentsBuilder.fromUri(returnUri.get())
                             .fragment(
-                                "walletId=${walletId}&useDiagnosticTracing=${request.useDiagnosticTracing}")
+                                "walletId=${walletId}&transactionId=${transactionId}&useDiagnosticTracing=${request.useDiagnosticTracing}")
                             .build()
                             .toUriString())
                 }
