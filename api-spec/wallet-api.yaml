@@ -104,6 +104,37 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
+
+  /wallets/userFiscalCode:
+    get:
+      tags:
+        - wallets
+      summary: Get wallet by user fiscalCode
+      description: Returns a list of wallets related to user identified by his fiscal code
+      operationId: getWalletsByFiscalCode
+      parameters:
+        - in: header
+          name: fiscalCode
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Wallet retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallets'
+        '400':
+          description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Wallet not found
+        '504':
+          description: Timeout serving request
   /transactions/{transactionId}/wallets:
     post:
       tags:
