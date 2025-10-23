@@ -2,8 +2,8 @@ apiVersion: v2
 name: wallet
 description: Microservice that handles crud operations on wallet resources
 type: application
-version: 2.5.1
-appVersion: 2.5.1
+version: 2.6.1
+appVersion: 2.6.1
 dependencies:
   - name: microservice-chart
     version: 7.5.0
