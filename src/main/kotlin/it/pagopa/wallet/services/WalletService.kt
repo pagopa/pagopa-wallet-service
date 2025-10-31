@@ -351,14 +351,25 @@ class WalletService(
                     if (isTransactionWithContextualOnboard) {
                         wallet.getApplicationMetadata(
                             pagopaWalletApplicationId, WalletApplicationMetadata.Metadata.AMOUNT)
+                        /* recuperare token per ecommerce */
+                        /* valorizzare corettamente cancelUrl e resultUrl */
                     } else {
                         null
                     }
                 val contractId = uniqueIds.second
                 val basePath = URI.create(sessionUrlConfig.basePath)
-                val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+                val basePathCtxOnboard = URI.create(sessionUrlConfig.trxWithContextualOnboardingBasePath);
+                val merchantUrl = sessionUrlConfig.basePath;
+                val resultUrl = if (isTransactionWithContextualOnboard) {
+                    basePath.resolve(sessionUrlConfig.outcomeSuffix)
+                } else {
+                    basePathCtxOnboard.resolve(sessionUrlConfig.trxWithContextualOnboardingOutcomeSuffix)
+                }
+                val cancelUrl = if (isTransactionWithContextualOnboard) {
+                    basePath.resolve(sessionUrlConfig.cancelSuffix)
+                } else {
+                    basePathCtxOnboard.resolve(sessionUrlConfig.trxWithContextualOnboardingCancelSuffix)
+                }
                 logger.info(
                     "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]")
                 createTokenAndBuildNotificationUri(
