@@ -139,6 +139,7 @@ If you want to customize the application environment, reference this table:
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_CONNECTION_TIMEOUT                  | eCommerce payment methods handler connection timeout                                                                                                       | string                   |         |
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_API_KEY                             | eCommerce payment methods handler api key                                                                                                                  | string                   |         |
 | ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED                             | Feature flag used to enable or not method retrieval logic using eCommerce payment methods handler service in place of legacy payment methods               | boolean                  |         |
+| JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS                                  | TTL of jwt token from ecommerce to be used for ctx onboarding                                                                                              | int                      |         |
 
 (*): for Mongo connection string options
 see [docs](https://www.mongodb.com/docs/drivers/java/sync/v4.3/fundamentals/connection/connection-options/#connection-options)

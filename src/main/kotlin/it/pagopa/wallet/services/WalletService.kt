@@ -17,10 +17,7 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.ApplicationRepository
-import it.pagopa.wallet.repositories.NpgSession
-import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
-import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.Constants
 import it.pagopa.wallet.util.EitherExtension.toMono
 import it.pagopa.wallet.util.TransactionId
@@ -34,7 +31,6 @@ import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.plus
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -55,6 +51,9 @@ class WalletService(
     @Autowired private val paymentMethodsService: PaymentMethodsService,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
+    @Autowired
+    private val walletJwtTokenCtxOnboardingTemplateWrapper:
+        WalletJwtTokenCtxOnboardingTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
@@ -340,6 +339,18 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
+                buildOutcomeUrl(wallet).map { outcomeUrls ->
+                    Triple(
+                        uniqueIds,
+                        paymentMethod,
+                        Triple(wallet, outcomeUrls.first, outcomeUrls.second))
+                }
+            }
+            .flatMap { (uniqueIds, paymentMethod, walletData) ->
+                val wallet = walletData.first
+                val resultUrl = walletData.second
+                val cancelUrl = walletData.third
+
                 val isTransactionWithContextualOnboard =
                     wallet
                         .getApplicationMetadata(
@@ -351,25 +362,11 @@ class WalletService(
                     if (isTransactionWithContextualOnboard) {
                         wallet.getApplicationMetadata(
                             pagopaWalletApplicationId, WalletApplicationMetadata.Metadata.AMOUNT)
-                        /* recuperare token per ecommerce */
-                        /* valorizzare corettamente cancelUrl e resultUrl */
                     } else {
                         null
                     }
                 val contractId = uniqueIds.second
-                val basePath = URI.create(sessionUrlConfig.basePath)
-                val basePathCtxOnboard = URI.create(sessionUrlConfig.trxWithContextualOnboardingBasePath);
-                val merchantUrl = sessionUrlConfig.basePath;
-                val resultUrl = if (isTransactionWithContextualOnboard) {
-                    basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                } else {
-                    basePathCtxOnboard.resolve(sessionUrlConfig.trxWithContextualOnboardingOutcomeSuffix)
-                }
-                val cancelUrl = if (isTransactionWithContextualOnboard) {
-                    basePath.resolve(sessionUrlConfig.cancelSuffix)
-                } else {
-                    basePathCtxOnboard.resolve(sessionUrlConfig.trxWithContextualOnboardingCancelSuffix)
-                }
+                val merchantUrl = sessionUrlConfig.basePath
                 logger.info(
                     "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]")
                 createTokenAndBuildNotificationUri(
@@ -1324,6 +1321,46 @@ class WalletService(
                     transactionId,
                     response.token)
             }
+    }
+
+    private fun buildOutcomeUrl(wallet: Wallet): Mono<Pair<URI, URI>> {
+        val isTransactionWithContextualOnboard =
+            wallet
+                .getApplicationMetadata(
+                    pagopaWalletApplicationId,
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD)
+                .toBoolean()
+        if (isTransactionWithContextualOnboard) {
+            return walletJwtTokenCtxOnboardingTemplateWrapper
+                .findById(wallet.id.value.toString())
+                .map { token ->
+                    Pair(
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(mapOf("sessionToken" to token)),
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingCancelSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(mapOf("sessionToken" to token)))
+                }
+        } else {
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            return Mono.just(
+                Pair(
+                    basePath.resolve(sessionUrlConfig.outcomeSuffix),
+                    basePath.resolve(sessionUrlConfig.cancelSuffix)))
+        }
     }
 
     private fun buildNotificationUrl(
