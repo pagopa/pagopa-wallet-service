@@ -18,6 +18,7 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
+import jakarta.validation.constraints.NotNull
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -145,6 +146,13 @@ class WalletController(
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
         return walletService.findWallet(walletId, xUserId).map { ResponseEntity.ok(it) }
+    }
+
+    override fun getWalletsByFiscalCode(
+        fiscalCode: @NotNull String,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletsDto>> {
+        return walletService.findWalletByFiscalCode(fiscalCode).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletsByIdUser(
