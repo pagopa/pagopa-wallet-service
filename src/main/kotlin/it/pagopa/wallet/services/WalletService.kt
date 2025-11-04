@@ -1335,8 +1335,8 @@ class WalletService(
                     pagopaWalletApplicationId,
                     WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD)
                 .toBoolean()
-        if (isTransactionWithContextualOnboard) {
-            return walletJwtTokenCtxOnboardingTemplateWrapper
+        return if (isTransactionWithContextualOnboard) {
+            walletJwtTokenCtxOnboardingTemplateWrapper
                 .findById(wallet.id.value.toString())
                 .map { session ->
                     Pair(
@@ -1361,7 +1361,7 @@ class WalletService(
                 }
         } else {
             val basePath = URI.create(sessionUrlConfig.basePath)
-            return Mono.just(
+            Mono.just(
                 Pair(
                     basePath.resolve(sessionUrlConfig.outcomeSuffix),
                     basePath.resolve(sessionUrlConfig.cancelSuffix)))
