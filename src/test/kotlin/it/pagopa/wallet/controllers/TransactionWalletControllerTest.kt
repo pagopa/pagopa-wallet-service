@@ -87,6 +87,7 @@ class TransactionWalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
+            .header("webSessionToken", "webSessionToken")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .header("x-api-key", "primary-key")
             .exchange()
@@ -123,6 +124,7 @@ class TransactionWalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
+            .header("webSessionToken", "webSessionToken")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .header("x-api-key", "primary-key")
             .exchange()
@@ -151,6 +153,7 @@ class TransactionWalletControllerTest {
                         transactionId = "",
                         walletTransactionCreateRequestDto =
                             Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
+                        webSessionToken = "webSessionToken",
                         exchange = mock())
                     .block()
             }
