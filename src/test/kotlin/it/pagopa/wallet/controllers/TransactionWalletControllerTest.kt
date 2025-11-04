@@ -69,7 +69,7 @@ class TransactionWalletControllerTest {
     fun testCreateWalletPaymentCardsMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -105,7 +105,7 @@ class TransactionWalletControllerTest {
     fun testCreateWalletPaymentAPMMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -164,7 +164,7 @@ class TransactionWalletControllerTest {
     fun `should return unauthorized if request has not api key header`() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -192,7 +192,7 @@ class TransactionWalletControllerTest {
     fun `should return unauthorized if request has wrong api key header`() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(

@@ -51,7 +51,8 @@ class TransactionWalletController(
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
                         amount = request.amount,
-                        onboardingChannel = xClientIdDto.toOnboardingChannel())
+                        onboardingChannel = xClientIdDto.toOnboardingChannel(),
+                        ecommerceSessionToken = "ecommerceSessionToken")
                     .flatMap { (loggedAction, returnUri) ->
                         walletEventSinksService.tryEmitEvent(loggedAction).map {
                             Triple(it.data.id.value, request, returnUri)

@@ -219,7 +219,8 @@ class WalletService(
         paymentMethodId: UUID,
         transactionId: TransactionId,
         amount: Int,
-        onboardingChannel: OnboardingChannel
+        onboardingChannel: OnboardingChannel,
+        ecommerceSessionToken: String
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId")
@@ -271,6 +272,10 @@ class WalletService(
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
                     .save(wallet.toDocument())
+                    .map { wallet ->
+                        walletJwtTokenCtxOnboardingTemplateWrapper.save(
+                            WalletJwtTokenCtxOnboardingDocument(wallet.id, ecommerceSessionToken))
+                    }
                     .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
                     .map { loggedAction ->
                         Pair(
@@ -1333,7 +1338,7 @@ class WalletService(
         if (isTransactionWithContextualOnboard) {
             return walletJwtTokenCtxOnboardingTemplateWrapper
                 .findById(wallet.id.value.toString())
-                .map { token ->
+                .map { session ->
                     Pair(
                         UriComponentsBuilder.fromUriString(
                                 sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
@@ -1343,7 +1348,7 @@ class WalletService(
                             // prevent
                             // caching
                             .queryParam("t", Instant.now().toEpochMilli())
-                            .build(mapOf("sessionToken" to token)),
+                            .build(mapOf("sessionToken" to session.jwtToken)),
                         UriComponentsBuilder.fromUriString(
                                 sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
                                     sessionUrlConfig
@@ -1352,7 +1357,7 @@ class WalletService(
                             // prevent
                             // caching
                             .queryParam("t", Instant.now().toEpochMilli())
-                            .build(mapOf("sessionToken" to token)))
+                            .build(mapOf("sessionToken" to session.jwtToken)))
                 }
         } else {
             val basePath = URI.create(sessionUrlConfig.basePath)

@@ -16,6 +16,7 @@ class WalletJwtTokenCtxOnboardingTemplateWrapper
     ttl: Duration
 ) :
     ReactiveRedisTemplateWrapper<WalletJwtTokenCtxOnboardingDocument>(
-        reactiveRedisTemplate = reactiveRedisTemplate, "uniqueId", ttl) {
-    override fun getKeyFromEntity(value: WalletJwtTokenCtxOnboardingDocument): String = value.id
+        reactiveRedisTemplate = reactiveRedisTemplate, "ecommerceJwtTokenCtxOnboarding", ttl) {
+    override fun getKeyFromEntity(value: WalletJwtTokenCtxOnboardingDocument): String =
+        value.walletId
 }
