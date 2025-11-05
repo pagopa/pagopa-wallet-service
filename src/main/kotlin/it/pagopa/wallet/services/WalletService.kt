@@ -1374,19 +1374,19 @@ class WalletService(
         transactionId: String?,
         sessionToken: String
     ): URI {
-        return if (!isTransactionWithContextualOnboard) {
-            UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                .build(
-                    mapOf(
-                        Pair("walletId", walletId),
-                        Pair("orderId", orderId),
-                        Pair("sessionToken", sessionToken)))
-        } else {
+        return if (isTransactionWithContextualOnboard) {
             UriComponentsBuilder.fromHttpUrl(
                     sessionUrlConfig.trxWithContextualOnboardNotificationUrl)
                 .build(
                     mapOf(
                         Pair("transactionId", transactionId),
+                        Pair("walletId", walletId),
+                        Pair("orderId", orderId),
+                        Pair("sessionToken", sessionToken)))
+        } else {
+            UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                .build(
+                    mapOf(
                         Pair("walletId", walletId),
                         Pair("orderId", orderId),
                         Pair("sessionToken", sessionToken)))
