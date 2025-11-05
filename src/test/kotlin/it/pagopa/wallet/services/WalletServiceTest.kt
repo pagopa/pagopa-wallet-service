@@ -129,8 +129,8 @@ class WalletServiceTest {
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}?sessionToken={sessionToken}",
             "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}",
             "http://ctxlocalhost:1234",
-            "/ctx/esito",
-            "/ctx/annulla")
+            "/ctx/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}",
+            "/ctx/annulla#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}")
 
     private val walletUtils: WalletUtils = mock()
 
@@ -953,15 +953,34 @@ class WalletServiceTest {
             val basePath = URI.create(sessionUrlConfig.trxWithContextualOnboardingBasePath)
             val merchantUrl = sessionUrlConfig.basePath
             val resultUrl =
-                basePath.resolve(
-                    sessionUrlConfig.trxWithContextualOnboardingOutcomeSuffix
-                        .plus("?t=")
-                        .plus(mockedInstant.toEpochMilli()))
+                UriComponentsBuilder.fromUriString(
+                        sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                            sessionUrlConfig
+                                .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                    // param to
+                    // prevent
+                    // caching
+                    .queryParam("t", Instant.now().toEpochMilli())
+                    .build(
+                        mapOf(
+                            "clientId" to "IO",
+                            "transactionId" to TRANSACTION_ID,
+                            "sessionToken" to "ecommerceJwtTokenSession"))
+
             val cancelUrl =
-                basePath.resolve(
-                    sessionUrlConfig.trxWithContextualOnboardingCancelSuffix
-                        .plus("?t=")
-                        .plus(mockedInstant.toEpochMilli()))
+                UriComponentsBuilder.fromUriString(
+                        sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                            sessionUrlConfig
+                                .trxWithContextualOnboardingCancelSuffix)) // append query
+                    // param to
+                    // prevent
+                    // caching
+                    .queryParam("t", Instant.now().toEpochMilli())
+                    .build(
+                        mapOf(
+                            "clientId" to "IO",
+                            "transactionId" to TRANSACTION_ID,
+                            "sessionToken" to "ecommerceJwtTokenSession"))
             val sessionToken = "sessionToken"
             val notificationUrl =
                 UriComponentsBuilder.fromHttpUrl(
