@@ -1335,47 +1335,46 @@ class WalletService(
                     pagopaWalletApplicationId,
                     WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD)
                 .toBoolean()
-        if (isTransactionWithContextualOnboard) {
+        return if (isTransactionWithContextualOnboard) {
             val transactionId =
                 wallet
                     .getApplicationMetadata(
                         pagopaWalletApplicationId,
                         WalletApplicationMetadata.Metadata.TRANSACTION_ID)
                     .toString()
-            return walletJwtTokenCtxOnboardingTemplateWrapper
-                .findById(wallet.id.value.toString())
-                .map { session ->
-                    Pair(
-                        UriComponentsBuilder.fromUriString(
-                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
-                                    sessionUrlConfig
-                                        .trxWithContextualOnboardingOutcomeSuffix)) // append query
-                            // param to
-                            // prevent
-                            // caching
-                            .queryParam("t", Instant.now().toEpochMilli())
-                            .build(
-                                mapOf(
-                                    "clientId" to "IO",
-                                    "transactionId" to transactionId,
-                                    "sessionToken" to session.jwtToken)),
-                        UriComponentsBuilder.fromUriString(
-                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
-                                    sessionUrlConfig
-                                        .trxWithContextualOnboardingCancelSuffix)) // append query
-                            // param to
-                            // prevent
-                            // caching
-                            .queryParam("t", Instant.now().toEpochMilli())
-                            .build(
-                                mapOf(
-                                    "clientId" to "IO",
-                                    "transactionId" to transactionId,
-                                    "sessionToken" to session.jwtToken)))
-                }
+            walletJwtTokenCtxOnboardingTemplateWrapper.findById(wallet.id.value.toString()).map {
+                session ->
+                Pair(
+                    UriComponentsBuilder.fromUriString(
+                            sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                sessionUrlConfig
+                                    .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                        // param to
+                        // prevent
+                        // caching
+                        .queryParam("t", Instant.now().toEpochMilli())
+                        .build(
+                            mapOf(
+                                "clientId" to "IO",
+                                "transactionId" to transactionId,
+                                "sessionToken" to session.jwtToken)),
+                    UriComponentsBuilder.fromUriString(
+                            sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                sessionUrlConfig
+                                    .trxWithContextualOnboardingCancelSuffix)) // append query
+                        // param to
+                        // prevent
+                        // caching
+                        .queryParam("t", Instant.now().toEpochMilli())
+                        .build(
+                            mapOf(
+                                "clientId" to "IO",
+                                "transactionId" to transactionId,
+                                "sessionToken" to session.jwtToken)))
+            }
         } else {
             val basePath = URI.create(sessionUrlConfig.basePath)
-            return Mono.just(
+            Mono.just(
                 Pair(
                     basePath.resolve(sessionUrlConfig.outcomeSuffix),
                     basePath.resolve(sessionUrlConfig.cancelSuffix)))
