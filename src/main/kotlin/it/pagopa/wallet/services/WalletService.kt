@@ -1356,7 +1356,9 @@ class WalletService(
                 .switchIfEmpty {
                     logger.error(
                         "Cannot find jwt token for outcome urls for wallet id: [${wallet.id.value}]")
-                    Mono.error(EcommerceSessionNotFoundException(wallet.id.value.toString(), transactionId))
+                    Mono.error(
+                        EcommerceSessionNotFoundException(
+                            wallet.id.value.toString(), transactionId))
                 }
                 .map { session ->
                     Pair(
