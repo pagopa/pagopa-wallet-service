@@ -70,6 +70,9 @@ class WalletService(
         /** The claim transactionId */
         const val TRANSACTION_ID_CLAIM = "transactionId"
 
+        /** The claim orderId */
+        const val ORDER_ID_CLAIM = "orderId"
+
         /** The claim walletId */
         const val WALLET_ID_CLAIM = "walletId"
 
@@ -1317,12 +1320,13 @@ class WalletService(
                     .audience(NPG_AUDIENCE)
                     .duration(tokenValidityTimeSeconds)
                     .privateClaims(
-                        if (!isTransactionWithContextualOnboard) {
-                            mapOf(WALLET_ID_CLAIM to walletId.toString())
-                        } else {
+                        if (isTransactionWithContextualOnboard) {
                             mapOf(
                                 WALLET_ID_CLAIM to walletId.toString(),
-                                TRANSACTION_ID_CLAIM to transactionId)
+                                TRANSACTION_ID_CLAIM to transactionId,
+                                ORDER_ID_CLAIM to orderId)
+                        } else {
+                            mapOf(WALLET_ID_CLAIM to walletId.toString())
                         }))
             .map { response ->
                 buildNotificationUrl(

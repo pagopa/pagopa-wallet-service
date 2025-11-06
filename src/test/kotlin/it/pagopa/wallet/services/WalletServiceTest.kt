@@ -950,7 +950,6 @@ class WalletServiceTest {
                         walletId = WALLET_UUID.value.toString(),
                         auditWallet = AuditWalletCreated(orderId = orderId)))
 
-            val basePath = URI.create(sessionUrlConfig.trxWithContextualOnboardingBasePath)
             val merchantUrl = sessionUrlConfig.basePath
             val resultUrl =
                 UriComponentsBuilder.fromUriString(
@@ -1067,7 +1066,8 @@ class WalletServiceTest {
                             .privateClaims(
                                 mapOf(
                                     "walletId" to WALLET_UUID.value.toString(),
-                                    "transactionId" to TRANSACTION_ID)))
+                                    "transactionId" to TRANSACTION_ID,
+                                    "orderId" to orderId)))
         }
     }
 
