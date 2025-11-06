@@ -272,7 +272,8 @@ class WalletService(
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
                     .save(wallet.toDocument())
-                    .map { wallet ->
+                    .flatMap { wallet ->
+                        logger.info("saving jwt token into cache for outcome url")
                         walletJwtTokenCtxOnboardingTemplateWrapper
                             .save(
                                 WalletJwtTokenCtxOnboardingDocument(
