@@ -273,18 +273,13 @@ class WalletService(
                 walletRepository
                     .save(wallet.toDocument())
                     .flatMap { wallet ->
-                        logger.info("saving jwt token into cache for outcome url")
                         walletJwtTokenCtxOnboardingTemplateWrapper
                             .save(
                                 WalletJwtTokenCtxOnboardingDocument(
                                     wallet.id, ecommerceSessionToken))
-                            .doOnNext { result ->
-                                logger.info(
-                                    "saved jwt token [${ecommerceSessionToken}] for wallet [${wallet.id}] [${result}]")
-                            }
                             .doOnError {
                                 logger.error(
-                                    "Error saving outcome jwt token for contextual onboarding into cache for wallet: [${wallet.id}]")
+                                    "Error saving ecommerce session token for contextual onboarding into cache for wallet: [${wallet.id}] and transaction [${transactionId}]")
                             }
                     }
                     .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
@@ -1361,10 +1356,9 @@ class WalletService(
                 .switchIfEmpty {
                     logger.error(
                         "Cannot find jwt token for outcome urls for wallet id: [${wallet.id.value}]")
-                    Mono.error(SessionNotFoundException(wallet.id.value.toString()))
+                    Mono.error(EcommerceSessionNotFoundException(wallet.id.value.toString(), transactionId))
                 }
                 .map { session ->
-                    logger.info("Session token [${session.walletId},[${session.jwtToken}]]")
                     Pair(
                         UriComponentsBuilder.fromUriString(
                                 sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
