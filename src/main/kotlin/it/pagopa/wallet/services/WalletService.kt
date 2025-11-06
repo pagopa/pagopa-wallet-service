@@ -1329,6 +1329,7 @@ class WalletService(
     }
 
     private fun buildOutcomeUrl(wallet: Wallet): Mono<Pair<URI, URI>> {
+        logger.info("Building outcome urls for wallet ${wallet.id}")
         val isTransactionWithContextualOnboard =
             wallet
                 .getApplicationMetadata(
@@ -1342,8 +1343,11 @@ class WalletService(
                         pagopaWalletApplicationId,
                         WalletApplicationMetadata.Metadata.TRANSACTION_ID)
                     .toString()
+            logger.info(
+                "Onboarding for wallet [${wallet.id}] is contextual onboarding with payment for transaction id: [${transactionId}]")
             walletJwtTokenCtxOnboardingTemplateWrapper.findById(wallet.id.value.toString()).map {
                 session ->
+                logger.info("Session token [${session.walletId},[${session.jwtToken}]]")
                 Pair(
                     UriComponentsBuilder.fromUriString(
                             sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
