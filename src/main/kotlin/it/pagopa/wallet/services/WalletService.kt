@@ -273,8 +273,18 @@ class WalletService(
                 walletRepository
                     .save(wallet.toDocument())
                     .map { wallet ->
-                        walletJwtTokenCtxOnboardingTemplateWrapper.save(
-                            WalletJwtTokenCtxOnboardingDocument(wallet.id, ecommerceSessionToken))
+                        walletJwtTokenCtxOnboardingTemplateWrapper
+                            .save(
+                                WalletJwtTokenCtxOnboardingDocument(
+                                    wallet.id, ecommerceSessionToken))
+                            .doOnNext { result ->
+                                logger.info(
+                                    "saved jwt token [${ecommerceSessionToken}] for wallet [${wallet.id}] [${result}]")
+                            }
+                            .doOnError {
+                                logger.error(
+                                    "Error saving outcome jwt token for contextual onboarding into cache for wallet: [${wallet.id}]")
+                            }
                     }
                     .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
                     .map { loggedAction ->
@@ -1345,37 +1355,43 @@ class WalletService(
                     .toString()
             logger.info(
                 "Onboarding for wallet [${wallet.id}] is contextual onboarding with payment for transaction id: [${transactionId}]")
-            walletJwtTokenCtxOnboardingTemplateWrapper.findById(wallet.id.value.toString()).map {
-                session ->
-                logger.info("Session token [${session.walletId},[${session.jwtToken}]]")
-                Pair(
-                    UriComponentsBuilder.fromUriString(
-                            sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
-                                sessionUrlConfig
-                                    .trxWithContextualOnboardingOutcomeSuffix)) // append query
-                        // param to
-                        // prevent
-                        // caching
-                        .queryParam("t", Instant.now().toEpochMilli())
-                        .build(
-                            mapOf(
-                                "clientId" to "IO",
-                                "transactionId" to transactionId,
-                                "sessionToken" to session.jwtToken)),
-                    UriComponentsBuilder.fromUriString(
-                            sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
-                                sessionUrlConfig
-                                    .trxWithContextualOnboardingCancelSuffix)) // append query
-                        // param to
-                        // prevent
-                        // caching
-                        .queryParam("t", Instant.now().toEpochMilli())
-                        .build(
-                            mapOf(
-                                "clientId" to "IO",
-                                "transactionId" to transactionId,
-                                "sessionToken" to session.jwtToken)))
-            }
+            walletJwtTokenCtxOnboardingTemplateWrapper
+                .findById(wallet.id.value.toString())
+                .switchIfEmpty {
+                    logger.error(
+                        "Cannot find jwt token for outcome urls for wallet id: [${wallet.id.value}]")
+                    Mono.error(SessionNotFoundException(wallet.id.value.toString()))
+                }
+                .map { session ->
+                    logger.info("Session token [${session.walletId},[${session.jwtToken}]]")
+                    Pair(
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(
+                                mapOf(
+                                    "clientId" to "IO",
+                                    "transactionId" to transactionId,
+                                    "sessionToken" to session.jwtToken)),
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingCancelSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(
+                                mapOf(
+                                    "clientId" to "IO",
+                                    "transactionId" to transactionId,
+                                    "sessionToken" to session.jwtToken)))
+                }
         } else {
             val basePath = URI.create(sessionUrlConfig.basePath)
             Mono.just(
