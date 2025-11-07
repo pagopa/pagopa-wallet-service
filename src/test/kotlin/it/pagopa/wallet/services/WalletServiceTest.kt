@@ -882,6 +882,79 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `should throw EcommerceSessionNotFoundException invoking wallet session for transaction with contextual onboard with CARD wallet`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c"))
+                    }
+
+            given { paymentMethodsService.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.CREATED)
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(
+                    Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+
+            given { walletJwtTokenCtxOnboardingTemplateWrapper.findById(any()) }
+                .willReturn(Mono.empty())
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
+                .expectError(EcommerceSessionNotFoundException::class.java)
+                .verify()
+
+            verify(paymentMethodsService, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+        }
+    }
+
+    @Test
     fun `should create wallet session for transaction with contextual onboard with CARD wallet`() {
         /* preconditions */
 
