@@ -70,6 +70,8 @@ import it.pagopa.wallet.exception.*
 import it.pagopa.wallet.repositories.ApplicationRepository
 import it.pagopa.wallet.repositories.NpgSession
 import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
+import it.pagopa.wallet.repositories.WalletJwtTokenCtxOnboardingDocument
+import it.pagopa.wallet.repositories.WalletJwtTokenCtxOnboardingTemplateWrapper
 import it.pagopa.wallet.repositories.WalletRepository
 import it.pagopa.wallet.util.Constants
 import it.pagopa.wallet.util.TransactionId
@@ -108,6 +110,9 @@ class WalletServiceTest {
     private val paymentMethodsService: PaymentMethodsService = mock()
     private val npgClient: NpgClient = mock()
     private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper = mock()
+    private val walletJwtTokenCtxOnboardingTemplateWrapper:
+        WalletJwtTokenCtxOnboardingTemplateWrapper =
+        mock()
     private val uniqueIdUtils: UniqueIdUtils = mock()
     private val jwtTokenIssuerClient: JwtTokenIssuerClient = mock()
     private val pspDetailClient: PspDetailClient = mock()
@@ -122,7 +127,10 @@ class WalletServiceTest {
             "/esito",
             "/annulla",
             "http://localhost/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}?sessionToken={sessionToken}",
-            "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}")
+            "http://localhost/payment-wallet-notifications/v1/transaction/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}",
+            "http://ctxlocalhost:1234",
+            "/ctx/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}",
+            "/ctx/annulla#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}")
 
     private val walletUtils: WalletUtils = mock()
 
@@ -238,6 +246,7 @@ class WalletServiceTest {
             paymentMethodsService = paymentMethodsService,
             npgClient = npgClient,
             npgSessionRedisTemplate = npgSessionRedisTemplate,
+            walletJwtTokenCtxOnboardingTemplateWrapper = walletJwtTokenCtxOnboardingTemplateWrapper,
             sessionUrlConfig = sessionUrlConfig,
             uniqueIdUtils = uniqueIdUtils,
             onboardingConfig = onboardingConfig,
@@ -427,7 +436,8 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO))
+                            onboardingChannel = OnboardingChannel.IO,
+                            ecommerceSessionToken = "ecommerceSessionToken"))
                     .expectError(ApplicationNotFoundException::class.java)
                     .verify()
                 verify(paymentMethodsService, times(0)).getPaymentMethodById(anyString())
@@ -474,6 +484,9 @@ class WalletServiceTest {
                 given { paymentMethodsService.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
+                given { walletJwtTokenCtxOnboardingTemplateWrapper.save(any()) }
+                    .willAnswer { Mono.just(true) }
+
                 /* test */
 
                 StepVerifier.create(
@@ -482,7 +495,8 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO))
+                            onboardingChannel = OnboardingChannel.IO,
+                            ecommerceSessionToken = "ecommerceSessionToken"))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -496,6 +510,11 @@ class WalletServiceTest {
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
+                verify(walletJwtTokenCtxOnboardingTemplateWrapper, times(1))
+                    .save(
+                        eq(
+                            WalletJwtTokenCtxOnboardingDocument(
+                                mockedUUID.toString(), "ecommerceSessionToken")))
             }
         }
     }
@@ -536,6 +555,9 @@ class WalletServiceTest {
                 given { paymentMethodsService.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
+                given { walletJwtTokenCtxOnboardingTemplateWrapper.save(any()) }
+                    .willAnswer { Mono.just(true) }
+
                 /* test */
 
                 StepVerifier.create(
@@ -544,7 +566,8 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO))
+                            onboardingChannel = OnboardingChannel.IO,
+                            ecommerceSessionToken = "ecommerceSessionToken"))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -558,6 +581,11 @@ class WalletServiceTest {
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
+                verify(walletJwtTokenCtxOnboardingTemplateWrapper, times(1))
+                    .save(
+                        eq(
+                            WalletJwtTokenCtxOnboardingDocument(
+                                mockedUUID.toString(), "ecommerceSessionToken")))
             }
         }
     }
@@ -600,6 +628,8 @@ class WalletServiceTest {
                 given { paymentMethodsService.getPaymentMethodById(any()) }
                     .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
 
+                given { walletJwtTokenCtxOnboardingTemplateWrapper.save(any()) }
+                    .willAnswer { Mono.just(true) }
                 /* test */
 
                 StepVerifier.create(
@@ -608,7 +638,8 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_CARDS.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO))
+                            onboardingChannel = OnboardingChannel.IO,
+                            ecommerceSessionToken = "ecommerceSessionToken"))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(
@@ -622,6 +653,11 @@ class WalletServiceTest {
                     .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
                 verify(walletRepository, times(1))
                     .save(newWalletDocumentForPaymentWithContextualOnboardToBeSaved)
+                verify(walletJwtTokenCtxOnboardingTemplateWrapper, times(1))
+                    .save(
+                        eq(
+                            WalletJwtTokenCtxOnboardingDocument(
+                                mockedUUID.toString(), "ecommerceSessionToken")))
             }
         }
     }
@@ -655,6 +691,9 @@ class WalletServiceTest {
                         newWalletDocumentForPaymentWithContextualOnboardToBeSaved.toDomain(),
                         WalletAddedEvent(WALLET_UUID.value.toString()))
 
+                given { walletJwtTokenCtxOnboardingTemplateWrapper.save(any()) }
+                    .willAnswer { Mono.just(true) }
+
                 given { applicationRepository.findById("PAGOPA") }
                     .willAnswer { Mono.just(expectedPagoPAApplication) }
 
@@ -673,13 +712,19 @@ class WalletServiceTest {
                             paymentMethodId = PAYMENT_METHOD_ID_APM.value,
                             transactionId = TransactionId(TRANSACTION_ID),
                             amount = AMOUNT,
-                            onboardingChannel = OnboardingChannel.IO))
+                            onboardingChannel = OnboardingChannel.IO,
+                            ecommerceSessionToken = "ecommerceSessionToken"))
                     .assertNext { createWalletOutput ->
                         assertEquals(
                             Pair(expectedLoggedAction, Optional.empty<URI>()), createWalletOutput)
                     }
                     .verifyComplete()
 
+                verify(walletJwtTokenCtxOnboardingTemplateWrapper, times(1))
+                    .save(
+                        eq(
+                            WalletJwtTokenCtxOnboardingDocument(
+                                mockedUUID.toString(), "ecommerceSessionToken")))
                 verify(paymentMethodsService, times(1))
                     .getPaymentMethodById(PAYMENT_METHOD_ID_APM.value.toString())
                 verify(walletRepository, times(1))
@@ -837,6 +882,79 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `should throw EcommerceSessionNotFoundException invoking wallet session for transaction with contextual onboard with CARD wallet`() {
+        /* preconditions */
+
+        val uniqueId = getUniqueId()
+        val orderId = uniqueId
+
+        mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+            val sessionId = UUID.randomUUID().toString()
+            val npgFields =
+                Fields()
+                    .sessionId(sessionId)
+                    .securityToken("token")
+                    .state(WorkflowState.GDI_VERIFICATION)
+                    .apply {
+                        fields =
+                            listOf(
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/h")
+                                    .propertyClass("holder")
+                                    .propertyClass("h"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/p")
+                                    .propertyClass("pan")
+                                    .propertyClass("p"),
+                                Field()
+                                    .id(UUID.randomUUID().toString())
+                                    .src("https://test.it/c")
+                                    .propertyClass("cvv")
+                                    .propertyClass("c"))
+                    }
+
+            given { paymentMethodsService.getPaymentMethodById(any()) }
+                .willAnswer { Mono.just(getValidCardsPaymentMethod().toPaymentMethodInfo()) }
+
+            given { uniqueIdUtils.generateUniqueId() }.willAnswer { Mono.just(uniqueId) }
+
+            val walletDocumentCreatedStatusForTransactionWithContextualOnboard =
+                walletDocumentForTransactionWithContextualOnboard(
+                    PAYMENT_METHOD_ID_CARDS, orderId, sessionId, WalletStatusDto.CREATED)
+
+            given { npgClient.createNpgOrderBuild(any(), any(), anyOrNull()) }
+                .willAnswer { mono { npgFields } }
+
+            val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+
+            given { walletRepository.findByIdAndUserId(any(), any()) }
+                .willReturn(
+                    Mono.just(walletDocumentCreatedStatusForTransactionWithContextualOnboard))
+
+            given { walletRepository.save(walletArgumentCaptor.capture()) }
+                .willAnswer { Mono.just(it.arguments[0]) }
+
+            given { walletJwtTokenCtxOnboardingTemplateWrapper.findById(any()) }
+                .willReturn(Mono.empty())
+            /* test */
+            StepVerifier.create(
+                    walletService.createSessionWallet(
+                        USER_ID, WALLET_UUID, SessionInputCardDataDto()))
+                .expectError(EcommerceSessionNotFoundException::class.java)
+                .verify()
+
+            verify(paymentMethodsService, times(1))
+                .getPaymentMethodById(PAYMENT_METHOD_ID_CARDS.value.toString())
+            verify(uniqueIdUtils, times(2)).generateUniqueId()
+            verify(walletRepository, times(1))
+                .findByIdAndUserId(WALLET_UUID.value.toString(), USER_ID.id.toString())
+        }
+    }
+
+    @Test
     fun `should create wallet session for transaction with contextual onboard with CARD wallet`() {
         /* preconditions */
 
@@ -905,10 +1023,36 @@ class WalletServiceTest {
                         walletId = WALLET_UUID.value.toString(),
                         auditWallet = AuditWalletCreated(orderId = orderId)))
 
-            val basePath = URI.create(sessionUrlConfig.basePath)
             val merchantUrl = sessionUrlConfig.basePath
-            val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-            val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
+            val resultUrl =
+                UriComponentsBuilder.fromUriString(
+                        sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                            sessionUrlConfig
+                                .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                    // param to
+                    // prevent
+                    // caching
+                    .queryParam("t", Instant.now().toEpochMilli())
+                    .build(
+                        mapOf(
+                            "clientId" to "IO",
+                            "transactionId" to TRANSACTION_ID,
+                            "sessionToken" to "ecommerceJwtTokenSession"))
+
+            val cancelUrl =
+                UriComponentsBuilder.fromUriString(
+                        sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                            sessionUrlConfig
+                                .trxWithContextualOnboardingCancelSuffix)) // append query
+                    // param to
+                    // prevent
+                    // caching
+                    .queryParam("t", Instant.now().toEpochMilli())
+                    .build(
+                        mapOf(
+                            "clientId" to "IO",
+                            "transactionId" to TRANSACTION_ID,
+                            "sessionToken" to "ecommerceJwtTokenSession"))
             val sessionToken = "sessionToken"
             val notificationUrl =
                 UriComponentsBuilder.fromHttpUrl(
@@ -964,6 +1108,13 @@ class WalletServiceTest {
                 .willAnswer { Mono.just(CreateTokenResponse().token(sessionToken)) }
 
             given { npgSessionRedisTemplate.save(any()) }.willAnswer { Mono.just(true) }
+
+            given { walletJwtTokenCtxOnboardingTemplateWrapper.findById(any()) }
+                .willAnswer {
+                    Mono.just(
+                        WalletJwtTokenCtxOnboardingDocument(
+                            mockedUUID.toString(), "ecommerceJwtTokenSession"))
+                }
             /* test */
             StepVerifier.create(
                     walletService.createSessionWallet(
@@ -988,7 +1139,8 @@ class WalletServiceTest {
                             .privateClaims(
                                 mapOf(
                                     "walletId" to WALLET_UUID.value.toString(),
-                                    "transactionId" to TRANSACTION_ID)))
+                                    "transactionId" to TRANSACTION_ID,
+                                    "orderId" to orderId)))
         }
     }
 
