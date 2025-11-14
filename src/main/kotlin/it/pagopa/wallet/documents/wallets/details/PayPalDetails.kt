@@ -7,5 +7,11 @@ data class PayPalDetails(val maskedEmail: String?, val pspId: String, val pspBus
     WalletDetails<PayPalDetails> {
 
     override fun toDomain() =
-        PayPalDetails(maskedEmail?.let { MaskedEmail(it) }, pspId, pspBusinessName)
+        PayPalDetails(maskedEmail?.let { MaskedEmail(it) }, normalizePspId(pspId), pspBusinessName)
+
+    private fun normalizePspId(pspId: String): String =
+        when (pspId) {
+            "SIGPITM1XXX" -> "MOONITMMXXX"
+            else -> pspId
+        }
 }
