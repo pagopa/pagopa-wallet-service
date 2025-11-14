@@ -34,3 +34,9 @@ fun ClientIdDto.toOnboardingChannel(): OnboardingChannel =
         throw InvalidRequestException(
             "Input clientId: [$this] is unknown. Handled onboarding channels: ${WalletUtils.VALID_ONBOARDING_CHANNELS}")
     }
+
+fun normalizePspId(pspId: String): String =
+    when (pspId) {
+        "SIGPITM1XXX" -> "MOONITMMXXX"
+        else -> pspId
+    }

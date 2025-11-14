@@ -41,6 +41,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPMWithPspToNormalizer
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithApplicationMetadata
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
@@ -2275,6 +2276,61 @@ class WalletServiceTest {
                             WalletPaypalDetailsDto()
                                 .maskedEmail(null)
                                 .pspId(PSP_ID)
+                                .pspBusinessName(PSP_BUSINESS_NAME))
+                        .clients(walletClientInfo)
+
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()), eq(USER_ID.id.toString()))
+                    }
+                    .willAnswer { Mono.just(wallet) }
+
+                /* test */
+
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
+                    .expectNext(walletInfoDto)
+                    .verifyComplete()
+            }
+        }
+    }
+
+    @Test
+    fun `should find wallet document with paypal with psp to normilized`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                print("Mocked instant: $mockedInstant")
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+                val idPspToNormalizer = "SIGPITM1XXX"
+                val idPspNormalized = "MOONITMMXXX"
+
+                val wallet = walletDocumentStatusValidatedAPMWithPspToNormalizer(idPspToNormalizer)
+                val walletClientInfo = HashMap<String, WalletClientDto>()
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
+
+                val walletInfoDto =
+                    WalletInfoDto()
+                        .walletId(UUID.fromString(wallet.id))
+                        .status(WalletStatusDto.valueOf(wallet.status))
+                        .paymentMethodId(wallet.paymentMethodId)
+                        .userId(wallet.userId)
+                        .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+                        .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
+                        .applications(
+                            wallet.applications.map { application ->
+                                WalletApplicationInfoDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
+                            })
+                        .details(
+                            WalletPaypalDetailsDto()
+                                .maskedEmail(MASKED_EMAIL.value)
+                                .pspId(idPspNormalized)
                                 .pspBusinessName(PSP_BUSINESS_NAME))
                         .clients(walletClientInfo)
 
