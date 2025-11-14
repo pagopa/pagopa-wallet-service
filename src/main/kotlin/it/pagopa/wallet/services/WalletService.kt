@@ -23,6 +23,7 @@ import it.pagopa.wallet.util.EitherExtension.toMono
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.normalizePspId
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -1074,7 +1075,7 @@ class WalletService(
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
-                    .pspId(details.pspId)
+                    .pspId(normalizePspId(details.pspId))
                     .pspBusinessName(details.pspBusinessName)
 
             else -> null
