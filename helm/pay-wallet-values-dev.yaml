@@ -18,7 +18,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.6.1"
+    tag: "2.7.3"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -126,6 +126,9 @@ microservice-chart:
     SESSION_URL_OUTCOME_SUFFIX: "/esito"
     SESSION_URL_CANCEL_SUFFIX: "/esito"
     SESSION_URL_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_BASEPATH: "https://dev.ecommerce.pagopa.it"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_OUTCOME_SUFFIX: "/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_CANCEL_SUFFIX: "/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.dev.platform.pagopa.it/payment-wallet-notifications/v1/transactions/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.dev.platform.pagopa.it/ecommerce/payment-methods-service/v1"
     ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.dev.platform.pagopa.it/ecommerce/payment-methods-service/v2"
@@ -156,6 +159,7 @@ microservice-chart:
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
     SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
     ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED: "true"
+    JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS: "900"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key

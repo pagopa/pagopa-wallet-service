@@ -76,6 +76,29 @@ class RedisConfiguration {
         return UniqueIdTemplateWrapper(uniqueIdTemplateWrapper, Duration.ofSeconds(60))
     }
 
+    @Bean
+    fun walletJwtTokenCtxOnboardingRedisTemplate(
+        reactiveRedisConnectionFactory: ReactiveRedisConnectionFactory,
+        @Value("\${wallet.ctxOnboardingJwtToken.ttlSeconds}") ttlSeconds: Long,
+    ): WalletJwtTokenCtxOnboardingTemplateWrapper {
+        val keySerializer = StringRedisSerializer()
+        val valueSerializer =
+            buildJackson2RedisSerializer(WalletJwtTokenCtxOnboardingDocument::class.java)
+
+        val serializationContext =
+            RedisSerializationContext.newSerializationContext<
+                    String, WalletJwtTokenCtxOnboardingDocument>(
+                    keySerializer)
+                .value(valueSerializer)
+                .build()
+
+        val walletJwtTokenCtxOnboardingRedisTemplate =
+            ReactiveRedisTemplate(reactiveRedisConnectionFactory, serializationContext)
+
+        return WalletJwtTokenCtxOnboardingTemplateWrapper(
+            walletJwtTokenCtxOnboardingRedisTemplate, Duration.ofSeconds(ttlSeconds))
+    }
+
     private fun <T> buildJackson2RedisSerializer(clazz: Class<T>): Jackson2JsonRedisSerializer<T> {
         val jacksonObjectMapper = jacksonObjectMapper()
         val rptSerializationModule = SimpleModule()

@@ -39,6 +39,7 @@ class TransactionWalletController(
     override fun createWalletForTransaction(
         xUserId: UUID,
         xClientIdDto: ClientIdDto,
+        webSessionToken: String,
         transactionId: String,
         walletTransactionCreateRequestDto: Mono<WalletTransactionCreateRequestDto>,
         exchange: ServerWebExchange?
@@ -51,7 +52,8 @@ class TransactionWalletController(
                         paymentMethodId = request.paymentMethodId,
                         transactionId = TransactionId(transactionId),
                         amount = request.amount,
-                        onboardingChannel = xClientIdDto.toOnboardingChannel())
+                        onboardingChannel = xClientIdDto.toOnboardingChannel(),
+                        ecommerceSessionToken = webSessionToken)
                     .flatMap { (loggedAction, returnUri) ->
                         walletEventSinksService.tryEmitEvent(loggedAction).map {
                             Triple(it.data.id.value, request, returnUri)
