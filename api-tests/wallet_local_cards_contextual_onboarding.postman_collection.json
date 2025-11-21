@@ -374,7 +374,7 @@
 							"    pm.expect(responseJson.contractId).to.be.a(\"string\")",
 							"    pm.expect(responseJson.brand).to.be.a(\"string\")",
 							"    pm.expect(responseJson.contextualOnboardDetails).to.be.not.null",
-							"    pm.expect(responseJson.contextualOnboardDetails.transactionId).to.be.a(\"string\")",
+							"    pm.expect(responseJson.contextualOnboardDetails.transactionId).to.be.eq(pm.environment.get(\"TRANSACTION_ID\")",
 							"    pm.expect(responseJson.contextualOnboardDetails.amount).to.be.a(\"number\")",
 							"    pm.expect(responseJson.contextualOnboardDetails.orderId).to.be.a(\"string\")",
 							"    pm.expect(responseJson.contextualOnboardDetails.sessionId).to.be.a(\"string\")",
