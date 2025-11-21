@@ -90,7 +90,7 @@
 							"    pm.expect(walletId).to.be.not.null;",
 							"    pm.expect(transactionId).to.be.not.null;",
 							"    pm.expect(useDiagnosticTracing).to.be.not.null;",
-							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",
+							"    pm.expect(useDiagnosticTracing).to.be.eq(pm.environment.get(\"USE_DIAGNOSTIC_TRACING\"));",pm.expect(transactionId).to.be.eq(pm.environment.get(\"TRANSACTION_ID\"));",
 							"    pm.environment.set(\"WALLET_ID\", walletId);",
 							"});"
 						],
@@ -366,7 +366,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"[Wallet for onboarding CARDS] Get wallet by id with GET /wallets/:idWallet\", function () {",
+							"pm.test(\"[Wallet for onboarding CARDS] Get wallet auth data for contextual onboarding wallet",  function () {",
 							"    pm.response.to.have.status(200);",
 							"    const responseJson = pm.response.json();",
 							"    pm.expect(responseJson.walletId).to.be.a(\"string\")",
