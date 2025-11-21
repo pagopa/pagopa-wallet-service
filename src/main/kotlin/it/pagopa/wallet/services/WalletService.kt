@@ -756,7 +756,11 @@ class WalletService(
             .filter { session ->
                 // perform security token check only if input security token have been received
                 // correctly
-                securityToken == null || session.securityToken == securityToken
+                if (securityToken != null) {
+                    session.securityToken == securityToken
+                } else {
+                    true
+                }
             }
             .switchIfEmpty {
                 logger.error("Security token match failed")
