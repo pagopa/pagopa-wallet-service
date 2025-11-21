@@ -124,6 +124,18 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+  - stage: End_to_End_Tests_DEV
+    dependsOn:
+      - Deploy_DEV_pagoPA
+    pool:
+      vmImage: 'ubuntu-22.04'
+    jobs:
+      - job: e2e_tests
+        steps:
+          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
+            parameters:
+              ENVIRONMENT: DEV
+              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy DEV --- #
 
   # --- START Deploy UAT --- #
@@ -235,7 +247,7 @@ stages:
                     VALUE_FILE: "helm/pay-wallet-values-uat.yaml"
                     GREEN_VERSION: $(app_version)
 
-  - stage: "API_UAT__test"
+  - stage: "API_UAT_test"
     displayName: 'Running API test on uat app'
     dependsOn: Deploy_UAT
     condition: eq(dependencies.Deploy_UAT.result, 'Succeeded')
@@ -263,6 +275,18 @@ stages:
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+  - stage: End_to_End_Tests_UAT
+    dependsOn:
+      - Deploy_UAT
+    pool:
+      vmImage: 'ubuntu-22.04'
+    jobs:
+      - job: e2e_tests
+        steps:
+          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
+            parameters:
+              ENVIRONMENT: UAT
+              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy UAT --- #
 
   # --- START Deploy PROD --- #
