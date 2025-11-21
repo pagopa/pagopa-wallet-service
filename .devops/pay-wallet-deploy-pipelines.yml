@@ -126,7 +126,7 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
   - stage: End_to_End_Tests_DEV
     dependsOn:
-      - Deploy_DEV_pagoPA
+      - Deploy_for_DEV
     pool:
       vmImage: 'ubuntu-22.04'
     jobs:
