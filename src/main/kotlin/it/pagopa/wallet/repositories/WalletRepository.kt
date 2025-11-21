@@ -19,8 +19,7 @@ interface WalletRepository : ReactiveCrudRepository<Wallet, String> {
 
     fun findByContractId(contract: String): Mono<Wallet>
 
-    @Query(
-        value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1, 'status' : ?2 }")
+    @Query(value = "{ 'userId' : ?0 , 'details.paymentInstrumentGatewayId' : ?1, 'status' : ?2 }")
     fun findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
         userId: String,
         paymentInstrumentGatewayId: String,
