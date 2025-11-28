@@ -18,7 +18,6 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
-import jakarta.validation.Valid
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -374,7 +373,9 @@ class WalletController(
         return searchWalletsRequestDto.flatMap { request ->
             when (request) {
                 is SearchWalletsRequestFiscalCodeDto -> {
-                    walletService.findWalletByFiscalCode(request.userFiscalCode).map { ResponseEntity.ok(it) }
+                    walletService.findWalletByFiscalCode(request.userFiscalCode).map {
+                        ResponseEntity.ok(it)
+                    }
                 }
                 else -> Mono.error(IllegalArgumentException("Unsupported search type"))
             }
