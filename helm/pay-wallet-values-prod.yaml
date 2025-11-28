@@ -19,20 +19,20 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.5.0"
+    tag: "2.8.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
       path: /actuator/health/liveness
       port: 8080
-    initialDelaySeconds: 40
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
   readinessProbe:
     httpGet:
       path: /actuator/health/readiness
       port: 8080
-    initialDelaySeconds: 40
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
   deployment:
@@ -67,10 +67,10 @@ microservice-chart:
   resources:
     requests:
       memory: "768Mi"
-      cpu: "400m"
+      cpu: "600m"
     limits:
       memory: "768Mi"
-      cpu: "600m"
+      cpu: "900m"
   autoscaling:
     enable: true
     minReplica: 5
@@ -82,7 +82,7 @@ microservice-chart:
         metadata:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
-          value: "75"
+          value: "70"
   envConfig:
     MONGO_HOST: pagopa-p-itn-pay-wallet-cosmos-account.mongo.cosmos.azure.com
     MONGO_USERNAME: pagopa-p-itn-pay-wallet-cosmos-account
@@ -129,6 +129,9 @@ microservice-chart:
     SESSION_URL_CANCEL_SUFFIX: "/esito"
     SESSION_URL_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
     SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_NOTIFICATION_URL: "https://api.platform.pagopa.it/payment-wallet-notifications/v1/transactions/{transactionId}/wallets/{walletId}/sessions/{orderId}/notifications?sessionToken={sessionToken}"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_BASEPATH: "https://ecommerce.pagopa.it/"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_OUTCOME_SUFFIX: "/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}"
+    SESSION_URL_TRX_WITH_CONTEXTUAL_ONBOARD_CANCEL_SUFFIX: "/esito#clientId={clientId}&transactionId={transactionId}&sessionToken={sessionToken}"
     ECOMMERCE_PAYMENT_METHODS_URI: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v1"
     ECOMMERCE_PAYMENT_METHODS_URI_V2: "https://api.platform.pagopa.it/ecommerce/payment-methods-service/v2"
     ECOMMERCE_PAYMENT_METHODS_TIMEOUT: "10000"
@@ -142,7 +145,7 @@ microservice-chart:
     WALLET_LOGO_MAPPING: >
       { VISA:'https://assets.cdn.platform.pagopa.it/creditcard/visa.png', MASTERCARD:'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png', DINERS:'https://assets.cdn.platform.pagopa.it/creditcard/diners.png', AMEX:'https://assets.cdn.platform.pagopa.it/creditcard/amex.png', UNKNOWN:'https://assets.cdn.platform.pagopa.it/creditcard/generic.png', PAYPAL:'https://assets.cdn.platform.pagopa.it/apm/paypal.png', MAESTRO: 'https://assets.cdn.platform.pagopa.it/creditcard/maestro.png', MC: 'https://assets.cdn.platform.pagopa.it/creditcard/mastercard.png' }
 
-    WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX,MOONITMMXXX"
+    WALLET_ONBOARDING_PAYPAL_PSP_LIST: "BCITITMM,SIGPITM1XXX,MOONITMMXXX,CIPBITMM"
     EXPIRATION_QUEUE_NAME: pagopa-p-itn-pay-wallet-expiration-queue
     EXPIRATION_QUEUE_TTL_SECONDS: "3600"
     EXPIRATION_QUEUE_VISIBILITY_TIMEOUT_SEC: "1800"
@@ -160,6 +163,7 @@ microservice-chart:
     PDV_TOKENIZER_URI: "uri"
     PDV_TOKENIZER_READ_TIMEOUT: "10000"
     PDV_TOKENIZER_CONNECTION_TIMEOUT: "10000"
+    JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS: "900"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
     NPG_SERVICE_API_KEY: npg-service-api-key

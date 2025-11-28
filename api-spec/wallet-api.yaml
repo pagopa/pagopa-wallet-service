@@ -199,6 +199,12 @@ paths:
           description: Channel from which this wallet will be onboarded
           schema:
             $ref: '#/components/schemas/ClientId'
+        - name: x-ecommerce-session-token
+          in: header
+          description: ecommerce session token useful for result and cancel url authorization
+          required: true
+          schema:
+            type: string
         - name: transactionId
           in: path
           description: ecommerce transaction id

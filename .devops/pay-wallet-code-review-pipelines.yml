@@ -1,7 +1,10 @@
 variables:
   BRANCH_NAME: $[ replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', '') ]
   GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
-trigger: none
+trigger:
+ branches:
+  include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
@@ -89,9 +92,9 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
-              TEST_DISPLAY_NAME: "Wallet migration tests"
-              ENV_FILE: "api-tests/wallet_local_migration.environment.json"
-              API_TEST_FILE: "api-tests/wallet_local_migration.collection.tests.json"
-              TEST_FILE_PREFIX: "wallet-api-test-migration"
+              TEST_DISPLAY_NAME: "Wallet cards contextual onboarding tests"
+              ENV_FILE: "api-tests/wallet_local_cards_contextual_onboarding.postman_environment.json"
+              API_TEST_FILE: "api-tests/wallet_local_cards_contextual_onboarding.postman_collection.json"
+              TEST_FILE_PREFIX: "wallet-api-test-cards-contextual-onboarding"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
 

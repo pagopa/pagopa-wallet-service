@@ -69,7 +69,7 @@ class TransactionWalletControllerTest {
     fun testCreateWalletPaymentCardsMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -87,6 +87,7 @@ class TransactionWalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
+            .header("x-ecommerce-session-token", "webSessionToken")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .header("x-api-key", "primary-key")
             .exchange()
@@ -98,14 +99,14 @@ class TransactionWalletControllerTest {
                     WalletTransactionCreateResponseDto()
                         .walletId(WalletTestUtils.WALLET_DOMAIN.id.value)
                         .redirectUrl(
-                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")))
+                            "$webviewPaymentUrl#walletId=${WalletTestUtils.WALLET_DOMAIN.id.value}&transactionId=${transactionId}&useDiagnosticTracing=${WalletTestUtils.CREATE_WALLET_REQUEST.useDiagnosticTracing}")))
     }
 
     @Test
     fun testCreateWalletPaymentAPMMethod() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -123,6 +124,7 @@ class TransactionWalletControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .header("x-user-id", UUID.randomUUID().toString())
             .header("x-client-id", "IO")
+            .header("x-ecommerce-session-token", "webSessionToken")
             .bodyValue(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST)
             .header("x-api-key", "primary-key")
             .exchange()
@@ -151,6 +153,7 @@ class TransactionWalletControllerTest {
                         transactionId = "",
                         walletTransactionCreateRequestDto =
                             Mono.just(WalletTestUtils.CREATE_WALLET_TRANSACTION_REQUEST),
+                        webSessionToken = "webSessionToken",
                         exchange = mock())
                     .block()
             }
@@ -164,7 +167,7 @@ class TransactionWalletControllerTest {
     fun `should return unauthorized if request has not api key header`() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
@@ -192,7 +195,7 @@ class TransactionWalletControllerTest {
     fun `should return unauthorized if request has wrong api key header`() {
         /* preconditions */
         val transactionId = UUID.randomUUID()
-        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any()) }
+        given { walletService.createWalletForTransaction(any(), any(), any(), any(), any(), any()) }
             .willReturn(
                 mono {
                     Pair(
