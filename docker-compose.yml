@@ -68,6 +68,21 @@ services:
     networks:
       - pagopa-wallet-net
 
+  pdv-tokenizer:
+    build:
+      context: .
+      dockerfile: ./docker/config/pdv-tokenizer/Dockerfile.pdv-tokenizer
+    container_name: pdv-tokenizer
+    volumes:
+      - type: bind
+        source: ./docker/config/pdv-tokenizer
+        target: /config
+        read_only: true
+    ports:
+      - "8091:8080"
+    networks:
+      - pagopa-wallet-net
+
   redis:
     container_name: wallet-redis
     image: redis@sha256:e422889e156ebea83856b6ff973bfe0c86bce867d80def228044eeecf925592b
