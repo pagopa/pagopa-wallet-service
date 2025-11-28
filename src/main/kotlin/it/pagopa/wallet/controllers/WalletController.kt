@@ -368,10 +368,17 @@ class WalletController(
      *   error (status code 500) or Timeout serving request (status code 504)
      */
     override fun searchWallets(
-        searchWalletsRequestDto: @Valid Mono<SearchWalletsRequestDto?>?,
-        exchange: ServerWebExchange?
-    ): Mono<ResponseEntity<WalletsDto?>?>? {
-        TODO("Not yet implemented")
+        searchWalletsRequestDto: Mono<SearchWalletsRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletsDto>> {
+        return searchWalletsRequestDto.flatMap { request ->
+            when (request) {
+                is SearchWalletsRequestFiscalCodeDto -> {
+                    walletService.findWalletByFiscalCode(request.userFiscalCode).map { ResponseEntity.ok(it) }
+                }
+                else -> Mono.error(IllegalArgumentException("Unsupported search type"))
+            }
+        }
     }
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {
