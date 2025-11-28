@@ -1,5 +1,6 @@
 package it.pagopa.wallet
 
+import it.pagopa.wallet.client.PdvTokenizerClient
 import it.pagopa.wallet.repositories.LoggingEventRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -12,6 +13,8 @@ import org.springframework.test.context.TestPropertySource
 class ApplicationTest {
 
     @MockBean private lateinit var loggingEventRepository: LoggingEventRepository
+
+    @MockBean private lateinit var pdvTokenizerClient: PdvTokenizerClient
 
     @Test
     fun contextLoads() {

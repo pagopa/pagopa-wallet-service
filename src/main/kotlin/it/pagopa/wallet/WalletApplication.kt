@@ -18,7 +18,8 @@ import reactor.core.publisher.Hooks
     ExpirationQueueConfig::class,
     LoggedActionDeadLetterQueueConfig::class,
     JwtTokenIssuerConfigProperties::class,
-    PaymentMethodsHandlerConfigProperties::class)
+    PaymentMethodsHandlerConfigProperties::class,
+    PdvTokenizerConfigProperties::class)
 class WalletApplication
 
 fun main(args: Array<String>) {
