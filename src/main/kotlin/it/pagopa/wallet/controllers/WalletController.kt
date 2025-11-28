@@ -18,7 +18,7 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.toOnboardingChannel
 import it.pagopa.wallet.warmup.annotations.WarmupFunction
 import it.pagopa.wallet.warmup.utils.WarmupUtils
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.Valid
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -146,13 +146,6 @@ class WalletController(
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletInfoDto>> {
         return walletService.findWallet(walletId, xUserId).map { ResponseEntity.ok(it) }
-    }
-
-    override fun getWalletsByFiscalCode(
-        fiscalCode: @NotNull String,
-        exchange: ServerWebExchange
-    ): Mono<ResponseEntity<WalletsDto>> {
-        return walletService.findWalletByFiscalCode(fiscalCode).map { ResponseEntity.ok(it) }
     }
 
     override fun getWalletsByIdUser(
@@ -363,6 +356,22 @@ class WalletController(
                     ResponseEntity.ok().body(response)
                 }
             }
+    }
+
+    /**
+     * POST /wallets/searchBy : Search wallets by input parameters GET with body payload - returns a
+     * list of wallets matching the search criteria
+     *
+     * @param searchWalletsRequestDto (required)
+     * @return Wallets retrieved successfully (status code 200) or Invalid input (status code 400)
+     *   or Unauthorized (status code 401) or Wallets not found (status code 404) or Internal server
+     *   error (status code 500) or Timeout serving request (status code 504)
+     */
+    override fun searchWallets(
+        searchWalletsRequestDto: @Valid Mono<SearchWalletsRequestDto?>?,
+        exchange: ServerWebExchange?
+    ): Mono<ResponseEntity<WalletsDto?>?>? {
+        TODO("Not yet implemented")
     }
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {

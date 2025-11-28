@@ -104,37 +104,81 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
-
-  /wallets/userFiscalCode:
-    get:
+  /wallets/searchBy:
+    post:
       tags:
         - wallets
-      summary: Get wallet by user fiscalCode
-      description: Returns a list of wallets related to user identified by his fiscal code
-      operationId: getWalletsByFiscalCode
-      parameters:
-        - in: header
-          name: fiscalCode
-          required: true
-          schema:
-            type: string
+      summary: Search wallets by input parameters
+      description: 'GET with body payload - returns a list of wallets matching the search criteria'
+      operationId: searchWallets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchWalletsRequest'
       responses:
         '200':
-          description: Wallet retrieved successfully
+          description: Wallets retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Wallets'
         '400':
-          description: Invalid input id
+          description: Invalid input
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 400
+                detail: Invalid input
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 401
+                detail: Unauthorized
         '404':
-          description: Wallet not found
+          description: Wallets not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 404
+                detail: Wallets not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 500
+                detail: Internal server error
         '504':
           description: Timeout serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 504
+                detail: Timeout serving request
   /transactions/{transactionId}/wallets:
     post:
       tags:
@@ -1296,6 +1340,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletInfo'
+    SearchWalletsRequest:
+      type: object
+      description: Search wallets request with discriminated search criteria
+      oneOf:
+        - $ref: '#/components/schemas/SearchWalletsRequestFiscalCode'
+      discriminator:
+        propertyName: type
+        mapping:
+          USER_FISCAL_CODE: '#/components/schemas/SearchWalletsRequestFiscalCode'
+    SearchWalletsRequestFiscalCode:
+      type: object
+      description: Search wallets by user fiscal code
+      properties:
+        type:
+          type: string
+          description: Search criteria discriminator field
+        userFiscalCode:
+          type: string
+          minLength: 16
+          maxLength: 16
+      required:
+        - type
+        - userFiscalCode
+      example:
+        type: "USER_FISCAL_CODE"
+        userFiscalCode: "MRGHRN97L02C469W"
     SessionInputData:
       type: object
       description: Data needed to create  session
