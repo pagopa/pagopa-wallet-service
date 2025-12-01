@@ -67,5 +67,4 @@ class PDVTokenizerExceptionTest {
         assertEquals("PDV Tokenizer Error", restApiException.title)
         assertEquals(description, restApiException.description)
     }
-
 }
