@@ -8,7 +8,7 @@ db.getCollection("payment-wallets").drop();
 db.getCollection("payment-wallets").insertMany([
     {
         "_id": "550e8400-e29b-41d4-a716-446655440001",
-        "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "userId": "00000000-0000-0000-0000-000000000001",
         "status": "VALIDATED",
         "paymentMethodId": "f25399bf-c56f-4bd2-adc9-7aef87410609",
         "contractId": "W1763480342163asdf",
@@ -24,7 +24,7 @@ db.getCollection("payment-wallets").insertMany([
     },
     {
         "_id": "550e8400-e29b-41d4-a716-446655440002",
-        "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "userId": "00000000-0000-0000-0000-000000000001",
         "status": "ERROR",
         "paymentMethodId": "f25399bf-c56f-4bd2-adc9-7aef87410609",
         "errorReason": "Wallet expired.",
