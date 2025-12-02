@@ -52,32 +52,32 @@ class PdvTokenizerClient(
             .saveUsingPUT(PiiResource().pii(fiscalCode))
             .onErrorMap(WebClientResponseException::class.java) {
                 logger.error(
-                    "Error communicating with ecommerce payment-methods-handler: response: ${it.responseBodyAsString}",
+                    "Error communicating with PDV: response: ${it.responseBodyAsString}",
                     it)
                 when (it.statusCode) {
                     HttpStatus.BAD_REQUEST ->
                         PDVTokenizerException(
-                            description = "EcommercePaymentMethods - Bad request",
+                            description = "PDV - Bad request response",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
 
                     HttpStatus.UNAUTHORIZED ->
                         PDVTokenizerException(
                             description =
-                                "EcommercePaymentMethods - Misconfigured EcommercePaymentMethods api key",
+                                "PDV - Misconfigured PDV api key",
                             httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                         )
 
                     HttpStatus.INTERNAL_SERVER_ERROR ->
                         PDVTokenizerException(
-                            description = "EcommercePaymentMethods - internal server error",
+                            description = "PDV - internal server error",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
 
                     else ->
                         PDVTokenizerException(
                             description =
-                                "EcommercePaymentMethods - server error: ${it.statusCode}",
+                                "PDV - server error: ${it.statusCode}",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
                 }
