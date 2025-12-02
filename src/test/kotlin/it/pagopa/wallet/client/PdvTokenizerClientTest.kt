@@ -55,7 +55,7 @@ class PdvTokenizerClientTest {
                 val restEx = pdvEx.toRestException()
 
                 assertEquals(HttpStatus.BAD_GATEWAY, restEx.httpStatus)
-                assertEquals("EcommercePaymentMethods - Bad request", restEx.description)
+                assertEquals("PDV - Bad request response", restEx.description)
                 true
             }
             .verify()
@@ -78,9 +78,7 @@ class PdvTokenizerClientTest {
                 val restEx = pdvEx.toRestException()
 
                 assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, restEx.httpStatus)
-                assertEquals(
-                    "EcommercePaymentMethods - Misconfigured EcommercePaymentMethods api key",
-                    restEx.description)
+                assertEquals("PDV - Misconfigured PDV api key", restEx.description)
                 true
             }
             .verify()
@@ -103,7 +101,7 @@ class PdvTokenizerClientTest {
                 val restEx = pdvEx.toRestException()
 
                 assertEquals(HttpStatus.BAD_GATEWAY, restEx.httpStatus)
-                assertEquals("EcommercePaymentMethods - internal server error", restEx.description)
+                assertEquals("PDV - internal server error", restEx.description)
                 true
             }
             .verify()
@@ -126,7 +124,7 @@ class PdvTokenizerClientTest {
                 val restEx = pdvEx.toRestException()
 
                 assertEquals(HttpStatus.BAD_GATEWAY, restEx.httpStatus)
-                assertEquals("EcommercePaymentMethods - server error: $status", restEx.description)
+                assertEquals("PDV - server error: $status", restEx.description)
                 true
             }
             .verify()

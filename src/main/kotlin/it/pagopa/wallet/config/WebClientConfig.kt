@@ -165,9 +165,9 @@ class WebClientConfig {
         val webClient =
             it.pagopa.generated.npg.ApiClient.buildWebClientBuilder()
                 .clientConnector(ReactorClientHttpConnector(httpClient))
-                .baseUrl(config.uri)
+                .baseUrl(config.basePath)
                 .build()
-        val apiClient = it.pagopa.generated.pdv.ApiClient(webClient).setBasePath(config.uri)
+        val apiClient = it.pagopa.generated.pdv.ApiClient(webClient).setBasePath(config.basePath)
         apiClient.setApiKey(config.apiKey)
         return it.pagopa.generated.pdv.api.TokenApi(apiClient)
     }
