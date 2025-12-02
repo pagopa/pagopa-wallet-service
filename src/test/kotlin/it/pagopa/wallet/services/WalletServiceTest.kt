@@ -2404,7 +2404,7 @@ class WalletServiceTest {
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
-                StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
+                StepVerifier.create(walletService.findWalletsByUserId(USER_ID.id))
                     .expectNext(walletsDto)
                     .verifyComplete()
             }

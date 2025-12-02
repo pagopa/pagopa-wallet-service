@@ -151,7 +151,7 @@ class WalletController(
         xUserId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletsDto>> {
-        return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
+        return walletService.findWalletsByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
     /*
@@ -373,7 +373,7 @@ class WalletController(
         return searchWalletsRequestDto.flatMap { request ->
             when (request) {
                 is SearchWalletsRequestFiscalCodeDto -> {
-                    walletService.findWalletByFiscalCode(request.userFiscalCode).map {
+                    walletService.findWalletsByFiscalCode(request.userFiscalCode).map {
                         ResponseEntity.ok(it)
                     }
                 }
