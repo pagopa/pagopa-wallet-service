@@ -384,7 +384,7 @@ class WalletControllerTest {
                 .addWalletsItem(WalletTestUtils.walletInfoDto())
                 .addWalletsItem(WalletTestUtils.walletInfoDtoAPM())
         val stringTest = objectMapper.writeValueAsString(walletsDto)
-        given { walletService.findWalletByUserId(userId) }.willReturn(mono { walletsDto })
+        given { walletService.findWalletsByUserId(userId) }.willReturn(mono { walletsDto })
         /* test */
         webClient
             .get()
@@ -1412,7 +1412,7 @@ class WalletControllerTest {
                             .clients(mapOf())
                             .paymentMethodAsset(URI.create("https://assets.test/logo.png"))))
 
-        given { walletService.findWalletByFiscalCode(eq(fiscalCode)) }
+        given { walletService.findWalletsByFiscalCode(eq(fiscalCode)) }
             .willReturn(mono { walletsDto })
 
         /* test */
@@ -1441,7 +1441,7 @@ class WalletControllerTest {
             .jsonPath("$.wallets[0].status")
             .isEqualTo("VALIDATED")
 
-        verify(walletService, times(1)).findWalletByFiscalCode(fiscalCode)
+        verify(walletService, times(1)).findWalletsByFiscalCode(fiscalCode)
     }
 
     @Test
@@ -1450,7 +1450,7 @@ class WalletControllerTest {
         val fiscalCode = "XXXXXXXXXXXXXXXX"
         val walletsDto = WalletsDto().wallets(emptyList())
 
-        given { walletService.findWalletByFiscalCode(eq(fiscalCode)) }
+        given { walletService.findWalletsByFiscalCode(eq(fiscalCode)) }
             .willReturn(mono { walletsDto })
 
         /* test */
@@ -1475,7 +1475,7 @@ class WalletControllerTest {
             .jsonPath("$.wallets")
             .isEmpty
 
-        verify(walletService, times(1)).findWalletByFiscalCode(fiscalCode)
+        verify(walletService, times(1)).findWalletsByFiscalCode(fiscalCode)
     }
 
     @Test
@@ -1493,6 +1493,6 @@ class WalletControllerTest {
             .expectStatus()
             .isBadRequest
 
-        verify(walletService, times(0)).findWalletByFiscalCode(any())
+        verify(walletService, times(0)).findWalletsByFiscalCode(any())
     }
 }

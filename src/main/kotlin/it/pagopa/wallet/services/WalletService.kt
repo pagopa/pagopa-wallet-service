@@ -733,11 +733,11 @@ class WalletService(
             .map { wallet -> toWalletInfoDto(wallet) }
     }
 
-    fun findWalletByFiscalCode(fiscalCode: String): Mono<WalletsDto> {
-        return pdvTokenizerClient.tokenize(fiscalCode).flatMap { findWalletByUserId(it.token) }
+    fun findWalletsByFiscalCode(fiscalCode: String): Mono<WalletsDto> {
+        return pdvTokenizerClient.tokenize(fiscalCode).flatMap { findWalletsByUserId(it.token) }
     }
 
-    fun findWalletByUserId(userId: UUID): Mono<WalletsDto> {
+    fun findWalletsByUserId(userId: UUID): Mono<WalletsDto> {
         return walletRepository
             .findByUserIdAndStatus(userId.toString(), WalletStatusDto.VALIDATED)
             .collectList()
