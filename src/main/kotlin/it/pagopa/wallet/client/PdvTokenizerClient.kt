@@ -24,8 +24,7 @@ class PdvTokenizerClient(
         return pdvTokenizerClient.saveUsingPUT(PiiResource().pii(value)).onErrorMap(
             WebClientResponseException::class.java) {
                 logger.error(
-                    "Error communicating with PDV: response: ${it.responseBodyAsString}",
-                    it)
+                    "Error communicating with PDV: response: ${it.responseBodyAsString}", it)
                 when (it.statusCode) {
                     HttpStatus.BAD_REQUEST ->
                         PDVTokenizerException(
@@ -35,8 +34,7 @@ class PdvTokenizerClient(
 
                     HttpStatus.UNAUTHORIZED ->
                         PDVTokenizerException(
-                            description =
-                                "PDV - Misconfigured PDV api key",
+                            description = "PDV - Misconfigured PDV api key",
                             httpStatusCode = HttpStatus.INTERNAL_SERVER_ERROR,
                         )
 
@@ -48,8 +46,7 @@ class PdvTokenizerClient(
 
                     else ->
                         PDVTokenizerException(
-                            description =
-                                "PDV - server error: ${it.statusCode}",
+                            description = "PDV - server error: ${it.statusCode}",
                             httpStatusCode = HttpStatus.BAD_GATEWAY,
                         )
                 }
