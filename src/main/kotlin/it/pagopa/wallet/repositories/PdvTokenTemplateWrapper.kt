@@ -15,5 +15,5 @@ class PdvTokenTemplateWrapper
         reactiveRedisTemplate = reactiveRedisTemplate,
         keyspace = "wallet-service:pdv-fiscal-code-tokens",
         ttl = ttl) {
-    override fun getKeyFromEntity(value: PdvTokenCacheDocument): String = value.hashedFiscalCode
+    override fun getKeyFromEntity(value: PdvTokenCacheDocument): String = value.fiscalCode
 }

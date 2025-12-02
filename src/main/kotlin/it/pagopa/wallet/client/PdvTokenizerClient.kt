@@ -6,7 +6,6 @@ import it.pagopa.generated.pdv.model.TokenResource
 import it.pagopa.wallet.exception.PDVTokenizerException
 import it.pagopa.wallet.repositories.PdvTokenCacheDocument
 import it.pagopa.wallet.repositories.PdvTokenTemplateWrapper
-import it.pagopa.wallet.util.FiscalCodeHasher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -24,12 +23,12 @@ class PdvTokenizerClient(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun tokenize(value: String): Mono<TokenResource> {
-        val hashedFiscalCode = FiscalCodeHasher.hashFiscalCode(value)
+        val normalizedFiscalCode = value.uppercase()
 
         return pdvTokenRedisTemplate
-            .findById(hashedFiscalCode)
+            .findById(normalizedFiscalCode)
             .doOnNext {
-                logger.debug("PDV token cache HIT for fiscal code hash: {}", hashedFiscalCode)
+                logger.debug("PDV token cache HIT for fiscal code: {}", normalizedFiscalCode)
             }
             .map { cachedDocument -> TokenResource().token(cachedDocument.token) }
             .onErrorResume { cacheError ->
@@ -39,14 +38,14 @@ class PdvTokenizerClient(
             }
             .switchIfEmpty(
                 Mono.defer {
-                    logger.debug("PDV token cache MISS for fiscal code hash: {}", hashedFiscalCode)
-                    tokenizeFromPdvService(value, hashedFiscalCode)
+                    logger.debug("PDV token cache MISS for fiscal code: {}", normalizedFiscalCode)
+                    tokenizeFromPdvService(value, normalizedFiscalCode)
                 })
     }
 
     private fun tokenizeFromPdvService(
         fiscalCode: String,
-        hashedFiscalCode: String
+        normalizedFiscalCode: String
     ): Mono<TokenResource> {
         return pdvTokenizerClient
             .saveUsingPUT(PiiResource().pii(fiscalCode))
@@ -81,9 +80,9 @@ class PdvTokenizerClient(
             }
             .flatMap { tokenResource ->
                 pdvTokenRedisTemplate
-                    .save(PdvTokenCacheDocument(hashedFiscalCode, tokenResource.token))
+                    .save(PdvTokenCacheDocument(normalizedFiscalCode, tokenResource.token))
                     .doOnSuccess {
-                        logger.debug("Cached PDV token for fiscal code hash: {}", hashedFiscalCode)
+                        logger.debug("Cached PDV token for fiscal code: {}", normalizedFiscalCode)
                     }
                     .onErrorResume { cacheError ->
                         logger.warn(

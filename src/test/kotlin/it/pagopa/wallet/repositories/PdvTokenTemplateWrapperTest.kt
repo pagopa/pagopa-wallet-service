@@ -22,9 +22,9 @@ class PdvTokenTemplateWrapperTest {
 
     @Test
     fun `should save PDV token cache document`() {
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
         val result = Mono.just(true)
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
@@ -34,14 +34,14 @@ class PdvTokenTemplateWrapperTest {
 
         assertEquals(result, returnedResult)
         verify(redisTemplate, times(1)).opsForValue()
-        verify(opsForVal, times(1)).set("$keySpace:$hashedFiscalCode", cacheDocument, defaultTtl)
+        verify(opsForVal, times(1)).set("$keySpace:$fiscalCode", cacheDocument, defaultTtl)
     }
 
     @Test
     fun `should save PDV token if absent`() {
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
         val result = Mono.just(true)
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
@@ -51,15 +51,14 @@ class PdvTokenTemplateWrapperTest {
 
         assertEquals(result, returnedResult)
         verify(redisTemplate, times(1)).opsForValue()
-        verify(opsForVal, times(1))
-            .setIfAbsent("$keySpace:$hashedFiscalCode", cacheDocument, defaultTtl)
+        verify(opsForVal, times(1)).setIfAbsent("$keySpace:$fiscalCode", cacheDocument, defaultTtl)
     }
 
     @Test
     fun `should save PDV token with custom TTL if absent`() {
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
         val result = Mono.just(true)
         val customTtl = Duration.ofSeconds(3600)
 
@@ -70,47 +69,46 @@ class PdvTokenTemplateWrapperTest {
 
         assertEquals(result, returnedResult)
         verify(redisTemplate, times(1)).opsForValue()
-        verify(opsForVal, times(1))
-            .setIfAbsent("$keySpace:$hashedFiscalCode", cacheDocument, customTtl)
+        verify(opsForVal, times(1)).setIfAbsent("$keySpace:$fiscalCode", cacheDocument, customTtl)
     }
 
     @Test
-    fun `should find PDV token by hashed fiscal code`() {
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+    fun `should find PDV token by fiscal code`() {
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
         val result = Mono.just(cacheDocument)
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
         given(opsForVal.get(any())).willReturn(result)
 
-        val returnedValue = pdvTokenTemplateWrapper.findById(hashedFiscalCode)
+        val returnedValue = pdvTokenTemplateWrapper.findById(fiscalCode)
 
         assertEquals(result, returnedValue)
         verify(redisTemplate, times(1)).opsForValue()
-        verify(opsForVal, times(1)).get("$keySpace:$hashedFiscalCode")
+        verify(opsForVal, times(1)).get("$keySpace:$fiscalCode")
     }
 
     @Test
     fun `should return empty when PDV token not found in cache`() {
-        val hashedFiscalCode = "nonexistent"
+        val fiscalCode = "NONEXISTENT"
         val result = Mono.empty<PdvTokenCacheDocument>()
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
         given(opsForVal.get(any())).willReturn(result)
 
-        val returnedValue = pdvTokenTemplateWrapper.findById(hashedFiscalCode)
+        val returnedValue = pdvTokenTemplateWrapper.findById(fiscalCode)
 
         assertEquals(result, returnedValue)
         verify(redisTemplate, times(1)).opsForValue()
-        verify(opsForVal, times(1)).get("$keySpace:$hashedFiscalCode")
+        verify(opsForVal, times(1)).get("$keySpace:$fiscalCode")
     }
 
     @Test
     fun `should use correct keyspace`() {
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
         given(opsForVal.set(any(), any(), any<Duration>())).willReturn(Mono.just(true))
@@ -118,7 +116,7 @@ class PdvTokenTemplateWrapperTest {
         pdvTokenTemplateWrapper.save(cacheDocument)
 
         verify(opsForVal, times(1))
-            .set(eq("$keySpace:$hashedFiscalCode"), eq(cacheDocument), eq(defaultTtl))
+            .set(eq("$keySpace:$fiscalCode"), eq(cacheDocument), eq(defaultTtl))
     }
 
     @Test
@@ -127,9 +125,9 @@ class PdvTokenTemplateWrapperTest {
         val pdvTokenTemplateWrapperWithCustomTtl =
             PdvTokenTemplateWrapper(reactiveRedisTemplate = redisTemplate, ttl = customTtl)
 
-        val hashedFiscalCode = "a1b2c3d4e5f6"
+        val fiscalCode = "RSSMRA80A01H501U"
         val token = UUID.randomUUID()
-        val cacheDocument = PdvTokenCacheDocument(hashedFiscalCode, token)
+        val cacheDocument = PdvTokenCacheDocument(fiscalCode, token)
 
         given(redisTemplate.opsForValue()).willReturn(opsForVal)
         given(opsForVal.set(any(), any(), any<Duration>())).willReturn(Mono.just(true))
