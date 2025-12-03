@@ -47,7 +47,7 @@ resources:
     - repository: pagopaWalletTests
       type: github
       name: pagopa/pagopa-wallet-tests
-      ref: main
+      ref: CHK-4663-add-wallets-for-checkout-api-test
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
