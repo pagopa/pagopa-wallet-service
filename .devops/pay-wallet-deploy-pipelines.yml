@@ -106,13 +106,6 @@ stages:
         displayName: 'API Test: Wallet Cards'
         steps:
           - checkout: pagopaWalletTests
-          - script: |
-              echo "Current directory:"
-              pwd
-              echo "Listing files:"
-              ls -R
-            displayName: "Debug Directory Structure"
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet cards tests"
@@ -120,7 +113,6 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards"
               API_TEST_FILE: "pagopa-wallet-tests/api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Checkout wallet cards tests"
@@ -139,7 +131,6 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "pagopa-wallet-tests/api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Checkout wallet PayPal tests"
@@ -286,7 +277,6 @@ stages:
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards"
               API_TEST_FILE: "pagopa-wallet-tests/api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Checkout wallet cards tests"
@@ -306,7 +296,6 @@ stages:
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
               API_TEST_FILE: "pagopa-wallet-tests/api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Checkout wallet PayPal tests"
