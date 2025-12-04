@@ -16,6 +16,7 @@ import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
@@ -26,6 +27,8 @@ import reactor.test.StepVerifier
 @SpringBootTest
 @TestPropertySource(locations = ["classpath:application.test.properties"])
 class JwtTokenIssuerClientTest {
+
+    @MockBean private lateinit var pdvTokenizerClient: PdvTokenizerClient
 
     private val jwtIssuerApi: JwtIssuerApi = mock()
     private val jwtTokenIssuerClient = JwtTokenIssuerClient(jwtIssuerApi)

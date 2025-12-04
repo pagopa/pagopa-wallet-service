@@ -55,6 +55,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPa
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.JwtTokenIssuerClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PdvTokenizerClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
@@ -117,6 +118,7 @@ class WalletServiceTest {
     private val uniqueIdUtils: UniqueIdUtils = mock()
     private val jwtTokenIssuerClient: JwtTokenIssuerClient = mock()
     private val pspDetailClient: PspDetailClient = mock()
+    private val pdvTokenizerClient: PdvTokenizerClient = mock()
     private val onboardingConfig =
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
@@ -255,7 +257,8 @@ class WalletServiceTest {
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
             walletUtils = walletUtils,
             pspDetailClient = pspDetailClient,
-            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS)
+            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS,
+            pdvTokenizerClient = pdvTokenizerClient)
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 
@@ -2401,7 +2404,7 @@ class WalletServiceTest {
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
-                StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
+                StepVerifier.create(walletService.findWalletsByUserId(USER_ID.id))
                     .expectNext(walletsDto)
                     .verifyComplete()
             }

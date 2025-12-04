@@ -151,7 +151,7 @@ class WalletController(
         xUserId: UUID,
         exchange: ServerWebExchange
     ): Mono<ResponseEntity<WalletsDto>> {
-        return walletService.findWalletByUserId(xUserId).map { ResponseEntity.ok(it) }
+        return walletService.findWalletsByUserId(xUserId).map { ResponseEntity.ok(it) }
     }
 
     /*
@@ -355,6 +355,31 @@ class WalletController(
                     ResponseEntity.ok().body(response)
                 }
             }
+    }
+
+    /**
+     * POST /wallets/searchBy : Search wallets by input parameters GET with body payload - returns a
+     * list of wallets matching the search criteria
+     *
+     * @param searchWalletsRequestDto (required)
+     * @return Wallets retrieved successfully (status code 200) or Invalid input (status code 400)
+     *   or Unauthorized (status code 401) or Wallets not found (status code 404) or Internal server
+     *   error (status code 500) or Timeout serving request (status code 504)
+     */
+    override fun searchWallets(
+        searchWalletsRequestDto: Mono<SearchWalletsRequestDto>,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<WalletsDto>> {
+        return searchWalletsRequestDto.flatMap { request ->
+            when (request) {
+                is SearchWalletsRequestFiscalCodeDto -> {
+                    walletService.findWalletsByFiscalCode(request.userFiscalCode).map {
+                        ResponseEntity.ok(it)
+                    }
+                }
+                else -> Mono.error(IllegalArgumentException("Unsupported search type"))
+            }
+        }
     }
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {

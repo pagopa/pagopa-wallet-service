@@ -27,6 +27,8 @@ import it.pagopa.wallet.services.WalletService
 import it.pagopa.wallet.util.UniqueIdUtils
 import java.net.URI
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
 import kotlin.reflect.KClass
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -382,7 +384,7 @@ class WalletControllerTest {
                 .addWalletsItem(WalletTestUtils.walletInfoDto())
                 .addWalletsItem(WalletTestUtils.walletInfoDtoAPM())
         val stringTest = objectMapper.writeValueAsString(walletsDto)
-        given { walletService.findWalletByUserId(userId) }.willReturn(mono { walletsDto })
+        given { walletService.findWalletsByUserId(userId) }.willReturn(mono { walletsDto })
         /* test */
         webClient
             .get()
@@ -1384,5 +1386,113 @@ class WalletControllerTest {
         assertEquals("EXECUTED", loggedEvent.auditWallet.validationOperationResult)
         verify(walletService, times(1))
             .notifyWallet(WalletId(walletId), orderId, null, notificationRequest)
+    }
+
+    @Test
+    fun testSearchWalletsByFiscalCode() = runTest {
+        /* preconditions */
+        val fiscalCode = "RSSMRA74D22A001Q"
+        val walletsDto =
+            WalletsDto()
+                .wallets(
+                    listOf(
+                        WalletInfoDto()
+                            .walletId(WalletTestUtils.WALLET_UUID.value)
+                            .userId(WalletTestUtils.USER_ID.id.toString())
+                            .paymentMethodId(
+                                WalletTestUtils.PAYMENT_METHOD_ID_CARDS.value.toString())
+                            .status(WalletStatusDto.VALIDATED)
+                            .creationDate(
+                                OffsetDateTime.ofInstant(
+                                    WalletTestUtils.creationDate, ZoneId.of("UTC")))
+                            .updateDate(
+                                OffsetDateTime.ofInstant(
+                                    WalletTestUtils.creationDate, ZoneId.of("UTC")))
+                            .applications(listOf())
+                            .clients(mapOf())
+                            .paymentMethodAsset(URI.create("https://assets.test/logo.png"))))
+
+        given { walletService.findWalletsByFiscalCode(eq(fiscalCode)) }
+            .willReturn(mono { walletsDto })
+
+        /* test */
+        val requestBody =
+            SearchWalletsRequestFiscalCodeDto()
+                .userFiscalCode(fiscalCode)
+                .serializeRootDiscriminator(
+                    SearchWalletsRequestFiscalCodeDto::class, "USER_FISCAL_CODE")
+
+        webClient
+            .post()
+            .uri("/wallets/searchBy")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-api-key", "primary-key")
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$.wallets")
+            .isArray
+            .jsonPath("$.wallets[0].walletId")
+            .isEqualTo(WalletTestUtils.WALLET_UUID.value.toString())
+            .jsonPath("$.wallets[0].userId")
+            .isEqualTo(WalletTestUtils.USER_ID.id.toString())
+            .jsonPath("$.wallets[0].status")
+            .isEqualTo("VALIDATED")
+
+        verify(walletService, times(1)).findWalletsByFiscalCode(fiscalCode)
+    }
+
+    @Test
+    fun testSearchWalletsByFiscalCodeNotFound() = runTest {
+        /* preconditions */
+        val fiscalCode = "XXXXXXXXXXXXXXXX"
+        val walletsDto = WalletsDto().wallets(emptyList())
+
+        given { walletService.findWalletsByFiscalCode(eq(fiscalCode)) }
+            .willReturn(mono { walletsDto })
+
+        /* test */
+        val requestBody =
+            SearchWalletsRequestFiscalCodeDto()
+                .userFiscalCode(fiscalCode)
+                .serializeRootDiscriminator(
+                    SearchWalletsRequestFiscalCodeDto::class, "USER_FISCAL_CODE")
+
+        webClient
+            .post()
+            .uri("/wallets/searchBy")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-api-key", "primary-key")
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$.wallets")
+            .isArray
+            .jsonPath("$.wallets")
+            .isEmpty
+
+        verify(walletService, times(1)).findWalletsByFiscalCode(fiscalCode)
+    }
+
+    @Test
+    fun testSearchWalletsByFiscalCodeInvalidRequest() = runTest {
+        /* test - missing fiscal code */
+        val requestBody = mapOf("type" to "USER_FISCAL_CODE")
+
+        webClient
+            .post()
+            .uri("/wallets/searchBy")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("x-api-key", "primary-key")
+            .bodyValue(requestBody)
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+
+        verify(walletService, times(0)).findWalletsByFiscalCode(any())
     }
 }
