@@ -103,7 +103,7 @@ stages:
     dependsOn: Deploy_for_DEV
     jobs:
       - job: newman_api_test_cards
-        displayName: 'API Test: Wallet Cards'
+        displayName: 'API Test: Wallet Cards/PayPal, Checkout'
         steps:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
@@ -115,17 +115,6 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
-              TEST_DISPLAY_NAME: "Checkout wallet cards tests"
-              ENV_FILE: "api-tests/dev.cards.envs.json"
-              TEST_FILE_PREFIX: "DEV-checkout-wallet-integration-test-cards"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.cards.tests.json"
-              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
-      - job: newman_api_test_paypal
-        displayName: "API Test: Wallet PayPal"
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
               TEST_DISPLAY_NAME: "Wallet PayPal tests"
               ENV_FILE: "api-tests/dev.paypal.envs.json"
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
@@ -133,11 +122,12 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
-              TEST_DISPLAY_NAME: "Checkout wallet PayPal tests"
-              ENV_FILE: "api-tests/dev.paypal.envs.json"
-              TEST_FILE_PREFIX: "DEV-checkout-wallet-integration-test-paypal"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.paypal.tests.json"
+              TEST_DISPLAY_NAME: "Checkout wallet tests"
+              ENV_FILE: "api-tests/dev.checkout_payment_wallet_api.envs.json"
+              TEST_FILE_PREFIX: "DEV-checkout-wallet-integration-test"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+
   - stage: End_to_End_Tests_DEV
     dependsOn:
       - Deploy_for_DEV
@@ -267,7 +257,7 @@ stages:
     condition: eq(dependencies.Deploy_UAT.result, 'Succeeded')
     jobs:
       - job: newman_api_test_cards
-        displayName: 'API Tests: Wallet Cards'
+        displayName: 'API Test: Wallet Cards/PayPal, Checkout'
         steps:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
@@ -279,18 +269,6 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
           - template: azure-templates/api-tests.yml
             parameters:
-              TEST_DISPLAY_NAME: "Checkout wallet cards tests"
-              ENV_FILE: "api-tests/uat.cards.envs.json"
-              TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test-cards"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.cards.oneidentity.tests.json"
-              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-
-      - job: newman_api_test_paypal
-        displayName: "API Test: Wallet PayPal"
-        steps:
-          - checkout: pagopaWalletTests
-          - template: azure-templates/api-tests.yml
-            parameters:
               TEST_DISPLAY_NAME: "Wallet PayPal tests"
               ENV_FILE: "api-tests/uat.paypal.envs.json"
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
@@ -298,11 +276,12 @@ stages:
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
           - template: azure-templates/api-tests.yml
             parameters:
-              TEST_DISPLAY_NAME: "Checkout wallet PayPal tests"
-              ENV_FILE: "api-tests/uat.paypal.envs.json"
-              TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test-paypal"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.paypal.oneidentity.tests.json"
+              TEST_DISPLAY_NAME: "Checkout wallet tests"
+              ENV_FILE: "api-tests/uat.checkout_payment_wallet_api.envs.json"
+              TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+
   - stage: End_to_End_Tests_UAT
     dependsOn:
       - Deploy_UAT
