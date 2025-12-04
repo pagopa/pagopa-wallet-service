@@ -282,7 +282,7 @@ stages:
               TEST_DISPLAY_NAME: "Checkout wallet cards tests"
               ENV_FILE: "api-tests/uat.cards.envs.json"
               TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test-cards"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.cards.tests.json"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.cards.oneidentity.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
 
       - job: newman_api_test_paypal
@@ -301,7 +301,7 @@ stages:
               TEST_DISPLAY_NAME: "Checkout wallet PayPal tests"
               ENV_FILE: "api-tests/uat.paypal.envs.json"
               TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test-paypal"
-              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.paypal.tests.json"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.paypal.oneidentity.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
   - stage: End_to_End_Tests_UAT
     dependsOn:
