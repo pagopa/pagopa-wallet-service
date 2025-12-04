@@ -165,6 +165,7 @@ microservice-chart:
     PDV_TOKENIZER_BASE_PATH: "https://api.uat.tokenizer.pdv.pagopa.it/tokenizer/v1"
     PDV_TOKENIZER_READ_TIMEOUT: "10000"
     PDV_TOKENIZER_CONNECTION_TIMEOUT: "10000"
+    PDV_TOKENIZER_CACHE_TTL_SECONDS: "600"
     JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS: "900"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password

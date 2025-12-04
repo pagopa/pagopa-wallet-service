@@ -143,6 +143,7 @@ If you want to customize the application environment, reference this table:
 | PDV_TOKENIZER_READ_TIMEOUT                                            | PDV tokenizer service read timeout                                                                                                                         | string                   |         |
 | PDV_TOKENIZER_CONNECTION_TIMEOUT                                      | PDV tokenizer service connection timeout                                                                                                                   | string                   |         |
 | PDV_TOKENIZER_API_KEY                                                 | PDV tokenizer service API key                                                                                                                              | string                   |         |
+| PDV_TOKENIZER_CACHE_TTL_SECONDS                                       | TTL for PDV token cache in seconds                                                                                                                         | int                      |         |
 | JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS                                  | TTL of jwt token from ecommerce to be used for ctx onboarding                                                                                              | int                      |         |
 
 (*): for Mongo connection string options
