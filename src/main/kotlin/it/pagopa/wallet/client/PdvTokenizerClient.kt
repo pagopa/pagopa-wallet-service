@@ -29,8 +29,7 @@ class PdvTokenizerClient(
         return pdvTokenRedisTemplate
             .findById(hashedFiscalCode)
             .doOnNext {
-                val maskedHashedFiscalCode = hashedFiscalCode.take(8)
-                logger.debug("PDV token cache HIT for fiscal code hash: {}", maskedHashedFiscalCode)
+                logger.debug("PDV token cache HIT for fiscal code hash: {}", hashedFiscalCode)
             }
             .map { cachedDocument -> TokenResource().token(cachedDocument.token) }
             .onErrorResume { cacheError ->
@@ -40,9 +39,7 @@ class PdvTokenizerClient(
             }
             .switchIfEmpty(
                 Mono.defer {
-                    val maskedHashedFiscalCode = hashedFiscalCode.take(8)
-                    logger.debug(
-                        "PDV token cache MISS for fiscal code hash: {}", maskedHashedFiscalCode)
+                    logger.debug("PDV token cache MISS for fiscal code hash: {}", hashedFiscalCode)
                     tokenizeFromPdvService(value, hashedFiscalCode)
                 })
     }
@@ -86,9 +83,7 @@ class PdvTokenizerClient(
                 pdvTokenRedisTemplate
                     .save(PdvTokenCacheDocument(hashedFiscalCode, tokenResource.token))
                     .doOnSuccess {
-                        val maskedHashedFiscalCode = hashedFiscalCode.take(8)
-                        logger.debug(
-                            "Cached PDV token for fiscal code hash: {}", maskedHashedFiscalCode)
+                        logger.debug("Cached PDV token for fiscal code hash: {}", hashedFiscalCode)
                     }
                     .onErrorResume { cacheError ->
                         logger.warn(
