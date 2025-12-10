@@ -6,6 +6,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.JwtTokenIssuerClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PdvTokenizerClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
@@ -65,7 +66,8 @@ class WalletService(
     @Autowired private val walletUtils: WalletUtils,
     private val pspDetailClient: PspDetailClient,
     @Value("\${npg.notifications.jwt.validityTimeSeconds}")
-    private val tokenValidityTimeSeconds: Int
+    private val tokenValidityTimeSeconds: Int,
+    @Autowired private val pdvTokenizerClient: PdvTokenizerClient,
 ) {
     companion object {
         /** The claim transactionId */
@@ -731,7 +733,11 @@ class WalletService(
             .map { wallet -> toWalletInfoDto(wallet) }
     }
 
-    fun findWalletByUserId(userId: UUID): Mono<WalletsDto> {
+    fun findWalletsByFiscalCode(fiscalCode: String): Mono<WalletsDto> {
+        return pdvTokenizerClient.tokenize(fiscalCode).flatMap { findWalletsByUserId(it.token) }
+    }
+
+    fun findWalletsByUserId(userId: UUID): Mono<WalletsDto> {
         return walletRepository
             .findByUserIdAndStatus(userId.toString(), WalletStatusDto.VALIDATED)
             .collectList()

@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "2.8.0"
+version = "2.9.0"
 
 description = "pagopa-wallet-service"
 
@@ -366,6 +366,35 @@ tasks.register("jwtIssuer", GenerateTask::class.java) {
   )
 }
 
+tasks.register("personalDataVaultTokenizer", GenerateTask::class.java) {
+  description = "Generate Personal Data Vault client API from OpenAPI specification"
+  group = "openapi-generation"
+  generatorName.set("java")
+  remoteInputSpec.set("https://api.uat.tokenizer.pdv.pagopa.it/docs/tokenizeruapis/openapi.json")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
+  apiPackage.set("it.pagopa.generated.pdv.api")
+  modelPackage.set("it.pagopa.generated.pdv.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  library.set("webclient")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "true",
+      "interfaceOnly" to "true",
+      "hideGenerationTimestamp" to "true",
+      "skipDefaultInterface" to "true",
+      "useSwaggerUI" to "false",
+      "reactive" to "true",
+      "useSpringBoot3" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "false",
+    )
+  )
+}
+
 tasks.withType<KotlinCompile> {
   dependsOn(
     "wallet",
@@ -375,6 +404,7 @@ tasks.withType<KotlinCompile> {
     "ecommercePaymentMethodV2",
     "jwtIssuer",
     "ecommercePaymentMethodHandlerV1",
+    "personalDataVaultTokenizer",
   )
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)

@@ -19,7 +19,7 @@ microservice-chart:
     envSecret: {}
   image:
     repository: pagopapitncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.8.0"
+    tag: "2.9.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -160,6 +160,10 @@ microservice-chart:
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
     SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
     ECOMMERCE_PAYMENT_METHODS_HANDLER_ENABLED: "false"
+    PDV_TOKENIZER_BASE_PATH: "https://api.tokenizer.pdv.pagopa.it/tokenizer/v1"
+    PDV_TOKENIZER_READ_TIMEOUT: "10000"
+    PDV_TOKENIZER_CONNECTION_TIMEOUT: "10000"
+    PDV_TOKENIZER_CACHE_TTL_SECONDS: "600"
     JWT_TOKEN_CTX_ONBOARDING_TTL_SECONDS: "900"
   envSecret:
     MONGO_PASSWORD: mongo-wallet-password
@@ -175,6 +179,7 @@ microservice-chart:
     SECURITY_API_KEY_PRIMARY: payment-wallet-service-primary-api-key
     SECURITY_API_KEY_SECONDARY: payment-wallet-service-secondary-api-key
     ECOMMERCE_PAYMENT_METHODS_HANDLER_API_KEY: payment-method-api-key
+    PDV_TOKENIZER_API_KEY: personal-data-vault-api-key-wallet-session
   keyvault:
     name: "pagopa-p-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
