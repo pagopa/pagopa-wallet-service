@@ -1,7 +1,7 @@
 microservice-chart:
   namespace: "pay-wallet"
   nameOverride: ""
-  fullnameOverride: "pagopa-pay-wallet-microservice"
+  fullnameOverride: "beta-pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
@@ -39,7 +39,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
-    replicas: 2
+    replicas: 3
   service:
     create: true
     type: ClusterIP
@@ -48,7 +48,7 @@ microservice-chart:
   ingress:
     create: true
     host: "itnuat.pay-wallet.internal.uat.platform.pagopa.it"
-    path: /pagopa-wallet-service/(.*)
+    path: /beta/pagopa-wallet-service/(.*)
     servicePort: 8080
   serviceAccount:
     create: false
@@ -69,7 +69,7 @@ microservice-chart:
       cpu: "600m"
   autoscaling:
     enable: true
-    minReplica: 2
+    minReplica: 3
     maxReplica: 10
     pollingInterval: 10 # seconds
     cooldownPeriod: 50 # seconds
@@ -111,7 +111,7 @@ microservice-chart:
     NPG_SERVICE_TCP_KEEP_ALIVE_IDLE: "5"
     NPG_SERVICE_TCP_KEEP_ALIVE_INTVL: "2"
     NPG_SERVICE_TCP_KEEP_ALIVE_CNT: "10"
-    OTEL_SERVICE_NAME: "pagopa-wallet-service"
+    OTEL_SERVICE_NAME: "pagopa-wallet-service-blue"
     OTEL_SERVICE_ENVIRONMENT: "uat"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.otel.svc:4317"
@@ -157,7 +157,7 @@ microservice-chart:
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_STORAGE_QUEUE_NAME: "pagopa-u-itn-pay-wallet-logged-action-dead-letter-queue"
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_TTL_SECONDS: "2592000" #30 days
     PAYMENT_WALLET_LOG_EVENT_DEAD_LETTER_QUEUE_VISIBILITY_TIMEOUT_SECONDS: "0"
-    JWT_ISSUER_URI: "https://itnuat.pay-wallet.internal.uat.platform.pagopa.it/pagopa-jwt-issuer-service"
+    JWT_ISSUER_URI: "https://itnuat.pay-wallet.internal.uat.platform.pagopa.it/beta-pagopa-jwt-issuer-service"
     JWT_ISSUER_READ_TIMEOUT: "10000"
     JWT_ISSUER_CONNECTION_TIMEOUT: "10000"
     SECURITY_API_KEY_SECURED_PATHS: "/applications,/transactions,/wallets"
