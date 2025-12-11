@@ -375,6 +375,39 @@ object WalletTestUtils {
             onboardingChannel = OnboardingChannel.IO.toString())
     }
 
+    fun walletDocumentStatusValidatedAPMWithPspToNormalizer(
+        pspId: String,
+        clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS
+    ): Wallet {
+        return Wallet(
+            id = WALLET_UUID.value.toString(),
+            userId = USER_ID.id.toString(),
+            status = WalletStatusDto.VALIDATED.name,
+            paymentMethodId = PAYMENT_METHOD_ID_CARDS.value.toString(),
+            contractId = CONTRACT_ID.contractId,
+            validationOperationResult = OperationResultEnum.EXECUTED.value,
+            validationErrorCode = null,
+            errorReason = null,
+            applications =
+                listOf(
+                    WalletApplicationDocument(
+                        WALLET_APPLICATION_ID.id,
+                        WalletApplicationStatus.DISABLED.toString(),
+                        TIMESTAMP.toString(),
+                        TIMESTAMP.toString(),
+                        APPLICATION_METADATA_HASHMAP)),
+            details =
+                PayPalDetailsDocument(
+                    maskedEmail = MASKED_EMAIL.value,
+                    pspId = pspId,
+                    pspBusinessName = PSP_BUSINESS_NAME),
+            clients = clients.entries.associate { it.key.name to it.value.toDocument() },
+            version = 0,
+            creationDate = creationDate,
+            updateDate = creationDate,
+            onboardingChannel = OnboardingChannel.IO.toString())
+    }
+
     fun walletDocumentVerifiedWithContextualOnboardCardDetails(
         bin: String,
         lastFourDigits: String,

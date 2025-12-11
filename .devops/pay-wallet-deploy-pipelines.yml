@@ -103,7 +103,7 @@ stages:
     dependsOn: Deploy_for_DEV
     jobs:
       - job: newman_api_test_cards
-        displayName: 'API Tests: Wallet Cards'
+        displayName: 'API Test: Wallet Cards/PayPal, Checkout'
         steps:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
@@ -113,10 +113,6 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
-      - job: newman_api_test_paypal
-        displayName: "API Test: Wallet PayPal"
-        steps:
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet PayPal tests"
@@ -124,6 +120,26 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "Checkout wallet tests"
+              ENV_FILE: "api-tests/dev.checkout_payment_wallet_api.envs.json"
+              TEST_FILE_PREFIX: "DEV-checkout-wallet-integration-test"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+
+  - stage: End_to_End_Tests_DEV
+    dependsOn:
+      - Deploy_for_DEV
+    pool:
+      vmImage: 'ubuntu-22.04'
+    jobs:
+      - job: e2e_tests
+        steps:
+          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
+            parameters:
+              ENVIRONMENT: DEV
+              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy DEV --- #
 
   # --- START Deploy UAT --- #
@@ -235,13 +251,13 @@ stages:
                     VALUE_FILE: "helm/pay-wallet-values-uat.yaml"
                     GREEN_VERSION: $(app_version)
 
-  - stage: "API_UAT__test"
+  - stage: "API_UAT_test"
     displayName: 'Running API test on uat app'
     dependsOn: Deploy_UAT
     condition: eq(dependencies.Deploy_UAT.result, 'Succeeded')
     jobs:
       - job: newman_api_test_cards
-        displayName: 'API Tests: Wallet Cards'
+        displayName: 'API Test: Wallet Cards/PayPal, Checkout'
         steps:
           - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
@@ -251,11 +267,6 @@ stages:
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards"
               API_TEST_FILE: "api-tests/wallet_payment_api.cards.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
-
-      - job: newman_api_test_paypal
-        displayName: "API Test: Wallet PayPal"
-        steps:
-          - checkout: pagopaWalletTests
           - template: azure-templates/api-tests.yml
             parameters:
               TEST_DISPLAY_NAME: "Wallet PayPal tests"
@@ -263,6 +274,26 @@ stages:
               TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal"
               API_TEST_FILE: "api-tests/wallet_payment_api.paypal.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "Checkout wallet tests"
+              ENV_FILE: "api-tests/uat.checkout_payment_wallet_api.envs.json"
+              TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test"
+              API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+
+  - stage: End_to_End_Tests_UAT
+    dependsOn:
+      - Deploy_UAT
+    pool:
+      vmImage: 'ubuntu-22.04'
+    jobs:
+      - job: e2e_tests
+        steps:
+          - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
+            parameters:
+              ENVIRONMENT: UAT
+              CHECKOUT_RESOURCE_REPO_NAME: pagopaWalletTests
   # --- END Deploy UAT --- #
 
   # --- START Deploy PROD --- #

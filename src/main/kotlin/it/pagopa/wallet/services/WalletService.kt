@@ -6,6 +6,7 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.JwtTokenIssuerClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PdvTokenizerClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
@@ -17,15 +18,13 @@ import it.pagopa.wallet.domain.wallets.*
 import it.pagopa.wallet.domain.wallets.details.*
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.exception.*
-import it.pagopa.wallet.repositories.ApplicationRepository
-import it.pagopa.wallet.repositories.NpgSession
-import it.pagopa.wallet.repositories.NpgSessionsTemplateWrapper
-import it.pagopa.wallet.repositories.WalletRepository
+import it.pagopa.wallet.repositories.*
 import it.pagopa.wallet.util.Constants
 import it.pagopa.wallet.util.EitherExtension.toMono
 import it.pagopa.wallet.util.TransactionId
 import it.pagopa.wallet.util.UniqueIdUtils
 import it.pagopa.wallet.util.WalletUtils
+import it.pagopa.wallet.util.normalizePspId
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -34,7 +33,6 @@ import java.time.OffsetDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.plus
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -55,6 +53,9 @@ class WalletService(
     @Autowired private val paymentMethodsService: PaymentMethodsService,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
+    @Autowired
+    private val walletJwtTokenCtxOnboardingTemplateWrapper:
+        WalletJwtTokenCtxOnboardingTemplateWrapper,
     @Autowired private val sessionUrlConfig: SessionUrlConfig,
     @Autowired private val uniqueIdUtils: UniqueIdUtils,
     @Autowired private val onboardingConfig: OnboardingConfig,
@@ -65,11 +66,15 @@ class WalletService(
     @Autowired private val walletUtils: WalletUtils,
     private val pspDetailClient: PspDetailClient,
     @Value("\${npg.notifications.jwt.validityTimeSeconds}")
-    private val tokenValidityTimeSeconds: Int
+    private val tokenValidityTimeSeconds: Int,
+    @Autowired private val pdvTokenizerClient: PdvTokenizerClient,
 ) {
     companion object {
         /** The claim transactionId */
         const val TRANSACTION_ID_CLAIM = "transactionId"
+
+        /** The claim orderId */
+        const val ORDER_ID_CLAIM = "orderId"
 
         /** The claim walletId */
         const val WALLET_ID_CLAIM = "walletId"
@@ -220,7 +225,8 @@ class WalletService(
         paymentMethodId: UUID,
         transactionId: TransactionId,
         amount: Int,
-        onboardingChannel: OnboardingChannel
+        onboardingChannel: OnboardingChannel,
+        ecommerceSessionToken: String
     ): Mono<Pair<LoggedAction<Wallet>, Optional<URI>>> {
         logger.info(
             "Create wallet for transaction with contextual onboard for payment methodId: $paymentMethodId userId: $userId and transactionId: $transactionId")
@@ -272,6 +278,16 @@ class WalletService(
             .flatMap { (wallet, paymentMethodResponse) ->
                 walletRepository
                     .save(wallet.toDocument())
+                    .flatMap { wallet ->
+                        walletJwtTokenCtxOnboardingTemplateWrapper
+                            .save(
+                                WalletJwtTokenCtxOnboardingDocument(
+                                    wallet.id, ecommerceSessionToken))
+                            .doOnError {
+                                logger.error(
+                                    "Error saving ecommerce session token for contextual onboarding into cache for wallet: [${wallet.id}] and transaction [${transactionId}]")
+                            }
+                    }
                     .map { LoggedAction(wallet, WalletAddedEvent(wallet.id.value.toString())) }
                     .map { loggedAction ->
                         Pair(
@@ -340,6 +356,18 @@ class WalletService(
                 }
             }
             .flatMap { (uniqueIds, paymentMethod, wallet) ->
+                buildOutcomeUrl(wallet).map { outcomeUrls ->
+                    Triple(
+                        uniqueIds,
+                        paymentMethod,
+                        Triple(wallet, outcomeUrls.first, outcomeUrls.second))
+                }
+            }
+            .flatMap { (uniqueIds, paymentMethod, walletData) ->
+                val wallet = walletData.first
+                val resultUrl = walletData.second
+                val cancelUrl = walletData.third
+
                 val isTransactionWithContextualOnboard =
                     wallet
                         .getApplicationMetadata(
@@ -355,10 +383,7 @@ class WalletService(
                         null
                     }
                 val contractId = uniqueIds.second
-                val basePath = URI.create(sessionUrlConfig.basePath)
                 val merchantUrl = sessionUrlConfig.basePath
-                val resultUrl = basePath.resolve(sessionUrlConfig.outcomeSuffix)
-                val cancelUrl = basePath.resolve(sessionUrlConfig.cancelSuffix)
                 logger.info(
                     "About to create session for wallet: [${walletId.value}] with orderId: [${orderId}]")
                 createTokenAndBuildNotificationUri(
@@ -708,7 +733,11 @@ class WalletService(
             .map { wallet -> toWalletInfoDto(wallet) }
     }
 
-    fun findWalletByUserId(userId: UUID): Mono<WalletsDto> {
+    fun findWalletsByFiscalCode(fiscalCode: String): Mono<WalletsDto> {
+        return pdvTokenizerClient.tokenize(fiscalCode).flatMap { findWalletsByUserId(it.token) }
+    }
+
+    fun findWalletsByUserId(userId: UUID): Mono<WalletsDto> {
         return walletRepository
             .findByUserIdAndStatus(userId.toString(), WalletStatusDto.VALIDATED)
             .collectList()
@@ -1052,7 +1081,7 @@ class WalletService(
             is PayPalDetailsDocument ->
                 WalletPaypalDetailsDto()
                     .maskedEmail(details.maskedEmail)
-                    .pspId(details.pspId)
+                    .pspId(normalizePspId(details.pspId))
                     .pspBusinessName(details.pspBusinessName)
 
             else -> null
@@ -1298,12 +1327,13 @@ class WalletService(
                     .audience(NPG_AUDIENCE)
                     .duration(tokenValidityTimeSeconds)
                     .privateClaims(
-                        if (!isTransactionWithContextualOnboard) {
-                            mapOf(WALLET_ID_CLAIM to walletId.toString())
-                        } else {
+                        if (isTransactionWithContextualOnboard) {
                             mapOf(
                                 WALLET_ID_CLAIM to walletId.toString(),
-                                TRANSACTION_ID_CLAIM to transactionId)
+                                TRANSACTION_ID_CLAIM to transactionId,
+                                ORDER_ID_CLAIM to orderId)
+                        } else {
+                            mapOf(WALLET_ID_CLAIM to walletId.toString())
                         }))
             .map { response ->
                 buildNotificationUrl(
@@ -1315,6 +1345,70 @@ class WalletService(
             }
     }
 
+    private fun buildOutcomeUrl(wallet: Wallet): Mono<Pair<URI, URI>> {
+        logger.info("Building outcome urls for wallet ${wallet.id}")
+        val isTransactionWithContextualOnboard =
+            wallet
+                .getApplicationMetadata(
+                    pagopaWalletApplicationId,
+                    WalletApplicationMetadata.Metadata.PAYMENT_WITH_CONTEXTUAL_ONBOARD)
+                .toBoolean()
+        return if (isTransactionWithContextualOnboard) {
+            val transactionId =
+                wallet
+                    .getApplicationMetadata(
+                        pagopaWalletApplicationId,
+                        WalletApplicationMetadata.Metadata.TRANSACTION_ID)
+                    .toString()
+            logger.info(
+                "Onboarding for wallet [${wallet.id}] is contextual onboarding with payment for transaction id: [${transactionId}]")
+            walletJwtTokenCtxOnboardingTemplateWrapper
+                .findById(wallet.id.value.toString())
+                .switchIfEmpty {
+                    logger.error(
+                        "Cannot find jwt token for outcome urls for wallet id: [${wallet.id.value}]")
+                    Mono.error(
+                        EcommerceSessionNotFoundException(
+                            wallet.id.value.toString(), transactionId))
+                }
+                .map { session ->
+                    Pair(
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingOutcomeSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(
+                                mapOf(
+                                    "clientId" to "IO",
+                                    "transactionId" to transactionId,
+                                    "sessionToken" to session.jwtToken)),
+                        UriComponentsBuilder.fromUriString(
+                                sessionUrlConfig.trxWithContextualOnboardingBasePath.plus(
+                                    sessionUrlConfig
+                                        .trxWithContextualOnboardingCancelSuffix)) // append query
+                            // param to
+                            // prevent
+                            // caching
+                            .queryParam("t", Instant.now().toEpochMilli())
+                            .build(
+                                mapOf(
+                                    "clientId" to "IO",
+                                    "transactionId" to transactionId,
+                                    "sessionToken" to session.jwtToken)))
+                }
+        } else {
+            val basePath = URI.create(sessionUrlConfig.basePath)
+            Mono.just(
+                Pair(
+                    basePath.resolve(sessionUrlConfig.outcomeSuffix),
+                    basePath.resolve(sessionUrlConfig.cancelSuffix)))
+        }
+    }
+
     private fun buildNotificationUrl(
         isTransactionWithContextualOnboard: Boolean,
         walletId: UUID,
@@ -1322,19 +1416,19 @@ class WalletService(
         transactionId: String?,
         sessionToken: String
     ): URI {
-        return if (!isTransactionWithContextualOnboard) {
-            UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
-                .build(
-                    mapOf(
-                        Pair("walletId", walletId),
-                        Pair("orderId", orderId),
-                        Pair("sessionToken", sessionToken)))
-        } else {
+        return if (isTransactionWithContextualOnboard) {
             UriComponentsBuilder.fromHttpUrl(
                     sessionUrlConfig.trxWithContextualOnboardNotificationUrl)
                 .build(
                     mapOf(
                         Pair("transactionId", transactionId),
+                        Pair("walletId", walletId),
+                        Pair("orderId", orderId),
+                        Pair("sessionToken", sessionToken)))
+        } else {
+            UriComponentsBuilder.fromHttpUrl(sessionUrlConfig.notificationUrl)
+                .build(
+                    mapOf(
                         Pair("walletId", walletId),
                         Pair("orderId", orderId),
                         Pair("sessionToken", sessionToken)))
