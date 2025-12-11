@@ -41,6 +41,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDocumentEmptyCreatedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentForTransactionWithContextualOnboard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentInitializedStatus
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPM
+import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedAPMWithPspToNormalizer
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCard
 import it.pagopa.wallet.WalletTestUtils.walletDocumentStatusValidatedCardWithApplicationMetadata
 import it.pagopa.wallet.WalletTestUtils.walletDocumentValidated
@@ -54,6 +55,7 @@ import it.pagopa.wallet.WalletTestUtils.walletDomainEmptyServicesNullDetailsNoPa
 import it.pagopa.wallet.audit.*
 import it.pagopa.wallet.client.JwtTokenIssuerClient
 import it.pagopa.wallet.client.NpgClient
+import it.pagopa.wallet.client.PdvTokenizerClient
 import it.pagopa.wallet.client.PspDetailClient
 import it.pagopa.wallet.config.OnboardingConfig
 import it.pagopa.wallet.config.SessionUrlConfig
@@ -116,6 +118,7 @@ class WalletServiceTest {
     private val uniqueIdUtils: UniqueIdUtils = mock()
     private val jwtTokenIssuerClient: JwtTokenIssuerClient = mock()
     private val pspDetailClient: PspDetailClient = mock()
+    private val pdvTokenizerClient: PdvTokenizerClient = mock()
     private val onboardingConfig =
         OnboardingConfig(
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
@@ -254,7 +257,8 @@ class WalletServiceTest {
             walletPaymentReturnUrl = onboardingPaymentWalletCreditCardReturnUrl,
             walletUtils = walletUtils,
             pspDetailClient = pspDetailClient,
-            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS)
+            tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS,
+            pdvTokenizerClient = pdvTokenizerClient)
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 
@@ -2294,6 +2298,61 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `should find wallet document with paypal with psp to normilized`() {
+        /* preconditions */
+
+        mockStatic(UUID::class.java, Mockito.CALLS_REAL_METHODS).use {
+            it.`when`<UUID> { UUID.randomUUID() }.thenReturn(mockedUUID)
+
+            mockStatic(Instant::class.java, Mockito.CALLS_REAL_METHODS).use {
+                print("Mocked instant: $mockedInstant")
+                it.`when`<Instant> { Instant.now() }.thenReturn(mockedInstant)
+                val idPspToNormalizer = "SIGPITM1XXX"
+                val idPspNormalized = "MOONITMMXXX"
+
+                val wallet = walletDocumentStatusValidatedAPMWithPspToNormalizer(idPspToNormalizer)
+                val walletClientInfo = HashMap<String, WalletClientDto>()
+                walletClientInfo["unknownClient"] =
+                    WalletClientDto().status(WalletClientStatusDto.DISABLED)
+                walletClientInfo["IO"] = WalletClientDto().status(WalletClientStatusDto.ENABLED)
+
+                val walletInfoDto =
+                    WalletInfoDto()
+                        .walletId(UUID.fromString(wallet.id))
+                        .status(WalletStatusDto.valueOf(wallet.status))
+                        .paymentMethodId(wallet.paymentMethodId)
+                        .userId(wallet.userId)
+                        .updateDate(OffsetDateTime.parse(wallet.updateDate.toString()))
+                        .creationDate(OffsetDateTime.parse(wallet.creationDate.toString()))
+                        .applications(
+                            wallet.applications.map { application ->
+                                WalletApplicationInfoDto()
+                                    .name(application.id)
+                                    .status(WalletApplicationStatusDto.valueOf(application.status))
+                            })
+                        .details(
+                            WalletPaypalDetailsDto()
+                                .maskedEmail(MASKED_EMAIL.value)
+                                .pspId(idPspNormalized)
+                                .pspBusinessName(PSP_BUSINESS_NAME))
+                        .clients(walletClientInfo)
+
+                given {
+                        walletRepository.findByIdAndUserId(
+                            eq(WALLET_UUID.value.toString()), eq(USER_ID.id.toString()))
+                    }
+                    .willAnswer { Mono.just(wallet) }
+
+                /* test */
+
+                StepVerifier.create(walletService.findWallet(WALLET_UUID.value, USER_ID.id))
+                    .expectNext(walletInfoDto)
+                    .verifyComplete()
+            }
+        }
+    }
+
+    @Test
     fun `should find wallet document by userId`() {
         /* preconditions */
 
@@ -2345,7 +2404,7 @@ class WalletServiceTest {
                 given(walletUtils.getLogo(any())).willReturn(URI.create(logoUri))
                 /* test */
 
-                StepVerifier.create(walletService.findWalletByUserId(USER_ID.id))
+                StepVerifier.create(walletService.findWalletsByUserId(USER_ID.id))
                     .expectNext(walletsDto)
                     .verifyComplete()
             }
