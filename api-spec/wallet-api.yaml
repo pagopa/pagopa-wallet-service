@@ -1531,7 +1531,7 @@ components:
         src:
           type: string
           format: uri
-          example: "https://{fe}/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
+          example: "https://frontend.example/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
     ApplicationCreateRequest:
       type: object
       description: Application creation request
