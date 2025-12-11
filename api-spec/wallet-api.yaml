@@ -1144,7 +1144,7 @@ components:
           description: >-
             Redirection URL to a payment gateway page where the user can input a
             payment instrument information with walletId and useDiagnosticTracing as query param
-          example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
+          example: "http://localhost/inputPage?walletId=123&useDiagnosticTracing=true"
       required:
         - walletId
         - redirectUrl
@@ -1175,7 +1175,7 @@ components:
           description: >-
             Redirection URL to a payment gateway page where the user can input a
             payment instrument information with walletId and useDiagnosticTracing as query param
-          example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
+          example: "http://localhost/inputPage?walletId=123&useDiagnosticTracing=true"
       required:
         - walletId
     WalletClientStatus:
@@ -1483,7 +1483,7 @@ components:
         src:
           type: string
           format: uri
-          example: https://<fe>/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264
+          example: "https://<fe>/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
     ApplicationCreateRequest:
       type: object
       description: Application creation request
