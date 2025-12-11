@@ -818,19 +818,40 @@ class WalletService(
             }
             .flatMap { (wallet, existingWallet, paymentInstrumentGatewayId) ->
                 val previousStatus = wallet.status
-                val walletNotificationProcessingResult =
+
+                val processingResultMono: Mono<WalletNotificationProcessingResult> =
                     if (existingWallet == null) {
-                        handleWalletNotification(
-                            wallet = wallet,
-                            walletNotificationRequestDto = walletNotificationRequestDto)
+                        // Standard case: no existing VALIDATED card with the same
+                        // PAN/paymentInstrumentGatewayId
+                        Mono.just(
+                            handleWalletNotification(
+                                wallet = wallet,
+                                walletNotificationRequestDto = walletNotificationRequestDto))
                     } else {
                         if (shouldReplaceDuplicatedCardWallet(wallet, existingWallet)) {
-                            handleDuplicatedExpiredCardWalletNotification(
-                                wallet,
-                                existingWallet,
-                                paymentInstrumentGatewayId,
-                                walletNotificationRequestDto)
+                            // Renewal case: same PAN but a newer expiry date.
+                            // The existing wallet is marked as REPLACED and the new wallet
+                            // follows the regular onboarding flow.
+                            val previousExistingStatus = existingWallet.status
+                            existingWallet.status = WalletStatusDto.REPLACED
+
+                            logger.info(
+                                "Wallet associated with a renewed card for userId [{}] and walletId [{}] - [{}], updating from status: [{}] to [{}]",
+                                existingWallet.userId,
+                                existingWallet.id,
+                                Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
+                                previousExistingStatus,
+                                existingWallet.status)
+
+                            walletRepository.save(existingWallet.toDocument()).map {
+                                // After marking the old wallet as REPLACED, process the new wallet
+                                // using the standard notification handling logic.
+                                handleWalletNotification(wallet, walletNotificationRequestDto)
+                            }
                         } else {
+                            // Duplicate case: same PAN and same expiry date.
+                            // The new wallet is not onboarded and we return an error status
+                            // so that the caller can surface "Method already present" to the user.
                             logger.warn(
                                 "Duplicated wallet for userId [{}] and walletId [{}] - [{}], Updating from status: [{}] to [{}]",
                                 wallet.userId,
@@ -838,28 +859,32 @@ class WalletService(
                                 Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
                                 previousStatus,
                                 WalletStatusDto.ERROR)
-                            WalletNotificationProcessingResult(
-                                walletDetails = wallet.details,
-                                newWalletStatus = WalletStatusDto.ERROR,
-                                errorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE)
+                            Mono.just(
+                                WalletNotificationProcessingResult(
+                                    walletDetails = wallet.details,
+                                    newWalletStatus = WalletStatusDto.ERROR,
+                                    errorCode =
+                                        Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE))
                         }
                     }
-                val (newWalletStatus, newWalletDetails, errorCode) =
-                    walletNotificationProcessingResult
-                logger.debug(
-                    "Updating from status: [{}] to [{}] for wallet with id: [{}]",
-                    previousStatus,
-                    newWalletStatus,
-                    wallet.id.value)
-                walletRepository.save(
-                    wallet
-                        .copy(
-                            status = newWalletStatus,
-                            validationOperationResult =
-                                walletNotificationRequestDto.operationResult,
-                            validationErrorCode = errorCode,
-                            details = newWalletDetails)
-                        .toDocument())
+                processingResultMono.flatMap { walletNotificationProcessingResult ->
+                    val (newWalletStatus, newWalletDetails, errorCode) =
+                        walletNotificationProcessingResult
+                    logger.debug(
+                        "Updating from status: [{}] to [{}] for wallet with id: [{}]",
+                        previousStatus,
+                        newWalletStatus,
+                        wallet.id.value)
+                    walletRepository.save(
+                        wallet
+                            .copy(
+                                status = newWalletStatus,
+                                validationOperationResult =
+                                    walletNotificationRequestDto.operationResult,
+                                validationErrorCode = errorCode,
+                                details = newWalletDetails)
+                            .toDocument())
+                }
             }
             .map { wallet ->
                 val domainWallet = wallet.toDomain()
@@ -897,29 +922,6 @@ class WalletService(
             return newWalletDetails.expiryDate.expDate > oldWalletDetails.expiryDate.expDate
         }
         return false
-    }
-
-    private fun handleDuplicatedExpiredCardWalletNotification(
-        wallet: Wallet,
-        existingWallet: Wallet,
-        paymentInstrumentGatewayId: String?,
-        walletNotificationRequestDto: WalletNotificationRequestDto
-    ): WalletNotificationProcessingResult {
-        val newWalletDetails = wallet.details as DomainCardDetails
-        paymentInstrumentGatewayId?.let {
-            newWalletDetails.copy(paymentInstrumentGatewayId = PaymentInstrumentGatewayId(it))
-        }
-        val previousStatus = existingWallet.status
-        existingWallet.status = WalletStatusDto.DELETED // TODO: nuovo stato da definire. RENEWED?
-        logger.info(
-            "Wallet associated with a card being updated for userId [{}] and walletId [{}] - [{}], Updating from status: [{}] to [{}]",
-            existingWallet.userId,
-            existingWallet,
-            Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
-            previousStatus,
-            existingWallet.status)
-        walletRepository.save(existingWallet.toDocument())
-        return handleWalletNotification(wallet, walletNotificationRequestDto)
     }
 
     private fun getPaymentInstrumentGatewayId(
