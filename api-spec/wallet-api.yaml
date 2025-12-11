@@ -120,6 +120,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/searchBy:
@@ -310,6 +316,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
     delete:
@@ -348,6 +360,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
     patch:
@@ -459,6 +477,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found or one of the requested applications was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -652,6 +676,10 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/{walletId}/sessions/{orderId}/notifications:
@@ -874,6 +902,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Application not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/{walletId}/auth-data:
