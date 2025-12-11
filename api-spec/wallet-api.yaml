@@ -231,13 +231,13 @@ paths:
           description: ecommerce session token useful for result and cancel url authorization
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/SessionToken'
         - name: transactionId
           in: path
           description: ecommerce transaction id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/TransactionId'
       requestBody:
         description: Create a new wallet
         content:
@@ -375,10 +375,12 @@ paths:
       tags:
         - wallets
       operationId: patchWallet
+      description: Patches a single wallet
       parameters:
         - in: path
           name: walletId
           required: true
+          description: Unique identifier of the wallet
           schema:
             $ref: '#/components/schemas/WalletId'
       requestBody:
@@ -704,7 +706,7 @@ paths:
         - in: path
           name: orderId
           schema:
-            type: string
+            $ref: '#/components/schemas/OrderId'
           required: true
           description: Unique identifier of the npg session
       requestBody:
@@ -767,7 +769,7 @@ paths:
         - in: path
           name: orderId
           schema:
-            type: string
+            $ref: '#/components/schemas/OrderId'
           required: true
           description: Unique identifier of the npg session
       requestBody:
@@ -981,6 +983,12 @@ components:
       description: The User ID
       type: string
       format: uuid
+    SessionToken:
+      description: The ecommerce session token
+      type: string
+    TransactionId:
+      description: The ecommerce transaction id
+      type: string
     WalletVerifyRequestsResponse:
       type: object
       description: Data to perform a wallet verify with payment gateway
