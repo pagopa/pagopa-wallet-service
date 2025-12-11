@@ -19,6 +19,14 @@ security:
   - ApiKeyAuth: [ ]
 servers:
   - url: https://${hostname}
+    variables:
+      hostname:
+          description: The hostname of the API server
+          default: itnprod.pay-wallet.internal.platform.pagopa.it
+          enum:
+            - itndev.pay-wallet.internal.dev.platform.pagopa.it
+            - itnuat.pay-wallet.internal.uat.platform.pagopa.it
+            - itnprod.pay-wallet.internal.platform.pagopa.it
 paths:
   /wallets:
     post:
@@ -60,6 +68,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal server error serving request
           content:
@@ -96,6 +110,12 @@ paths:
                 $ref: '#/components/schemas/Wallets'
         '400':
           description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -150,6 +170,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal server error serving request
           content:
@@ -197,6 +223,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
         '504':
@@ -229,6 +261,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
         '504':
@@ -255,6 +293,12 @@ paths:
           description: "Wallet update successfully"
         '400':
           description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -322,6 +366,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '403':
           description: Forbidden
           content:
@@ -372,6 +422,12 @@ paths:
                 $ref: '#/components/schemas/SessionWalletCreateResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -436,6 +492,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
           content:
@@ -493,6 +555,12 @@ paths:
                 $ref: '#/components/schemas/WalletVerifyRequestsResponse'
         '400':
           description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -664,6 +732,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal server error serving request
           content:
@@ -707,6 +781,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '403':
           description: Forbidden
           content:
@@ -738,6 +818,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WalletAuthData'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
           content:
@@ -782,6 +868,12 @@ paths:
                 $ref: '#/components/schemas/WalletPmAssociationResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -831,6 +923,12 @@ paths:
                 $ref: '#/components/schemas/WalletPmCardDetailsResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -895,6 +993,12 @@ paths:
           description: "Wallet deleted successfully"
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
