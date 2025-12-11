@@ -6,6 +6,9 @@ info:
     API to handle wallets PagoPA, where a wallet is triple between user
     identifier, payment instrument and applications (i.e pagoPA, bpd).
   termsOfService: https://pagopa.it/terms/
+  contact:
+    name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
 tags:
   - name: wallets
     description: Api's for handle a wallet
@@ -37,9 +40,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - in: header
           name: x-client-id
           required: true
@@ -96,9 +99,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
       responses:
         '200':
           description: Wallet retrieved successfully
@@ -214,9 +217,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - in: header
           name: x-client-id
           required: true
@@ -286,9 +289,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -334,9 +337,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -437,9 +440,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -500,9 +503,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -566,9 +569,9 @@ paths:
         - name: x-user-id
           in: header
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -634,9 +637,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user connected to the to be onboarded wallet
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet
@@ -694,11 +697,10 @@ paths:
       parameters:
         - in: path
           name: walletId
-          schema:
-            type: string
-            format: uuid
-          required: true
           description: Unique identifier of the wallet
+          schema:
+            $ref: '#/components/schemas/WalletId'
+          required: true  
         - in: path
           name: orderId
           schema:
@@ -758,11 +760,10 @@ paths:
       parameters:
         - in: path
           name: walletId
-          schema:
-            type: string
-            format: uuid
-          required: true
           description: Unique identifier of the wallet
+          schema:
+            $ref: '#/components/schemas/WalletId'
+          required: true
         - in: path
           name: orderId
           schema:
@@ -976,6 +977,10 @@ components:
       enum:
         - CHECKOUT
         - IO
+    UserId:
+      description: The User ID
+      type: string
+      format: uuid
     WalletVerifyRequestsResponse:
       type: object
       description: Data to perform a wallet verify with payment gateway
@@ -1103,7 +1108,7 @@ components:
           type: string
           minLength: 4
           maxLength: 4
-          example: 9876
+          example: "9876"
         expiryDate:
           type: string
           description: Credit card expiry date. The date format is `YYYYMM`
