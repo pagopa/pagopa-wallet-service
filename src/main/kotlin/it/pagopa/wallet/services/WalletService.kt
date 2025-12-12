@@ -799,10 +799,7 @@ class WalletService(
                                     paymentInstrumentGatewayId = paymentInstrumentGatewayId)
                                 .flatMap { existingWallet ->
                                     Mono.just(
-                                        Triple(
-                                            wallet,
-                                            existingWallet as Wallet?,
-                                            paymentInstrumentGatewayId))
+                                        Triple(wallet, existingWallet, paymentInstrumentGatewayId))
                                 }
                                 .switchIfEmpty(
                                     Mono.just(
@@ -816,7 +813,7 @@ class WalletService(
                         }
                     }
             }
-            .flatMap { (wallet, existingWallet, paymentInstrumentGatewayId) ->
+            .flatMap { (wallet, existingWallet) ->
                 val previousStatus = wallet.status
 
                 val processingResultMono: Mono<WalletNotificationProcessingResult> =
