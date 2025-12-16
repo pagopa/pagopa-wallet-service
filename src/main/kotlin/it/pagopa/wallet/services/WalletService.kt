@@ -819,7 +819,7 @@ class WalletService(
                 val processingResultMono: Mono<WalletNotificationProcessingResult> =
                     if (existingWallet == null) {
                         // Standard case: no existing VALIDATED card with the same
-                        // PAN/paymentInstrumentGatewayId
+                        // paymentInstrumentGatewayId
                         Mono.just(
                             handleWalletNotification(
                                 wallet = wallet,
