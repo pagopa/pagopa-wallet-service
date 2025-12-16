@@ -13,8 +13,6 @@ tags:
       url: >-
         https://pagopa.atlassian.net/wiki/spaces/WA/overview?homepageId=622658099
       description: Documentation
-  - name: migration
-    description: Api's dedicate to migration phase
 security:
   - ApiKeyAuth: [ ]
 servers:
@@ -104,6 +102,81 @@ paths:
           description: Wallet not found
         '504':
           description: Timeout serving request
+  /wallets/searchBy:
+    post:
+      tags:
+        - wallets
+      summary: Search wallets by input parameters
+      description: 'GET with body payload - returns a list of wallets matching the search criteria'
+      operationId: searchWallets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchWalletsRequest'
+      responses:
+        '200':
+          description: Wallets retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallets'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 400
+                detail: Invalid input
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 401
+                detail: Unauthorized
+        '404':
+          description: Wallets not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 404
+                detail: Wallets not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 500
+                detail: Internal server error
+        '504':
+          description: Timeout serving request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+              example:
+                type: https://example.com/problem/
+                title: string
+                status: 504
+                detail: Timeout serving request
   /transactions/{transactionId}/wallets:
     post:
       tags:
@@ -763,174 +836,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
 
-  /migrations/wallets:
-    put:
-      tags:
-        - migration
-      summary: Initializes a new wallet or returns details for pm of an existing one
-      description: |
-        Create the association between the new pair (walletId, contractId) and the old PM's walletId.
-        The API has an idempotent behaviour.
-      operationId: createWalletByPM
-      requestBody:
-        description: Initialize a new wallet
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletPmAssociationRequest'
-        required: true
-      responses:
-        '200':
-          description: Wallet initialized successfully and details about new association.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletPmAssociationResponse'
-        '400':
-          description: Formally invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '429':
-          description: Too many requests
-          headers:
-            Retry-After:
-              description: "The number of milliseconds after which request can be retried"
-              schema:
-                type: number
-        '500':
-          description: Internal server error serving request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-
-  /migrations/wallets/updateDetails:
-    post:
-      tags:
-        - migration
-      summary: Update wallet details by Payment Manager.
-      description: |
-        Update Wallet with its details by Payment Manager during the migration process. Also the Wallet goes to VALIDATED status.
-      operationId: updateWalletDetailsByPM
-      parameters:
-        - in: header
-          name: x-contract-hmac
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: "Wallet details by Payment Manager"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletPmCardDetailsRequest'
-        required: true
-
-      responses:
-        '200':
-          description: 'ID of updated Wallet'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletPmCardDetailsResponse'
-        '400':
-          description: Formally invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '404':
-          description: 'Wallet not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '409':
-          description: 'Wallet update conflict status'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '422':
-          description: 'Wallet not updatable. Caused by wallet in DELETED status.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '429':
-          description: Too many requests
-          headers:
-            Retry-After:
-              description: "The number of milliseconds after which request can be retried"
-              schema:
-                type: number
-        '500':
-          description: Internal server error serving request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-
-  /migrations/wallets/delete:
-    post:
-      tags:
-        - migration
-      summary: Remove existing Wallet from given ContractId
-      description: |
-        Remove an existing Wallet associated from given ContractId. The status of Wallet
-        will be move to DELETED.
-      operationId: removeWalletByPM
-      parameters:
-        - in: header
-          name: x-contract-hmac
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: "Contract Id associated to Wallet"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletPmDeleteRequest'
-        required: true
-
-      responses:
-        '204':
-          description: "Wallet deleted successfully"
-        '400':
-          description: Formally invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '404':
-          description: 'ContractId or Wallet not found'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '409':
-          description: 'Wallet delete conflict status'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-        '429':
-          description: Too many requests
-          headers:
-            Retry-After:
-              description: "The number of milliseconds after which request can be retried"
-              schema:
-                type: number
-        '500':
-          description: Internal server error serving request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemJson'
-
 components:
   schemas:
     AmountEuroCents:
@@ -1271,6 +1176,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletInfo'
+    SearchWalletsRequest:
+      type: object
+      description: Search wallets request with discriminated search criteria
+      oneOf:
+        - $ref: '#/components/schemas/SearchWalletsRequestFiscalCode'
+      discriminator:
+        propertyName: type
+        mapping:
+          USER_FISCAL_CODE: '#/components/schemas/SearchWalletsRequestFiscalCode'
+    SearchWalletsRequestFiscalCode:
+      type: object
+      description: Search wallets by user fiscal code
+      properties:
+        type:
+          type: string
+          description: Search criteria discriminator field
+        userFiscalCode:
+          type: string
+          minLength: 16
+          maxLength: 16
+      required:
+        - type
+        - userFiscalCode
+      example:
+        type: "USER_FISCAL_CODE"
+        userFiscalCode: "MRGHRN97L02C469W"
     SessionInputData:
       type: object
       description: Data needed to create  session
@@ -1629,87 +1560,6 @@ components:
           type: string
       required:
         - paymentMethodType
-    WalletIdPm:
-      type: integer
-      format: int64
-    WalletPmAssociationRequest:
-      type: object
-      properties:
-        walletIdPm:
-          $ref: '#/components/schemas/WalletIdPm'
-        userId:
-          type: string
-          format: uuid
-          description: User registered's anonymized fiscal code
-      required:
-        - walletIdPm
-        - userId
-    WalletPmAssociationResponse:
-      type: object
-      properties:
-        walletId:
-          $ref: '#/components/schemas/WalletId'
-        walletIdPm:
-          $ref: '#/components/schemas/WalletIdPm'
-        contractId:
-          description: Payment method identifier
-          type: string
-        status:
-          $ref: '#/components/schemas/WalletStatus'
-      required:
-        - walletId
-        - walletIdPm
-        - contractId
-        - status
-    WalletPmCardDetailsResponse:
-      type: object
-      properties:
-        walletId:
-          $ref: '#/components/schemas/WalletId'
-    WalletPmCardDetailsRequest:
-      type: object
-      properties:
-        cardBin:
-          type: string
-          description: Card BIN (first 6/8 PAN digits)
-          pattern: ^(\d{6})|(\d{8})$
-          example: '123456'
-        lastFourDigits:
-          type: string
-          description: "The last 4 digits of PAN"
-          pattern: ^\d{4}$
-        expiryDate:
-          type: string
-          description: Credit card expiry date. The date format is `MM/YY`
-          pattern: ^\d{2}\/\d{2}$
-          example: '12/25'
-        paymentGatewayCardId:
-          type: string
-        paymentCircuit:
-          description: Payment instrument brand
-          type: string
-        contractIdentifier:
-          type: string
-          description: "The contract Id generated by Wallet for NPG"
-        newContractIdentifier:
-          type: string
-          description: "The updated contract Id from NPG"
-      required:
-        - cardBin
-        - lastFourDigits
-        - expiryDate
-        - paymentGatewayCardId
-        - paymentCircuit
-        - contractIdentifier
-        - newContractIdentifier
-    WalletPmDeleteRequest:
-      type: object
-      properties:
-        contractIdentifier:
-          type: string
-          description: "The contract Id generated by Wallet for NPG"
-      required:
-        - contractIdentifier
   securitySchemes:
     bearerAuth:
       type: http
