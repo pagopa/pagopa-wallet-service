@@ -826,7 +826,8 @@ class WalletService(
                                 walletNotificationRequestDto = walletNotificationRequestDto))
                     } else {
                         if (shouldReplaceDuplicatedCardWallet(wallet, existingWallet)) {
-                            // Renewal case: same PaymentInstrumentGatewayId but a newer expiry date.
+                            // Renewal case: same PaymentInstrumentGatewayId but a newer expiry
+                            // date.
                             // The existing wallet is marked as REPLACED and the new wallet
                             // follows the regular onboarding flow.
                             val previousExistingStatus = existingWallet.status
@@ -1486,8 +1487,8 @@ class WalletService(
     }
 
     /**
-     * The method is used to get a wallet already onboarded given a userId. A wallet CARD is
-     * already onboarded if there is already a wallet for a given user with the same
+     * The method is used to get a wallet already onboarded given a userId. A wallet CARD is already
+     * onboarded if there is already a wallet for a given user with the same
      * paymentInstrumentGatewayId. This check is disabled for wallet PAYPAL
      *
      * @param walletId wallet identifier
