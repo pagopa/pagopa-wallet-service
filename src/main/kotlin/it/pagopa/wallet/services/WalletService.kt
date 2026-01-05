@@ -792,7 +792,7 @@ class WalletService(
                     .flatMap { operationResult ->
                         if (operationResult ==
                             WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
-                            isWalletAlreadyOnboardedForUserId(
+                            getWalletAlreadyOnboardedForUserId(
                                     walletId = wallet.id,
                                     userId = wallet.userId,
                                     walletDetails = wallet.details,
@@ -826,7 +826,7 @@ class WalletService(
                                 walletNotificationRequestDto = walletNotificationRequestDto))
                     } else {
                         if (shouldReplaceDuplicatedCardWallet(wallet, existingWallet)) {
-                            // Renewal case: same PAN but a newer expiry date.
+                            // Renewal case: same PaymentInstrumentGatewayId but a newer expiry date.
                             // The existing wallet is marked as REPLACED and the new wallet
                             // follows the regular onboarding flow.
                             val previousExistingStatus = existingWallet.status
@@ -846,7 +846,7 @@ class WalletService(
                                 handleWalletNotification(wallet, walletNotificationRequestDto)
                             }
                         } else {
-                            // Duplicate case: same PAN and same expiry date.
+                            // Duplicate case: same PaymentInstrumentGatewayId and same expiry date.
                             // The new wallet is not onboarded and we return an error status
                             // so that the caller can surface "Method already present" to the user.
                             logger.warn(
@@ -1486,16 +1486,16 @@ class WalletService(
     }
 
     /**
-     * The method is used to check if a wallet is already onboard given a userId. A wallet CARD is
+     * The method is used to get a wallet already onboarded given a userId. A wallet CARD is
      * already onboarded if there is already a wallet for a given user with the same
      * paymentInstrumentGatewayId. This check is disabled for wallet PAYPAL
      *
      * @param walletId wallet identifier
      * @param userId user identifier
      * @param walletDetails it.pagopa.wallet.domain.wallets.details.WalletDetails<*>
-     * @return Mono<Boolean>: true if already onboarded, false otherwise
+     * @return Mono<Wallet>: true if already onboarded, false otherwise
      */
-    private fun isWalletAlreadyOnboardedForUserId(
+    private fun getWalletAlreadyOnboardedForUserId(
         walletId: WalletId,
         userId: UserId,
         walletDetails: it.pagopa.wallet.domain.wallets.details.WalletDetails<*>?,
