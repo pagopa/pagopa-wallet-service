@@ -969,6 +969,7 @@ components:
         - VALIDATION_REQUESTED
         - VALIDATED
         - DELETED
+        - REPLACED
         - ERROR
     WalletCardDetails:
       type: object

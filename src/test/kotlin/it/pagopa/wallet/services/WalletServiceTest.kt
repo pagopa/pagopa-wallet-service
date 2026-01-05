@@ -3060,7 +3060,7 @@ class WalletServiceTest {
         val walletDocument =
             walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
         val validatedWalletdDocument =
-            walletDocumentVerifiedWithCardDetails("99345678", "00550", "203012", CARD_ID_4, "MC")
+            walletDocumentVerifiedWithCardDetails("99345678", "0050", "203012", CARD_ID_4, "MC")
 
         val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
         val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
@@ -3068,9 +3068,12 @@ class WalletServiceTest {
         given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
         given {
                 walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
-                    any<String>(), any<String>(), any())
+                    any<String>(),
+                    any<String>(),
+                    any(),
+                )
             }
-            .willReturn(mono { validatedWalletdDocument.id })
+            .willReturn(mono { validatedWalletdDocument })
 
         val walletDocumentWithError =
             walletDocument.copy(
@@ -4383,5 +4386,76 @@ class WalletServiceTest {
                             .audience("npg")
                             .privateClaims(mapOf("walletId" to WALLET_UUID.value.toString())))
         }
+    }
+
+    @Test
+    fun `notify wallet should replace existing card marking old as REPLACED and validate new card`() {
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+
+        // New card onboarding (expires in the future)
+        val newWalletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "12345678",
+                "0000",
+                "203811", // expiry new, future
+                CARD_ID_4,
+                "MC",
+            )
+
+        // Card already present in the wallet with the same paymentInstrumentGatewayId but with old
+        // expiration date
+        val existingWalletDocument =
+            walletDocumentVerifiedWithCardDetails(
+                "99345678",
+                "0050",
+                "201511", // expiry older → must be REPLACED
+                CARD_ID_4,
+                "MC",
+            )
+
+        val notifyRequestDto = NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(newWalletDocument))
+        given {
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                    any<String>(),
+                    any<String>(),
+                    any(),
+                )
+            }
+            .willReturn(mono { existingWalletDocument })
+
+        val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
+        given { walletRepository.save(walletArgumentCaptor.capture()) }
+            .willAnswer { mono { it.arguments[0] as Wallet } }
+
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
+            .assertNext { loggedAction ->
+                val updatedWallet = loggedAction.data
+
+                // The returned wallet is the new, validated one
+                assertEquals(newWalletDocument.id, updatedWallet.id.value.toString())
+                assertEquals(WalletStatusDto.VALIDATED, updatedWallet.status)
+
+                assertEquals(null, updatedWallet.validationErrorCode)
+            }
+            .verifyComplete()
+
+        // Let's check the two saves: first the old REPLACED, then the new VALIDTED
+        assertEquals(2, walletArgumentCaptor.allValues.size)
+
+        val replacedWalletDoc = walletArgumentCaptor.allValues[0]
+        val validatedNewWalletDoc = walletArgumentCaptor.allValues[1]
+
+        assertEquals(existingWalletDocument.id, replacedWalletDoc.id)
+        assertEquals(WalletStatusDto.REPLACED.toString(), replacedWalletDoc.status)
+
+        assertEquals(newWalletDocument.id, validatedNewWalletDoc.id)
+        assertEquals(WalletStatusDto.VALIDATED.toString(), validatedNewWalletDoc.status)
     }
 }
