@@ -787,71 +787,102 @@ class WalletService(
             .flatMap { wallet ->
                 val paymentInstrumentGatewayId =
                     getPaymentInstrumentGatewayId(walletNotificationRequestDto)
+
                 mono { walletNotificationRequestDto.operationResult }
-                    .flatMap {
-                        if (it == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
-                            isWalletAlreadyOnboardedForUserId(
-                                walletId = wallet.id,
-                                userId = wallet.userId,
-                                walletDetails = wallet.details,
-                                paymentInstrumentGatewayId = paymentInstrumentGatewayId)
+                    .flatMap { operationResult ->
+                        if (operationResult ==
+                            WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                            getWalletAlreadyOnboardedForUserId(
+                                    walletId = wallet.id,
+                                    userId = wallet.userId,
+                                    walletDetails = wallet.details,
+                                    paymentInstrumentGatewayId = paymentInstrumentGatewayId)
+                                .flatMap { existingWallet ->
+                                    Mono.just(
+                                        Triple(wallet, existingWallet, paymentInstrumentGatewayId))
+                                }
+                                .switchIfEmpty(
+                                    Mono.just(
+                                        Triple(
+                                            wallet, null as Wallet?, paymentInstrumentGatewayId)))
                         } else {
                             logger.debug(
                                 "Wallet onboarding operation result: [{}], no need to check if wallet was already onboarded",
-                                it)
-                            mono { false }
+                                operationResult)
+                            Mono.just(Triple(wallet, null as Wallet?, paymentInstrumentGatewayId))
                         }
                     }
-                    .map { Triple(wallet, it, paymentInstrumentGatewayId) }
             }
-            .flatMap { (wallet, isWalletAlreadyOnboarded, paymentInstrumentGatewayId) ->
+            .flatMap { (wallet, existingWallet) ->
                 val previousStatus = wallet.status
-                val walletNotificationProcessingResult =
-                    if (isWalletAlreadyOnboarded) {
-                        logger.warn(
-                            "Wallet already onboarded for userId [{}] and walletId [{}] - [{}], Updating from status: [{}] to [{}]",
-                            wallet.userId,
-                            walletId,
-                            Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
-                            previousStatus,
-                            WalletStatusDto.ERROR)
-                        val walletDetails = wallet.details
-                        val updatedWalletDetails =
-                            if (walletDetails
-                                is it.pagopa.wallet.domain.wallets.details.CardDetails) {
-                                paymentInstrumentGatewayId?.let {
-                                    walletDetails.copy(
-                                        paymentInstrumentGatewayId = PaymentInstrumentGatewayId(it))
-                                }
-                            } else {
-                                walletDetails
-                            }
-                        WalletNotificationProcessingResult(
-                            walletDetails = updatedWalletDetails,
-                            newWalletStatus = WalletStatusDto.ERROR,
-                            errorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE)
-                    } else {
 
-                        handleWalletNotification(
-                            wallet = wallet,
-                            walletNotificationRequestDto = walletNotificationRequestDto)
+                val processingResultMono: Mono<WalletNotificationProcessingResult> =
+                    if (existingWallet == null) {
+                        // Standard case: no existing VALIDATED card with the same
+                        // paymentInstrumentGatewayId
+                        Mono.just(
+                            handleWalletNotification(
+                                wallet = wallet,
+                                walletNotificationRequestDto = walletNotificationRequestDto))
+                    } else {
+                        if (shouldReplaceDuplicatedCardWallet(wallet, existingWallet)) {
+                            // Renewal case: same PaymentInstrumentGatewayId but a newer expiry
+                            // date.
+                            // The existing wallet is marked as REPLACED and the new wallet
+                            // follows the regular onboarding flow.
+                            val previousExistingStatus = existingWallet.status
+                            existingWallet.status = WalletStatusDto.REPLACED
+
+                            logger.info(
+                                "Wallet associated with a renewed card for userId [{}] and walletId [{}] - [{}], updating from status: [{}] to [{}]",
+                                existingWallet.userId,
+                                existingWallet.id,
+                                Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
+                                previousExistingStatus,
+                                existingWallet.status)
+
+                            walletRepository.save(existingWallet.toDocument()).map {
+                                // After marking the old wallet as REPLACED, process the new wallet
+                                // using the standard notification handling logic.
+                                handleWalletNotification(wallet, walletNotificationRequestDto)
+                            }
+                        } else {
+                            // Duplicate case: same PaymentInstrumentGatewayId and same expiry date.
+                            // The new wallet is not onboarded and we return an error status
+                            // so that the caller can surface "Method already present" to the user.
+                            logger.warn(
+                                "Duplicated wallet for userId [{}] and walletId [{}] - [{}], Updating from status: [{}] to [{}]",
+                                wallet.userId,
+                                existingWallet,
+                                Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
+                                previousStatus,
+                                WalletStatusDto.ERROR)
+                            Mono.just(
+                                WalletNotificationProcessingResult(
+                                    walletDetails = wallet.details,
+                                    newWalletStatus = WalletStatusDto.ERROR,
+                                    errorCode =
+                                        Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE))
+                        }
                     }
-                val (newWalletStatus, newWalletDetails, errorCode) =
-                    walletNotificationProcessingResult
-                logger.debug(
-                    "Updating from status: [{}] to [{}] for wallet with id: [{}]",
-                    previousStatus,
-                    newWalletStatus,
-                    wallet.id.value)
-                walletRepository.save(
-                    wallet
-                        .copy(
-                            status = newWalletStatus,
-                            validationOperationResult =
-                                walletNotificationRequestDto.operationResult,
-                            validationErrorCode = errorCode,
-                            details = newWalletDetails)
-                        .toDocument())
+                processingResultMono.flatMap { walletNotificationProcessingResult ->
+                    val (newWalletStatus, newWalletDetails, errorCode) =
+                        walletNotificationProcessingResult
+                    logger.debug(
+                        "Updating from status: [{}] to [{}] for wallet with id: [{}]",
+                        previousStatus,
+                        newWalletStatus,
+                        wallet.id.value)
+                    walletRepository.save(
+                        wallet
+                            .copy(
+                                status = newWalletStatus,
+                                validationOperationResult =
+                                    walletNotificationRequestDto.operationResult,
+                                validationErrorCode = errorCode,
+                                details = newWalletDetails)
+                            .toDocument())
+                }
             }
             .map { wallet ->
                 val domainWallet = wallet.toDomain()
@@ -869,6 +900,26 @@ class WalletService(
                                 return@let auditWallet
                             }))
             }
+    }
+
+    /**
+     * Check if a wallet is duplicated, specifically for credit cards
+     *
+     * @param newWallet wallet we would like to onboard
+     * @param existingWallet existing wallet for the card
+     * @return true if the newWallet expiry date is after the existing one
+     */
+    private fun shouldReplaceDuplicatedCardWallet(
+        newWallet: Wallet,
+        existingWallet: Wallet
+    ): Boolean {
+        val newWalletDetails = newWallet.details
+        val oldWalletDetails = existingWallet.details
+
+        if (newWalletDetails is DomainCardDetails && oldWalletDetails is DomainCardDetails) {
+            return newWalletDetails.expiryDate.expDate > oldWalletDetails.expiryDate.expDate
+        }
+        return false
     }
 
     private fun getPaymentInstrumentGatewayId(
@@ -1436,21 +1487,21 @@ class WalletService(
     }
 
     /**
-     * The method is used to check if a wallet is already onboard given a userId. A wallet CARD is
-     * already onboarded if there is already a wallet for a given user with the same
+     * The method is used to get a wallet already onboarded given a userId. A wallet CARD is already
+     * onboarded if there is already a wallet for a given user with the same
      * paymentInstrumentGatewayId. This check is disabled for wallet PAYPAL
      *
      * @param walletId wallet identifier
      * @param userId user identifier
      * @param walletDetails it.pagopa.wallet.domain.wallets.details.WalletDetails<*>
-     * @return Mono<Boolean>: true if already onboarded, false otherwise
+     * @return Mono<Wallet>: true if already onboarded, false otherwise
      */
-    private fun isWalletAlreadyOnboardedForUserId(
+    private fun getWalletAlreadyOnboardedForUserId(
         walletId: WalletId,
         userId: UserId,
         walletDetails: it.pagopa.wallet.domain.wallets.details.WalletDetails<*>?,
         paymentInstrumentGatewayId: String?
-    ): Mono<Boolean> =
+    ): Mono<Wallet> =
         when (walletDetails) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails -> {
                 logger.debug(
@@ -1463,7 +1514,7 @@ class WalletService(
                             userId = userId.id.toString(),
                             paymentInstrumentGatewayId = paymentInstrumentGatewayId,
                             status = WalletStatusDto.VALIDATED)
-                        .hasElement()
+                        .map { it.toDomain() }
                 } else {
                     Mono.error(
                         InvalidRequestException(
@@ -1476,7 +1527,7 @@ class WalletService(
                     "Already onboard check DISABLED for PAYPAL for userId [{}] and walletId [{}]",
                     userId,
                     walletId)
-                mono { false }
+                Mono.empty()
             }
 
             else -> {
