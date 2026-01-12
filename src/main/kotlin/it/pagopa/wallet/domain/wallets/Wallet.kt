@@ -63,7 +63,8 @@ data class Wallet(
     val version: Int,
     val creationDate: Instant,
     val updateDate: Instant,
-    val onboardingChannel: OnboardingChannel
+    val onboardingChannel: OnboardingChannel,
+    var replacedByWalletId: WalletId? = null,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)

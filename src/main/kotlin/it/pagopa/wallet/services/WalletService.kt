@@ -51,6 +51,7 @@ class WalletService(
     @Autowired private val walletRepository: WalletRepository,
     @Autowired private val applicationRepository: ApplicationRepository,
     @Autowired private val paymentMethodsService: PaymentMethodsService,
+    @Autowired private val walletEventSinksService: WalletEventSinksService,
     @Autowired private val npgClient: NpgClient,
     @Autowired private val npgSessionRedisTemplate: NpgSessionsTemplateWrapper,
     @Autowired
@@ -832,7 +833,7 @@ class WalletService(
                             // follows the regular onboarding flow.
                             val previousExistingStatus = existingWallet.status
                             existingWallet.status = WalletStatusDto.REPLACED
-
+                            existingWallet.replacedByWalletId = wallet.id
                             logger.info(
                                 "Wallet associated with a renewed card for userId [{}] and walletId [{}] - [{}], updating from status: [{}] to [{}]",
                                 existingWallet.userId,
@@ -841,10 +842,18 @@ class WalletService(
                                 previousExistingStatus,
                                 existingWallet.status)
 
-                            walletRepository.save(existingWallet.toDocument()).map {
+                            walletRepository.save(existingWallet.toDocument()).flatMap {
                                 // After marking the old wallet as REPLACED, process the new wallet
                                 // using the standard notification handling logic.
-                                handleWalletNotification(wallet, walletNotificationRequestDto)
+                                val loggedAction = LoggedAction(
+                                    existingWallet,
+                                    WalletOnboardCompletedEvent(existingWallet.id.value.toString(), AuditWalletCompleted(existingWallet))
+                                )
+
+                                walletEventSinksService.tryEmitEvent(loggedAction)
+
+                                Mono.just(handleWalletNotification(wallet, walletNotificationRequestDto))
+
                             }
                         } else {
                             // Duplicate case: same PaymentInstrumentGatewayId and same expiry date.
