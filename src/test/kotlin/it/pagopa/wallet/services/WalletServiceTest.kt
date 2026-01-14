@@ -4431,6 +4431,12 @@ class WalletServiceTest {
             }
             .willReturn(mono { existingWalletDocument })
 
+        given {
+                walletEventSinksService.tryEmitEvent(
+                    any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
+            }
+            .willReturn(Mono.empty())
+
         val walletArgumentCaptor: KArgumentCaptor<Wallet> = argumentCaptor()
         given { walletRepository.save(walletArgumentCaptor.capture()) }
             .willAnswer { mono { it.arguments[0] as Wallet } }
