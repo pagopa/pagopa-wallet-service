@@ -851,12 +851,7 @@ class WalletService(
                                         WalletOnboardReplacedEvent(
                                             existingWallet.id.value.toString(),
                                             AuditWalletReplaced(
-                                                existingWallet.paymentMethodId,
-                                                existingWallet.creationDate,
-                                                existingWallet.updateDate,
-                                                existingWallet.applications,
-                                                existingWallet.details,
-                                                existingWallet.status,
+                                                wallet.id.value.toString()
                                             )
                                         )
                                     )

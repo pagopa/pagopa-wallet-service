@@ -30,15 +30,5 @@ data class AuditWalletCompleted(
 ) : AuditWallet()
 
 data class AuditWalletReplaced(
-    val paymentMethodId: String,
-    val creationDate: String,
-    val updateDate: String,
-    var applications: List<AuditWalletApplication>,
-    var details: AuditWalletDetails?,
-    var status: String,
-    var validationOperationId: String?,
-    var validationOperationResult: String?,
-    var validationOperationTimestamp: String?,
-    var validationErrorCode: String?,
     var replacedByWalletId: String?
 ) : AuditWallet()
