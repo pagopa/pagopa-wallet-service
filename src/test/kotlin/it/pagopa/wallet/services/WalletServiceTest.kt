@@ -124,6 +124,7 @@ class WalletServiceTest {
             apmReturnUrl = URI.create("http://localhost/onboarding/apm"),
             cardReturnUrl = URI.create("http://localhost/onboarding/creditcard"),
         )
+    private var walletEventSinksService: WalletEventSinksService = mock()
     private val sessionUrlConfig =
         SessionUrlConfig(
             "http://localhost:1234",
@@ -258,7 +259,8 @@ class WalletServiceTest {
             walletUtils = walletUtils,
             pspDetailClient = pspDetailClient,
             tokenValidityTimeSeconds = TOKEN_VALIDITY_TIME_SECONDS,
-            pdvTokenizerClient = pdvTokenizerClient)
+            pdvTokenizerClient = pdvTokenizerClient,
+            walletEventSinksService = walletEventSinksService)
     private val mockedUUID = WALLET_UUID.value
     private val mockedInstant = creationDate
 

@@ -833,7 +833,7 @@ class WalletService(
                             // follows the regular onboarding flow.
                             val previousExistingStatus = existingWallet.status
                             existingWallet.status = WalletStatusDto.REPLACED
-                            //existingWallet.replacedByWalletId = wallet.id
+                            // existingWallet.replacedByWalletId = wallet.id
                             logger.info(
                                 "Wallet associated with a renewed card for userId [{}] and walletId [{}] - [{}], updating from status: [{}] to [{}]",
                                 existingWallet.userId,
@@ -850,16 +850,15 @@ class WalletService(
                                         existingWallet,
                                         WalletOnboardReplacedEvent(
                                             existingWallet.id.value.toString(),
-                                            AuditWalletReplaced(
-                                                wallet.id.value.toString()
-                                            )
-                                        )
-                                    )
+                                            AuditWalletReplaced(wallet.id.value.toString())))
 
-                                walletEventSinksService.tryEmitEvent(loggedAction)
-
-                                Mono.just(
-                                    handleWalletNotification(wallet, walletNotificationRequestDto))
+                                walletEventSinksService
+                                    .tryEmitEvent(loggedAction)
+                                    .then(
+                                        Mono.fromSupplier {
+                                            handleWalletNotification(
+                                                wallet, walletNotificationRequestDto)
+                                        })
                             }
                         } else {
                             // Duplicate case: same PaymentInstrumentGatewayId and same expiry date.
