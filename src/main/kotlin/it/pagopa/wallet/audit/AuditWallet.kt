@@ -2,6 +2,7 @@ package it.pagopa.wallet.audit
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import it.pagopa.wallet.domain.wallets.WalletId
 
 /** Data class base */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -26,4 +27,18 @@ data class AuditWalletCompleted(
     var validationOperationResult: String?,
     var validationOperationTimestamp: String?,
     var validationErrorCode: String?
+) : AuditWallet()
+
+data class AuditWalletReplaced(
+    val paymentMethodId: String,
+    val creationDate: String,
+    val updateDate: String,
+    var applications: List<AuditWalletApplication>,
+    var details: AuditWalletDetails?,
+    var status: String,
+    var validationOperationId: String?,
+    var validationOperationResult: String?,
+    var validationOperationTimestamp: String?,
+    var validationErrorCode: String?,
+    var replacedByWalletId: String?
 ) : AuditWallet()

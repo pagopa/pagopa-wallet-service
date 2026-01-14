@@ -48,6 +48,11 @@ data class WalletOnboardCompletedEvent(
     val auditWallet: AuditWalletCompleted
 ) : LoggingEvent()
 
+data class WalletOnboardReplacedEvent(
+    val walletId: String,
+    val auditWallet: AuditWalletReplaced
+) : LoggingEvent()
+
 data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
 
 data class ApplicationStatusChangedEvent(
