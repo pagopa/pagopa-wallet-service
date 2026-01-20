@@ -34,3 +34,4 @@ jobs:
           minimum-score: 80
           max-warnings: 100
           max-errors: 5
+          
