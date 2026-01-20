@@ -22,7 +22,7 @@ servers:
   - url: https://${hostname}
     variables:
       hostname:
-          description: The hostname of the API server
+          description: The hostname of the API server 
           default: itnprod.pay-wallet.internal.platform.pagopa.it
           enum:
             - itndev.pay-wallet.internal.dev.platform.pagopa.it
