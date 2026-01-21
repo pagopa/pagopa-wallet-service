@@ -83,6 +83,7 @@ class LoggingEventSyncWriter(
                 is WalletDetailsAddedEvent -> it.walletId
                 is WalletMigratedAddedEvent -> it.walletId
                 is WalletOnboardCompletedEvent -> it.walletId
+                is WalletOnboardReplacedEvent -> it.walletId
             }
         } ?: "N/A"
 }
