@@ -964,8 +964,7 @@ object WalletTestUtils {
                         else -> PaymentMethodHandlerResponse.StatusEnum.DISABLED
                     })
                 .validityDateFrom(LocalDate.of(2000, 1, 1))
-                .paymentTypeCode(
-                    PaymentMethodHandlerResponse.PaymentTypeCodeEnum.valueOf(it.paymentTypeCode))
+                .paymentTypeCode(it.paymentTypeCode)
                 .addPaymentMethodTypesItem(PaymentMethodHandlerResponse.PaymentMethodTypesEnum.APP)
                 .feeRange(FeeRange().min(0).max(1000000))
                 .paymentMethodAsset(it.asset)
