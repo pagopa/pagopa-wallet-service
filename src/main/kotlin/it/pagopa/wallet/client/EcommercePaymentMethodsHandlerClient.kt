@@ -84,7 +84,7 @@ class EcommercePaymentMethodsHandlerClient(
      */
     private fun isValidPaymentMethodGivenWalletTypeAvailable(paymentTypeCode: String): Boolean {
         return WalletDetailsType.entries.any { walletDetailType ->
-            walletDetailType.paymentTypeCode == paymentTypeCode.toString()
+            walletDetailType.paymentTypeCode == paymentTypeCode
         }
     }
 }
