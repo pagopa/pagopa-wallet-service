@@ -2952,6 +2952,8 @@ class WalletServiceTest {
                     WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletNotFoundException::class.java)
             .verify()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -2968,6 +2970,8 @@ class WalletServiceTest {
                     WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(SessionNotFoundException::class.java)
             .verify()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -2988,6 +2992,8 @@ class WalletServiceTest {
                     WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletSessionMismatchException::class.java)
             .verify()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3007,6 +3013,8 @@ class WalletServiceTest {
                     WALLET_UUID, orderId, sessionToken, NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT))
             .expectError(WalletConflictStatusException::class.java)
             .verify()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3050,6 +3058,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3102,6 +3112,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3146,6 +3158,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3190,6 +3204,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectNext(expectedLoggedAction)
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3357,6 +3373,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3392,6 +3410,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .expectError(InvalidRequestException::class.java)
             .verify()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3437,6 +3457,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -3482,6 +3504,8 @@ class WalletServiceTest {
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
             .assertNext { assertEquals(expectedLoggedAction, it) }
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
 
     @Test
@@ -4453,6 +4477,18 @@ class WalletServiceTest {
                 assertEquals(null, updatedWallet.validationErrorCode)
             }
             .verifyComplete()
+
+        val captor = argumentCaptor<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>()
+        verify(walletEventSinksService, times(1)).tryEmitEvent(captor.capture())
+
+        val emitted = captor.firstValue
+
+        assertEquals(existingWalletDocument.id, emitted.data.id.value.toString())
+
+        val event = emitted.events.first() as WalletOnboardReplacedEvent
+
+        assertEquals(existingWalletDocument.id, event.walletId)
+        assertEquals(newWalletDocument.id, event.auditWallet.replacedByWalletId)
 
         // Let's check the two saves: first the old REPLACED, then the new VALIDTED
         assertEquals(2, walletArgumentCaptor.allValues.size)
