@@ -278,7 +278,7 @@ tasks.register("ecommercePaymentMethodHandlerV1", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/PIDM-1420-update-openapi-paymentTypeCode-string/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.api")
