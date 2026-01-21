@@ -82,11 +82,9 @@ class EcommercePaymentMethodsHandlerClient(
      * Check if the returned payment method have a wallet compatible payment type code, that is, the
      * code used to uniquely identify a payment method typology
      */
-    private fun isValidPaymentMethodGivenWalletTypeAvailable(
-        paymentTypeCode: PaymentMethodResponse.PaymentTypeCodeEnum
-    ): Boolean {
+    private fun isValidPaymentMethodGivenWalletTypeAvailable(paymentTypeCode: String): Boolean {
         return WalletDetailsType.entries.any { walletDetailType ->
-            walletDetailType.paymentTypeCode == paymentTypeCode.toString()
+            walletDetailType.paymentTypeCode == paymentTypeCode
         }
     }
 }
