@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "2.11.0"
+version = "2.12.0"
 
 description = "pagopa-wallet-service"
 
@@ -216,7 +216,7 @@ tasks.register("ecommercePaymentMethod", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.753.1/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v1/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.api")
@@ -247,7 +247,7 @@ tasks.register<GenerateTask>("ecommercePaymentMethodV2") {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.753.1/src/domains/ecommerce-app/api/ecommerce-payment-methods-service/v2/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethods.v2.api")
@@ -278,7 +278,7 @@ tasks.register("ecommercePaymentMethodHandlerV1", GenerateTask::class.java) {
   group = "openapi-generation"
   generatorName.set("java")
   remoteInputSpec.set(
-    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.657.0/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
+    "https://raw.githubusercontent.com/pagopa/pagopa-infra/v1.753.1/src/domains/ecommerce-app/api/ecommerce-payment-methods-handler/v1/_openapi.json.tpl"
   )
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.pagopa.generated.ecommerce.paymentmethodshandler.api")
