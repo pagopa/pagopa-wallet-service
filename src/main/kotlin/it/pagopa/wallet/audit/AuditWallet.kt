@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
     JsonSubTypes.Type(value = AuditWalletCreated::class, name = "AuditWalletCreated"),
     JsonSubTypes.Type(value = AuditWalletCompleted::class, name = "AuditWalletCompleted"),
+    JsonSubTypes.Type(value = AuditWalletReplaced::class, name = "AuditWalletReplaced"),
 )
 sealed class AuditWallet
 
@@ -27,3 +28,5 @@ data class AuditWalletCompleted(
     var validationOperationTimestamp: String?,
     var validationErrorCode: String?
 ) : AuditWallet()
+
+data class AuditWalletReplaced(var replacedByWalletId: String?) : AuditWallet()

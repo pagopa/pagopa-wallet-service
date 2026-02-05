@@ -19,6 +19,8 @@ import org.springframework.data.mongodb.core.mapping.Document
     JsonSubTypes.Type(value = WalletDetailsAddedEvent::class, name = "WalletDetailsAddedEvent"),
     JsonSubTypes.Type(
         value = WalletOnboardCompletedEvent::class, name = "WalletOnboardCompletedEvent"),
+    JsonSubTypes.Type(
+        value = WalletOnboardReplacedEvent::class, name = "WalletOnboardReplacedEvent"),
     JsonSubTypes.Type(value = ApplicationCreatedEvent::class, name = "ApplicationCreatedEvent"),
     JsonSubTypes.Type(
         value = ApplicationStatusChangedEvent::class, name = "ApplicationStatusChangedEvent"),
@@ -47,6 +49,9 @@ data class WalletOnboardCompletedEvent(
     val walletId: String,
     val auditWallet: AuditWalletCompleted
 ) : LoggingEvent()
+
+data class WalletOnboardReplacedEvent(val walletId: String, val auditWallet: AuditWalletReplaced) :
+    LoggingEvent()
 
 data class ApplicationCreatedEvent(val serviceId: String) : LoggingEvent()
 
