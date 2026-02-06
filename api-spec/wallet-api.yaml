@@ -6,6 +6,12 @@ info:
     API to handle wallets PagoPA, where a wallet is triple between user
     identifier, payment instrument and applications (i.e pagoPA, bpd).
   termsOfService: https://pagopa.it/terms/
+  contact:
+    name: pagoPA - Touchpoints team
+    url: https://www.pagopa.it/
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 tags:
   - name: wallets
     description: Api's for handle a wallet
@@ -17,6 +23,14 @@ security:
   - ApiKeyAuth: [ ]
 servers:
   - url: https://${hostname}
+    variables:
+      hostname:
+          description: The hostname of the API server 
+          default: itnprod.pay-wallet.internal.platform.pagopa.it
+          enum:
+            - itndev.pay-wallet.internal.dev.platform.pagopa.it
+            - itnuat.pay-wallet.internal.uat.platform.pagopa.it
+            - itnprod.pay-wallet.internal.platform.pagopa.it
 paths:
   /wallets:
     post:
@@ -29,9 +43,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - in: header
           name: x-client-id
           required: true
@@ -54,6 +68,12 @@ paths:
                 $ref: '#/components/schemas/WalletCreateResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -82,9 +102,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
       responses:
         '200':
           description: Wallet retrieved successfully
@@ -98,8 +118,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/searchBy:
@@ -188,9 +220,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - in: header
           name: x-client-id
           required: true
@@ -202,13 +234,13 @@ paths:
           description: ecommerce session token useful for result and cancel url authorization
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/SessionToken'
         - name: transactionId
           in: path
           description: ecommerce transaction id
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/TransactionId'
       requestBody:
         description: Create a new wallet
         content:
@@ -225,6 +257,12 @@ paths:
                 $ref: '#/components/schemas/WalletTransactionCreateResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -254,9 +292,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -276,8 +314,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
     delete:
@@ -290,9 +340,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -308,18 +358,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
     patch:
       tags:
         - wallets
       operationId: patchWallet
+      summary: Patch Wallet by walletId
+      description: Patches a single wallet
       parameters:
         - in: path
           name: walletId
           required: true
+          description: Unique identifier of the wallet
           schema:
             $ref: '#/components/schemas/WalletId'
       requestBody:
@@ -334,6 +399,12 @@ paths:
           description: "Wallet update successfully"
         '400':
           description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -375,9 +446,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -401,6 +472,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '403':
           description: Forbidden
           content:
@@ -409,6 +486,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found or one of the requested applications was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -426,9 +509,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -451,6 +534,12 @@ paths:
                 $ref: '#/components/schemas/SessionWalletCreateResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -486,9 +575,9 @@ paths:
         - name: x-user-id
           in: header
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet to return
@@ -511,6 +600,12 @@ paths:
                 $ref: '#/components/schemas/SessionWalletRetrieveResponse'
         '400':
           description: Formally invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -548,9 +643,9 @@ paths:
         - in: header
           name: x-user-id
           required: true
+          description: The user identifier
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/UserId'
         - name: walletId
           in: path
           description: ID of wallet
@@ -576,6 +671,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
           content:
@@ -584,6 +685,10 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/{walletId}/sessions/{orderId}/notifications:
@@ -598,15 +703,14 @@ paths:
       parameters:
         - in: path
           name: walletId
-          schema:
-            type: string
-            format: uuid
-          required: true
           description: Unique identifier of the wallet
+          schema:
+            $ref: '#/components/schemas/WalletId'
+          required: true  
         - in: path
           name: orderId
           schema:
-            type: string
+            $ref: '#/components/schemas/OrderId'
           required: true
           description: Unique identifier of the npg session
       requestBody:
@@ -662,15 +766,14 @@ paths:
       parameters:
         - in: path
           name: walletId
-          schema:
-            type: string
-            format: uuid
-          required: true
           description: Unique identifier of the wallet
+          schema:
+            $ref: '#/components/schemas/WalletId'
+          required: true
         - in: path
           name: orderId
           schema:
-            type: string
+            $ref: '#/components/schemas/OrderId'
           required: true
           description: Unique identifier of the npg session
       requestBody:
@@ -743,6 +846,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '500':
           description: Internal server error serving request
           content:
@@ -786,6 +895,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '403':
           description: Forbidden
           content:
@@ -794,6 +909,12 @@ paths:
                 $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Application not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '504':
           description: Timeout serving request
   /wallets/{walletId}/auth-data:
@@ -817,6 +938,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WalletAuthData'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
         '404':
           description: Wallet not found
           content:
@@ -856,6 +983,16 @@ components:
       enum:
         - CHECKOUT
         - IO
+    UserId:
+      description: The User ID
+      type: string
+      format: uuid
+    SessionToken:
+      description: The ecommerce session token
+      type: string
+    TransactionId:
+      description: The ecommerce transaction id
+      type: string
     WalletVerifyRequestsResponse:
       type: object
       description: Data to perform a wallet verify with payment gateway
@@ -984,7 +1121,7 @@ components:
           type: string
           minLength: 4
           maxLength: 4
-          example: 9876
+          example: "9876"
         expiryDate:
           type: string
           description: Credit card expiry date. The date format is `YYYYMM`
@@ -1059,7 +1196,7 @@ components:
           description: >-
             Redirection URL to a payment gateway page where the user can input a
             payment instrument information with walletId and useDiagnosticTracing as query param
-          example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
+          example: "http://localhost.example/inputPage?walletId=123&useDiagnosticTracing=true"
       required:
         - walletId
         - redirectUrl
@@ -1090,7 +1227,7 @@ components:
           description: >-
             Redirection URL to a payment gateway page where the user can input a
             payment instrument information with walletId and useDiagnosticTracing as query param
-          example: http://localhost/inputPage?walletId=123&useDiagnosticTracing=true
+          example: "http://localhost.example/inputPage?walletId=123&useDiagnosticTracing=true"
       required:
         - walletId
     WalletClientStatus:
@@ -1398,7 +1535,7 @@ components:
         src:
           type: string
           format: uri
-          example: https://<fe>/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264
+          example: "https://frontend.example/field.html?id=CARDHOLDER_NAME&sid=052211e8-54c8-4e0a-8402-e10bcb8ff264"
     ApplicationCreateRequest:
       type: object
       description: Application creation request
@@ -1570,3 +1707,4 @@ components:
       type: apiKey
       in: header
       name: x-api-key
+
