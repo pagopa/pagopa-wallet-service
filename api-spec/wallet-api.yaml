@@ -9,6 +9,9 @@ info:
   contact:
     name: pagoPA - Touchpoints team
     url: https://www.pagopa.it/
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 tags:
   - name: wallets
     description: Api's for handle a wallet
