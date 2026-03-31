@@ -63,7 +63,8 @@ data class Wallet(
     val version: Int,
     val creationDate: Instant,
     val updateDate: Instant,
-    val onboardingChannel: OnboardingChannel
+    val onboardingChannel: OnboardingChannel,
+    val ttl: Int? = null
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)
@@ -119,7 +120,8 @@ data class Wallet(
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,
-                onboardingChannel = this.onboardingChannel.toString())
+                onboardingChannel = this.onboardingChannel.toString(),
+                ttl = this.ttl)
 
         return wallet
     }
