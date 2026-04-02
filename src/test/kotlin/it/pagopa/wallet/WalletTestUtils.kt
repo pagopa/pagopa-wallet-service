@@ -95,7 +95,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun newWalletDocumentToBeSaved(
@@ -121,7 +122,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun newWalletDocumentForPaymentWithContextualOnboardToBeSaved(
@@ -187,7 +189,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentInitializedStatus(
@@ -209,7 +212,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentValidationRequestedStatus(paymentMethodId: PaymentMethodId): Wallet {
@@ -302,7 +306,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentStatusValidatedCardWithApplicationMetadata(
@@ -341,7 +346,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentStatusValidatedAPM(
@@ -372,7 +378,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentStatusValidatedAPMWithPspToNormalizer(
@@ -405,7 +412,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentVerifiedWithContextualOnboardCardDetails(
@@ -458,7 +466,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentVerifiedWithCardDetails(
@@ -491,7 +500,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentVerifiedWithAPM(
@@ -513,7 +523,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentWithError(
@@ -537,7 +548,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentValidated(clients: Map<Client.Id, Client> = TEST_DEFAULT_CLIENTS): Wallet {
@@ -556,7 +568,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentEmptyCreatedStatus(): Wallet {
@@ -576,7 +589,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentEmptyApplicationsNullDetails(): Wallet {
@@ -596,7 +610,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentEmptyContractId(): Wallet {
@@ -616,7 +631,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentWithEmptyValidationOperationResult(): Wallet {
@@ -636,7 +652,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDocumentNullDetails(): Wallet {
@@ -663,7 +680,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     fun walletDomain(): it.pagopa.wallet.domain.wallets.Wallet {
@@ -707,7 +725,8 @@ object WalletTestUtils {
             version = 0,
             creationDate = creationDate,
             updateDate = creationDate,
-            onboardingChannel = OnboardingChannel.IO.toString())
+            onboardingChannel = OnboardingChannel.IO.toString(),
+            ttl = null)
     }
 
     val WALLET_DOMAIN =
