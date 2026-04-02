@@ -47,7 +47,7 @@ resources:
     - repository: pagopaWalletTests
       type: github
       name: pagopa/pagopa-wallet-tests
-      ref: main
+      ref: add-node-install-step
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
@@ -134,9 +134,6 @@ stages:
     pool:
       vmImage: 'ubuntu-22.04'
     jobs:
-      - template: templates/node-job-setup/template.yaml@pagopaCommons
-        parameters:
-          gitReference: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/tags/', ''), 'refs/heads/', '') }}
       - job: e2e_tests
         steps:
           - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
@@ -293,9 +290,6 @@ stages:
     jobs:
       - job: e2e_tests
         steps:
-          - template: templates/node-job-setup/template.yaml@pagopaCommons
-            parameters:
-              gitReference: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/tags/', ''), 'refs/heads/', '') }}
           - template: .devops/azure-templates/e2e-tests.yaml@pagopaWalletTests
             parameters:
               ENVIRONMENT: UAT
