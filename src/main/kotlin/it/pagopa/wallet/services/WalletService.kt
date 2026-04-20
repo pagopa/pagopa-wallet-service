@@ -605,6 +605,7 @@ class WalletService(
                                     "CP" ->
                                         handleCardPayment(
                                             session.sessionId, walletId.value, orderId, wallet)
+
                                     else -> throw NoCardsSessionValidateRequestException(walletId)
                                 }
                             }
@@ -681,17 +682,21 @@ class WalletService(
                         ConfirmPaymentRequest().sessionId(sessionId).amount("0"), correlationId)
                     .map { state -> state to it }
             }
-            .doOnNext { logger.debug("State Response: {}", it.first) }
-            .filter { (state) ->
-                state.state == WorkflowState.GDI_VERIFICATION &&
-                    state.fieldSet?.fields != null &&
-                    state.fieldSet!!.fields!!.isNotEmpty() &&
-                    state.fieldSet!!.fields!![0]!!.src != null
-            }
-            .switchIfEmpty {
-                walletRepository
-                    .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
-                    .flatMap { Mono.error(BadGatewayException("Invalid state received from NPG")) }
+            .doOnNext { (stateResponse) -> logger.debug("State Response: {}", stateResponse) }
+            .filterWhen { (stateResponse) ->
+                val hasExpectedStatus = stateResponse.state == WorkflowState.GDI_VERIFICATION
+                val isSrcFieldValued = stateResponse.fieldSet?.fields?.getOrNull(0)?.src != null
+                mono { hasExpectedStatus && isSrcFieldValued }
+                    .filter { it }
+                    .switchIfEmpty {
+                        walletRepository
+                            .save(wallet.copy(status = WalletStatusDto.ERROR).toDocument())
+                            .flatMap {
+                                Mono.error(
+                                    BadGatewayException(
+                                        "Invalid state response received from NPG! state: [${stateResponse.state}] -> hasExpectedStatus: [$hasExpectedStatus], isSrcFieldValued: [$isSrcFieldValued]"))
+                            }
+                    }
             }
             .flatMap { (state, cardData) ->
                 mono { state }
