@@ -100,6 +100,8 @@ microservice-chart:
     REDIS_HOST: pagopa-p-itn-pay-wallet-redis-std.redis.cache.windows.net
     REDIS_PORT: "6380"
     REDIS_SSL_ENABLED: "true"
+    REDIS_TIMEOUT: "1s"
+    REDIS_CONNECTION_TIMEOUT: "1s"
     WEB_LOGGING_LEVEL: "off"
     ROOT_LOGGING_LEVEL: "info"
     NPG_SERVICE_URI: "https://xpay.nexigroup.com/api/phoenix-0.0"
