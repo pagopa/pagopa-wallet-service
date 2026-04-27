@@ -33,7 +33,7 @@ repositories { mavenCentral() }
 
 object Deps {
   const val ecsLoggingVersion = "1.5.0"
-  const val openTelemetryVersion = "1.37.0"
+  const val openTelemetryVersion = "1.60.1"
   const val swaggerAnnotationsVersion = "2.2.8"
   const val jsr305Version = "3.0.2"
   const val openapiGeneratorVersion = "6.5.0"
