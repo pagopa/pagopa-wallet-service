@@ -1,7 +1,8 @@
 microservice-chart:
+  critical: false
   namespace: "pay-wallet"
   nameOverride: ""
-  fullnameOverride: "pagopa-pay-wallet-microservice"
+  fullnameOverride: "non-critical-pagopa-pay-wallet-microservice"
   canaryDelivery:
     create: false
     ingress:
@@ -14,11 +15,11 @@ microservice-chart:
     image:
       repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
       tag: "latest"
-    envConfig: {}
-    envSecret: {}
+    envConfig: { }
+    envSecret: { }
   image:
     repository: pagopaditncoreacr.azurecr.io/pagopawalletservice
-    tag: "2.17.1"
+    tag: "62d436564d917184ec68485c6ebb902a95c39962"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -45,13 +46,13 @@ microservice-chart:
   ingress:
     create: true
     host: "itndev.pay-wallet.internal.dev.platform.pagopa.it"
-    path: /pagopa-wallet-service/(.*)
+    path: /pagopa-wallet-service-non-critical/(.*)
     servicePort: 8080
   serviceAccount:
     create: false
-    annotations: {}
+    annotations: { }
     name: "pay-wallet-workload-identity"
-  podAnnotations: {}
+  podAnnotations: { }
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -60,10 +61,10 @@ microservice-chart:
   resources:
     requests:
       memory: "512Mi"
-      cpu: "300m"
+      cpu: "900m"
     limits:
       memory: "512Mi"
-      cpu: "300m"
+      cpu: "900m"
   autoscaling:
     enable: false
     minReplica: 1
@@ -184,29 +185,6 @@ microservice-chart:
   keyvault:
     name: "pagopa-d-pay-wallet-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
-  nodeSelector: {}
-  tolerations:
-    - effect: "NoSchedule"
-      key: "paymentWalletOnly"
-      operator: "Equal"
-      value: "true"
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: domain
-                operator: In
-                values:
-                  - paywallet
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchLabels:
-                app.kubernetes.io/instance: pagopawalletservice
-            namespaces: ["pay-wallet"]
-            topologyKey: topology.kubernetes.io/zone
+  nodeSelector: { }
   azure:
     workloadIdentityClientId: 8cad3639-cc88-4bff-85fe-5b1ddb2d449e

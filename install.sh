@@ -1,0 +1,1 @@
+helm upgrade --install --namespace pay-wallet --values pay-wallet-values-dev.yaml non-critical-wallet .
