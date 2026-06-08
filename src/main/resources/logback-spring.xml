@@ -8,6 +8,11 @@
             <serviceEnvironment>${OTEL_SERVICE_ENVIRONMENT:-undefined}</serviceEnvironment>
         </encoder>
     </appender>
+
+    <!-- MongoDB driver logging to see connection pool statistics -->
+    <logger name="org.mongodb.driver" level="DEBUG"/>
+    <logger name="com.mongodb" level="DEBUG"/>
+
     <root level="${ROOT_LOGGING_LEVEL}">
         <appender-ref ref="ECS_JSON_CONSOLE"/>
     </root>
