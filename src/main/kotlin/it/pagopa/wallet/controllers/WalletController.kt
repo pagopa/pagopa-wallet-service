@@ -264,8 +264,9 @@ class WalletController(
                      * @formatter:on
                      */
                     if (it.status == WalletStatusDto.ERROR &&
-                        it.validationOperationResult ==
-                            WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                        walletService.isSuccessfulOnboardingOperation(
+                            operationResult = requestDto.operationResult,
+                            operationType = requestDto.operationType)) {
                         ResponseEntity.badRequest().build()
                     } else {
                         ResponseEntity.ok().build()

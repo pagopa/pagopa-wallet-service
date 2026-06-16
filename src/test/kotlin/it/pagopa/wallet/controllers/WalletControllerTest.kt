@@ -965,6 +965,18 @@ class WalletControllerTest {
                     })
             given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
                 .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+            given {
+                    walletService.isSuccessfulOnboardingOperation(
+                        eq(
+                            WalletTestUtils
+                                .NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
+                                .operationResult),
+                        eq(
+                            WalletTestUtils
+                                .NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
+                                .operationType))
+                }
+                .willReturn(true)
             /* test */
             webClient
                 .post()

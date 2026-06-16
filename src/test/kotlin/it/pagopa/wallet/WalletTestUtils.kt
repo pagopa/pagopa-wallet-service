@@ -931,6 +931,20 @@ object WalletTestUtils {
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
+            .operationType("AUTHORIZATION")
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
+            .operationId("validationOperationId")
+            .details(
+                WalletNotificationRequestCardDetailsDto()
+                    .type("CARD")
+                    .paymentInstrumentGatewayId(CARD_ID_4))
+
+    val NOTIFY_WALLET_REQUEST_OK_AUTHORIZED_CARD_VERIFICATION_OPERATION_RESULT:
+        WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.AUTHORIZED)
+            .operationType("CARD_VERIFICATION")
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
@@ -943,6 +957,7 @@ object WalletTestUtils {
         WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
+            .operationType("AUTHORIZATION")
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")

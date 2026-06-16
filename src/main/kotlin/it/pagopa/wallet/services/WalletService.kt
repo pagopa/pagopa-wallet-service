@@ -83,6 +83,9 @@ class WalletService(
         /** Nog audience * */
         const val NPG_AUDIENCE = "npg"
 
+        private const val OPERATION_TYPE_AUTHORIZATION = "AUTHORIZATION"
+        private const val OPERATION_TYPE_CARD_VERIFICATION = "CARD_VERIFICATION"
+
         const val CREATE_HOSTED_ORDER_REQUEST_VERSION: String = "2"
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
@@ -796,8 +799,7 @@ class WalletService(
 
                 mono { walletNotificationRequestDto.operationResult }
                     .flatMap { operationResult ->
-                        if (operationResult ==
-                            WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                        if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
                             getWalletAlreadyOnboardedForUserId(
                                     walletId = wallet.id,
                                     userId = wallet.userId,
@@ -988,18 +990,16 @@ class WalletService(
         wallet: Wallet,
         walletNotificationRequestDto: WalletNotificationRequestDto
     ): WalletNotificationProcessingResult {
-        val operationResult = walletNotificationRequestDto.operationResult
         val operationDetails = walletNotificationRequestDto.details
         logger.info(
             "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], notification details: [{}]",
             wallet.id.value,
-            operationResult,
+            walletNotificationRequestDto.operationResult,
             operationDetails)
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationDetails is WalletNotificationRequestCardDetailsDto) {
-                    if (operationResult ==
-                        WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                    if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
 
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
@@ -1034,7 +1034,8 @@ class WalletService(
                 }
 
             is PayPalDetails ->
-                if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                if (walletNotificationRequestDto.operationResult ==
+                    WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
@@ -1061,6 +1062,40 @@ class WalletService(
                 throw InvalidRequestException(
                     "Unhandled wallet details for notification request: $walletDetails")
         }
+    }
+
+    private fun isSuccessfulOnboardingOperation(
+        walletNotificationRequestDto: WalletNotificationRequestDto
+    ): Boolean =
+        isSuccessfulOnboardingOperation(
+            operationResult = walletNotificationRequestDto.operationResult,
+            operationType = walletNotificationRequestDto.operationType)
+
+    fun isSuccessfulOnboardingOperation(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum?,
+        operationType: String?
+    ): Boolean {
+        val isAuthorization =
+            operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED &&
+                operationType == OPERATION_TYPE_AUTHORIZATION
+        val isCardVerification =
+            operationResult == WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED &&
+                operationType == OPERATION_TYPE_CARD_VERIFICATION
+
+        when {
+            isAuthorization ->
+                logger.info(
+                    "Successful card onboarding authorization operation detected. operationResult: [{}], operationType: [{}]",
+                    operationResult,
+                    operationType)
+            isCardVerification ->
+                logger.info(
+                    "Successful card verification operation detected. operationResult: [{}], operationType: [{}]",
+                    operationResult,
+                    operationType)
+        }
+
+        return isAuthorization || isCardVerification
     }
 
     fun findSessionWallet(
@@ -1100,7 +1135,8 @@ class WalletService(
                                     retrieveFinalOutcome(
                                         operationResult = wallet.validationOperationResult,
                                         errorCode = wallet.validationErrorCode,
-                                        walletDetailType = wallet.details?.type)
+                                        walletDetailType = wallet.details?.type,
+                                        walletStatus = wallet.status)
                                 } else {
                                     null
                                 })
@@ -1318,7 +1354,8 @@ class WalletService(
     private fun retrieveFinalOutcome(
         operationResult: WalletNotificationRequestDto.OperationResultEnum?,
         errorCode: String?,
-        walletDetailType: WalletDetailsType?
+        walletDetailType: WalletDetailsType?,
+        walletStatus: WalletStatusDto?
     ): SessionWalletRetrieveResponseDto.OutcomeEnum {
         val outcome =
             when (operationResult) {
@@ -1330,7 +1367,11 @@ class WalletService(
                     }
 
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+                    if (walletStatus == WalletStatusDto.VALIDATED) {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+                    }
 
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
