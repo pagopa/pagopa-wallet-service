@@ -5,9 +5,12 @@ import it.pagopa.generated.wallet.model.*
 import it.pagopa.wallet.common.tracing.Tracing
 import it.pagopa.wallet.common.tracing.WalletTracing
 import it.pagopa.wallet.domain.wallets.UserId
+import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
+import it.pagopa.wallet.domain.wallets.details.PayPalDetails
 import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
@@ -259,19 +262,37 @@ class WalletController(
                     /*
                      * @formatter:off
                      * Here wallet can have only VALIDATED or ERROR statuses.
-                     * For wallet were NPG gives EXECUTED but wallet status is ERROR will be returned a 400 bad request
-                     * since it means that NPG notify request is incoherent with onboarded wallet
+                     * For wallet where NPG gives a successful onboarding notification but wallet status is ERROR,
+                     * a 400 bad request will be returned since it means that NPG notify request is incoherent with
+                     * onboarded wallet
                      * @formatter:on
                      */
-                    if (it.status == WalletStatusDto.ERROR &&
-                        walletService.isSuccessfulOnboardingOperation(
-                            operationResult = requestDto.operationResult,
-                            operationType = requestDto.operationType)) {
+                    if (shouldReturnBadRequestForIncoherentNotification(it, requestDto)) {
                         ResponseEntity.badRequest().build()
                     } else {
                         ResponseEntity.ok().build()
                     }
                 }
+        }
+    }
+
+    private fun shouldReturnBadRequestForIncoherentNotification(
+        wallet: Wallet,
+        requestDto: WalletNotificationRequestDto
+    ): Boolean {
+        if (wallet.status != WalletStatusDto.ERROR) {
+            return false
+        }
+
+        return when (wallet.details) {
+            is DomainCardDetails ->
+                walletService.isSuccessfulOnboardingOperation(
+                    operationResult = requestDto.operationResult,
+                    operationType = requestDto.operationType)
+            is PayPalDetails ->
+                requestDto.operationResult ==
+                    WalletNotificationRequestDto.OperationResultEnum.EXECUTED
+            else -> false
         }
     }
 
