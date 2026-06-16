@@ -1446,9 +1446,7 @@ components:
         operationType:
           type: string
           description: Operation type received by NPG. Known positive examples are AUTHORIZATION and CARD_VERIFICATION.
-          example: 
-           - AUTHORIZATION
-           - CARD_VERIFICATION
+          example: AUTHORIZATION
         errorCode:
           type: string
           description: Error code for the onboarding operation received by NPG
