@@ -1077,27 +1077,22 @@ class WalletService(
         operationResult: WalletNotificationRequestDto.OperationResultEnum?,
         operationType: String?
     ): Boolean {
-        val isAuthorization =
+        val successfulExecutedOnboardingOutcome =
             operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED &&
                 operationType == OPERATION_TYPE_AUTHORIZATION
-        val isCardVerification =
+        val successfulAuthorizedOnboardingOutcome =
             operationResult == WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED &&
                 operationType == OPERATION_TYPE_CARD_VERIFICATION
+        val successfulOnboardingOutcome =
+            successfulExecutedOnboardingOutcome || successfulAuthorizedOnboardingOutcome
 
-        when {
-            isAuthorization ->
-                logger.info(
-                    "Successful card onboarding authorization operation detected. operationResult: [{}], operationType: [{}]",
-                    operationResult,
-                    operationType)
-            isCardVerification ->
-                logger.info(
-                    "Successful card verification operation detected. operationResult: [{}], operationType: [{}]",
-                    operationResult,
-                    operationType)
-        }
+        logger.info(
+            "operationResult: [{}], operationType: [{}] -> successful onboarding outcome: [{}]",
+            operationResult,
+            operationType,
+            successfulOnboardingOutcome)
 
-        return isAuthorization || isCardVerification
+        return successfulOnboardingOutcome
     }
 
     fun findSessionWallet(
