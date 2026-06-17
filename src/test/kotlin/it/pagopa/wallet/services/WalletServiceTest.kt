@@ -3145,11 +3145,9 @@ class WalletServiceTest {
                 assertEquals(WalletStatusDto.VALIDATED, it.data.status)
                 assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
                 assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
-                assertEquals(
-                    operationId,
-                    (it.events.first() as WalletOnboardCompletedEvent)
-                        .auditWallet
-                        .validationOperationId)
+                val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
+                assertEquals(operationId, auditWallet.validationOperationId)
+                assertEquals(notifyRequestDto.operationType, auditWallet.validationOperationType)
             }
             .verifyComplete()
         verify(walletEventSinksService, never())
@@ -3184,11 +3182,9 @@ class WalletServiceTest {
                 assertEquals(WalletStatusDto.VALIDATED, it.data.status)
                 assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
                 assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
-                assertEquals(
-                    operationId,
-                    (it.events.first() as WalletOnboardCompletedEvent)
-                        .auditWallet
-                        .validationOperationId)
+                val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
+                assertEquals(operationId, auditWallet.validationOperationId)
+                assertEquals(notifyRequestDto.operationType, auditWallet.validationOperationType)
             }
             .verifyComplete()
         verify(walletEventSinksService, never())
@@ -3224,6 +3220,11 @@ class WalletServiceTest {
                 assertEquals(WalletStatusDto.ERROR, it.data.status)
                 assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
                 assertEquals(null, it.data.validationOperationType)
+                assertEquals(
+                    null,
+                    (it.events.first() as WalletOnboardCompletedEvent)
+                        .auditWallet
+                        .validationOperationType)
             }
             .verifyComplete()
         verify(walletRepository, never())

@@ -146,7 +146,8 @@ data class Wallet(
             validationOperationResult = this.validationOperationResult?.value,
             validationErrorCode = this.validationErrorCode,
             validationOperationId = null,
-            validationOperationTimestamp = null)
+            validationOperationTimestamp = null,
+            validationOperationType = this.validationOperationType)
     }
 
     /** Return input application iff it's present and enabled */
