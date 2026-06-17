@@ -897,6 +897,8 @@ class WalletService(
                                 status = newWalletStatus,
                                 validationOperationResult =
                                     walletNotificationRequestDto.operationResult,
+                                validationOperationType =
+                                    walletNotificationRequestDto.operationType,
                                 validationErrorCode = errorCode,
                                 details = newWalletDetails)
                             .toDocument())

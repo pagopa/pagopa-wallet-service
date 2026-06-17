@@ -3136,28 +3136,21 @@ class WalletServiceTest {
             }
             .willReturn(Mono.empty())
 
-        val walletDocumentValidated =
-            walletDocument.copy(status = WalletStatusDto.VALIDATED.toString())
-
-        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
-
-        val expectedLoggedAction =
-            LoggedAction(
-                walletDocumentValidated.toDomain(),
-                WalletOnboardCompletedEvent(
-                    walletId = walletDocumentValidated.id.toString(),
-                    auditWallet =
-                        walletDocumentValidated.toDomain().toAudit().let {
-                            it.validationOperationId = operationId
-                            it.validationOperationTimestamp =
-                                notifyRequestDto.timestampOperation.toString()
-                            return@let it
-                        }))
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
         /* test */
         StepVerifier.create(
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
-            .expectNext(expectedLoggedAction)
+            .assertNext {
+                assertEquals(WalletStatusDto.VALIDATED, it.data.status)
+                assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
+                assertEquals(
+                    operationId,
+                    (it.events.first() as WalletOnboardCompletedEvent)
+                        .auditWallet
+                        .validationOperationId)
+            }
             .verifyComplete()
         verify(walletEventSinksService, never())
             .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
@@ -3190,6 +3183,7 @@ class WalletServiceTest {
             .assertNext {
                 assertEquals(WalletStatusDto.VALIDATED, it.data.status)
                 assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
                 assertEquals(
                     operationId,
                     (it.events.first() as WalletOnboardCompletedEvent)
@@ -3229,6 +3223,7 @@ class WalletServiceTest {
             .assertNext {
                 assertEquals(WalletStatusDto.ERROR, it.data.status)
                 assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(null, it.data.validationOperationType)
             }
             .verifyComplete()
         verify(walletRepository, never())
@@ -3457,6 +3452,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3541,6 +3537,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3588,6 +3585,7 @@ class WalletServiceTest {
         val walletDocumentValidated =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType,
                 status = WalletStatusDto.VALIDATED.toString())
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }

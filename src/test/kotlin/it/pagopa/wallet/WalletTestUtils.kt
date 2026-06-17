@@ -113,7 +113,7 @@ object WalletTestUtils {
             validationOperationResult = null,
             validationErrorCode = null,
             errorReason = null,
-            applications,
+            applications = applications,
             details = null,
             clients =
                 mapOf(

@@ -56,6 +56,7 @@ data class Wallet(
     var applications: List<WalletApplication> = listOf(),
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
+    var validationOperationType: String? = null,
     var validationErrorCode: String? = null,
     val errorReason: String? = null,
     var details: WalletDetails<*>? = null,
@@ -102,6 +103,7 @@ data class Wallet(
                 paymentMethodId = this.paymentMethodId.value.toString(),
                 contractId = this.contractId?.contractId,
                 validationOperationResult = this.validationOperationResult?.value,
+                validationOperationType = this.validationOperationType,
                 validationErrorCode = this.validationErrorCode,
                 errorReason = this.errorReason,
                 applications =

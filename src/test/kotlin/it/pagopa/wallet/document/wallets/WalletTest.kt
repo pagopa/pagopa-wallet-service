@@ -16,4 +16,14 @@ class WalletTest {
         assertNotNull(WalletTestUtils.walletDocumentWithEmptyValidationOperationResult())
         assertEquals(WalletTestUtils.walletDocument(), WalletTestUtils.walletDomain().toDocument())
     }
+
+    @Test
+    fun `can map wallet validation operation type`() {
+        val walletDocument =
+            WalletTestUtils.walletDocument().copy(validationOperationType = "CARD_VERIFICATION")
+
+        assertEquals("CARD_VERIFICATION", walletDocument.toDomain().validationOperationType)
+        assertEquals(
+            "CARD_VERIFICATION", walletDocument.toDomain().toDocument().validationOperationType)
+    }
 }
