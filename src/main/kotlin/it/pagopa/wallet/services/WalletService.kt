@@ -799,7 +799,8 @@ class WalletService(
 
                 mono { walletNotificationRequestDto.operationResult }
                     .flatMap { operationResult ->
-                        if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
+                        if (isSuccessfulOnboardingOperation(
+                            walletNotificationRequestDto, wallet.id)) {
                             getWalletAlreadyOnboardedForUserId(
                                     walletId = wallet.id,
                                     userId = wallet.userId,
@@ -994,14 +995,15 @@ class WalletService(
     ): WalletNotificationProcessingResult {
         val operationDetails = walletNotificationRequestDto.details
         logger.info(
-            "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], notification details: [{}]",
+            "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], operation type: [{}], notification details: [{}]",
             wallet.id.value,
             walletNotificationRequestDto.operationResult,
+            walletNotificationRequestDto.operationType,
             operationDetails)
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationDetails is WalletNotificationRequestCardDetailsDto) {
-                    if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
+                    if (isSuccessfulOnboardingOperation(walletNotificationRequestDto, wallet.id)) {
 
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
@@ -1067,15 +1069,18 @@ class WalletService(
     }
 
     private fun isSuccessfulOnboardingOperation(
-        walletNotificationRequestDto: WalletNotificationRequestDto
+        walletNotificationRequestDto: WalletNotificationRequestDto,
+        walletId: WalletId? = null
     ): Boolean =
         isSuccessfulOnboardingOperation(
             operationResult = walletNotificationRequestDto.operationResult,
-            operationType = walletNotificationRequestDto.operationType)
+            operationType = walletNotificationRequestDto.operationType,
+            walletId = walletId)
 
     fun isSuccessfulOnboardingOperation(
         operationResult: WalletNotificationRequestDto.OperationResultEnum?,
-        operationType: String?
+        operationType: String?,
+        walletId: WalletId? = null
     ): Boolean {
         val successfulExecutedOnboardingOutcome =
             operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED &&
@@ -1085,9 +1090,9 @@ class WalletService(
                 operationType == OPERATION_TYPE_CARD_VERIFICATION
         val successfulOnboardingOutcome =
             successfulExecutedOnboardingOutcome || successfulAuthorizedOnboardingOutcome
-
         logger.info(
-            "operationResult: [{}], operationType: [{}] -> successful onboarding outcome: [{}]",
+            "walletId: [{}], operationResult: [{}], operationType: [{}] -> successful onboarding outcome: [{}]",
+            walletId?.value,
             operationResult,
             operationType,
             successfulOnboardingOutcome)
