@@ -4,6 +4,7 @@ import io.vavr.control.Either
 import io.vavr.control.Either.left
 import io.vavr.control.Either.right
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationTypeEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.annotations.AggregateRoot
 import it.pagopa.wallet.annotations.AggregateRootId
@@ -56,7 +57,7 @@ data class Wallet(
     var applications: List<WalletApplication> = listOf(),
     var contractId: ContractId? = null,
     var validationOperationResult: OperationResultEnum? = null,
-    var validationOperationType: String? = null,
+    var validationOperationType: OperationTypeEnum? = null,
     var validationErrorCode: String? = null,
     val errorReason: String? = null,
     var details: WalletDetails<*>? = null,
@@ -103,7 +104,7 @@ data class Wallet(
                 paymentMethodId = this.paymentMethodId.value.toString(),
                 contractId = this.contractId?.contractId,
                 validationOperationResult = this.validationOperationResult?.value,
-                validationOperationType = this.validationOperationType,
+                validationOperationType = this.validationOperationType?.value,
                 validationErrorCode = this.validationErrorCode,
                 errorReason = this.errorReason,
                 applications =
@@ -147,7 +148,7 @@ data class Wallet(
             validationErrorCode = this.validationErrorCode,
             validationOperationId = null,
             validationOperationTimestamp = null,
-            validationOperationType = this.validationOperationType)
+            validationOperationType = this.validationOperationType?.value)
     }
 
     /** Return input application iff it's present and enabled */

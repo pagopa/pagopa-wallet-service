@@ -83,9 +83,6 @@ class WalletService(
         /** Nog audience * */
         const val NPG_AUDIENCE = "npg"
 
-        private const val OPERATION_TYPE_AUTHORIZATION = "AUTHORIZATION"
-        private const val OPERATION_TYPE_CARD_VERIFICATION = "CARD_VERIFICATION"
-
         const val CREATE_HOSTED_ORDER_REQUEST_VERSION: String = "2"
         const val CREATE_HOSTED_ORDER_REQUEST_CURRENCY_EUR: String = "EUR"
         const val CREATE_HOSTED_ORDER_REQUEST_VERIFY_AMOUNT: String = "0"
@@ -799,8 +796,7 @@ class WalletService(
 
                 mono { walletNotificationRequestDto.operationResult }
                     .flatMap { operationResult ->
-                        if (isSuccessfulOnboardingOperation(
-                            walletNotificationRequestDto, wallet.id)) {
+                        if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
                             getWalletAlreadyOnboardedForUserId(
                                     walletId = wallet.id,
                                     userId = wallet.userId,
@@ -1003,8 +999,15 @@ class WalletService(
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationDetails is WalletNotificationRequestCardDetailsDto) {
-                    if (isSuccessfulOnboardingOperation(walletNotificationRequestDto, wallet.id)) {
-
+                    val successfulOnboarding =
+                        isSuccessfulOnboardingOperation(walletNotificationRequestDto)
+                    logger.info(
+                        "Wallet [{}] card onboarding decision -> successful onboarding outcome: [{}], new wallet status: [{}]",
+                        wallet.id.value,
+                        successfulOnboarding,
+                        if (successfulOnboarding) WalletStatusDto.VALIDATED
+                        else WalletStatusDto.ERROR)
+                    if (successfulOnboarding) {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
                             walletDetails =
@@ -1069,35 +1072,23 @@ class WalletService(
     }
 
     private fun isSuccessfulOnboardingOperation(
-        walletNotificationRequestDto: WalletNotificationRequestDto,
-        walletId: WalletId? = null
+        walletNotificationRequestDto: WalletNotificationRequestDto
     ): Boolean =
         isSuccessfulOnboardingOperation(
             operationResult = walletNotificationRequestDto.operationResult,
-            operationType = walletNotificationRequestDto.operationType,
-            walletId = walletId)
+            operationType = walletNotificationRequestDto.operationType)
 
     fun isSuccessfulOnboardingOperation(
         operationResult: WalletNotificationRequestDto.OperationResultEnum?,
-        operationType: String?,
-        walletId: WalletId? = null
+        operationType: WalletNotificationRequestDto.OperationTypeEnum?
     ): Boolean {
         val successfulExecutedOnboardingOutcome =
             operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED &&
-                operationType == OPERATION_TYPE_AUTHORIZATION
+                operationType == WalletNotificationRequestDto.OperationTypeEnum.AUTHORIZATION
         val successfulAuthorizedOnboardingOutcome =
             operationResult == WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED &&
-                operationType == OPERATION_TYPE_CARD_VERIFICATION
-        val successfulOnboardingOutcome =
-            successfulExecutedOnboardingOutcome || successfulAuthorizedOnboardingOutcome
-        logger.info(
-            "walletId: [{}], operationResult: [{}], operationType: [{}] -> successful onboarding outcome: [{}]",
-            walletId?.value,
-            operationResult,
-            operationType,
-            successfulOnboardingOutcome)
-
-        return successfulOnboardingOutcome
+                operationType == WalletNotificationRequestDto.OperationTypeEnum.CARD_VERIFICATION
+        return successfulExecutedOnboardingOutcome || successfulAuthorizedOnboardingOutcome
     }
 
     fun findSessionWallet(
@@ -1351,6 +1342,8 @@ class WalletService(
      * @param operationResult the operation result used for retrieve outcome
      * @param errorCode the optional error code returned by NPG during onboarding status
      *   notification
+     * @param walletDetailType the wallet details type
+     * @param walletStatus the final wallet status, used to disambiguate AUTHORIZED outcomes
      * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
      */
     private fun retrieveFinalOutcome(
@@ -1409,10 +1402,11 @@ class WalletService(
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
-            "Npg notification gateway status: [{}], errorCode: [{}] for wallet type: [{}] decoded as IO outcome: [{}]",
+            "Npg notification gateway status: [{}], errorCode: [{}] for wallet type: [{}] with wallet status: [{}] decoded as IO outcome: [{}]",
             operationResult,
             errorCode,
             walletDetailType,
+            walletStatus,
             outcome)
         return outcome
     }

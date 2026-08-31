@@ -3147,7 +3147,8 @@ class WalletServiceTest {
                 assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
                 val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
                 assertEquals(operationId, auditWallet.validationOperationId)
-                assertEquals(notifyRequestDto.operationType, auditWallet.validationOperationType)
+                assertEquals(
+                    notifyRequestDto.operationType?.value, auditWallet.validationOperationType)
             }
             .verifyComplete()
         verify(walletEventSinksService, never())
@@ -3184,7 +3185,8 @@ class WalletServiceTest {
                 assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
                 val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
                 assertEquals(operationId, auditWallet.validationOperationId)
-                assertEquals(notifyRequestDto.operationType, auditWallet.validationOperationType)
+                assertEquals(
+                    notifyRequestDto.operationType?.value, auditWallet.validationOperationType)
             }
             .verifyComplete()
         verify(walletEventSinksService, never())
@@ -3453,7 +3455,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                validationOperationType = notifyRequestDto.operationType,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3538,7 +3540,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                validationOperationType = notifyRequestDto.operationType,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3586,7 +3588,7 @@ class WalletServiceTest {
         val walletDocumentValidated =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
-                validationOperationType = notifyRequestDto.operationType,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.VALIDATED.toString())
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }

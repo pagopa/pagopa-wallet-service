@@ -1,6 +1,7 @@
 package it.pagopa.wallet.documents.wallets
 
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationTypeEnum
 import it.pagopa.generated.wallet.model.WalletStatusDto
 import it.pagopa.wallet.documents.wallets.details.WalletDetails
 import it.pagopa.wallet.domain.wallets.*
@@ -46,7 +47,8 @@ data class Wallet(
                     this.validationOperationResult?.let {
                         OperationResultEnum.valueOf(this.validationOperationResult)
                     },
-                validationOperationType = this.validationOperationType,
+                validationOperationType =
+                    this.validationOperationType?.let { OperationTypeEnum.valueOf(it) },
                 validationErrorCode = validationErrorCode,
                 details = this.details?.toDomain(),
                 clients =

@@ -7,6 +7,7 @@ import it.pagopa.generated.ecommerce.paymentmethodshandler.model.FeeRange
 import it.pagopa.generated.ecommerce.paymentmethodshandler.model.PaymentMethodResponse as PaymentMethodHandlerResponse
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationTypeEnum
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
@@ -931,7 +932,7 @@ object WalletTestUtils {
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
-            .operationType("AUTHORIZATION")
+            .operationType(OperationTypeEnum.AUTHORIZATION)
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
@@ -944,7 +945,7 @@ object WalletTestUtils {
         WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.AUTHORIZED)
-            .operationType("CARD_VERIFICATION")
+            .operationType(OperationTypeEnum.CARD_VERIFICATION)
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
@@ -957,7 +958,7 @@ object WalletTestUtils {
         WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
-            .operationType("AUTHORIZATION")
+            .operationType(OperationTypeEnum.AUTHORIZATION)
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
