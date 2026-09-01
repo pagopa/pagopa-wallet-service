@@ -735,6 +735,124 @@ class WalletControllerTest {
     }
 
     @Test
+    fun `notify wallet for CARDS resulting in ERROR status with EXECUTED and AUTHORIZATION operation type`() =
+        runTest {
+            /* preconditions */
+            val walletId = UUID.randomUUID()
+            val orderId = WalletTestUtils.ORDER_ID
+            val sessionToken = "sessionToken"
+            given {
+                    walletService.notifyWallet(
+                        eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
+                }
+                .willReturn(
+                    mono {
+                        val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR)
+                        LoggedAction(
+                            wallet,
+                            WalletOnboardCompletedEvent(
+                                walletId = wallet.id.toString(),
+                                auditWallet =
+                                    wallet.toAudit().let {
+                                        it.validationOperationId =
+                                            WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                        it.validationOperationTimestamp =
+                                            WalletTestUtils.TIMESTAMP.toString()
+                                        return@let it
+                                    }))
+                    })
+            given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+                .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+            /* test */
+            webClient
+                .post()
+                .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("x-user-id", UUID.randomUUID().toString())
+                .header("Authorization", "Bearer $sessionToken")
+                .header("x-api-key", "primary-key")
+                .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+
+            verify(walletTracing, times(1))
+                .traceWalletUpdate(
+                    eq(
+                        WalletTracing.WalletUpdateResult(
+                            WalletTracing.WalletNotificationOutcome.OK,
+                            WalletDetailsType.CARDS,
+                            WalletStatusDto.ERROR,
+                            WalletTracing.GatewayNotificationOutcomeResult(
+                                OperationResultEnum.EXECUTED.value))))
+        }
+
+    @Test
+    fun `notify wallet for CARDS resulting in ERROR status with EXECUTED and missing operation type`() =
+        runTest {
+            /* preconditions */
+            val walletId = UUID.randomUUID()
+            val orderId = WalletTestUtils.ORDER_ID
+            val sessionToken = "sessionToken"
+            given {
+                    walletService.notifyWallet(
+                        eq(WalletId(walletId)), eq(orderId), eq(sessionToken), any())
+                }
+                .willReturn(
+                    mono {
+                        val wallet = WALLET_DOMAIN.copy(status = WalletStatusDto.ERROR)
+                        LoggedAction(
+                            wallet,
+                            WalletOnboardCompletedEvent(
+                                walletId = wallet.id.toString(),
+                                auditWallet =
+                                    wallet.toAudit().let {
+                                        it.validationOperationId =
+                                            WalletTestUtils.VALIDATION_OPERATION_ID.toString()
+                                        it.validationOperationTimestamp =
+                                            WalletTestUtils.TIMESTAMP.toString()
+                                        return@let it
+                                    }))
+                    })
+            given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+                .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+            val notificationRequest =
+                WalletNotificationRequestDto()
+                    .operationResult(OperationResultEnum.EXECUTED)
+                    .timestampOperation(
+                        OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
+                    .operationId("validationOperationId")
+                    .details(
+                        WalletNotificationRequestCardDetailsDto()
+                            .type("CARD")
+                            .paymentInstrumentGatewayId(WalletTestUtils.CARD_ID_4))
+            /* test */
+            webClient
+                .post()
+                .uri("/wallets/${walletId}/sessions/${orderId}/notifications")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("x-user-id", UUID.randomUUID().toString())
+                .header("Authorization", "Bearer $sessionToken")
+                .header("x-api-key", "primary-key")
+                .bodyValue(notificationRequest)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+
+            verify(walletTracing, times(1))
+                .traceWalletUpdate(
+                    eq(
+                        WalletTracing.WalletUpdateResult(
+                            WalletTracing.WalletNotificationOutcome.OK,
+                            WalletDetailsType.CARDS,
+                            WalletStatusDto.ERROR,
+                            WalletTracing.GatewayNotificationOutcomeResult(
+                                OperationResultEnum.EXECUTED.value))))
+        }
+
+    @Test
     fun testNotifyWalletSecurityTokenMatchException() = runTest {
         /* preconditions */
         val walletId = UUID.randomUUID()

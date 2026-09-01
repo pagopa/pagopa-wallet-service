@@ -990,7 +990,7 @@ class WalletService(
         walletNotificationRequestDto: WalletNotificationRequestDto
     ): WalletNotificationProcessingResult {
         val operationDetails = walletNotificationRequestDto.details
-        logger.info(
+        logger.debug(
             "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], operation type: [{}], notification details: [{}]",
             wallet.id.value,
             walletNotificationRequestDto.operationResult,
@@ -1357,8 +1357,10 @@ class WalletService(
                 WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
                     if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
-                    } else {
+                    } else if (walletStatus == WalletStatusDto.VALIDATED) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                     }
 
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
