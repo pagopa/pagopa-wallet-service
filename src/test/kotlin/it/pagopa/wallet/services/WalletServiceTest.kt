@@ -15,6 +15,7 @@ import it.pagopa.wallet.WalletTestUtils.APPLICATION_METADATA
 import it.pagopa.wallet.WalletTestUtils.CARD_ID_4
 import it.pagopa.wallet.WalletTestUtils.MASKED_EMAIL
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_KO_OPERATION_RESULT
+import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_AUTHORIZED_CARD_VERIFICATION_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT
 import it.pagopa.wallet.WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT_WITH_PAYPAL_DETAILS
 import it.pagopa.wallet.WalletTestUtils.ORDER_ID
@@ -202,6 +203,9 @@ class WalletServiceTest {
             Stream.of(
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
@@ -3135,29 +3139,102 @@ class WalletServiceTest {
             }
             .willReturn(Mono.empty())
 
-        val walletDocumentValidated =
-            walletDocument.copy(status = WalletStatusDto.VALIDATED.toString())
-
-        given { walletRepository.save(any()) }.willReturn(Mono.just(walletDocumentValidated))
-
-        val expectedLoggedAction =
-            LoggedAction(
-                walletDocumentValidated.toDomain(),
-                WalletOnboardCompletedEvent(
-                    walletId = walletDocumentValidated.id.toString(),
-                    auditWallet =
-                        walletDocumentValidated.toDomain().toAudit().let {
-                            it.validationOperationId = operationId
-                            it.validationOperationTimestamp =
-                                notifyRequestDto.timestampOperation.toString()
-                            return@let it
-                        }))
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
 
         /* test */
         StepVerifier.create(
                 walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
-            .expectNext(expectedLoggedAction)
+            .assertNext {
+                assertEquals(WalletStatusDto.VALIDATED, it.data.status)
+                assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
+                val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
+                assertEquals(operationId, auditWallet.validationOperationId)
+                assertEquals(
+                    notifyRequestDto.operationType?.value, auditWallet.validationOperationType)
+            }
             .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to VALIDATED for CARDS with AUTHORIZED CARD_VERIFICATION`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val operationId = "validationOperationId"
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
+        val notifyRequestDto =
+            NOTIFY_WALLET_REQUEST_OK_AUTHORIZED_CARD_VERIFICATION_OPERATION_RESULT
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given {
+                walletRepository.findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                    any<String>(), any<String>(), any())
+            }
+            .willReturn(Mono.empty())
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
+            .assertNext {
+                assertEquals(WalletStatusDto.VALIDATED, it.data.status)
+                assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(notifyRequestDto.operationType, it.data.validationOperationType)
+                val auditWallet = (it.events.first() as WalletOnboardCompletedEvent).auditWallet
+                assertEquals(operationId, auditWallet.validationOperationId)
+                assertEquals(
+                    notifyRequestDto.operationType?.value, auditWallet.validationOperationType)
+            }
+            .verifyComplete()
+        verify(walletEventSinksService, never())
+            .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
+    }
+
+    @Test
+    fun `notify wallet should set wallet status to ERROR for CARDS with EXECUTED and missing operation type`() {
+        /* preconditions */
+        val orderId = "orderId"
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument =
+            walletDocumentVerifiedWithCardDetails("12345678", "0000", "203012", "?", "MC")
+        val notifyRequestDto =
+            WalletNotificationRequestDto()
+                .operationResult(WalletNotificationRequestDto.OperationResultEnum.EXECUTED)
+                .timestampOperation(OffsetDateTime.now())
+                .operationId("validationOperationId")
+                .details(
+                    WalletNotificationRequestCardDetailsDto()
+                        .type("CARD")
+                        .paymentInstrumentGatewayId(CARD_ID_4))
+        val npgSession = NpgSession(orderId, sessionId, sessionToken, WALLET_UUID.value.toString())
+        given { npgSessionRedisTemplate.findById(orderId) }.willReturn(Mono.just(npgSession))
+        given { walletRepository.findById(any<String>()) }.willReturn(Mono.just(walletDocument))
+        given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
+
+        /* test */
+        StepVerifier.create(
+                walletService.notifyWallet(WALLET_UUID, orderId, sessionToken, notifyRequestDto))
+            .assertNext {
+                assertEquals(WalletStatusDto.ERROR, it.data.status)
+                assertEquals(notifyRequestDto.operationResult, it.data.validationOperationResult)
+                assertEquals(null, it.data.validationOperationType)
+                assertEquals(
+                    null,
+                    (it.events.first() as WalletOnboardCompletedEvent)
+                        .auditWallet
+                        .validationOperationType)
+            }
+            .verifyComplete()
+        verify(walletRepository, never())
+            .findByUserIdAndDetailsPaymentInstrumentGatewayIdForWalletStatus(
+                any<String>(), any<String>(), any())
         verify(walletEventSinksService, never())
             .tryEmitEvent(any<LoggedAction<it.pagopa.wallet.domain.wallets.Wallet>>())
     }
@@ -3302,6 +3379,36 @@ class WalletServiceTest {
     }
 
     @Test
+    fun `find session should return response with final status and outcome 0 for AUTHORIZED result`() {
+        /* preconditions */
+        val walletId = WALLET_UUID.value
+        val userId = USER_ID.id
+        val sessionId = "sessionId"
+        val sessionToken = "token"
+        val walletDocument =
+            walletDocumentValidated()
+                .copy(
+                    validationOperationResult =
+                        WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED.value)
+        val npgSession = NpgSession(ORDER_ID, sessionId, sessionToken, walletId.toString())
+        given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
+        given { walletRepository.findByIdAndUserId(eq(walletId.toString()), eq(userId.toString())) }
+            .willReturn(Mono.just(walletDocument))
+
+        val responseDto =
+            SessionWalletRetrieveResponseDto()
+                .isFinalOutcome(true)
+                .walletId(walletId.toString())
+                .orderId(ORDER_ID)
+                .outcome(SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0)
+
+        /* test */
+        StepVerifier.create(walletService.findSessionWallet(userId, WalletId(walletId), ORDER_ID))
+            .expectNext(responseDto)
+            .verifyComplete()
+    }
+
+    @Test
     fun `find session should return response with final status false and outcome null`() {
         /* preconditions */
         val walletId = WALLET_UUID.value
@@ -3351,6 +3458,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3435,6 +3543,7 @@ class WalletServiceTest {
         val walletDocumentWithError =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.ERROR.value)
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
@@ -3482,6 +3591,7 @@ class WalletServiceTest {
         val walletDocumentValidated =
             walletDocument.copy(
                 validationOperationResult = notifyRequestDto.operationResult.value,
+                validationOperationType = notifyRequestDto.operationType?.value,
                 status = WalletStatusDto.VALIDATED.toString())
 
         given { walletRepository.save(any()) }.willAnswer { mono { it.arguments[0] } }
