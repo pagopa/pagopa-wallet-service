@@ -205,6 +205,9 @@ class WalletServiceTest {
                     WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED,
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
                 Arguments.of(
+                    WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
+                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25),
+                Arguments.of(
                     WalletNotificationRequestDto.OperationResultEnum.DENIED_BY_RISK,
                     SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_2),
                 Arguments.of(

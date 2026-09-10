@@ -763,6 +763,8 @@ class WalletControllerTest {
                     })
             given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
                 .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+            given { walletService.isSuccessfulOnboardingOperation(any(), anyOrNull()) }
+                .willReturn(true)
             /* test */
             webClient
                 .post()
@@ -774,7 +776,7 @@ class WalletControllerTest {
                 .bodyValue(WalletTestUtils.NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT)
                 .exchange()
                 .expectStatus()
-                .isOk
+                .isBadRequest
                 .expectBody()
 
             verify(walletTracing, times(1))
@@ -817,6 +819,8 @@ class WalletControllerTest {
                     })
             given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
                 .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+            given { walletService.isSuccessfulOnboardingOperation(any(), anyOrNull()) }
+                .willReturn(false)
             val notificationRequest =
                 WalletNotificationRequestDto()
                     .operationResult(OperationResultEnum.EXECUTED)
