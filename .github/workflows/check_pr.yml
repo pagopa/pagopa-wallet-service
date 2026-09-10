@@ -18,7 +18,7 @@ jobs:
     steps:
 
       - name: Check PR Size
-        uses: pagopa/github-actions-template/check-pr-size@main
+        uses: pagopa/github-actions-template/check-pr-size@705d571bb13b279776fd20e9eb20232dc25679e4 # main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           ignored_files: 'src/test/, gradle/, gradle.lockfile, build.gradle.kts'
