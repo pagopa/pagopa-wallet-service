@@ -1704,6 +1704,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: >-
+        Bearer token in JWS format. The implementation conforms to the JWT best
+        current practices in RFC8725.
     ApiKeyAuth:
       type: apiKey
       in: header
