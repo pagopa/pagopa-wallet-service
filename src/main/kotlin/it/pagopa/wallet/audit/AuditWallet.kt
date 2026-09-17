@@ -26,7 +26,8 @@ data class AuditWalletCompleted(
     var validationOperationId: String?,
     var validationOperationResult: String?,
     var validationOperationTimestamp: String?,
-    var validationErrorCode: String?
+    var validationErrorCode: String?,
+    var validationOperationType: String? = null
 ) : AuditWallet()
 
 data class AuditWalletReplaced(var replacedByWalletId: String?) : AuditWallet()
