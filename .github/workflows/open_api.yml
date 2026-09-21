@@ -25,12 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      # Report-only: owasp:api2:2023-jwt-best-practices fires at error because bearerAuth's
-      # description does not cite RFC 8725. Real finding, left visible rather than silenced;
-      # naming RFC 8725 and flipping to fail_severity: error is tracked in PIDM-2366.
+      # blocks on errors
       - name: Lint ${{ matrix.spec.path }}
         # note: ruleset bundled with the shared action, can be overridden if needed
         uses: pagopa/github-actions-template/openapi-lint@705d571bb13b279776fd20e9eb20232dc25679e4
         with:
           spec_path: ${{ matrix.spec.path }}
-          fail_on_violation: false
+          fail_severity: error
