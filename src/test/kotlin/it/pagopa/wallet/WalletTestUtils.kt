@@ -7,6 +7,7 @@ import it.pagopa.generated.ecommerce.paymentmethodshandler.model.FeeRange
 import it.pagopa.generated.ecommerce.paymentmethodshandler.model.PaymentMethodResponse as PaymentMethodHandlerResponse
 import it.pagopa.generated.wallet.model.*
 import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationResultEnum
+import it.pagopa.generated.wallet.model.WalletNotificationRequestDto.OperationTypeEnum
 import it.pagopa.wallet.documents.applications.Application
 import it.pagopa.wallet.documents.wallets.Client as ClientDocument
 import it.pagopa.wallet.documents.wallets.Wallet
@@ -113,7 +114,7 @@ object WalletTestUtils {
             validationOperationResult = null,
             validationErrorCode = null,
             errorReason = null,
-            applications,
+            applications = applications,
             details = null,
             clients =
                 mapOf(
@@ -931,6 +932,20 @@ object WalletTestUtils {
     val NOTIFY_WALLET_REQUEST_OK_OPERATION_RESULT: WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
+            .operationType(OperationTypeEnum.AUTHORIZATION)
+            .timestampOperation(
+                OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
+            .operationId("validationOperationId")
+            .details(
+                WalletNotificationRequestCardDetailsDto()
+                    .type("CARD")
+                    .paymentInstrumentGatewayId(CARD_ID_4))
+
+    val NOTIFY_WALLET_REQUEST_OK_AUTHORIZED_CARD_VERIFICATION_OPERATION_RESULT:
+        WalletNotificationRequestDto =
+        WalletNotificationRequestDto()
+            .operationResult(OperationResultEnum.AUTHORIZED)
+            .operationType(OperationTypeEnum.CARD_VERIFICATION)
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")
@@ -943,6 +958,7 @@ object WalletTestUtils {
         WalletNotificationRequestDto =
         WalletNotificationRequestDto()
             .operationResult(OperationResultEnum.EXECUTED)
+            .operationType(OperationTypeEnum.AUTHORIZATION)
             .timestampOperation(
                 OffsetDateTime.now().atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())
             .operationId("validationOperationId")

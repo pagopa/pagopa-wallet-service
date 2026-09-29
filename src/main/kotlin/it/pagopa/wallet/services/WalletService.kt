@@ -796,8 +796,7 @@ class WalletService(
 
                 mono { walletNotificationRequestDto.operationResult }
                     .flatMap { operationResult ->
-                        if (operationResult ==
-                            WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                        if (isSuccessfulOnboardingOperation(walletNotificationRequestDto)) {
                             getWalletAlreadyOnboardedForUserId(
                                     walletId = wallet.id,
                                     userId = wallet.userId,
@@ -895,6 +894,8 @@ class WalletService(
                                 status = newWalletStatus,
                                 validationOperationResult =
                                     walletNotificationRequestDto.operationResult,
+                                validationOperationType =
+                                    walletNotificationRequestDto.operationType,
                                 validationErrorCode = errorCode,
                                 details = newWalletDetails)
                             .toDocument())
@@ -988,19 +989,25 @@ class WalletService(
         wallet: Wallet,
         walletNotificationRequestDto: WalletNotificationRequestDto
     ): WalletNotificationProcessingResult {
-        val operationResult = walletNotificationRequestDto.operationResult
         val operationDetails = walletNotificationRequestDto.details
-        logger.info(
-            "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], notification details: [{}]",
+        logger.debug(
+            "Received wallet notification request for wallet with id: [{}]. Outcome: [{}], operation type: [{}], notification details: [{}]",
             wallet.id.value,
-            operationResult,
+            walletNotificationRequestDto.operationResult,
+            walletNotificationRequestDto.operationType,
             operationDetails)
         return when (val walletDetails = wallet.details) {
             is it.pagopa.wallet.domain.wallets.details.CardDetails ->
                 if (operationDetails is WalletNotificationRequestCardDetailsDto) {
-                    if (operationResult ==
-                        WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
-
+                    val successfulOnboarding =
+                        isSuccessfulOnboardingOperation(walletNotificationRequestDto)
+                    logger.info(
+                        "Wallet [{}] card onboarding decision -> successful onboarding outcome: [{}], new wallet status: [{}]",
+                        wallet.id.value,
+                        successfulOnboarding,
+                        if (successfulOnboarding) WalletStatusDto.VALIDATED
+                        else WalletStatusDto.ERROR)
+                    if (successfulOnboarding) {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
                             walletDetails =
@@ -1034,7 +1041,8 @@ class WalletService(
                 }
 
             is PayPalDetails ->
-                if (operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
+                if (walletNotificationRequestDto.operationResult ==
+                    WalletNotificationRequestDto.OperationResultEnum.EXECUTED) {
                     if (operationDetails is WalletNotificationRequestPaypalDetailsDto) {
                         WalletNotificationProcessingResult(
                             newWalletStatus = WalletStatusDto.VALIDATED,
@@ -1061,6 +1069,26 @@ class WalletService(
                 throw InvalidRequestException(
                     "Unhandled wallet details for notification request: $walletDetails")
         }
+    }
+
+    private fun isSuccessfulOnboardingOperation(
+        walletNotificationRequestDto: WalletNotificationRequestDto
+    ): Boolean =
+        isSuccessfulOnboardingOperation(
+            operationResult = walletNotificationRequestDto.operationResult,
+            operationType = walletNotificationRequestDto.operationType)
+
+    fun isSuccessfulOnboardingOperation(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum?,
+        operationType: WalletNotificationRequestDto.OperationTypeEnum?
+    ): Boolean {
+        val successfulExecutedOnboardingOutcome =
+            operationResult == WalletNotificationRequestDto.OperationResultEnum.EXECUTED &&
+                operationType == WalletNotificationRequestDto.OperationTypeEnum.AUTHORIZATION
+        val successfulAuthorizedOnboardingOutcome =
+            operationResult == WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED &&
+                operationType == WalletNotificationRequestDto.OperationTypeEnum.CARD_VERIFICATION
+        return successfulExecutedOnboardingOutcome || successfulAuthorizedOnboardingOutcome
     }
 
     fun findSessionWallet(
@@ -1100,7 +1128,8 @@ class WalletService(
                                     retrieveFinalOutcome(
                                         operationResult = wallet.validationOperationResult,
                                         errorCode = wallet.validationErrorCode,
-                                        walletDetailType = wallet.details?.type)
+                                        walletDetailType = wallet.details?.type,
+                                        walletStatus = wallet.status)
                                 } else {
                                     null
                                 })
@@ -1313,24 +1342,33 @@ class WalletService(
      * @param operationResult the operation result used for retrieve outcome
      * @param errorCode the optional error code returned by NPG during onboarding status
      *   notification
+     * @param walletDetailType the wallet details type
+     * @param walletStatus the final wallet status, used to disambiguate AUTHORIZED outcomes
      * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
      */
     private fun retrieveFinalOutcome(
         operationResult: WalletNotificationRequestDto.OperationResultEnum?,
         errorCode: String?,
-        walletDetailType: WalletDetailsType?
+        walletDetailType: WalletDetailsType?,
+        walletStatus: WalletStatusDto?
     ): SessionWalletRetrieveResponseDto.OutcomeEnum {
         val outcome =
             when (operationResult) {
                 WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
                     if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
-                    } else {
+                    } else if (walletStatus == WalletStatusDto.VALIDATED) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
                     }
 
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
-                    SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+                    if (walletStatus == WalletStatusDto.VALIDATED) {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
+                    } else {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
+                    }
 
                 WalletNotificationRequestDto.OperationResultEnum.DECLINED ->
                     if (walletDetailType == WalletDetailsType.CARDS) {
@@ -1366,10 +1404,11 @@ class WalletService(
                 null -> SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_1
             }
         logger.info(
-            "Npg notification gateway status: [{}], errorCode: [{}] for wallet type: [{}] decoded as IO outcome: [{}]",
+            "Npg notification gateway status: [{}], errorCode: [{}] for wallet type: [{}] with wallet status: [{}] decoded as IO outcome: [{}]",
             operationResult,
             errorCode,
             walletDetailType,
+            walletStatus,
             outcome)
         return outcome
     }
