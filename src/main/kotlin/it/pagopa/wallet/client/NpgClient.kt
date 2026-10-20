@@ -17,6 +17,7 @@ import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE
 import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME
 import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE
 import it.pagopa.wallet.client.NpgClient.NpgTracing.usingNpgTracing
+import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
 import java.io.IOException
@@ -39,6 +40,10 @@ class NpgClient(
     private val objectMapper: ObjectMapper,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    companion object {
+        const val NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE = "PS0017"
+    }
 
     fun createNpgOrderBuild(
         correlationId: UUID,
@@ -121,6 +126,67 @@ class NpgClient(
             }
     }
 
+    fun deactivateContract(
+        contractId: ContractId,
+        correlationId: UUID,
+        pspId: String?
+    ): Mono<Void> {
+        val apiKey =
+            if (pspId == null) {
+                Either.right(npgPaypalPspApiKeysConfig.defaultApiKey)
+            } else {
+                npgPaypalPspApiKeysConfig[pspId]
+            }
+
+        return usingNpgTracing(
+            tracer,
+            GatewayOperation.DEACTIVATE_CONTRACT,
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
+                span,
+                operation ->
+                logger.info("DeactivateContract with correlationId: $correlationId")
+                apiKey
+                    .fold(
+                        { Mono.error(it) },
+                        { apiKey ->
+                            npgWebClient.pspApiV1ContractsContractIdDeactivationPost(
+                                correlationId, apiKey, contractId.contractId)
+                        })
+                    .onErrorResume(WebClientResponseException::class.java) { error ->
+                        val alreadyDeactivated =
+                            if (error.statusCode.value() == BAD_REQUEST.code()) {
+                                try {
+                                    objectMapper
+                                        .readValue(
+                                            error.responseBodyAsByteArray, ClientError::class.java)
+                                        .errors
+                                        ?.any {
+                                            it.code == NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE
+                                        } == true
+                                } catch (_: IOException) {
+                                    false
+                                }
+                            } else {
+                                false
+                            }
+
+                        if (alreadyDeactivated) {
+                            logger.info(
+                                "Contract with contractId ${contractId.contractId} is already deactivated, ignoring error [$NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE] for correlationId $correlationId")
+                            Mono.empty()
+                        } else {
+                            Mono.error(error)
+                        }
+                    }
+                    .doOnError(WebClientResponseException::class.java) {
+                        logger.error(
+                            "Error communicating with NPG-deactivateContract for correlationId $correlationId - response: ${it.responseBodyAsString}",
+                            it)
+                    }
+                    .onErrorMap { error -> exceptionToNpgResponseException(error, span, operation) }
+            }
+    }
+
     private fun exceptionToNpgResponseException(
         err: Throwable,
         span: Span,
@@ -196,6 +262,7 @@ class NpgClient(
             BUILD_FORM("NpgClient#buildForm"),
             GET_CARD_DATA("NpgClient#getCardData"),
             CONFIRM_PAYMENT("NpgClient#confirmPayment"),
+            DEACTIVATE_CONTRACT("NpgClient#deactivateContract"),
         }
 
         fun <T> usingNpgTracing(

@@ -22,6 +22,9 @@ module.exports = function (req, res, next) {
     else {
       res.json(db.get("buildApm"))
     }
+  } else if(requestPath.includes("deactivation")) {
+    // /psp/api/v1/contracts/{contractId}/deactivation -> No Header and Body for this response
+    return res.status(200).send();
   } else {
     // Continue to default JSON Server router
     next();
