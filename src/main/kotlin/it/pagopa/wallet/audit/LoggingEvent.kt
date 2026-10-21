@@ -24,6 +24,11 @@ import org.springframework.data.mongodb.core.mapping.Document
     JsonSubTypes.Type(value = ApplicationCreatedEvent::class, name = "ApplicationCreatedEvent"),
     JsonSubTypes.Type(
         value = ApplicationStatusChangedEvent::class, name = "ApplicationStatusChangedEvent"),
+    JsonSubTypes.Type(
+        value = WalletContractIdDeactivatedEvent::class, name = "WalletContractIdDeactivatedEvent"),
+    JsonSubTypes.Type(
+        value = WalletContractIdDeactivationErrorEvent::class,
+        name = "WalletContractIdDeactivationErrorEvent"),
 )
 sealed class LoggingEvent(val id: String, val timestamp: String) {
     constructor() : this(UUID.randomUUID().toString(), Instant.now().toString())
@@ -59,4 +64,20 @@ data class ApplicationStatusChangedEvent(
     val serviceId: String,
     val oldStatus: ApplicationStatus,
     val newStatus: ApplicationStatus
+) : LoggingEvent()
+
+data class WalletContractIdDeactivatedEvent(val walletId: String, val npgResponseCode: String) :
+    LoggingEvent()
+
+enum class WalletContractIdDeactivationErrorType {
+    COMMUNICATION_ERROR,
+    KO_RESPONSE_RECEIVED
+}
+
+data class WalletContractIdDeactivationErrorEvent(
+    val walletId: String,
+    val errorType: WalletContractIdDeactivationErrorType,
+    val httpErrorCode: Int,
+    val npgErrorCode: String,
+    val attemptNumber: Int
 ) : LoggingEvent()
