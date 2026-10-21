@@ -1364,7 +1364,9 @@ class WalletService(
                     }
 
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
-                    if (walletStatus == WalletStatusDto.VALIDATED) {
+                    if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
+                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
+                    } else if (walletStatus == WalletStatusDto.VALIDATED) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
                     } else {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
