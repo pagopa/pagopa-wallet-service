@@ -439,7 +439,14 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   java {
     target("**/*.java")
     targetExclude("build/**/*")
-    eclipse().configFile("eclipse-style.xml")
+    eclipse()
+      .withP2Mirrors(
+        mapOf(
+          "https://download.eclipse.org/eclipse/updates/" to
+            "https://ftp.fau.de/eclipse/eclipse/updates/"
+        )
+      )
+      .configFile("eclipse-style.xml")
     toggleOffOn()
     removeUnusedImports()
     trimTrailingWhitespace()
