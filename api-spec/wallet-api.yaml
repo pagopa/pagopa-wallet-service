@@ -963,7 +963,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemJson'
-
+  /wallets/{walletId}/contract:
+    delete:
+      tags:
+        - wallets
+      summary: Deactivate contract by wallet id
+      description: Deactivate the contract associated to the wallet id. An absent or already deactivated contract is treated as success.
+      operationId: deactivateContractByWalletId
+      parameters:
+        - name: walletId
+          in: path
+          description: ID of wallet
+          required: true
+          schema:
+            $ref: '#/components/schemas/WalletId'
+      responses:
+        '204':
+          description: Contract associated to the wallet deactivated successfully, already deactivated, or absent
+        '400':
+          description: Invalid input id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '404':
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '409':
+          description: Unable to deactivate contract. This can be caused by a forbidden status (VALIDATED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '502':
+          description: NPG contract deactivation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemJson'
+        '504':
+          description: Timeout serving request
 components:
   schemas:
     AmountEuroCents:
@@ -1711,4 +1765,3 @@ components:
       type: apiKey
       in: header
       name: x-api-key
-

@@ -8,6 +8,7 @@ import it.pagopa.wallet.domain.wallets.UserId
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
+import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
@@ -380,6 +381,22 @@ class WalletController(
                 else -> Mono.error(IllegalArgumentException("Unsupported search type"))
             }
         }
+    }
+
+    override fun deactivateContractByWalletId(
+        walletId: UUID,
+        exchange: ServerWebExchange
+    ): Mono<ResponseEntity<Void>> {
+        return walletService
+            .deactivateWalletContract(WalletId(walletId))
+            .flatMap(loggingEventSyncWriter::saveEventSyncWithDLQWrite)
+            .map { deactivated ->
+                if (!deactivated) {
+                    throw NpgClientException(
+                        "NPG contract deactivation failed", HttpStatus.BAD_GATEWAY)
+                }
+                ResponseEntity.noContent().build()
+            }
     }
 
     private fun getAuthenticationToken(exchange: ServerWebExchange): Mono<String> {
