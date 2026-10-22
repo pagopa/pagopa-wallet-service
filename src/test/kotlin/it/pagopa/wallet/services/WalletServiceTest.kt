@@ -3867,8 +3867,13 @@ class WalletServiceTest {
             .verifyComplete()
     }
 
-    @Test
-    fun `find session should return response with final status true mapping WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE error `() {
+    @ParameterizedTest
+    @EnumSource(
+        value = WalletNotificationRequestDto.OperationResultEnum::class,
+        names = ["EXECUTED", "AUTHORIZED"])
+    fun `find session should return response with final status true mapping WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE error `(
+        operationResult: WalletNotificationRequestDto.OperationResultEnum
+    ) {
         /* preconditions */
         val walletId = WALLET_UUID.value
         val userId = USER_ID.id
@@ -3878,7 +3883,7 @@ class WalletServiceTest {
         given { npgSessionRedisTemplate.findById(ORDER_ID) }.willReturn(Mono.just(npgSession))
         val walletDocumentWithError =
             walletDocumentWithError(
-                operationResultEnum = WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
+                operationResultEnum = operationResult,
                 errorCode = Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE,
             )
 
