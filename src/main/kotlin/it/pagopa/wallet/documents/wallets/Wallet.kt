@@ -30,7 +30,8 @@ data class Wallet(
     @CreatedDate var creationDate: Instant,
     @LastModifiedDate var updateDate: Instant,
     val onboardingChannel: String,
-    val ttl: Int?
+    val ttl: Int?,
+    val deactivationRetryCount: Int = 0
 ) {
     fun toDomain(): Wallet {
         val wallet =
@@ -56,7 +57,8 @@ data class Wallet(
                 version = this.version,
                 creationDate = this.creationDate,
                 updateDate = this.updateDate,
-                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel))
+                onboardingChannel = OnboardingChannel.valueOf(this.onboardingChannel),
+                deactivationRetryCount = deactivationRetryCount)
         return wallet
     }
 }
