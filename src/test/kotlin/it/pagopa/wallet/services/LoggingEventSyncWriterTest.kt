@@ -180,6 +180,7 @@ class LoggingEventSyncWriterTest {
                                     status = "VALIDATED",
                                     validationOperationId = "validationOperationId",
                                     validationOperationResult = "EXECUTED",
+                                    validationOperationType = "AUTHORIZATION",
                                     validationOperationTimestamp = OffsetDateTime.now().toString(),
                                     validationErrorCode = null))),
                     walletId),

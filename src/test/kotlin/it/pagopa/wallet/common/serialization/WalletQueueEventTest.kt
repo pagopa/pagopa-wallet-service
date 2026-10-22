@@ -92,6 +92,7 @@ class WalletQueueEventTest {
                                         status = "status",
                                         validationOperationId = "validationOperationId ",
                                         validationOperationResult = "validationOperationResult",
+                                        validationOperationType = "validationOperationType",
                                         validationErrorCode = "validationErrorCode",
                                         validationOperationTimestamp =
                                             OffsetDateTime.now().toString(),

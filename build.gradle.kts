@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 group = "it.pagopa.wallet"
 
-version = "2.17.2"
+version = "2.18.0"
 
 description = "pagopa-wallet-service"
 
@@ -439,7 +439,14 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   java {
     target("**/*.java")
     targetExclude("build/**/*")
-    eclipse().configFile("eclipse-style.xml")
+    eclipse()
+      .withP2Mirrors(
+        mapOf(
+          "https://download.eclipse.org/eclipse/updates/" to
+            "https://ftp.fau.de/eclipse/eclipse/updates/"
+        )
+      )
+      .configFile("eclipse-style.xml")
     toggleOffOn()
     removeUnusedImports()
     trimTrailingWhitespace()
