@@ -154,7 +154,7 @@ class NpgClient(
             GatewayOperation.DEACTIVATE_CONTRACT,
             { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
                 span,
-                operation ->
+                _ ->
                 logger.info("DeactivateContract with correlationId: $correlationId")
                 apiKey
                     .fold(
@@ -168,22 +168,15 @@ class NpgClient(
                                 }
                         })
                     .onErrorResume(WebClientResponseException::class.java) { error ->
-                        val alreadyDeactivated =
-                            if (error.statusCode.value() == BAD_REQUEST.code()) {
-                                try {
-                                    objectMapper
-                                        .readValue(
-                                            error.responseBodyAsByteArray, ClientError::class.java)
-                                        .errors
-                                        ?.any {
-                                            it.code == NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE
-                                        } == true
-                                } catch (_: IOException) {
-                                    false
-                                }
-                            } else {
-                                false
+                        val errorCodes =
+                            try {
+                                parseNpgErrorCodes(error)
+                            } catch (_: IOException) {
+                                emptyList()
                             }
+                        val alreadyDeactivated =
+                            error.statusCode.value() == BAD_REQUEST.code() &&
+                                NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE in errorCodes
 
                         if (alreadyDeactivated) {
                             logger.info(
@@ -193,12 +186,12 @@ class NpgClient(
                             logger.error(
                                 "Error communicating with NPG-deactivateContract for correlationId $correlationId - response: ${error.responseBodyAsString}",
                                 error)
-                            Mono.just(error.toDeactivationFailure(span))
+                            Mono.just(error.toDeactivationFailure(span, errorCodes))
                         }
                     }
                     .onErrorResume { error ->
                         logger.error(
-                            "Error communicating with NPG-deactivateContract for correlationId $correlationId",
+                            "Unexpected error on NPG-deactivateContract with correlationId $correlationId",
                             error)
                         span.setStatus(StatusCode.ERROR)
                         Mono.just(
@@ -211,26 +204,23 @@ class NpgClient(
             }
     }
 
-    private fun WebClientResponseException.toDeactivationFailure(
-        span: Span
-    ): ContractDeactivationResult.Failure {
-        val errorCodes =
-            try {
-                when (statusCode.value()) {
-                    BAD_REQUEST.code() ->
-                        objectMapper
-                            .readValue(responseBodyAsByteArray, ClientError::class.java)
-                            .errors
-                    INTERNAL_SERVER_ERROR.code() ->
-                        objectMapper
-                            .readValue(responseBodyAsByteArray, ServerError::class.java)
-                            .errors
-                    else -> emptyList()
-                }?.mapNotNull { it.code } ?: emptyList()
-            } catch (_: IOException) {
-                emptyList()
-            }
+    private fun parseNpgErrorCodes(error: WebClientResponseException): List<String> =
+        when (error.statusCode.value()) {
+            BAD_REQUEST.code() ->
+                objectMapper
+                    .readValue(error.responseBodyAsByteArray, ClientError::class.java)
+                    .errors
+            INTERNAL_SERVER_ERROR.code() ->
+                objectMapper
+                    .readValue(error.responseBodyAsByteArray, ServerError::class.java)
+                    .errors
+            else -> emptyList()
+        }?.mapNotNull { it.code } ?: emptyList()
 
+    private fun WebClientResponseException.toDeactivationFailure(
+        span: Span,
+        errorCodes: List<String>
+    ): ContractDeactivationResult.Failure {
         span.setStatus(StatusCode.ERROR)
         span.setAttribute(NPG_HTTP_ERROR_CODE, statusCode.value())
         span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, errorCodes)
@@ -249,18 +239,7 @@ class NpgClient(
         span.setStatus(StatusCode.ERROR)
         if (err is WebClientResponseException) {
             try {
-                val responseErrors =
-                    when (err.statusCode.value()) {
-                        INTERNAL_SERVER_ERROR.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ServerError::class.java)
-                                .errors
-                        BAD_REQUEST.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ClientError::class.java)
-                                .errors
-                        else -> emptyList()
-                    }?.mapNotNull { it.code } ?: emptyList()
+                val responseErrors = parseNpgErrorCodes(err)
 
                 span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, responseErrors)
 
