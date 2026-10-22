@@ -9,9 +9,9 @@ import it.pagopa.wallet.domain.wallets.Wallet
 import it.pagopa.wallet.domain.wallets.WalletApplicationId
 import it.pagopa.wallet.domain.wallets.WalletApplicationStatus
 import it.pagopa.wallet.domain.wallets.WalletId
-import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.domain.wallets.details.CardDetails as DomainCardDetails
 import it.pagopa.wallet.domain.wallets.details.PayPalDetails
+import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.exception.PspNotFoundException
 import it.pagopa.wallet.exception.RestApiException
 import it.pagopa.wallet.exception.WalletApplicationStatusConflictException
