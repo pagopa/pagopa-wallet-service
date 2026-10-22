@@ -1343,7 +1343,8 @@ class WalletService(
      * @param errorCode the optional error code returned by NPG during onboarding status
      *   notification
      * @param walletDetailType the wallet details type
-     * @param walletStatus the final wallet status, used to disambiguate AUTHORIZED outcomes
+     * @param walletStatus the final wallet status, used to disambiguate EXECUTED/AUTHORIZED
+     *   outcomes (the operationResult/operationType pair is validated upstream)
      * @return Mono<SessionWalletRetrieveResponseDto.OutcomeEnum>
      */
     private fun retrieveFinalOutcome(
@@ -1354,15 +1355,7 @@ class WalletService(
     ): SessionWalletRetrieveResponseDto.OutcomeEnum {
         val outcome =
             when (operationResult) {
-                WalletNotificationRequestDto.OperationResultEnum.EXECUTED ->
-                    if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
-                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
-                    } else if (walletStatus == WalletStatusDto.VALIDATED) {
-                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_0
-                    } else {
-                        SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_25
-                    }
-
+                WalletNotificationRequestDto.OperationResultEnum.EXECUTED,
                 WalletNotificationRequestDto.OperationResultEnum.AUTHORIZED ->
                     if (errorCode == Constants.WALLET_ALREADY_ONBOARDED_FOR_USER_ERROR_CODE) {
                         SessionWalletRetrieveResponseDto.OutcomeEnum.NUMBER_15
