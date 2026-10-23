@@ -35,5 +35,20 @@ db.getCollection("payment-wallets").insertMany([
         "applications": [],
         "clients": {},
         "_class": "it.pagopa.wallet.documents.wallets.Wallet"
+    },
+    {
+        "_id": "550e8400-e29b-41d4-a716-446655440003",
+        "userId": "00000000-0000-0000-0000-000000000001",
+        "status": "ERROR",
+        "paymentMethodId": "f25399bf-c56f-4bd2-adc9-7aef87410609",
+        "contractId": "BAD_REQUEST_PS0017",
+        "errorReason": "Wallet expired.",
+        "onboardingChannel": "IO",
+        "version": 3,
+        "creationDate": new Date("2025-01-14T11:30:00Z"),
+        "updateDate": new Date("2025-01-14T11:30:00Z"),
+        "applications": [],
+        "clients": {},
+        "_class": "it.pagopa.wallet.documents.wallets.Wallet"
     }
 ]);
