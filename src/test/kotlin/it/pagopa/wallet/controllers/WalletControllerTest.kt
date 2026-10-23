@@ -320,6 +320,65 @@ class WalletControllerTest {
     }
 
     @Test
+    fun `deactivateContractByWalletId returns 502 when NPG deactivation fails`() = runTest {
+        val walletId = WalletId(UUID.randomUUID())
+        val loggedAction =
+            LoggedAction(
+                false,
+                WalletContractIdDeactivationErrorEvent(
+                    walletId = walletId.value.toString(),
+                    errorType = WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
+                    httpErrorCode = 500,
+                    npgErrorCode = "NPG_ERROR",
+                    attemptNumber = 1))
+
+        given { walletService.deactivateWalletContract(walletId) }
+            .willReturn(Mono.just(loggedAction))
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+
+        webClient
+            .delete()
+            .uri("/wallets/{walletId}/contract", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.BAD_GATEWAY)
+            .expectBody()
+            .jsonPath("$.status")
+            .isEqualTo(502)
+
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+        assertTrue(
+            loggedActionCaptor.firstValue.events.single() is WalletContractIdDeactivationErrorEvent)
+    }
+
+    @Test
+    fun `deactivateContractByWalletId returns 204 when NPG deactivation succeeds`() = runTest {
+        val walletId = WalletId(UUID.randomUUID())
+        val loggedAction =
+            LoggedAction(
+                true,
+                WalletContractIdDeactivatedEvent(
+                    walletId.value.toString(), npgResponseCode = "200"))
+
+        given { walletService.deactivateWalletContract(walletId) }
+            .willReturn(Mono.just(loggedAction))
+        given { loggingEventSyncWriter.saveEventSyncWithDLQWrite(loggedActionCaptor.capture()) }
+            .willAnswer { Mono.just((it.arguments[0] as LoggedAction<*>).data) }
+
+        webClient
+            .delete()
+            .uri("/wallets/{walletId}/contract", mapOf("walletId" to walletId.value.toString()))
+            .header("x-api-key", "primary-key")
+            .exchange()
+            .expectStatus()
+            .isNoContent
+
+        verify(loggingEventSyncWriter, times(1)).saveEventSyncWithDLQWrite(any<LoggedAction<*>>())
+    }
+
+    @Test
     fun `deleteWalletById returns 204 when wallet is already deleted`() = runTest {
         /* preconditions */
         val walletId = WalletId(UUID.randomUUID())

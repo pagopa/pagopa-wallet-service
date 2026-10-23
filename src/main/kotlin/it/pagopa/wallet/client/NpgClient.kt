@@ -12,11 +12,13 @@ import io.opentelemetry.context.Context
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
+import it.pagopa.wallet.audit.WalletContractIdDeactivationErrorType
 import it.pagopa.wallet.client.NpgClient.NpgTracing.GatewayOperation
 import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_CORRELATION_ID_ATTRIBUTE_NAME
 import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME
 import it.pagopa.wallet.client.NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE
 import it.pagopa.wallet.client.NpgClient.NpgTracing.usingNpgTracing
+import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.util.npg.NpgPspApiKeysConfig
 import java.io.IOException
@@ -39,6 +41,20 @@ class NpgClient(
     private val objectMapper: ObjectMapper,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    sealed interface ContractDeactivationResult {
+        data class Success(val httpResponseCode: Int) : ContractDeactivationResult
+
+        data class Failure(
+            val errorType: WalletContractIdDeactivationErrorType,
+            val httpErrorCode: Int,
+            val npgErrorCode: String
+        ) : ContractDeactivationResult
+    }
+
+    companion object {
+        const val NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE = "PS0017"
+    }
 
     fun createNpgOrderBuild(
         correlationId: UUID,
@@ -121,6 +137,100 @@ class NpgClient(
             }
     }
 
+    fun deactivateContract(
+        contractId: ContractId,
+        correlationId: UUID,
+        pspId: String?
+    ): Mono<ContractDeactivationResult> {
+        val apiKey =
+            if (pspId == null) {
+                Either.right(npgPaypalPspApiKeysConfig.defaultApiKey)
+            } else {
+                npgPaypalPspApiKeysConfig[pspId]
+            }
+
+        return usingNpgTracing(
+            tracer,
+            GatewayOperation.DEACTIVATE_CONTRACT,
+            { it.setAttribute(NPG_CORRELATION_ID_ATTRIBUTE_NAME, correlationId.toString()) }) {
+                span,
+                _ ->
+                logger.info("DeactivateContract with correlationId: $correlationId")
+                apiKey
+                    .fold(
+                        { Mono.error(it) },
+                        { apiKey ->
+                            npgWebClient
+                                .pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                                    correlationId, apiKey, contractId.contractId)
+                                .map<ContractDeactivationResult> {
+                                    ContractDeactivationResult.Success(it.statusCode.value())
+                                }
+                        })
+                    .onErrorResume(WebClientResponseException::class.java) { error ->
+                        val errorCodes =
+                            try {
+                                parseNpgErrorCodes(error)
+                            } catch (_: IOException) {
+                                emptyList()
+                            }
+                        val alreadyDeactivated =
+                            error.statusCode.value() == BAD_REQUEST.code() &&
+                                NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE in errorCodes
+
+                        if (alreadyDeactivated) {
+                            logger.info(
+                                "Contract with contractId ${contractId.contractId} is already deactivated, ignoring error [$NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE] for correlationId $correlationId")
+                            Mono.just(ContractDeactivationResult.Success(error.statusCode.value()))
+                        } else {
+                            logger.error(
+                                "Error communicating with NPG-deactivateContract for correlationId $correlationId - response: ${error.responseBodyAsString}",
+                                error)
+                            Mono.just(error.toDeactivationFailure(span, errorCodes))
+                        }
+                    }
+                    .onErrorResume { error ->
+                        logger.error(
+                            "Unexpected error on NPG-deactivateContract with correlationId $correlationId",
+                            error)
+                        span.setStatus(StatusCode.ERROR)
+                        Mono.just(
+                            ContractDeactivationResult.Failure(
+                                errorType =
+                                    WalletContractIdDeactivationErrorType.COMMUNICATION_ERROR,
+                                httpErrorCode = 0,
+                                npgErrorCode = ""))
+                    }
+            }
+    }
+
+    private fun parseNpgErrorCodes(error: WebClientResponseException): List<String> =
+        when (error.statusCode.value()) {
+            BAD_REQUEST.code() ->
+                objectMapper
+                    .readValue(error.responseBodyAsByteArray, ClientError::class.java)
+                    .errors
+            INTERNAL_SERVER_ERROR.code() ->
+                objectMapper
+                    .readValue(error.responseBodyAsByteArray, ServerError::class.java)
+                    .errors
+            else -> emptyList()
+        }?.mapNotNull { it.code } ?: emptyList()
+
+    private fun WebClientResponseException.toDeactivationFailure(
+        span: Span,
+        errorCodes: List<String>
+    ): ContractDeactivationResult.Failure {
+        span.setStatus(StatusCode.ERROR)
+        span.setAttribute(NPG_HTTP_ERROR_CODE, statusCode.value())
+        span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, errorCodes)
+
+        return ContractDeactivationResult.Failure(
+            errorType = WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
+            httpErrorCode = statusCode.value(),
+            npgErrorCode = errorCodes.firstOrNull() ?: "")
+    }
+
     private fun exceptionToNpgResponseException(
         err: Throwable,
         span: Span,
@@ -129,18 +239,7 @@ class NpgClient(
         span.setStatus(StatusCode.ERROR)
         if (err is WebClientResponseException) {
             try {
-                val responseErrors =
-                    when (err.statusCode.value()) {
-                        INTERNAL_SERVER_ERROR.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ServerError::class.java)
-                                .errors
-                        BAD_REQUEST.code() ->
-                            objectMapper
-                                .readValue(err.responseBodyAsByteArray, ClientError::class.java)
-                                .errors
-                        else -> emptyList()
-                    }?.mapNotNull { it.code } ?: emptyList()
+                val responseErrors = parseNpgErrorCodes(err)
 
                 span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, responseErrors)
 
@@ -196,6 +295,7 @@ class NpgClient(
             BUILD_FORM("NpgClient#buildForm"),
             GET_CARD_DATA("NpgClient#getCardData"),
             CONFIRM_PAYMENT("NpgClient#confirmPayment"),
+            DEACTIVATE_CONTRACT("NpgClient#deactivateContract"),
         }
 
         fun <T> usingNpgTracing(
