@@ -93,6 +93,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
@@ -245,6 +246,12 @@ class WalletServiceTest {
             it.pagopa.wallet.domain.wallets.Wallet.TRANSIENT_STATUSES.stream().map {
                 Arguments.of(it)
             }
+
+        @JvmStatic
+        private fun contractDeactivationPspSource() =
+            Stream.of(
+                Arguments.of(PAYMENT_METHOD_ID_CARDS, null),
+                Arguments.of(PAYMENT_METHOD_ID_APM, PSP_ID))
     }
 
     private val walletService: WalletService =
@@ -4616,5 +4623,183 @@ class WalletServiceTest {
 
         assertEquals(newWalletDocument.id, validatedNewWalletDoc.id)
         assertEquals(WalletStatusDto.VALIDATED.toString(), validatedNewWalletDoc.status)
+    }
+
+    @Test
+    fun `deactivate wallet contract should reject VALIDATED wallet`() {
+        val wallet = walletDocumentStatusValidatedCard()
+
+        given(walletRepository.findById(wallet.id)).willReturn(Mono.just(wallet))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectErrorSatisfies {
+                assertTrue(it is WalletConflictStatusException)
+                val error = it as WalletConflictStatusException
+                assertEquals(WALLET_UUID, error.walletId)
+                assertEquals(WalletStatusDto.VALIDATED, error.walletStatusDto)
+            }
+            .verify()
+
+        verifyNoInteractions(npgClient)
+        verify(walletRepository, never()).save(any())
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+        value = WalletStatusDto::class, names = ["VALIDATED"], mode = EnumSource.Mode.EXCLUDE)
+    fun `deactivate wallet contract should ignore wallet without contractId`(
+        status: WalletStatusDto
+    ) {
+        val wallet =
+            walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
+                .copy(status = status.value, contractId = null)
+        given(walletRepository.findById(wallet.id)).willReturn(Mono.just(wallet))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectErrorSatisfies {
+                assertTrue(it is ContractIdMissingException)
+                assertEquals(WALLET_UUID, (it as ContractIdMissingException).walletId)
+            }
+            .verify()
+
+        verifyNoInteractions(npgClient)
+        verify(walletRepository, never()).save(any())
+    }
+
+    @Test
+    fun `deactivate wallet contract should reject missing wallet`() {
+        given(walletRepository.findById(WALLET_UUID.value.toString())).willReturn(Mono.empty())
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectError(WalletNotFoundException::class.java)
+            .verify()
+
+        verifyNoInteractions(npgClient)
+        verify(walletRepository, never()).save(any())
+    }
+
+    @Test
+    fun `deactivate wallet contract should propagate wallet lookup failure`() {
+        val error = IllegalStateException("Cannot read wallet")
+        given(walletRepository.findById(WALLET_UUID.value.toString())).willReturn(Mono.error(error))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectErrorMatches { it === error }
+            .verify()
+
+        verifyNoInteractions(npgClient)
+        verify(walletRepository, never()).save(any())
+    }
+
+    @ParameterizedTest
+    @MethodSource("contractDeactivationPspSource")
+    fun `deactivate wallet contract should pass PSP for PayPal and null for cards`(
+        paymentMethod: PaymentMethodId,
+        expectedPspId: String?
+    ) {
+        val details =
+            when (paymentMethod) {
+                PAYMENT_METHOD_ID_CARDS ->
+                    CardDetails("CARDS", "12345678", "0000", "203012", "MASTERCARD", "?")
+                PAYMENT_METHOD_ID_APM -> PayPalDetails(null, PSP_ID, PSP_BUSINESS_NAME)
+                else -> throw IllegalArgumentException("Unsupported payment method: $paymentMethod")
+            }
+        val wallet = walletDocumentCreatedStatus(paymentMethod).copy(details = details)
+        val contractId = ContractId(requireNotNull(wallet.contractId))
+
+        given(walletRepository.findById(wallet.id)).willReturn(Mono.just(wallet))
+        given(npgClient.deactivateContract(contractId, WALLET_UUID.value, expectedPspId))
+            .willReturn(Mono.just(NpgClient.ContractDeactivationResult.Success(200)))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectNext(LoggedAction(true, WalletContractIdDeactivatedEvent(wallet.id, "200")))
+            .verifyComplete()
+
+        verify(npgClient).deactivateContract(contractId, WALLET_UUID.value, expectedPspId)
+        verify(walletRepository, never()).save(any())
+    }
+
+    @Test
+    fun `deactivate wallet contract should log NPG response code without saving wallet`() {
+        val wallet =
+            walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS).copy(deactivationRetryCount = 3)
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+        given { npgClient.deactivateContract(any(), any(), anyOrNull()) }
+            .willReturn(
+                Mono.just(NpgClient.ContractDeactivationResult.Success(httpResponseCode = 200)))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectNext(
+                LoggedAction(
+                    true,
+                    WalletContractIdDeactivatedEvent(
+                        walletId = wallet.id, npgResponseCode = "200")))
+            .verifyComplete()
+
+        verify(walletRepository, never()).save(any())
+        verify(npgClient)
+            .deactivateContract(
+                ContractId(requireNotNull(wallet.contractId)), WALLET_UUID.value, null)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "0, KO_RESPONSE_RECEIVED",
+        "3, KO_RESPONSE_RECEIVED",
+        "0, COMMUNICATION_ERROR",
+        "3, COMMUNICATION_ERROR")
+    fun `deactivate wallet contract should persist incremented retry count and log NPG error details`(
+        retryCount: Int,
+        errorType: WalletContractIdDeactivationErrorType
+    ) {
+        val wallet =
+            walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
+                .copy(deactivationRetryCount = retryCount)
+        val updatedWallet = wallet.copy(deactivationRetryCount = retryCount + 1)
+        given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
+        given { walletRepository.save(updatedWallet) }.willReturn(Mono.just(updatedWallet))
+        given { npgClient.deactivateContract(any(), any(), anyOrNull()) }
+            .willReturn(
+                Mono.just(
+                    NpgClient.ContractDeactivationResult.Failure(
+                        errorType = errorType, httpErrorCode = 503, npgErrorCode = "NPG_ERROR")))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectNext(
+                LoggedAction(
+                    false,
+                    WalletContractIdDeactivationErrorEvent(
+                        walletId = wallet.id,
+                        contractId = requireNotNull(wallet.contractId),
+                        errorType = errorType,
+                        httpErrorCode = 503,
+                        npgErrorCode = "NPG_ERROR",
+                        attemptNumber = retryCount + 1)))
+            .verifyComplete()
+
+        verify(walletRepository).save(updatedWallet)
+    }
+
+    @Test
+    fun `deactivate wallet contract should propagate failure saving retry count`() {
+        val wallet =
+            walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS).copy(deactivationRetryCount = 1)
+        val error = IllegalStateException("Cannot save wallet")
+        given(walletRepository.findById(wallet.id)).willReturn(Mono.just(wallet))
+        given(npgClient.deactivateContract(any(), any(), anyOrNull()))
+            .willReturn(
+                Mono.just(
+                    NpgClient.ContractDeactivationResult.Failure(
+                        WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
+                        500,
+                        "NPG_ERROR")))
+        given(walletRepository.save(wallet.copy(deactivationRetryCount = 2)))
+            .willReturn(Mono.error(error))
+
+        StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
+            .expectErrorMatches { it === error }
+            .verify()
+
+        verify(walletRepository).save(wallet.copy(deactivationRetryCount = 2))
     }
 }
