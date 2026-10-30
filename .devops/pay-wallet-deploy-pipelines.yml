@@ -47,7 +47,7 @@ resources:
     - repository: pagopaWalletTests
       type: github
       name: pagopa/pagopa-wallet-tests
-      ref: main
+      ref: CHK-5042-add-contract-deactivation-deploy-integration-tests
       endpoint: 'io-azure-devops-github-ro'
 
 pool:
@@ -127,6 +127,29 @@ stages:
               TEST_FILE_PREFIX: "DEV-checkout-wallet-integration-test"
               API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+
+      - job: newman_api_test_internal_api
+        displayName: 'API Test: Internal APIs'
+        pool:
+          name: pagopa-dev-linux
+        steps:
+          - checkout: pagopaWalletTests
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "CARDS Contract deactivation tests"
+              ENV_FILE: "api-tests/dev.contract.deactivation.cards.envs.json"
+              TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards-contract-deactivation"
+              API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+              WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_DEV)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "PAYPAL Contract deactivation tests"
+              ENV_FILE: "api-tests/dev.contract.deactivation.paypal.envs.json"
+              TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal-contract-deactivation"
+              API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+              WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_DEV)
 
   - stage: End_to_End_Tests_DEV
     dependsOn:
@@ -281,6 +304,29 @@ stages:
               TEST_FILE_PREFIX: "UAT-checkout-wallet-integration-test"
               API_TEST_FILE: "api-tests/checkout_payment_wallet_api.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+
+      - job: newman_api_test_internal_api
+        displayName: 'API Test: Internal APIs'
+        pool:
+          name: pagopa-uat-linux
+        steps:
+          - checkout: pagopaWalletTests
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "CARDS Contract deactivation tests"
+              ENV_FILE: "api-tests/uat.contract.deactivation.cards.envs.json"
+              TEST_FILE_PREFIX: "UAT-wallet-integration-test-cards-contract-deactivation"
+              API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+              WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_UAT)
+          - template: azure-templates/api-tests.yml
+            parameters:
+              TEST_DISPLAY_NAME: "PAYPAL Contract deactivation tests"
+              ENV_FILE: "api-tests/uat.contract.deactivation.paypal.envs.json"
+              TEST_FILE_PREFIX: "UAT-wallet-integration-test-paypal-contract-deactivation"
+              API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
+              WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_UAT)
+              WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_UAT)
 
   - stage: End_to_End_Tests_UAT
     dependsOn:
