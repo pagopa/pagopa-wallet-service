@@ -4770,6 +4770,7 @@ class WalletServiceTest {
                     false,
                     WalletContractIdDeactivationErrorEvent(
                         walletId = wallet.id,
+                        contractId = requireNotNull(wallet.contractId),
                         errorType = errorType,
                         httpErrorCode = 503,
                         npgErrorCode = "NPG_ERROR",

@@ -327,6 +327,7 @@ class WalletControllerTest {
                 false,
                 WalletContractIdDeactivationErrorEvent(
                     walletId = walletId.value.toString(),
+                    contractId = "contractId",
                     errorType = WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
                     httpErrorCode = 500,
                     npgErrorCode = "NPG_ERROR",

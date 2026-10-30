@@ -1642,6 +1642,7 @@ class WalletService(
                                         false,
                                         WalletContractIdDeactivationErrorEvent(
                                             walletId.value.toString(),
+                                            savedWallet.contractId!!,
                                             result.errorType,
                                             result.httpErrorCode,
                                             result.npgErrorCode,
