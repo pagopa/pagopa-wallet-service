@@ -50,5 +50,26 @@ db.getCollection("payment-wallets").insertMany([
         "applications": [],
         "clients": {},
         "_class": "it.pagopa.wallet.documents.wallets.Wallet"
-    }
+    },
+    {
+        "_id": "550e8400-e29b-41d4-a716-446655440004",
+        "userId": "00000000-0000-0000-0000-000000000001",
+        "status": "ERROR",
+        "paymentMethodId": "1fb6287c-6e9f-11ee-b962-0242ac120002",
+        "contractId": "BAD_REQUEST_PS0017",
+        "details": {
+            "maskedEmail": "te****@te*****.it",
+            "pspId": "pspId",
+            "pspBusinessName": "Business Name 1",
+            "_class": "it.pagopa.wallet.documents.wallets.details.PayPalDetails"
+          },
+        "errorReason": "Wallet expired.",
+        "onboardingChannel": "IO",
+        "version": 3,
+        "creationDate": new Date("2025-01-14T11:30:00Z"),
+        "updateDate": new Date("2025-01-14T11:30:00Z"),
+        "applications": [],
+        "clients": {},
+        "_class": "it.pagopa.wallet.documents.wallets.Wallet"
+        }
 ]);
