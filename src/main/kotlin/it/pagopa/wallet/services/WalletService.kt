@@ -1600,21 +1600,19 @@ class WalletService(
         walletRepository
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { walletDocument ->
-                if (walletDocument.status == WalletStatusDto.VALIDATED.value) {
-                    throw WalletConflictStatusException(
+            .filter { it.status != WalletStatusDto.VALIDATED.value }
+            .switchIfEmpty {
+                Mono.error(
+                    WalletConflictStatusException(
                         walletId,
                         WalletStatusDto.VALIDATED,
                         WalletStatusDto.entries
                             .filterNot { it == WalletStatusDto.VALIDATED }
                             .toSet(),
-                        null)
-                }
-                if (walletDocument.contractId == null) {
-                    throw ContractIdMissingException(walletId)
-                }
-                walletDocument
+                        null))
             }
+            .filter { !it.contractId.isNullOrBlank() }
+            .switchIfEmpty { Mono.error(ContractIdMissingException(walletId)) }
             .flatMap { walletDocument ->
                 val wallet = walletDocument.toDomain()
                 val pspId =
