@@ -1600,21 +1600,19 @@ class WalletService(
         walletRepository
             .findById(walletId.value.toString())
             .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
-            .map { walletDocument ->
-                if (walletDocument.status == WalletStatusDto.VALIDATED.value) {
-                    throw WalletConflictStatusException(
+            .filter { it.status != WalletStatusDto.VALIDATED.value }
+            .switchIfEmpty {
+                Mono.error(
+                    WalletConflictStatusException(
                         walletId,
                         WalletStatusDto.VALIDATED,
                         WalletStatusDto.entries
                             .filterNot { it == WalletStatusDto.VALIDATED }
                             .toSet(),
-                        null)
-                }
-                if (walletDocument.contractId == null) {
-                    throw ContractIdMissingException(walletId)
-                }
-                walletDocument
+                        null))
             }
+            .filter { !it.contractId.isNullOrBlank() }
+            .switchIfEmpty { Mono.error(ContractIdMissingException(walletId)) }
             .flatMap { walletDocument ->
                 val wallet = walletDocument.toDomain()
                 val pspId =
@@ -1634,7 +1632,7 @@ class WalletService(
                                         result.httpResponseCode.toString())))
                         }
                         is NpgClient.ContractDeactivationResult.Failure -> {
-                            val attemptNumber = walletDocument.deactivationRetryCount + 1
+                            val attemptNumber = (walletDocument.deactivationRetryCount ?: 0) + 1
                             walletRepository
                                 .save(walletDocument.copy(deactivationRetryCount = attemptNumber))
                                 .map { savedWallet ->
@@ -1642,10 +1640,11 @@ class WalletService(
                                         false,
                                         WalletContractIdDeactivationErrorEvent(
                                             walletId.value.toString(),
+                                            savedWallet.contractId!!,
                                             result.errorType,
                                             result.httpErrorCode,
                                             result.npgErrorCode,
-                                            savedWallet.deactivationRetryCount))
+                                            savedWallet.deactivationRetryCount!!))
                                 }
                         }
                     }

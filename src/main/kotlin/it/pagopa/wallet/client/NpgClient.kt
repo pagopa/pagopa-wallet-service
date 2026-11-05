@@ -186,7 +186,9 @@ class NpgClient(
                             logger.error(
                                 "Error communicating with NPG-deactivateContract for correlationId $correlationId - response: ${error.responseBodyAsString}",
                                 error)
-                            Mono.just(error.toDeactivationFailure(span, errorCodes))
+                            span.setStatus(StatusCode.ERROR)
+                            recordNpgErrorOnSpan(span, error, errorCodes)
+                            Mono.just(error.toDeactivationFailure(errorCodes))
                         }
                     }
                     .onErrorResume { error ->
@@ -217,19 +219,22 @@ class NpgClient(
             else -> emptyList()
         }?.mapNotNull { it.code } ?: emptyList()
 
-    private fun WebClientResponseException.toDeactivationFailure(
+    private fun recordNpgErrorOnSpan(
         span: Span,
+        error: WebClientResponseException,
         errorCodes: List<String>
-    ): ContractDeactivationResult.Failure {
-        span.setStatus(StatusCode.ERROR)
-        span.setAttribute(NPG_HTTP_ERROR_CODE, statusCode.value())
+    ) {
+        span.setAttribute(NPG_HTTP_ERROR_CODE, error.statusCode.value())
         span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, errorCodes)
+    }
 
-        return ContractDeactivationResult.Failure(
+    private fun WebClientResponseException.toDeactivationFailure(
+        errorCodes: List<String>
+    ): ContractDeactivationResult.Failure =
+        ContractDeactivationResult.Failure(
             errorType = WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
             httpErrorCode = statusCode.value(),
             npgErrorCode = errorCodes.firstOrNull() ?: "")
-    }
 
     private fun exceptionToNpgResponseException(
         err: Throwable,
@@ -239,14 +244,9 @@ class NpgClient(
         span.setStatus(StatusCode.ERROR)
         if (err is WebClientResponseException) {
             try {
-                val responseErrors = parseNpgErrorCodes(err)
-
-                span.setAttribute(NPG_ERROR_CODES_ATTRIBUTE_NAME, responseErrors)
-
-                span.setAttribute(NPG_HTTP_ERROR_CODE, err.statusCode.value())
-
+                recordNpgErrorOnSpan(span, err, parseNpgErrorCodes(err))
                 return mapNpgException(err.statusCode)
-            } catch (ex: IOException) {
+            } catch (_: IOException) {
                 return NpgClientException(
                     description =
                         "Invalid error response from NPG with status code ${err.statusCode}",
@@ -256,7 +256,7 @@ class NpgClient(
         }
 
         return NpgClientException(
-            "Unexpected error while invoke method for %s".format(gatewayOperation.spanName),
+            "Unexpected error while invoking method for ${gatewayOperation.spanName}",
             HttpStatus.INTERNAL_SERVER_ERROR)
     }
 

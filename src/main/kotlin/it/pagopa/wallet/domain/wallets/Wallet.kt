@@ -66,7 +66,7 @@ data class Wallet(
     val creationDate: Instant,
     val updateDate: Instant,
     val onboardingChannel: OnboardingChannel,
-    val deactivationRetryCount: Int = 0
+    val deactivationRetryCount: Int? = null
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(Wallet::class.java)

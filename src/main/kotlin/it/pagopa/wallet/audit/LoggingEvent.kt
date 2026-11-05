@@ -76,6 +76,7 @@ enum class WalletContractIdDeactivationErrorType {
 
 data class WalletContractIdDeactivationErrorEvent(
     val walletId: String,
+    val contractId: String,
     val errorType: WalletContractIdDeactivationErrorType,
     val httpErrorCode: Int,
     val npgErrorCode: String,
