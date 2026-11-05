@@ -1632,7 +1632,7 @@ class WalletService(
                                         result.httpResponseCode.toString())))
                         }
                         is NpgClient.ContractDeactivationResult.Failure -> {
-                            val attemptNumber = walletDocument.deactivationRetryCount + 1
+                            val attemptNumber = (walletDocument.deactivationRetryCount ?: 0) + 1
                             walletRepository
                                 .save(walletDocument.copy(deactivationRetryCount = attemptNumber))
                                 .map { savedWallet ->
@@ -1644,7 +1644,7 @@ class WalletService(
                                             result.errorType,
                                             result.httpErrorCode,
                                             result.npgErrorCode,
-                                            savedWallet.deactivationRetryCount))
+                                            savedWallet.deactivationRetryCount!!))
                                 }
                         }
                     }

@@ -33,7 +33,7 @@ data class Wallet(
     @LastModifiedDate var updateDate: Instant,
     val onboardingChannel: String,
     val ttl: Int?,
-    val deactivationRetryCount: Int = 0
+    val deactivationRetryCount: Int?
 ) {
     fun toDomain(): Wallet {
         val wallet =
