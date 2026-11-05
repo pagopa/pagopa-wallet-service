@@ -1,7 +1,7 @@
 package it.pagopa.wallet.client
 
 import io.vavr.control.Try
-import it.pagopa.generated.ecommerce.paymentmethods.v2.model.*
+import it.pagopa.generated.ecommerce.paymentmethodshandler.model.*
 import it.pagopa.wallet.domain.wallets.PaymentMethodId
 import it.pagopa.wallet.exception.RestApiException
 import org.slf4j.LoggerFactory
@@ -14,16 +14,16 @@ import reactor.kotlin.core.publisher.toMono
 
 /**
  * Client to retrieve info about psp by given a pspId or get all psp by payment method. Actually is
- * backed by calculate fees v2 exposed by payment-methods microservice.
+ * backed by calculate fees exposed by the payment-methods-handler microservice.
  *
  * Note: It could be backed by dedicated Psp API to get details about it without using calculate
  * fees, so keep this client separated by PaymentMethodsClient
  */
 @Component
 class PspDetailClient(
-    @Qualifier("ecommercePaymentMethodsWebClientV2")
+    @Qualifier("ecommercePaymentMethodsHandlerWebClient")
     private val paymentMethodsApi:
-        it.pagopa.generated.ecommerce.paymentmethods.v2.api.PaymentMethodsApi
+        it.pagopa.generated.ecommerce.paymentmethodshandler.api.PaymentMethodsHandlerApi
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -33,9 +33,10 @@ class PspDetailClient(
         return Try.of {
                 paymentMethodsApi.calculateFees(
                     paymentMethodId.value.toString(),
-                    STUB_TRANSACTION_ID,
+                    X_CLIENT_ID,
                     STUB_FEES_REQUEST,
-                    DEFAULT_MAX_OCCURRENCES)
+                    DEFAULT_MAX_OCCURRENCES,
+                    null)
             }
             .fold({ error -> Mono.error(error) }, { it })
             .doOnError {
@@ -63,7 +64,7 @@ class PspDetailClient(
     }
 
     companion object {
-        private const val STUB_TRANSACTION_ID = ""
+        private const val X_CLIENT_ID = "IO"
         private const val DEFAULT_MAX_OCCURRENCES = 1000
         private val STUB_FEES_REQUEST =
             CalculateFeeRequest()
@@ -71,7 +72,7 @@ class PspDetailClient(
                 .touchpoint("IO")
                 .addPaymentNoticesItem(
                     PaymentNotice()
-                        .paymentAmount(1)
+                        .paymentAmount(1L)
                         .primaryCreditorInstitution("")
                         .addTransferListItem(
                             TransferListItem()
