@@ -141,6 +141,7 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-cards-contract-deactivation"
               API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+              USE_NEWMAN_DOCKER_IMAGE: true
               WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_DEV)
           - template: azure-templates/api-tests.yml
             parameters:
@@ -149,6 +150,7 @@ stages:
               TEST_FILE_PREFIX: "DEV-wallet-integration-test-paypal-contract-deactivation"
               API_TEST_FILE: "api-tests/wallet_contract_deactivation.tests.json"
               WALLET_TOKEN_TEST: $(WALLET_TOKEN_TEST_DEV)
+              USE_NEWMAN_DOCKER_IMAGE: true
               WALLET_SERVICE_API_KEY: $(WALLET_SERVICE_API_KEY_DEV)
 
   - stage: End_to_End_Tests_DEV
