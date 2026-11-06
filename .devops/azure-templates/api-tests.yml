@@ -17,16 +17,16 @@ parameters:
     type: boolean
     default: false
 
-variables:
-  NEWMAN_ARGS: "run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var WALLET_TOKEN_TEST=${{ parameters.WALLET_TOKEN_TEST }} --env-var WALLET_SERVICE_API_KEY=${{ parameters.WALLET_SERVICE_API_KEY }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml"
-
 steps:
   - task: CopyFiles@2
     inputs:
       SourceFolder: $(Build.Repository.LocalPath)
       Contents: '**'
       TargetFolder: $(Agent.TempDirectory)
-  - ${{ if eq(parameters['USE_NEWMAN_DOCKER_IMAGE'], False) }}:
+  - script: |
+      echo "##vso[task.setvariable variable=NEWMAN_ARGS]run ${{ parameters.API_TEST_FILE }} -e ${{ parameters.ENV_FILE }} --env-var WALLET_TOKEN_TEST=${{ parameters.WALLET_TOKEN_TEST }} --env-var WALLET_SERVICE_API_KEY=${{ parameters.WALLET_SERVICE_API_KEY }} --ignore-redirects --reporters cli,junit --reporter-junit-export Results/${{ parameters.TEST_FILE_PREFIX }}-api-TEST.xml"
+    displayName: 'Prepare Newman arguments'
+  - ${{ if eq(parameters.USE_NEWMAN_DOCKER_IMAGE, false) }}:
       - script: |
           yarn global add newman
         displayName: 'Newman installation'
