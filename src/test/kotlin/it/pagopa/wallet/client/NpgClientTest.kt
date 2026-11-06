@@ -9,6 +9,8 @@ import io.opentelemetry.api.trace.Tracer
 import io.vavr.control.Either
 import it.pagopa.generated.npg.api.PaymentServicesApi
 import it.pagopa.generated.npg.model.*
+import it.pagopa.wallet.audit.WalletContractIdDeactivationErrorType
+import it.pagopa.wallet.domain.wallets.ContractId
 import it.pagopa.wallet.domain.wallets.details.WalletDetailsType
 import it.pagopa.wallet.exception.NpgClientException
 import it.pagopa.wallet.services.WalletService
@@ -18,12 +20,16 @@ import java.util.*
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -417,5 +423,211 @@ class NpgClientTest {
         verify(span)
             .setAttribute(
                 eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME), eq(listOf("123")))
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [200, 204])
+    fun `Should return the successful HTTP response code for contract deactivation`(
+        statusCode: Int
+    ) {
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(Mono.just(ResponseEntity.status(statusCode).build()))
+
+        StepVerifier.create(
+                npgClient.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(NpgClient.ContractDeactivationResult.Success(statusCode))
+            .verifyComplete()
+    }
+
+    @Test
+    fun `Should return 400 as successful response when contract is already deactivated`() {
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        400,
+                        "Bad Request",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ClientError()
+                                .addErrorsItem(
+                                    ErrorsInner()
+                                        .code(NpgClient.NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE)
+                                        .description("Contract already deactivated"))),
+                        StandardCharsets.UTF_8)))
+
+        StepVerifier.create(
+                npgClient.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(NpgClient.ContractDeactivationResult.Success(400))
+            .verifyComplete()
+
+        verify(span, never()).setStatus(StatusCode.ERROR)
+        verify(span, never()).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), any())
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [400, 500])
+    fun `Should parse NPG error details once when contract deactivation fails`(statusCode: Int) {
+        val errorMapper = spy(ObjectMapper())
+        val client = NpgClient(npgWebClient, npgPspApiKeysConfig, tracer, errorMapper)
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        statusCode,
+                        "NPG error",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ClientError()
+                                .addErrorsItem(ErrorsInner().description("Missing code"))
+                                .addErrorsItem(ErrorsInner().code("NPG_ERROR").description("error"))
+                                .addErrorsItem(ErrorsInner().code("SECOND_ERROR"))),
+                        StandardCharsets.UTF_8)))
+
+        StepVerifier.create(
+                client.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(
+                NpgClient.ContractDeactivationResult.Failure(
+                    WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
+                    statusCode,
+                    "NPG_ERROR"))
+            .verifyComplete()
+
+        when (statusCode) {
+            400 -> verify(errorMapper).readValue(any<ByteArray>(), eq(ClientError::class.java))
+            500 -> verify(errorMapper).readValue(any<ByteArray>(), eq(ServerError::class.java))
+        }
+        verify(span).setStatus(StatusCode.ERROR)
+        verify(span).setAttribute(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE, statusCode.toLong())
+        verify(span)
+            .setAttribute(
+                NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME,
+                listOf("NPG_ERROR", "SECOND_ERROR"))
+    }
+
+    @ParameterizedTest
+    @CsvSource("400|{}", "500|not JSON", "500|{\"errors\":[]}", delimiter = '|')
+    fun `Should preserve HTTP failure for invalid or absent deactivation error codes`(
+        statusCode: Int,
+        body: String
+    ) {
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        statusCode,
+                        "NPG error",
+                        HttpHeaders.EMPTY,
+                        body.toByteArray(StandardCharsets.UTF_8),
+                        StandardCharsets.UTF_8)))
+
+        StepVerifier.create(
+                npgClient.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(
+                NpgClient.ContractDeactivationResult.Failure(
+                    WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED, statusCode, ""))
+            .verifyComplete()
+
+        verify(span).setStatus(StatusCode.ERROR)
+        verify(span).setAttribute(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE, statusCode.toLong())
+        verify(span).setAttribute(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME, emptyList())
+    }
+
+    @Test
+    fun `Should not treat already deactivated code as success for server errors`() {
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        500,
+                        "NPG error",
+                        HttpHeaders.EMPTY,
+                        objectMapper.writeValueAsBytes(
+                            ServerError()
+                                .addErrorsItem(
+                                    ErrorsInner()
+                                        .code(
+                                            NpgClient
+                                                .NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE))),
+                        StandardCharsets.UTF_8)))
+
+        StepVerifier.create(
+                npgClient.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(
+                NpgClient.ContractDeactivationResult.Failure(
+                    WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
+                    500,
+                    NpgClient.NPG_CONTRACT_ALREADY_DEACTIVATED_ERROR_CODE))
+            .verifyComplete()
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [400, 500])
+    fun `Should preserve bad gateway mapping and tracing for malformed error responses`(
+        statusCode: Int
+    ) {
+        val span = spy(Span.current())
+        given(spanBuilder.startSpan()).willReturn(span)
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(npgWebClient.pspApiV1BuildCardDataGet(any(), any(), any()))
+            .willReturn(
+                Mono.error(
+                    WebClientResponseException.create(
+                        statusCode,
+                        "NPG error",
+                        HttpHeaders.EMPTY,
+                        "not JSON".toByteArray(StandardCharsets.UTF_8),
+                        StandardCharsets.UTF_8)))
+
+        StepVerifier.create(npgClient.getCardData(sessionId, correlationId))
+            .expectErrorMatches {
+                it is NpgClientException &&
+                    it.toRestException().httpStatus == HttpStatus.BAD_GATEWAY &&
+                    it.message ==
+                        "Invalid error response from NPG with status code ${HttpStatus.valueOf(statusCode)}"
+            }
+            .verify()
+
+        verify(span).setStatus(StatusCode.ERROR)
+        verify(span, never()).setAttribute(eq(NpgClient.NpgTracing.NPG_HTTP_ERROR_CODE), any())
+        verify(span, never())
+            .setAttribute(eq(NpgClient.NpgTracing.NPG_ERROR_CODES_ATTRIBUTE_NAME), any())
+    }
+
+    @Test
+    fun `Should return communication error details when contract deactivation cannot reach NPG`() {
+        given(npgPspApiKeysConfig.defaultApiKey).willReturn(defaultApiKey)
+        given(
+                npgWebClient.pspApiV1ContractsContractIdDeactivationPostWithHttpInfo(
+                    any(), any(), any()))
+            .willReturn(Mono.error(IllegalStateException("connection error")))
+
+        StepVerifier.create(
+                npgClient.deactivateContract(ContractId("contractId"), correlationId, null))
+            .expectNext(
+                NpgClient.ContractDeactivationResult.Failure(
+                    WalletContractIdDeactivationErrorType.COMMUNICATION_ERROR, 0, ""))
+            .verifyComplete()
     }
 }

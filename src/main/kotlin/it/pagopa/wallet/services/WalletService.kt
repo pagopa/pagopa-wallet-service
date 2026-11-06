@@ -1595,4 +1595,59 @@ class WalletService(
             .getPspDetails(sessionInputPayPalDataDto.pspId, paymentMethodId)
             .map { PayPalDetails(null, sessionInputPayPalDataDto.pspId, it.pspBusinessName ?: "") }
             .switchIfEmpty { Mono.error(PspNotFoundException(sessionInputPayPalDataDto.pspId)) }
+
+    fun deactivateWalletContract(walletId: WalletId): Mono<LoggedAction<Boolean>> =
+        walletRepository
+            .findById(walletId.value.toString())
+            .switchIfEmpty { Mono.error(WalletNotFoundException(walletId)) }
+            .filter { it.status != WalletStatusDto.VALIDATED.value }
+            .switchIfEmpty {
+                Mono.error(
+                    WalletConflictStatusException(
+                        walletId,
+                        WalletStatusDto.VALIDATED,
+                        WalletStatusDto.entries
+                            .filterNot { it == WalletStatusDto.VALIDATED }
+                            .toSet(),
+                        null))
+            }
+            .filter { !it.contractId.isNullOrBlank() }
+            .switchIfEmpty { Mono.error(ContractIdMissingException(walletId)) }
+            .flatMap { walletDocument ->
+                val wallet = walletDocument.toDomain()
+                val pspId =
+                    when (val details = wallet.details) {
+                        is PayPalDetails -> details.pspId
+                        else -> null
+                    }
+                npgClient.deactivateContract(wallet.contractId!!, wallet.id.value, pspId).flatMap {
+                    result ->
+                    when (result) {
+                        is NpgClient.ContractDeactivationResult.Success -> {
+                            Mono.just(
+                                LoggedAction(
+                                    true,
+                                    WalletContractIdDeactivatedEvent(
+                                        walletId.value.toString(),
+                                        result.httpResponseCode.toString())))
+                        }
+                        is NpgClient.ContractDeactivationResult.Failure -> {
+                            val attemptNumber = (walletDocument.deactivationRetryCount ?: 0) + 1
+                            walletRepository
+                                .save(walletDocument.copy(deactivationRetryCount = attemptNumber))
+                                .map { savedWallet ->
+                                    LoggedAction(
+                                        false,
+                                        WalletContractIdDeactivationErrorEvent(
+                                            walletId.value.toString(),
+                                            savedWallet.contractId!!,
+                                            result.errorType,
+                                            result.httpErrorCode,
+                                            result.npgErrorCode,
+                                            savedWallet.deactivationRetryCount!!))
+                                }
+                        }
+                    }
+                }
+            }
 }
