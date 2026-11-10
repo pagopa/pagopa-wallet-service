@@ -1329,6 +1329,116 @@
 			},
 			"response": []
 		},
+        {
+          "name": "Delete wallet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"[Wallet for onboarding - PAYPAL] Wallet deleted successfully with DELETE /wallets/{walletId}\", function () {\n    pm.response.to.have.status(204);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{SECURITY_API_KEY_PRIMARY}}"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{x-user-id}}"
+              }
+            ],
+            "url": {
+              "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}",
+              "host": [
+                "{{HOSTNAME}}"
+              ],
+              "path": [
+                "wallets",
+                "{{WALLET_ID}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete contract",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"[Wallet for onboarding PAYPAL] Delete wallet contract successfully with DELETE /wallets/{WalletId}/contract\", function () {\n    pm.response.to.have.status(204);\n});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{SECURITY_API_KEY_PRIMARY}}"
+              }
+            ],
+            "url": {
+              "raw": "{{HOSTNAME}}/wallets/{{WALLET_ID}}/contract",
+              "host": [
+                "{{HOSTNAME}}"
+              ],
+              "path": [
+                "wallets",
+                "{{WALLET_ID}}",
+                "contract"
+              ]
+            },
+            "description": "Deactivate the contract associated to the wallet"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete already deactivated contract",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"[Wallet for onboarding PAYPAL] Delete already deactivated contract\", function () {\n    pm.response.to.have.status(204);\n});\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{SECURITY_API_KEY_PRIMARY}}"
+              }
+            ],
+            "url": {
+              "raw": "{{HOSTNAME}}/wallets/{{DEACTIVATED_CONTRACT_WALLET_ID}}/contract",
+              "host": [
+                "{{HOSTNAME}}"
+              ],
+              "path": [
+                "wallets",
+                "{{DEACTIVATED_CONTRACT_WALLET_ID}}",
+                "contract"
+              ]
+            },
+            "description": "Deactivate the contract associated to the wallet"
+          },
+          "response": []
+        },
 		{
 			"name": "Create new wallet without applications",
 			"event": [
@@ -2217,5 +2327,5 @@
 			},
 			"response": []
 		}
-	]
+    ]
 }

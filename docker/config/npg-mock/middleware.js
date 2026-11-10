@@ -22,6 +22,35 @@ module.exports = function (req, res, next) {
     else {
       res.json(db.get("buildApm"))
     }
+  } else if(requestPath.includes("deactivation")) { // POST /psp/api/v1/contracts/{contractId}/deactivation
+    const match = requestPath.match(/\/contracts\/([^\/]+)\/deactivation/);
+    const contractId = match ? match[1] : null;
+
+    const correlationId = req.headers['correlation-id'] || req.headers['x-correlation-id'];
+
+    if (contractId === "BAD_REQUEST") {
+      return res.status(400).json({
+        errors: [
+          {
+            code: "XY0000",
+            description: "Bad request - generic error"
+          }
+        ]
+      });
+    }
+
+    if (contractId === "BAD_REQUEST_PS0017") {
+      return res.status(400).json({
+        errors: [
+          {
+            code: "PS0017",
+            description: `Merchant contract id not found - ${correlationId}`
+          }
+        ]
+      });
+    }
+
+    return res.status(200).send();
   } else {
     // Continue to default JSON Server router
     next();
