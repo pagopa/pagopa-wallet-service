@@ -178,6 +178,23 @@ class PspDetailClientTest {
             .verify()
     }
 
+    @ParameterizedTest
+    @MethodSource("paymentMethodStatusMappings")
+    fun `handler branch - Should map handler payment method status into v2 status`(
+        handlerStatus:
+            it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse.PaymentMethodStatusEnum?,
+        expectedV2Status: it.pagopa.generated.ecommerce.paymentmethods.v2.model.PaymentMethodStatus?
+    ) {
+        given { paymentMethodsHandlerApi.calculateFees(any(), any(), any(), any(), anyOrNull()) }
+            .willReturn(generateHandlerFeesResponse(handlerStatus).toMono())
+
+        client(enabled = true)
+            .getPspList(PAYMENT_METHOD_ID_APM)
+            .test()
+            .expectNextMatches { it.paymentMethodStatus == expectedV2Status }
+            .verifyComplete()
+    }
+
     companion object {
         private const val PSP_ID = "pspId"
         private const val PSP_BUSINESS_NAME = "pspBusinessName"
@@ -191,18 +208,43 @@ class PspDetailClientTest {
                         .idPsp(PSP_ID)
                         .pspBusinessName(PSP_BUSINESS_NAME))
 
-        private fun generateHandlerFeesResponse() =
+        private fun generateHandlerFeesResponse(
+            status:
+                it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse.PaymentMethodStatusEnum? =
+                it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse
+                    .PaymentMethodStatusEnum
+                    .ENABLED
+        ) =
             it.pagopa.generated.ecommerce.paymentmethodshandler.model
                 .CalculateFeeResponse()
-                .paymentMethodStatus(
-                    it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse
-                        .PaymentMethodStatusEnum
-                        .ENABLED)
+                .paymentMethodStatus(status)
                 .addBundlesItem(
                     it.pagopa.generated.ecommerce.paymentmethodshandler.model
                         .Bundle()
                         .idPsp(PSP_ID)
                         .pspBusinessName(PSP_BUSINESS_NAME))
+
+        @JvmStatic
+        fun paymentMethodStatusMappings(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(
+                    it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse
+                        .PaymentMethodStatusEnum
+                        .ENABLED,
+                    it.pagopa.generated.ecommerce.paymentmethods.v2.model.PaymentMethodStatus
+                        .ENABLED),
+                Arguments.of(
+                    it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse
+                        .PaymentMethodStatusEnum
+                        .DISABLED,
+                    it.pagopa.generated.ecommerce.paymentmethods.v2.model.PaymentMethodStatus
+                        .DISABLED),
+                Arguments.of(
+                    it.pagopa.generated.ecommerce.paymentmethodshandler.model.CalculateFeeResponse
+                        .PaymentMethodStatusEnum
+                        .MAINTENANCE,
+                    null),
+                Arguments.of(null, null))
 
         @JvmStatic
         fun errorResponses(): Stream<Arguments> =

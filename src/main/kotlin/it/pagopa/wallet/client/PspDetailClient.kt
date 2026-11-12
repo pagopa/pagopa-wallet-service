@@ -25,9 +25,6 @@ import reactor.kotlin.core.publisher.toMono
  *   into the v2 model before returning;
  * - when `false`, it calls the legacy payment-methods-service v2 `calculateFees`.
  *
- * In both cases the public methods return the v2 model so [it.pagopa.wallet.services.WalletService]
- * is unaffected by the switch.
- *
  * Note: It could be backed by dedicated Psp API to get details about it without using calculate
  * fees, so keep this client separated by PaymentMethodsClient
  */
