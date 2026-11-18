@@ -37,5 +37,6 @@ COPY --from=build --chown=user ${EXTRACTED}/application/ ./
 RUN true
 
 
+ENV JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
 ENTRYPOINT ["java","-javaagent:opentelemetry-javaagent.jar","org.springframework.boot.loader.launch.JarLauncher"]
 
