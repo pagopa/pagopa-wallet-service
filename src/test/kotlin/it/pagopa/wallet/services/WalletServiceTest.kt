@@ -96,10 +96,12 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.*
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Hooks
@@ -4744,20 +4746,23 @@ class WalletServiceTest {
 
     @ParameterizedTest
     @CsvSource(
+        "null, KO_RESPONSE_RECEIVED",
         "0, KO_RESPONSE_RECEIVED",
         "3, KO_RESPONSE_RECEIVED",
         "0, COMMUNICATION_ERROR",
-        "3, COMMUNICATION_ERROR")
+        "3, COMMUNICATION_ERROR",
+        nullValues = ["null"])
     fun `deactivate wallet contract should persist incremented retry count and log NPG error details`(
-        retryCount: Int,
+        retryCount: Int?,
         errorType: WalletContractIdDeactivationErrorType
     ) {
         val wallet =
             walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS)
-                .copy(deactivationRetryCount = retryCount)
-        val updatedWallet = wallet.copy(deactivationRetryCount = retryCount + 1)
+                .copy(deactivationRetryCount = retryCount, version = 7)
+        val attemptNumber = (retryCount ?: 0) + 1
         given { walletRepository.findById(wallet.id) }.willReturn(Mono.just(wallet))
-        given { walletRepository.save(updatedWallet) }.willReturn(Mono.just(updatedWallet))
+        given { walletRepository.updateDeactivationRetryCount(wallet.id, 7, attemptNumber) }
+            .willReturn(Mono.just(1L))
         given { npgClient.deactivateContract(any(), any(), anyOrNull()) }
             .willReturn(
                 Mono.just(
@@ -4774,14 +4779,18 @@ class WalletServiceTest {
                         errorType = errorType,
                         httpErrorCode = 503,
                         npgErrorCode = "NPG_ERROR",
-                        attemptNumber = retryCount + 1)))
+                        attemptNumber = attemptNumber)))
             .verifyComplete()
 
-        verify(walletRepository).save(updatedWallet)
+        verify(walletRepository).updateDeactivationRetryCount(wallet.id, 7, attemptNumber)
+        verify(walletRepository, never()).save(any())
     }
 
-    @Test
-    fun `deactivate wallet contract should propagate failure saving retry count`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `deactivate wallet contract should propagate failure updating retry count`(
+        concurrentUpdate: Boolean
+    ) {
         val wallet =
             walletDocumentCreatedStatus(PAYMENT_METHOD_ID_CARDS).copy(deactivationRetryCount = 1)
         val error = IllegalStateException("Cannot save wallet")
@@ -4793,13 +4802,16 @@ class WalletServiceTest {
                         WalletContractIdDeactivationErrorType.KO_RESPONSE_RECEIVED,
                         500,
                         "NPG_ERROR")))
-        given(walletRepository.save(wallet.copy(deactivationRetryCount = 2)))
-            .willReturn(Mono.error(error))
+        given(walletRepository.updateDeactivationRetryCount(wallet.id, wallet.version, 2))
+            .willReturn(if (concurrentUpdate) Mono.just(0L) else Mono.error(error))
 
         StepVerifier.create(walletService.deactivateWalletContract(WALLET_UUID))
-            .expectErrorMatches { it === error }
+            .expectErrorMatches {
+                if (concurrentUpdate) it is OptimisticLockingFailureException else it === error
+            }
             .verify()
 
-        verify(walletRepository).save(wallet.copy(deactivationRetryCount = 2))
+        verify(walletRepository).updateDeactivationRetryCount(wallet.id, wallet.version, 2)
+        verify(walletRepository, never()).save(any())
     }
 }
