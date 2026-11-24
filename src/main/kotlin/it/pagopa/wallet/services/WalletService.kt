@@ -38,7 +38,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -1621,38 +1620,25 @@ class WalletService(
                         is PayPalDetails -> details.pspId
                         else -> null
                     }
-                npgClient.deactivateContract(wallet.contractId!!, wallet.id.value, pspId).flatMap {
+                npgClient.deactivateContract(wallet.contractId!!, wallet.id.value, pspId).map {
                     result ->
                     when (result) {
-                        is NpgClient.ContractDeactivationResult.Success -> {
-                            Mono.just(
-                                LoggedAction(
-                                    true,
-                                    WalletContractIdDeactivatedEvent(
-                                        walletId.value.toString(),
-                                        result.httpResponseCode.toString())))
-                        }
-                        is NpgClient.ContractDeactivationResult.Failure -> {
-                            val attemptNumber = (walletDocument.deactivationRetryCount ?: 0) + 1
-                            walletRepository
-                                .updateDeactivationRetryCount(
-                                    walletDocument.id, walletDocument.version, attemptNumber)
-                                .map { modifiedCount ->
-                                    if (modifiedCount == 0L) {
-                                        throw OptimisticLockingFailureException(
-                                            "Wallet ${walletDocument.id} changed before updating the contract deactivation retry count")
-                                    }
-                                    LoggedAction(
-                                        false,
-                                        WalletContractIdDeactivationErrorEvent(
-                                            walletId.value.toString(),
-                                            walletDocument.contractId!!,
-                                            result.errorType,
-                                            result.httpErrorCode,
-                                            result.npgErrorCode,
-                                            attemptNumber))
-                                }
-                        }
+                        is NpgClient.ContractDeactivationResult.Success ->
+                            LoggedAction(
+                                true,
+                                WalletContractIdDeactivatedEvent(
+                                    walletId.value.toString(), result.httpResponseCode.toString()))
+
+                        is NpgClient.ContractDeactivationResult.Failure ->
+                            LoggedAction(
+                                false,
+                                WalletContractIdDeactivationErrorEvent(
+                                    walletId.value.toString(),
+                                    walletDocument.contractId!!,
+                                    result.errorType,
+                                    result.httpErrorCode,
+                                    result.npgErrorCode,
+                                    (walletDocument.deactivationRetryCount ?: 0) + 1))
                     }
                 }
             }
